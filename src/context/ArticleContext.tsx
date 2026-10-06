@@ -10,7 +10,20 @@ import {
   SiteSettings,
   AdminUser,
   ActivityLog,
-  MediaItem
+  MediaItem,
+  Lecturer,
+  Facility,
+  Accreditation,
+  Course,
+  CalendarEvent,
+  BahtsulMasailQA,
+  PMBWave,
+  PMBFAQ,
+  EmailSubscriber,
+  EmailLog,
+  GalleryAlbum,
+  ComingSoonPageSetting,
+  PageSeoItem
 } from "@/lib/types";
 import {
   INITIAL_ARTICLES,
@@ -20,7 +33,20 @@ import {
   INITIAL_SETTINGS,
   INITIAL_ADMIN_USERS,
   INITIAL_ACTIVITY_LOGS,
-  INITIAL_MEDIA
+  INITIAL_MEDIA,
+  INITIAL_LECTURERS,
+  INITIAL_FACILITIES,
+  INITIAL_ACCREDITATIONS,
+  INITIAL_COURSES,
+  INITIAL_CALENDAR,
+  INITIAL_BAHTSUL_QA,
+  INITIAL_PMB_WAVES,
+  INITIAL_PMB_FAQS,
+  INITIAL_SUBSCRIBERS,
+  INITIAL_EMAIL_LOGS,
+  INITIAL_GALLERY_ALBUMS,
+  INITIAL_COMING_SOON_PAGES,
+  INITIAL_PAGE_SEO
 } from "@/lib/mock-data";
 
 interface DataContextType {
@@ -70,6 +96,77 @@ interface DataContextType {
   addMedia: (item: Omit<MediaItem, "id" | "uploadedAt">) => void;
   deleteMedia: (id: string) => void;
 
+  // Lecturers
+  lecturers: Lecturer[];
+  addLecturer: (lecturer: Omit<Lecturer, "id">) => void;
+  updateLecturer: (id: string, updatedData: Partial<Lecturer>) => void;
+  deleteLecturer: (id: string) => void;
+
+  // Facilities
+  facilities: Facility[];
+  addFacility: (facility: Omit<Facility, "id">) => void;
+  updateFacility: (id: string, updatedData: Partial<Facility>) => void;
+  deleteFacility: (id: string) => void;
+
+  // Accreditations
+  accreditations: Accreditation[];
+  addAccreditation: (item: Omit<Accreditation, "id">) => void;
+  updateAccreditation: (id: string, updatedData: Partial<Accreditation>) => void;
+  deleteAccreditation: (id: string) => void;
+
+  // Courses / Kurikulum
+  courses: Course[];
+  addCourse: (course: Omit<Course, "id">) => void;
+  updateCourse: (id: string, updatedData: Partial<Course>) => void;
+  deleteCourse: (id: string) => void;
+
+  // Academic Calendar
+  calendarEvents: CalendarEvent[];
+  addCalendarEvent: (event: Omit<CalendarEvent, "id">) => void;
+  updateCalendarEvent: (id: string, updatedData: Partial<CalendarEvent>) => void;
+  deleteCalendarEvent: (id: string) => void;
+
+  // Bahtsul Masail QA
+  bahtsulQA: BahtsulMasailQA[];
+  addBahtsulQA: (item: Omit<BahtsulMasailQA, "id">) => void;
+  updateBahtsulQA: (id: string, updatedData: Partial<BahtsulMasailQA>) => void;
+  deleteBahtsulQA: (id: string) => void;
+
+  // PMB Waves & FAQs
+  pmbWaves: PMBWave[];
+  addPMBWave: (wave: Omit<PMBWave, "id">) => void;
+  updatePMBWave: (id: string, updatedData: Partial<PMBWave>) => void;
+  deletePMBWave: (id: string) => void;
+
+  pmbFAQs: PMBFAQ[];
+  addPMBFAQ: (faq: Omit<PMBFAQ, "id">) => void;
+  updatePMBFAQ: (id: string, updatedData: Partial<PMBFAQ>) => void;
+  deletePMBFAQ: (id: string) => void;
+
+  // Subscribers
+  subscribers: EmailSubscriber[];
+  addSubscriber: (subscriber: Omit<EmailSubscriber, "id" | "subscribedAt">) => void;
+  deleteSubscriber: (id: string) => void;
+
+  // Email Logs & Send Simulation
+  emailLogs: EmailLog[];
+  sendEmailNotification: (to: string, subject: string) => void;
+
+  // Gallery Albums
+  galleryAlbums: GalleryAlbum[];
+  addGalleryAlbum: (album: Omit<GalleryAlbum, "id">) => void;
+  updateGalleryAlbum: (id: string, updatedData: Partial<GalleryAlbum>) => void;
+  deleteGalleryAlbum: (id: string) => void;
+
+  // Coming Soon Pages
+  comingSoonPages: ComingSoonPageSetting[];
+  toggleComingSoonPage: (id: string, isEnabled: boolean) => void;
+  updateComingSoonPage: (id: string, updatedData: Partial<ComingSoonPageSetting>) => void;
+
+  // Page SEO
+  pageSeoList: PageSeoItem[];
+  updatePageSeo: (pageKey: PageSeoItem["pageKey"], updatedData: Partial<PageSeoItem>) => void;
+
   // Site Settings
   settings: SiteSettings;
   updateSettings: (newSettings: Partial<SiteSettings>) => void;
@@ -92,6 +189,19 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const [users, setUsers] = useState<AdminUser[]>(INITIAL_ADMIN_USERS);
   const [logs, setLogs] = useState<ActivityLog[]>(INITIAL_ACTIVITY_LOGS);
   const [media, setMedia] = useState<MediaItem[]>(INITIAL_MEDIA);
+  const [lecturers, setLecturers] = useState<Lecturer[]>(INITIAL_LECTURERS);
+  const [facilities, setFacilities] = useState<Facility[]>(INITIAL_FACILITIES);
+  const [accreditations, setAccreditations] = useState<Accreditation[]>(INITIAL_ACCREDITATIONS);
+  const [courses, setCourses] = useState<Course[]>(INITIAL_COURSES);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>(INITIAL_CALENDAR);
+  const [bahtsulQA, setBahtsulQA] = useState<BahtsulMasailQA[]>(INITIAL_BAHTSUL_QA);
+  const [pmbWaves, setPmbWaves] = useState<PMBWave[]>(INITIAL_PMB_WAVES);
+  const [pmbFAQs, setPmbFAQs] = useState<PMBFAQ[]>(INITIAL_PMB_FAQS);
+  const [subscribers, setSubscribers] = useState<EmailSubscriber[]>(INITIAL_SUBSCRIBERS);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>(INITIAL_EMAIL_LOGS);
+  const [galleryAlbums, setGalleryAlbums] = useState<GalleryAlbum[]>(INITIAL_GALLERY_ALBUMS);
+  const [comingSoonPages, setComingSoonPages] = useState<ComingSoonPageSetting[]>(INITIAL_COMING_SOON_PAGES);
+  const [pageSeoList, setPageSeoList] = useState<PageSeoItem[]>(INITIAL_PAGE_SEO);
 
   // Load from LocalStorage
   useEffect(() => {
@@ -122,6 +232,45 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
       const savedMedia = localStorage.getItem("mahad_media");
       if (savedMedia) setMedia(JSON.parse(savedMedia));
+
+      const savedLecturers = localStorage.getItem("mahad_lecturers");
+      if (savedLecturers) setLecturers(JSON.parse(savedLecturers));
+
+      const savedFacilities = localStorage.getItem("mahad_facilities");
+      if (savedFacilities) setFacilities(JSON.parse(savedFacilities));
+
+      const savedAccreditations = localStorage.getItem("mahad_accreditations");
+      if (savedAccreditations) setAccreditations(JSON.parse(savedAccreditations));
+
+      const savedCourses = localStorage.getItem("mahad_courses");
+      if (savedCourses) setCourses(JSON.parse(savedCourses));
+
+      const savedCalendar = localStorage.getItem("mahad_calendar");
+      if (savedCalendar) setCalendarEvents(JSON.parse(savedCalendar));
+
+      const savedBahtsul = localStorage.getItem("mahad_bahtsul");
+      if (savedBahtsul) setBahtsulQA(JSON.parse(savedBahtsul));
+
+      const savedPmbWaves = localStorage.getItem("mahad_pmb_waves");
+      if (savedPmbWaves) setPmbWaves(JSON.parse(savedPmbWaves));
+
+      const savedPmbFAQs = localStorage.getItem("mahad_pmb_faqs");
+      if (savedPmbFAQs) setPmbFAQs(JSON.parse(savedPmbFAQs));
+
+      const savedSubscribers = localStorage.getItem("mahad_subscribers");
+      if (savedSubscribers) setSubscribers(JSON.parse(savedSubscribers));
+
+      const savedEmailLogs = localStorage.getItem("mahad_email_logs");
+      if (savedEmailLogs) setEmailLogs(JSON.parse(savedEmailLogs));
+
+      const savedGallery = localStorage.getItem("mahad_gallery");
+      if (savedGallery) setGalleryAlbums(JSON.parse(savedGallery));
+
+      const savedComingSoon = localStorage.getItem("mahad_coming_soon");
+      if (savedComingSoon) setComingSoonPages(JSON.parse(savedComingSoon));
+
+      const savedPageSeo = localStorage.getItem("mahad_page_seo");
+      if (savedPageSeo) setPageSeoList(JSON.parse(savedPageSeo));
     } catch (err) {
       console.error("Gagal membaca LocalStorage:", err);
     }
@@ -132,49 +281,92 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setArticles(data);
     localStorage.setItem("mahad_articles", JSON.stringify(data));
   };
-
   const saveCategories = (data: CategoryInfo[]) => {
     setCategories(data);
     localStorage.setItem("mahad_categories", JSON.stringify(data));
   };
-
   const saveTheses = (data: Thesis[]) => {
     setTheses(data);
     localStorage.setItem("mahad_theses", JSON.stringify(data));
   };
-
   const saveSubmissions = (data: Submission[]) => {
     setSubmissions(data);
     localStorage.setItem("mahad_submissions", JSON.stringify(data));
   };
-
   const saveNews = (data: NewsItem[]) => {
     setNews(data);
     localStorage.setItem("mahad_news", JSON.stringify(data));
   };
-
   const saveSettings = (data: SiteSettings) => {
     setSettings(data);
     localStorage.setItem("mahad_settings", JSON.stringify(data));
   };
-
   const saveUsers = (data: AdminUser[]) => {
     setUsers(data);
     localStorage.setItem("mahad_users", JSON.stringify(data));
   };
-
   const saveLogs = (data: ActivityLog[]) => {
     setLogs(data);
     localStorage.setItem("mahad_logs", JSON.stringify(data));
   };
-
   const saveMedia = (data: MediaItem[]) => {
     setMedia(data);
     localStorage.setItem("mahad_media", JSON.stringify(data));
   };
+  const saveLecturers = (data: Lecturer[]) => {
+    setLecturers(data);
+    localStorage.setItem("mahad_lecturers", JSON.stringify(data));
+  };
+  const saveFacilities = (data: Facility[]) => {
+    setFacilities(data);
+    localStorage.setItem("mahad_facilities", JSON.stringify(data));
+  };
+  const saveAccreditations = (data: Accreditation[]) => {
+    setAccreditations(data);
+    localStorage.setItem("mahad_accreditations", JSON.stringify(data));
+  };
+  const saveCourses = (data: Course[]) => {
+    setCourses(data);
+    localStorage.setItem("mahad_courses", JSON.stringify(data));
+  };
+  const saveCalendarEvents = (data: CalendarEvent[]) => {
+    setCalendarEvents(data);
+    localStorage.setItem("mahad_calendar", JSON.stringify(data));
+  };
+  const saveBahtsulQA = (data: BahtsulMasailQA[]) => {
+    setBahtsulQA(data);
+    localStorage.setItem("mahad_bahtsul", JSON.stringify(data));
+  };
+  const savePmbWaves = (data: PMBWave[]) => {
+    setPmbWaves(data);
+    localStorage.setItem("mahad_pmb_waves", JSON.stringify(data));
+  };
+  const savePmbFAQs = (data: PMBFAQ[]) => {
+    setPmbFAQs(data);
+    localStorage.setItem("mahad_pmb_faqs", JSON.stringify(data));
+  };
+  const saveSubscribers = (data: EmailSubscriber[]) => {
+    setSubscribers(data);
+    localStorage.setItem("mahad_subscribers", JSON.stringify(data));
+  };
+  const saveEmailLogs = (data: EmailLog[]) => {
+    setEmailLogs(data);
+    localStorage.setItem("mahad_email_logs", JSON.stringify(data));
+  };
+  const saveGalleryAlbums = (data: GalleryAlbum[]) => {
+    setGalleryAlbums(data);
+    localStorage.setItem("mahad_gallery", JSON.stringify(data));
+  };
+  const saveComingSoonPages = (data: ComingSoonPageSetting[]) => {
+    setComingSoonPages(data);
+    localStorage.setItem("mahad_coming_soon", JSON.stringify(data));
+  };
+  const savePageSeoList = (data: PageSeoItem[]) => {
+    setPageSeoList(data);
+    localStorage.setItem("mahad_page_seo", JSON.stringify(data));
+  };
 
-  // Helper log
-  const addLog = (action: string, target: string, user: string = "Admin") => {
+  const addLog = (action: string, target: string, user: string = "Super Admin") => {
     const newLog: ActivityLog = {
       id: "log-" + Date.now().toString(),
       user,
@@ -386,6 +578,213 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     addLog("Menghapus Media", target?.name || id);
   };
 
+  // Lecturer Actions
+  const addLecturer = (data: Omit<Lecturer, "id">) => {
+    const newLec: Lecturer = { ...data, id: "lec-" + Date.now().toString() };
+    saveLecturers([...lecturers, newLec]);
+    addLog("Menambah Dosen", data.name);
+  };
+  const updateLecturer = (id: string, updatedData: Partial<Lecturer>) => {
+    const updated = lecturers.map((l) => (l.id === id ? { ...l, ...updatedData } : l));
+    saveLecturers(updated);
+    addLog("Memperbarui Dosen", updatedData.name || id);
+  };
+  const deleteLecturer = (id: string) => {
+    const target = lecturers.find((l) => l.id === id);
+    saveLecturers(lecturers.filter((l) => l.id !== id));
+    addLog("Menghapus Dosen", target?.name || id);
+  };
+
+  // Facility Actions
+  const addFacility = (data: Omit<Facility, "id">) => {
+    const newFac: Facility = { ...data, id: "fac-" + Date.now().toString() };
+    saveFacilities([...facilities, newFac]);
+    addLog("Menambah Sarana", data.name);
+  };
+  const updateFacility = (id: string, updatedData: Partial<Facility>) => {
+    const updated = facilities.map((f) => (f.id === id ? { ...f, ...updatedData } : f));
+    saveFacilities(updated);
+    addLog("Memperbarui Sarana", updatedData.name || id);
+  };
+  const deleteFacility = (id: string) => {
+    const target = facilities.find((f) => f.id === id);
+    saveFacilities(facilities.filter((f) => f.id !== id));
+    addLog("Menghapus Sarana", target?.name || id);
+  };
+
+  // Accreditation Actions
+  const addAccreditation = (data: Omit<Accreditation, "id">) => {
+    const newAcc: Accreditation = { ...data, id: "acc-" + Date.now().toString() };
+    saveAccreditations([...accreditations, newAcc]);
+    addLog("Menambah Sertifikat Akreditasi", data.name);
+  };
+  const updateAccreditation = (id: string, updatedData: Partial<Accreditation>) => {
+    const updated = accreditations.map((a) => (a.id === id ? { ...a, ...updatedData } : a));
+    saveAccreditations(updated);
+    addLog("Memperbarui Akreditasi", updatedData.name || id);
+  };
+  const deleteAccreditation = (id: string) => {
+    const target = accreditations.find((a) => a.id === id);
+    saveAccreditations(accreditations.filter((a) => a.id !== id));
+    addLog("Menghapus Akreditasi", target?.name || id);
+  };
+
+  // Course Actions
+  const addCourse = (data: Omit<Course, "id">) => {
+    const newCrs: Course = { ...data, id: "crs-" + Date.now().toString() };
+    saveCourses([...courses, newCrs]);
+    addLog("Menambah Mata Kuliah", data.name);
+  };
+  const updateCourse = (id: string, updatedData: Partial<Course>) => {
+    const updated = courses.map((c) => (c.id === id ? { ...c, ...updatedData } : c));
+    saveCourses(updated);
+    addLog("Memperbarui Mata Kuliah", updatedData.name || id);
+  };
+  const deleteCourse = (id: string) => {
+    const target = courses.find((c) => c.id === id);
+    saveCourses(courses.filter((c) => c.id !== id));
+    addLog("Menghapus Mata Kuliah", target?.name || id);
+  };
+
+  // Calendar Event Actions
+  const addCalendarEvent = (data: Omit<CalendarEvent, "id">) => {
+    const newEv: CalendarEvent = { ...data, id: "cal-" + Date.now().toString() };
+    saveCalendarEvents([...calendarEvents, newEv]);
+    addLog("Menambah Kegiatan Kalender", data.name);
+  };
+  const updateCalendarEvent = (id: string, updatedData: Partial<CalendarEvent>) => {
+    const updated = calendarEvents.map((c) => (c.id === id ? { ...c, ...updatedData } : c));
+    saveCalendarEvents(updated);
+    addLog("Memperbarui Kegiatan Kalender", updatedData.name || id);
+  };
+  const deleteCalendarEvent = (id: string) => {
+    const target = calendarEvents.find((c) => c.id === id);
+    saveCalendarEvents(calendarEvents.filter((c) => c.id !== id));
+    addLog("Menghapus Kegiatan Kalender", target?.name || id);
+  };
+
+  // Bahtsul QA Actions
+  const addBahtsulQA = (data: Omit<BahtsulMasailQA, "id">) => {
+    const newQA: BahtsulMasailQA = { ...data, id: "bm-" + Date.now().toString() };
+    saveBahtsulQA([...bahtsulQA, newQA]);
+    addLog("Menambah Tanya Jawab Bahtsul Masail", data.title);
+  };
+  const updateBahtsulQA = (id: string, updatedData: Partial<BahtsulMasailQA>) => {
+    const updated = bahtsulQA.map((b) => (b.id === id ? { ...b, ...updatedData } : b));
+    saveBahtsulQA(updated);
+    addLog("Memperbarui Bahtsul Masail", updatedData.title || id);
+  };
+  const deleteBahtsulQA = (id: string) => {
+    const target = bahtsulQA.find((b) => b.id === id);
+    saveBahtsulQA(bahtsulQA.filter((b) => b.id !== id));
+    addLog("Menghapus Bahtsul Masail", target?.title || id);
+  };
+
+  // PMB Wave & FAQ Actions
+  const addPMBWave = (data: Omit<PMBWave, "id">) => {
+    const newWave: PMBWave = { ...data, id: "pmb-" + Date.now().toString() };
+    savePmbWaves([...pmbWaves, newWave]);
+    addLog("Menambah Gelombang PMB", data.name);
+  };
+  const updatePMBWave = (id: string, updatedData: Partial<PMBWave>) => {
+    const updated = pmbWaves.map((w) => (w.id === id ? { ...w, ...updatedData } : w));
+    savePmbWaves(updated);
+    addLog("Memperbarui Gelombang PMB", updatedData.name || id);
+  };
+  const deletePMBWave = (id: string) => {
+    const target = pmbWaves.find((w) => w.id === id);
+    savePmbWaves(pmbWaves.filter((w) => w.id !== id));
+    addLog("Menghapus Gelombang PMB", target?.name || id);
+  };
+
+  const addPMBFAQ = (data: Omit<PMBFAQ, "id">) => {
+    const newFAQ: PMBFAQ = { ...data, id: "faq-" + Date.now().toString() };
+    savePmbFAQs([...pmbFAQs, newFAQ]);
+    addLog("Menambah FAQ PMB", data.question);
+  };
+  const updatePMBFAQ = (id: string, updatedData: Partial<PMBFAQ>) => {
+    const updated = pmbFAQs.map((f) => (f.id === id ? { ...f, ...updatedData } : f));
+    savePmbFAQs(updated);
+    addLog("Memperbarui FAQ PMB", updatedData.question || id);
+  };
+  const deletePMBFAQ = (id: string) => {
+    const target = pmbFAQs.find((f) => f.id === id);
+    savePmbFAQs(pmbFAQs.filter((f) => f.id !== id));
+    addLog("Menghapus FAQ PMB", target?.question || id);
+  };
+
+  // Subscriber Actions
+  const addSubscriber = (data: Omit<EmailSubscriber, "id" | "subscribedAt">) => {
+    const newSub: EmailSubscriber = {
+      ...data,
+      id: "sub-" + Date.now().toString(),
+      subscribedAt: new Date().toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      })
+    };
+    saveSubscribers([newSub, ...subscribers]);
+  };
+  const deleteSubscriber = (id: string) => {
+    saveSubscribers(subscribers.filter((s) => s.id !== id));
+    addLog("Menghapus Subscriber", id);
+  };
+
+  // Email Notification Simulator
+  const sendEmailNotification = (to: string, subject: string) => {
+    const newLog: EmailLog = {
+      id: "elog-" + Date.now().toString(),
+      to,
+      subject,
+      status: "Terkirim",
+      timestamp: new Date().toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    };
+    saveEmailLogs([newLog, ...emailLogs]);
+    addLog("Kirim Email Notifikasi", subject);
+  };
+
+  // Gallery Album Actions
+  const addGalleryAlbum = (data: Omit<GalleryAlbum, "id">) => {
+    const newAlb: GalleryAlbum = { ...data, id: "alb-" + Date.now().toString() };
+    saveGalleryAlbums([...galleryAlbums, newAlb]);
+    addLog("Menambah Album Galeri", data.title);
+  };
+  const updateGalleryAlbum = (id: string, updatedData: Partial<GalleryAlbum>) => {
+    const updated = galleryAlbums.map((g) => (g.id === id ? { ...g, ...updatedData } : g));
+    saveGalleryAlbums(updated);
+    addLog("Memperbarui Album Galeri", updatedData.title || id);
+  };
+  const deleteGalleryAlbum = (id: string) => {
+    const target = galleryAlbums.find((g) => g.id === id);
+    saveGalleryAlbums(galleryAlbums.filter((g) => g.id !== id));
+    addLog("Menghapus Album Galeri", target?.title || id);
+  };
+
+  // Coming Soon Actions
+  const toggleComingSoonPage = (id: string, isEnabled: boolean) => {
+    const updated = comingSoonPages.map((p) => (p.id === id ? { ...p, isEnabled } : p));
+    saveComingSoonPages(updated);
+    addLog(`Ubah Status Halaman (${isEnabled ? 'Aktif' : 'Placeholder'})`, id);
+  };
+  const updateComingSoonPage = (id: string, updatedData: Partial<ComingSoonPageSetting>) => {
+    const updated = comingSoonPages.map((p) => (p.id === id ? { ...p, ...updatedData } : p));
+    saveComingSoonPages(updated);
+    addLog("Memperbarui Status Halaman", updatedData.title || id);
+  };
+
+  // Page SEO Actions
+  const updatePageSeo = (pageKey: PageSeoItem["pageKey"], updatedData: Partial<PageSeoItem>) => {
+    const updated = pageSeoList.map((p) => (p.pageKey === pageKey ? { ...p, ...updatedData } : p));
+    savePageSeoList(updated);
+    addLog("Memperbarui SEO Halaman", pageKey);
+  };
+
   // Site Settings Action
   const updateSettings = (newSettings: Partial<SiteSettings>) => {
     const updated = { ...settings, ...newSettings };
@@ -404,6 +803,19 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       settings,
       users,
       media,
+      lecturers,
+      facilities,
+      accreditations,
+      courses,
+      calendarEvents,
+      bahtsulQA,
+      pmbWaves,
+      pmbFAQs,
+      subscribers,
+      emailLogs,
+      galleryAlbums,
+      comingSoonPages,
+      pageSeoList,
       exportedAt: new Date().toISOString()
     };
     return JSON.stringify(fullBackup, null, 2);
@@ -420,6 +832,19 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       if (data.settings) saveSettings(data.settings);
       if (data.users) saveUsers(data.users);
       if (data.media) saveMedia(data.media);
+      if (data.lecturers) saveLecturers(data.lecturers);
+      if (data.facilities) saveFacilities(data.facilities);
+      if (data.accreditations) saveAccreditations(data.accreditations);
+      if (data.courses) saveCourses(data.courses);
+      if (data.calendarEvents) saveCalendarEvents(data.calendarEvents);
+      if (data.bahtsulQA) saveBahtsulQA(data.bahtsulQA);
+      if (data.pmbWaves) savePmbWaves(data.pmbWaves);
+      if (data.pmbFAQs) savePmbFAQs(data.pmbFAQs);
+      if (data.subscribers) saveSubscribers(data.subscribers);
+      if (data.emailLogs) saveEmailLogs(data.emailLogs);
+      if (data.galleryAlbums) saveGalleryAlbums(data.galleryAlbums);
+      if (data.comingSoonPages) saveComingSoonPages(data.comingSoonPages);
+      if (data.pageSeoList) savePageSeoList(data.pageSeoList);
       addLog("Memulihkan Data Backup", "JSON Restore");
       return true;
     } catch (e) {
@@ -430,15 +855,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
   // Reset Data
   const resetAllData = () => {
-    localStorage.removeItem("mahad_articles");
-    localStorage.removeItem("mahad_categories");
-    localStorage.removeItem("mahad_theses");
-    localStorage.removeItem("mahad_submissions");
-    localStorage.removeItem("mahad_news");
-    localStorage.removeItem("mahad_settings");
-    localStorage.removeItem("mahad_users");
-    localStorage.removeItem("mahad_logs");
-    localStorage.removeItem("mahad_media");
+    localStorage.clear();
     setArticles(INITIAL_ARTICLES);
     setCategories(INITIAL_CATEGORIES);
     setTheses(INITIAL_THESES);
@@ -448,6 +865,19 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setUsers(INITIAL_ADMIN_USERS);
     setLogs(INITIAL_ACTIVITY_LOGS);
     setMedia(INITIAL_MEDIA);
+    setLecturers(INITIAL_LECTURERS);
+    setFacilities(INITIAL_FACILITIES);
+    setAccreditations(INITIAL_ACCREDITATIONS);
+    setCourses(INITIAL_COURSES);
+    setCalendarEvents(INITIAL_CALENDAR);
+    setBahtsulQA(INITIAL_BAHTSUL_QA);
+    setPmbWaves(INITIAL_PMB_WAVES);
+    setPmbFAQs(INITIAL_PMB_FAQS);
+    setSubscribers(INITIAL_SUBSCRIBERS);
+    setEmailLogs(INITIAL_EMAIL_LOGS);
+    setGalleryAlbums(INITIAL_GALLERY_ALBUMS);
+    setComingSoonPages(INITIAL_COMING_SOON_PAGES);
+    setPageSeoList(INITIAL_PAGE_SEO);
   };
 
   return (
@@ -483,6 +913,52 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         media,
         addMedia,
         deleteMedia,
+        lecturers,
+        addLecturer,
+        updateLecturer,
+        deleteLecturer,
+        facilities,
+        addFacility,
+        updateFacility,
+        deleteFacility,
+        accreditations,
+        addAccreditation,
+        updateAccreditation,
+        deleteAccreditation,
+        courses,
+        addCourse,
+        updateCourse,
+        deleteCourse,
+        calendarEvents,
+        addCalendarEvent,
+        updateCalendarEvent,
+        deleteCalendarEvent,
+        bahtsulQA,
+        addBahtsulQA,
+        updateBahtsulQA,
+        deleteBahtsulQA,
+        pmbWaves,
+        addPMBWave,
+        updatePMBWave,
+        deletePMBWave,
+        pmbFAQs,
+        addPMBFAQ,
+        updatePMBFAQ,
+        deletePMBFAQ,
+        subscribers,
+        addSubscriber,
+        deleteSubscriber,
+        emailLogs,
+        sendEmailNotification,
+        galleryAlbums,
+        addGalleryAlbum,
+        updateGalleryAlbum,
+        deleteGalleryAlbum,
+        comingSoonPages,
+        toggleComingSoonPage,
+        updateComingSoonPage,
+        pageSeoList,
+        updatePageSeo,
         settings,
         updateSettings,
         exportBackupJson,

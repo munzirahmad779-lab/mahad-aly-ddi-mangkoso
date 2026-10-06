@@ -9,7 +9,21 @@ import {
   MediaItem,
   HeroSectionData,
   QuoteSectionData,
-  SeoSettings
+  SeoSettings,
+  Lecturer,
+  Facility,
+  Accreditation,
+  Course,
+  CalendarEvent,
+  BahtsulMasailQA,
+  PMBWave,
+  PMBFAQ,
+  EmailSubscriber,
+  EmailLog,
+  GalleryAlbum,
+  ComingSoonPageSetting,
+  PageSeoItem,
+  SocialMediaSettings
 } from "./types";
 
 export const INITIAL_HERO: HeroSectionData = {
@@ -40,6 +54,15 @@ export const INITIAL_SEO: SeoSettings = {
   enableSitemap: true
 };
 
+export const INITIAL_SOCIAL_MEDIA: SocialMediaSettings = {
+  facebook: "https://facebook.com/mahadalyddimangkoso",
+  instagram: "https://instagram.com/mahadalyddimangkoso",
+  youtube: "https://youtube.com/@mahadalyddimangkoso",
+  whatsapp: "+62 812-3456-7890",
+  emailOfficial: "munzirahmad779@gmail.com",
+  fullAddress: "Kompleks Pondok Pesantren DDI Mangkoso, Kel. Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulawesi Selatan 90752"
+};
+
 export const INITIAL_SETTINGS: SiteSettings = {
   institutionName: "Ma'had Aly Pendidikan Tinggi Kader Ulama DDI Abdurrahman Ambo Dalle, Mangkoso",
   takhassus: "Fiqh wa Usuluhu (Fiqh dan Ushul Fikih)",
@@ -50,6 +73,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
   address: "Kompleks Pondok Pesantren DDI Mangkoso, Kel. Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulawesi Selatan 90752",
   phone: "+62 812-3456-7890",
   emailSubmission: "munzirahmad779@gmail.com",
+  targetSubmissionEmails: ["munzirahmad779@gmail.com"],
   visi: "Menjadi pusat keunggulan kaderisasi fuqaha mutafaqqih fiddin tingkat tinggi yang otoritatif dalam khazanah turats klasik dan progresif menjawab dinamika Fiqh Mu'asarah.",
   misi: [
     "Menyelenggarakan pendidikan kader ulama berbasis talaqqi sanad kitab turats klasik.",
@@ -57,11 +81,518 @@ export const INITIAL_SETTINGS: SiteSettings = {
     "Menanamkan integritas moral, keikhlasan, dan wawasan moderasi beragama (wasathiyyah Islamiyah).",
     "Membekali mahasantri dengan kecakapan metodologi istinbath hukum dan Bahtsul Masail kontemporer."
   ],
+  historyContent: "Ma'had Aly DDI Mangkoso didirikan pada tanggal 5 November 2013 (1 Muharram 1435 H) oleh AGH. Prof. Dr. M. Faried Wadjedy, MA bersama dewan masyaikh dalam rangka meregenerasi ulama fuqaha yang mumpuni dalam khazanah turats klasik dan responsif terhadap problematika zaman modern.",
+  historyArabic: "تَأْسِيْسُ مَعْهَدِ عَالِي لِتَخْرِيْجِ عُلَمَاءِ الْفِقْهِ الْمُعَاصِرِ عَلَى مَنْهَجِ أَهْلِ السُّنَّةِ وَالْجَمَاعَةِ",
+  gradingSystemRules: "Sistem penilaian menggabungkan pengujian hafalan matan turats (ikhtibar), penguasaan qawa'id fiqhiyyah, keaktifan halaqah Bahtsul Masail, serta penulisan risalah ilmiah skripsi (munaqasyah) dengan standar kelulusan predikat Mumtaz (Cum Laude).",
+  academicGuideBookUrl: "https://drive.google.com/file/d/pedoman-akademik-mahad-aly-2026/view?usp=sharing",
+  academicGuideBookSize: "4.5 MB",
+  academicGuideBookYear: "2026/2027",
   hero: INITIAL_HERO,
   quote: INITIAL_QUOTE,
   seo: INITIAL_SEO,
+  socialMedia: INITIAL_SOCIAL_MEDIA,
   maintenanceMode: false
 };
+
+export const INITIAL_LECTURERS: Lecturer[] = [
+  {
+    id: "lec-1",
+    name: "AGH. Prof. Dr. M. Faried Wadjedy, MA",
+    title: "Guru Besar Fiqh & Mudir Ma'had Aly",
+    role: "Mudir Ma'had Aly / Pengampu Fiqh Turats",
+    photoUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80",
+    expertise: "Kutubut Turats, Ushul Fikih & Fatwa Wasathiyyah",
+    education: [
+      "S1 Al-Azhar University, Cairo",
+      "S2 UIN Alauddin Makassar",
+      "S3 UIN Syarif Hidayatullah Jakarta"
+    ],
+    publications: [
+      "Fiqh Muqaran dalam Perspektif Kemaslahatan",
+      "Metodologi Fatwa Wasathiyyah Ulama Nusantara"
+    ],
+    order: 1,
+    isActive: true
+  },
+  {
+    id: "lec-2",
+    name: "Ust. M. Idrus, M.Ag.",
+    title: "Kepala Bidang Akademik",
+    role: "Wakil Mudir I (Bidang Akademik)",
+    photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+    expertise: "Ushul Fikih, Qawa'id Fiqhiyyah & Fiqh Muamalah Digital",
+    education: [
+      "S1 Ma'had Aly DDI Mangkoso",
+      "S2 UIN Sunan Kalijaga Yogyakarta"
+    ],
+    publications: [
+      "Dialektika Nalar Ushul Fikih dalam Smart Contract",
+      "Takhrij Fiqhiyyah Transaksi Fintech Syariah"
+    ],
+    order: 2,
+    isActive: true
+  },
+  {
+    id: "lec-3",
+    name: "Ismail Hannanong, Lc., M.H.",
+    title: "Dosen Senior Fiqh Medis",
+    role: "Pengampu Fiqh Medis & Bioetika",
+    photoUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+    expertise: "Fiqh Medis, Bioetika Kedokteran & Bahtsul Masail",
+    education: [
+      "S1 Fakultas Syariah Wal Qanun Al-Azhar Cairo",
+      "S2 Ilmu Hukum UMI Makassar"
+    ],
+    publications: [
+      "Tinjauan Syariat atas Transplantasi Organ Kadaver",
+      "Etika Rekayasa Genetika dalam Perspektif Maqashid"
+    ],
+    order: 3,
+    isActive: true
+  },
+  {
+    id: "lec-4",
+    name: "Ust. H. Syahrul, M.Pd.I.",
+    title: "Dosen Qawa'id Fiqhiyyah",
+    role: "Pengampu Kaidah Fikih Asasiyah",
+    photoUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80",
+    expertise: "Al-Qawa'id al-Fiqhiyyah & Metodologi Bahtsul Masail",
+    education: [
+      "S1 STAI DDI Mangkoso",
+      "S2 Magister Pendidikan Islam UIN Alauddin"
+    ],
+    publications: [
+      "Aplikasi Kaidah Ad-Dhararu Yuzal pada Krisis Lingkungan"
+    ],
+    order: 4,
+    isActive: true
+  }
+];
+
+export const INITIAL_FACILITIES: Facility[] = [
+  {
+    id: "fac-1",
+    name: "Masjid & Halaqah Utama",
+    category: "Masjid",
+    photoUrl: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=600&q=80",
+    description: "Pusat pengajian wetonan, sorogan subuh, dan mudzakarah kitab kuning salaf bersama Masyaikh."
+  },
+  {
+    id: "fac-2",
+    name: "Perpustakaan Turats & Digital",
+    category: "Perpustakaan",
+    photoUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=600&q=80",
+    description: "Koleksi ribuan jilid kitab rujukan primer fiqh madzhab empat, manuskrip ulama Nusantara, dan terminal e-Library."
+  },
+  {
+    id: "fac-3",
+    name: "Asrama Mahasantri Marhalah Ula",
+    category: "Asrama",
+    photoUrl: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80",
+    description: "Fasilitas mukim santri 24 jam dengan bimbingan akhlakul karimah dan pembiasaan percakapan bahasa Arab fushah."
+  },
+  {
+    id: "fac-4",
+    name: "Aula Sidang Munaqasyah & Simposium",
+    category: "Aula",
+    photoUrl: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=600&q=80",
+    description: "Ruang representatif untuk penyelenggaraan sidang skripsi, seminar nasional, dan forum Bahtsul Masail."
+  }
+];
+
+export const INITIAL_ACCREDITATIONS: Accreditation[] = [
+  {
+    id: "acc-1",
+    name: "Izin Operasional Penyelenggaraan Marhalah Ula (S-1)",
+    issuer: "Direktorat Pendidikan Diniyah dan Pondok Pesantren Kemenag RI",
+    validDate: "Berlaku Permanen",
+    pdfUrl: "https://drive.google.com/file/d/sk-izin-operasional-mahad-aly/view?usp=sharing",
+    fileSize: "2.1 MB",
+    status: "Resmi Kemenag"
+  },
+  {
+    id: "acc-2",
+    name: "Akreditasi Majelis Masyayikh Pendidikan Pesantren",
+    issuer: "Majelis Masyayikh Nasional",
+    validDate: "Hingga 2029",
+    pdfUrl: "https://drive.google.com/file/d/sertifikat-akreditasi-mahad-aly/view?usp=sharing",
+    fileSize: "3.4 MB",
+    status: "Terakreditasi Baik Sekali"
+  }
+];
+
+export const INITIAL_COURSES: Course[] = [
+  {
+    id: "crs-1",
+    name: "Mabadi' Ushul Fiqh & Madkhal Ila al-Fiqh",
+    semester: 1,
+    credits: 3,
+    mainBook: "Al-Waraqat & Syarah Al-Mahalli",
+    supportBook: "Tashil at-Turuqat",
+    lecturer: "Ust. M. Idrus, M.Ag.",
+    description: "Pengantar metodologi istinbath hukum dasar dan pemetaan mazhab-mazhab fiqh."
+  },
+  {
+    id: "crs-2",
+    name: "Dirasah Matan Fathul Qarib al-Mujib",
+    semester: 1,
+    credits: 4,
+    mainBook: "Fathul Qarib al-Mujib",
+    supportBook: "Hasyiyah al-Bajuri",
+    lecturer: "Dewan Masyaikh",
+    description: "Kajian mendalam bab ibadah dan thaharah dengan pembacaan teks talaqqi."
+  },
+  {
+    id: "crs-3",
+    name: "Ushul Fiqh Lanjutan: Jam'ul Jawami'",
+    semester: 3,
+    credits: 4,
+    mainBook: "Jam'ul Jawami' lil Imam as-Subki",
+    supportBook: "Hasyiyah al-Bannani",
+    lecturer: "AGH. Prof. Dr. M. Faried Wadjedy, MA",
+    description: "Kaidah dalil qath'i-zhanni, ta'arudh al-adillah, dan rekonstruksi ijtihad."
+  },
+  {
+    id: "crs-4",
+    name: "Fiqh Muamalah Kontemporer & Fintech",
+    semester: 5,
+    credits: 3,
+    mainBook: "Fiqh al-Mu'amalat al-Maliyyah al-Mu'ashirah",
+    supportBook: "Fatwa DSN-MUI & Majma' Fiqh OKI",
+    lecturer: "Ust. M. Idrus, M.Ag.",
+    description: "Kajian hukum transaksi kripto, smart contract, e-commerce, dan perbankan syariah."
+  },
+  {
+    id: "crs-5",
+    name: "Fiqh Medis & Bioetika Kedokteran",
+    semester: 6,
+    credits: 3,
+    mainBook: "Al-Ahkam al-Fiqhiyyah lil A'mal at-Thibbiyyah",
+    supportBook: "Qadhaya Fiqhiyyah Mu'ashirah",
+    lecturer: "Ismail Hannanong, Lc., M.H.",
+    description: "Telaah hukum transplantasi organ, mati batang otak, vaksinasi, dan genetika."
+  },
+  {
+    id: "crs-6",
+    name: "Metodologi Riset Skripsi & Bahtsul Masail",
+    semester: 7,
+    credits: 4,
+    mainBook: "Manhaj al-Bahts al-Ilmi & Takhrij al-Furu' 'ala al-Ushul",
+    supportBook: "Kaidah Takhrij Fiqhiyyah",
+    lecturer: "Tim Dosen Pembimbing Skripsi",
+    description: "Praktik penyusunan naskah risalah ilmiah skripsi dan perumusan fatwa kolektif."
+  }
+];
+
+export const INITIAL_CALENDAR: CalendarEvent[] = [
+  {
+    id: "cal-1",
+    name: "Kuliah Perdana & Halaqah Sanad Turats Semester Ganjil",
+    startDate: "01 September 2026",
+    endDate: "05 September 2026",
+    category: "kuliah",
+    description: "Pembukaan perkuliahan dan ijazah sanad kitab-kitab induk fikih madzhab Syafi'i."
+  },
+  {
+    id: "cal-2",
+    name: "Ujian Tengah Semester (Ikhtibar Nisfi Syafahi & Tahriri)",
+    startDate: "26 Oktober 2026",
+    endDate: "02 November 2026",
+    category: "ujian",
+    description: "Evaluasi penguasaan matan kitab kuning dan pemahaman kaidah ushul fikih."
+  },
+  {
+    id: "cal-3",
+    name: "Simposium Nasional Bahtsul Masail Fiqh Mu'asarah",
+    startDate: "15 November 2026",
+    endDate: "17 November 2026",
+    category: "kegiatan",
+    description: "Forum musyawarah hukum Islam merespon isu-isu digital dan ekonomi syariah."
+  },
+  {
+    id: "cal-4",
+    name: "Sidang Munaqasyah Skripsi Mahasantri Angkatan VIII",
+    startDate: "10 Desember 2026",
+    endDate: "20 Desember 2026",
+    category: "ujian",
+    description: "Ujian pertahanan risalah ilmiah skripsi di hadapan dewan penguji masyaikh."
+  }
+];
+
+export const INITIAL_BAHTSUL_QA: BahtsulMasailQA[] = [
+  {
+    id: "bm-1",
+    title: "Hukum Pemanfaatan AI Generatif untuk Pembuatan Gambar Edukasi Agama",
+    question: "Bagaimanakah status hukum kreasi visual berbasis Artificial Intelligence yang menghasilkan figur bernyawa untuk tujuan media dakwah dan edukasi?",
+    answer: "Para fukaha Ma'had Aly bersepakat bahwa pemanfaatan AI yang tidak bertujuan menyembah figur visual dan semata-mata sebagai sarana wasilah taklim diperbolehkan (*al-ashlu fi al-asya' al-ibahah*), dengan tetap menjaga adab dan tidak memvisualisasikan para Nabi dan Malaikat.",
+    theme: "Fiqh Digital & AI",
+    author: "Lembaga Bahtsul Masail DDI Mangkoso",
+    date: "02 Oktober 2026",
+    status: "published",
+    arabicReferences: "الأَصْلُ فِي الْمُعَامَلَاتِ الإِبَاحَةُ حَتَّى يَدُلَّ الدَّلِيْلُ عَلَى التَّحْرِيْمِ"
+  },
+  {
+    id: "bm-2",
+    title: "Status Uang Elektronik dan Saldo Paylater Ditinjau dari Akad Qardh & Sarf",
+    question: "Apakah denda keterlambatan pada layanan paylater syariah termasuk riba nasi'ah?",
+    answer: "Denda keterlambatan yang ditetapkan sebagai keuntungan penyedia adalah riba yang diharamkan. Namun jika denda tersebut dialokasikan 100% untuk dana kebajikan (ta'widh & qardhul hasan) tanpa menguntungkan kreditur, fatwa DSN-MUI memperbolehkannya sebagai ta'zir mali.",
+    theme: "Fiqh Muamalah Kontemporer",
+    author: "Lembaga Bahtsul Masail DDI Mangkoso",
+    date: "28 September 2026",
+    status: "published"
+  }
+];
+
+export const INITIAL_PMB_WAVES: PMBWave[] = [
+  {
+    id: "pmb-1",
+    name: "Gelombang I (Jalur Prestasi Tahfidz & Kitab Kuning)",
+    startDate: "01 Januari 2027",
+    endDate: "28 Februari 2027",
+    quota: "15 Mahasantri",
+    scholarshipInfo: "Beasiswa Penuh 100% (Bebas Biaya Kuliah, Asrama & Konsumsi)",
+    requirements: [
+      "Lulusan Pondok Pesantren / Madrasah Aliyah sederajat",
+      "Memiliki hafalan Al-Qur'an minimal 5 Juz atau mutun ilmiyyah",
+      "Mampu membaca dan memahami kitab kuning (Fathul Qarib/Taqrib)",
+      "Surat rekomendasi pimpinan pesantren asal",
+      "Lolos tes wawancara dan baca kitab"
+    ],
+    procedure: [
+      "Mengisi formulir pendaftaran online di website Ma'had Aly",
+      "Mengunggah berkas ijazah, KTP, dan surat rekomendasi",
+      "Mengikuti seleksi tes baca kitab kuning dan hafalan",
+      "Pengumuman hasil kelulusan dan penandatanganan pakta integritas"
+    ]
+  },
+  {
+    id: "pmb-2",
+    name: "Gelombang II (Jalur Reguler Nusantara)",
+    startDate: "01 Maret 2027",
+    endDate: "30 April 2027",
+    quota: "15 Mahasantri",
+    scholarshipInfo: "Beasiswa 100% via Program Orang Tua Asuh DDI Mangkoso",
+    requirements: [
+      "Usia maksimal 22 tahun saat mendaftar",
+      "Siap mukim di asrama selama 4 tahun penuh",
+      "Lulus tes potensi akademik bahasa Arab dan fikih dasar"
+    ],
+    procedure: [
+      "Pendaftaran via portal online",
+      "Verifikasi berkas administratif",
+      "Tes seleksi luring / daring",
+      "Daftar ulang dan orientasi mahasantri baru"
+    ]
+  }
+];
+
+export const INITIAL_PMB_FAQS: PMBFAQ[] = [
+  {
+    id: "faq-1",
+    question: "Apakah ada biaya kuliah di Ma'had Aly DDI Mangkoso?",
+    answer: "Tidak ada (GRATIS 100%). Seluruh mahasantri yang lulus seleksi mendapatkan beasiswa penuh mencakup biaya pendidikan, asrama, dan konsumsi harian yang didanai melalui program Orang Tua Asuh Pesantren DDI Mangkoso.",
+    category: "Biaya & Beasiswa"
+  },
+  {
+    id: "faq-2",
+    question: "Ijazah apa yang diperoleh setelah lulus 4 tahun?",
+    answer: "Mahasantri yang menyelesaikan risalah skripsi dan munaqasyah berhak menyandang gelar Sarjana Agama (S.Ag.) yang diakui negara setara Strata Satu (S-1) berdasarkan regulasi Kementerian Agama RI.",
+    category: "Akademik & Ijazah"
+  },
+  {
+    id: "faq-3",
+    question: "Apakah mahasantri dari luar Sulawesi Selatan boleh mendaftar?",
+    answer: "Sangat terbuka! Ma'had Aly DDI Mangkoso menerima kader ulama dari seluruh pelosok Nusantara (Jawa, Sumatera, Kalimantan, Maluku, Papua, dll).",
+    category: "Pendaftaran"
+  }
+];
+
+export const INITIAL_SUBSCRIBERS: EmailSubscriber[] = [
+  {
+    id: "sub-1",
+    email: "calon.santri@gmail.com",
+    name: "Fahrurrozi",
+    phone: "081234998877",
+    pageTarget: "PMB Online 2027",
+    subscribedAt: "05 Okt 2026"
+  },
+  {
+    id: "sub-2",
+    email: "peneliti.fiqh@gmail.com",
+    name: "Ust. Burhanuddin",
+    pageTarget: "Bahtsul Masail Live",
+    subscribedAt: "04 Okt 2026"
+  }
+];
+
+export const INITIAL_EMAIL_LOGS: EmailLog[] = [
+  {
+    id: "elog-1",
+    to: "munzirahmad779@gmail.com",
+    subject: "Notifikasi Naskah Masuk: Tinjauan Fiqh Mu'asarah atas Smart Contract",
+    status: "Terkirim",
+    timestamp: "Hari ini, 10:15 WITA"
+  },
+  {
+    id: "elog-2",
+    to: "ahmad.yusuf@santri.ac.id",
+    subject: "Naskah Anda Telah Diterbitkan di Mimbar Kajian Ma'had Aly",
+    status: "Terkirim",
+    timestamp: "Hari ini, 10:18 WITA"
+  }
+];
+
+export const INITIAL_GALLERY_ALBUMS: GalleryAlbum[] = [
+  {
+    id: "alb-1",
+    title: "Simposium Nasional Fiqh Mu'asarah 2026",
+    category: "Kegiatan Akademik",
+    date: "06 Oktober 2026",
+    coverUrl: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=600&q=80",
+    photos: [
+      {
+        id: "ph-1",
+        url: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=600&q=80",
+        caption: "Pembukaan simposium oleh Mudir Ma'had Aly"
+      },
+      {
+        id: "ph-2",
+        url: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=600&q=80",
+        caption: "Suasana halaqah sidang komisi fatwa digital"
+      }
+    ]
+  },
+  {
+    id: "alb-2",
+    title: "Talaqqi Sorogan Kitab Turats Subuh",
+    category: "Halaqah Santri",
+    date: "01 Oktober 2026",
+    coverUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=600&q=80",
+    photos: [
+      {
+        id: "ph-3",
+        url: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=600&q=80",
+        caption: "Pembacaan matan Fathul Mu'in di Masjid Utama"
+      }
+    ]
+  }
+];
+
+export const INITIAL_COMING_SOON_PAGES: ComingSoonPageSetting[] = [
+  {
+    id: "cs-1",
+    slug: "bahtsul-masail",
+    title: "Bahtsul Masail & Fatwa Online",
+    isEnabled: true,
+    releaseDate: "Desember 2026",
+    description: "Pusat tanya jawab hukum Islam dan arsip fatwa Bahtsul Masail Fiqh Mu'asarah.",
+    subscriberCount: 38
+  },
+  {
+    id: "cs-2",
+    slug: "pmb",
+    title: "Penerimaan Mahasantri Baru (PMB Online)",
+    isEnabled: true,
+    releaseDate: "Januari 2027",
+    description: "Sistem pendaftaran daring kader ulama Takhassus Fiqh wa Usuluhu beasiswa penuh 100%.",
+    subscriberCount: 84
+  },
+  {
+    id: "cs-3",
+    slug: "jurnal",
+    title: "Jurnal Ilmiah Fiqh Mu'asarah (OJS)",
+    isEnabled: true,
+    releaseDate: "Februari 2027",
+    description: "Jurnal peer-reviewed terindeks SINTA untuk publikasi riset dosen dan mahasantri.",
+    subscriberCount: 19
+  },
+  {
+    id: "cs-4",
+    slug: "buku",
+    title: "Pustaka Buku & Risalah Anregurutta",
+    isEnabled: true,
+    releaseDate: "Maret 2027",
+    description: "Katalog buku karya masyayikh DDI Mangkoso dalam format cetak dan digital.",
+    subscriberCount: 27
+  },
+  {
+    id: "cs-5",
+    slug: "elibrary",
+    title: "e-Library Turats & Maktabah Syamilah",
+    isEnabled: true,
+    releaseDate: "Maret 2027",
+    description: "Perpustakaan digital kitab kuning, manuskrip kuno, dan tesis fiqh kontemporer.",
+    subscriberCount: 42
+  },
+  {
+    id: "cs-6",
+    slug: "sekolah-menulis",
+    title: "Sekolah Menulis Fuqaha Muda",
+    isEnabled: true,
+    releaseDate: "April 2027",
+    description: "Program pelatihan penulisan opini ilmiah dan artikel populer fikih bagi mahasantri.",
+    subscriberCount: 15
+  }
+];
+
+export const INITIAL_PAGE_SEO: PageSeoItem[] = [
+  {
+    pageKey: "home",
+    pageName: "Beranda Utama",
+    title: "Ma'had Aly DDI Mangkoso — Pusat Kaderisasi Ulama Fiqh Mu'asarah",
+    description: "Pendidikan Tinggi Keagamaan Islam Kader Ulama Takhassus Fiqh wa Usuluhu di Kompleks Pondok Pesantren DDI Mangkoso, Barru.",
+    keywords: "mahad aly, ddi mangkoso, fiqh muasarah, ushul fikih, santri, beasiswa ulama",
+    ogImage: "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    pageKey: "profil",
+    pageName: "Profil Lembaga",
+    title: "Profil & Sejarah Ma'had Aly DDI Mangkoso — Sejak 2013",
+    description: "Sejarah pendirian, visi misi, profil masyaikh dewan dosen, struktur organisasi, dan sertifikat akreditasi resmi Kemenag RI.",
+    keywords: "profil mahad aly, sejarah ddi mangkoso, ambo dalle, faried wadjedy",
+    ogImage: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    pageKey: "akademik",
+    pageName: "Akademik & Kurikulum",
+    title: "Akademik, Kurikulum 8 Semester & Kalender — Ma'had Aly DDI Mangkoso",
+    description: "Struktur kurikulum Takhassus Fiqh wa Usuluhu, daftar kitab rujukan salaf, kalender akademik, dan pedoman studi sarjana (S.Ag.).",
+    keywords: "kurikulum mahad aly, fiqh wa usuluhu, kitab kuning, kalender akademik",
+    ogImage: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    pageKey: "kajian",
+    pageName: "Mimbar Kajian Fiqh",
+    title: "Mimbar Kajian Fiqh Mu'asarah — Ma'had Aly DDI Mangkoso",
+    description: "Kumpulan artikel ilmiah dan fatwa kontemporer seputar fintech, bioetika medis, AI, lingkungan, dan maqashid syariah.",
+    keywords: "artikel fiqh, fiqh kontemporer, fatwa digital, bahtsul masail",
+    ogImage: "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    pageKey: "publikasi",
+    pageName: "Repositori Skripsi",
+    title: "Repositori Risalah Skripsi Mahasantri — Ma'had Aly DDI Mangkoso",
+    description: "Koleksi skripsi mahasantri tingkat sarjana kader ulama lengkap dengan abstrak dwibahasa dan tautan unduh naskah PDF Google Drive.",
+    keywords: "skripsi mahad aly, repositori karya ilmiah, download pdf skripsi fiqh",
+    ogImage: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    pageKey: "pmb",
+    pageName: "PMB Online",
+    title: "Penerimaan Mahasantri Baru (PMB) Beasiswa 100% — Ma'had Aly DDI Mangkoso",
+    description: "Informasi jadwal pendaftaran, persyaratan berkas, alur seleksi baca kitab kuning, dan fasilitas beasiswa penuh kader ulama.",
+    keywords: "pmb mahad aly 2027, beasiswa santri, pendaftaran kader ulama mangkoso",
+    ogImage: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    pageKey: "kontak",
+    pageName: "Kontak & Lokasi",
+    title: "Hubungi Ma'had Aly DDI Mangkoso — Kompleks Pesantren Barru",
+    description: "Alamat resmi kampus, nomor WhatsApp layanan informasi, email redaksi naskah, dan peta lokasi di Barru, Sulawesi Selatan.",
+    keywords: "alamat mahad aly mangkoso, nomor whatsapp ddi mangkoso, email redaksi",
+    ogImage: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1200&q=80"
+  }
+];
 
 export const INITIAL_ADMIN_USERS: AdminUser[] = [
   {
@@ -70,7 +601,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     email: "munzirahmad779@gmail.com",
     role: "Super Admin",
     status: "Aktif",
-    lastLogin: "Hari ini, 20:45 WITA"
+    lastLogin: "Hari ini, 21:20 WITA"
   },
   {
     id: "usr-2",
@@ -125,7 +656,7 @@ export const INITIAL_MEDIA: MediaItem[] = [
   {
     id: "med-1",
     name: "logo-mahad-aly-vector.png",
-    url: "/images/logo-ddi.png",
+    url: "/image_067524.png",
     size: "245 KB",
     type: "image",
     uploadedAt: "06 Okt 2026"
