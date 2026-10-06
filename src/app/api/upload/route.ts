@@ -80,6 +80,9 @@ export async function POST(req: NextRequest) {
     // 6. Save Metadata to Supabase DB via Service Role (Bypassing RLS)
     let mediaRecord = null;
     try {
+      const isValidUuid = (val?: string) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val || "");
+
       const { data, error: dbError } = await supabaseAdmin
         .from("media")
         .insert({
@@ -87,14 +90,14 @@ export async function POST(req: NextRequest) {
           url: publicUrl,
           mime_type: file.type,
           size_kb: Math.round(file.size / 1024),
-          uploaded_by: uploadedBy,
+          uploaded_by: isValidUuid(uploadedBy) ? uploadedBy : null,
         })
         .select()
         .single();
 
-      if (!dbError) {
+      if (!dbError && data) {
         mediaRecord = data;
-      } else {
+      } else if (dbError) {
         console.warn("Notice: Gagal mencatat media ke database log:", dbError.message);
       }
     } catch (dbErr) {

@@ -354,6 +354,52 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
               isActive: c.data?.isActive !== false
             }));
           if (dbLecturers.length > 0) setLecturers(dbLecturers);
+
+          const dbFacilities = dbCollections
+            .filter((c: any) => c.collection_type === "sarana")
+            .map((c: any) => ({
+              id: c.id,
+              name: c.data?.name || "Nama Fasilitas",
+              category: c.data?.category || "Masjid",
+              photoUrl: c.data?.photoUrl || "",
+              description: c.data?.description || "",
+              capacity: c.data?.capacity,
+              specs: c.data?.specs
+            }));
+          if (dbFacilities.length > 0) setFacilities(dbFacilities);
+        }
+
+        // Fetch Site Settings from site_content
+        const { data: settingsData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "site_settings")
+          .single();
+
+        if (settingsData?.value) {
+          setSettings((prev) => ({ ...prev, ...settingsData.value }));
+        }
+
+        // Fetch News / Warta
+        const { data: dbNews } = await supabase
+          .from("news")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (dbNews && dbNews.length > 0) {
+          setNews(
+            dbNews.map((n: any) => ({
+              id: n.id,
+              slug: n.slug,
+              title: n.judul,
+              excerpt: n.konten?.slice(0, 120) + "...",
+              content: n.konten,
+              category: n.tipe || "Berita",
+              author: "Humas Ma'had Aly",
+              date: n.tanggal || new Date(n.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+              imageUrl: n.gambar_url
+            }))
+          );
         }
 
         // Fetch Media Library
@@ -514,12 +560,48 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     };
     saveArticles([newArticle, ...articles]);
     addLog("Menerbitkan Artikel", data.title);
+
+    // Sync to Supabase Database
+    try {
+      supabase.from("articles").insert({
+        title: data.title,
+        slug: newArticle.slug,
+        excerpt: data.excerpt,
+        content: data.content,
+        author_name: data.author,
+        author_role: data.authorRole,
+        tags: data.tags || [],
+        status: "published",
+      }).then(({ error }) => {
+        if (error) console.warn("Supabase insert article notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
 
   const updateArticle = (id: string, updatedData: Partial<Article>) => {
+    const target = articles.find((a) => a.id === id);
     const updated = articles.map((a) => (a.id === id ? { ...a, ...updatedData } : a));
     saveArticles(updated);
     addLog("Memperbarui Artikel", updatedData.title || id);
+
+    if (target) {
+      try {
+        supabase.from("articles").update({
+          title: updatedData.title !== undefined ? updatedData.title : target.title,
+          excerpt: updatedData.excerpt !== undefined ? updatedData.excerpt : target.excerpt,
+          content: updatedData.content !== undefined ? updatedData.content : target.content,
+          author_name: updatedData.author !== undefined ? updatedData.author : target.author,
+          author_role: updatedData.authorRole !== undefined ? updatedData.authorRole : target.authorRole,
+          tags: updatedData.tags !== undefined ? updatedData.tags : target.tags,
+        }).eq("slug", target.slug).then(({ error }) => {
+          if (error) console.warn("Supabase update article notice:", error.message);
+        });
+      } catch (e) {
+        console.warn("DB notice:", e);
+      }
+    }
   };
 
   const deleteArticle = (id: string) => {
@@ -527,6 +609,16 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const filtered = articles.filter((a) => a.id !== id);
     saveArticles(filtered);
     addLog("Menghapus Artikel", target?.title || id);
+
+    if (target) {
+      try {
+        supabase.from("articles").delete().eq("slug", target.slug).then(({ error }) => {
+          if (error) console.warn("Supabase delete article notice:", error.message);
+        });
+      } catch (e) {
+        console.warn("DB notice:", e);
+      }
+    }
   };
 
   const incrementArticleViews = (slug: string) => {
@@ -550,12 +642,42 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     };
     saveCategories([...categories, newCat]);
     addLog("Menambah Kategori", data.name);
+
+    try {
+      supabase.from("categories").insert({
+        nama: data.name,
+        slug: newCat.slug,
+        deskripsi: data.description,
+        icon: data.iconName || "book",
+        urutan: categories.length + 1,
+        is_published: true
+      }).then(({ error }) => {
+        if (error) console.warn("Supabase category insert notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
 
   const updateCategory = (id: string, updatedData: Partial<CategoryInfo>) => {
+    const target = categories.find((c) => c.id === id);
     const updated = categories.map((c) => (c.id === id ? { ...c, ...updatedData } : c));
     saveCategories(updated);
     addLog("Memperbarui Kategori", updatedData.name || id);
+
+    if (target) {
+      try {
+        supabase.from("categories").update({
+          nama: updatedData.name !== undefined ? updatedData.name : target.name,
+          deskripsi: updatedData.description !== undefined ? updatedData.description : target.description,
+          icon: updatedData.iconName !== undefined ? updatedData.iconName : target.iconName
+        }).eq("slug", target.slug).then(({ error }) => {
+          if (error) console.warn("Supabase category update notice:", error.message);
+        });
+      } catch (e) {
+        console.warn("DB notice:", e);
+      }
+    }
   };
 
   const deleteCategory = (id: string) => {
@@ -563,6 +685,16 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const filtered = categories.filter((c) => c.id !== id);
     saveCategories(filtered);
     addLog("Menghapus Kategori", target?.name || id);
+
+    if (target) {
+      try {
+        supabase.from("categories").delete().eq("slug", target.slug).then(({ error }) => {
+          if (error) console.warn("Supabase category delete notice:", error.message);
+        });
+      } catch (e) {
+        console.warn("DB notice:", e);
+      }
+    }
   };
 
   // Thesis Actions
@@ -579,12 +711,59 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     };
     saveTheses([newThesis, ...theses]);
     addLog("Menambahkan Skripsi", data.title);
+
+    try {
+      supabase.from("theses").insert({
+        judul: data.title,
+        slug: newThesis.slug,
+        penulis: data.author,
+        nim: data.nim,
+        angkatan: data.angkatan,
+        tahun: data.year,
+        pembimbing_1: data.advisor1,
+        pembimbing_2: data.advisor2,
+        abstrak_id: data.abstractId,
+        abstrak_ar: data.abstractAr,
+        keyword: data.keywords || [],
+        pdf_url: data.downloadUrl,
+        pdf_size_mb: data.fileSize,
+        status: "published"
+      }).then(({ error }) => {
+        if (error) console.warn("Supabase thesis insert notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
 
   const updateThesis = (id: string, updatedData: Partial<Thesis>) => {
+    const target = theses.find((t) => t.id === id);
     const updated = theses.map((t) => (t.id === id ? { ...t, ...updatedData } : t));
     saveTheses(updated);
     addLog("Memperbarui Skripsi", updatedData.title || id);
+
+    if (target) {
+      try {
+        supabase.from("theses").update({
+          judul: updatedData.title !== undefined ? updatedData.title : target.title,
+          penulis: updatedData.author !== undefined ? updatedData.author : target.author,
+          nim: updatedData.nim !== undefined ? updatedData.nim : target.nim,
+          angkatan: updatedData.angkatan !== undefined ? updatedData.angkatan : target.angkatan,
+          tahun: updatedData.year !== undefined ? updatedData.year : target.year,
+          pembimbing_1: updatedData.advisor1 !== undefined ? updatedData.advisor1 : target.advisor1,
+          pembimbing_2: updatedData.advisor2 !== undefined ? updatedData.advisor2 : target.advisor2,
+          abstrak_id: updatedData.abstractId !== undefined ? updatedData.abstractId : target.abstractId,
+          abstrak_ar: updatedData.abstractAr !== undefined ? updatedData.abstractAr : target.abstractAr,
+          keyword: updatedData.keywords !== undefined ? updatedData.keywords : target.keywords,
+          pdf_url: updatedData.downloadUrl !== undefined ? updatedData.downloadUrl : target.downloadUrl,
+          pdf_size_mb: updatedData.fileSize !== undefined ? updatedData.fileSize : target.fileSize
+        }).eq("slug", target.slug).then(({ error }) => {
+          if (error) console.warn("Supabase thesis update notice:", error.message);
+        });
+      } catch (e) {
+        console.warn("DB notice:", e);
+      }
+    }
   };
 
   const deleteThesis = (id: string) => {
@@ -592,6 +771,16 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const filtered = theses.filter((t) => t.id !== id);
     saveTheses(filtered);
     addLog("Menghapus Skripsi", target?.title || id);
+
+    if (target) {
+      try {
+        supabase.from("theses").delete().eq("slug", target.slug).then(({ error }) => {
+          if (error) console.warn("Supabase thesis delete notice:", error.message);
+        });
+      } catch (e) {
+        console.warn("DB notice:", e);
+      }
+    }
   };
 
   // Submission Actions
@@ -640,12 +829,45 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     };
     saveNews([newItem, ...news]);
     addLog("Menerbitkan Berita", data.title);
+
+    try {
+      supabase.from("news").insert({
+        judul: data.title,
+        slug: newItem.slug,
+        konten: data.content,
+        tipe: data.category || "Berita",
+        gambar_url: data.imageUrl,
+        tanggal: data.date,
+        status: "published"
+      }).then(({ error }) => {
+        if (error) console.warn("Supabase news insert notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
 
   const updateNews = (id: string, updatedData: Partial<NewsItem>) => {
+    const target = news.find((n) => n.id === id);
     const updated = news.map((n) => (n.id === id ? { ...n, ...updatedData } : n));
     saveNews(updated);
     addLog("Memperbarui Berita", updatedData.title || id);
+
+    if (target) {
+      try {
+        supabase.from("news").update({
+          judul: updatedData.title !== undefined ? updatedData.title : target.title,
+          konten: updatedData.content !== undefined ? updatedData.content : target.content,
+          tipe: updatedData.category !== undefined ? updatedData.category : target.category,
+          gambar_url: updatedData.imageUrl !== undefined ? updatedData.imageUrl : target.imageUrl,
+          tanggal: updatedData.date !== undefined ? updatedData.date : target.date
+        }).eq("slug", target.slug).then(({ error }) => {
+          if (error) console.warn("Supabase news update notice:", error.message);
+        });
+      } catch (e) {
+        console.warn("DB notice:", e);
+      }
+    }
   };
 
   const deleteNews = (id: string) => {
@@ -653,6 +875,16 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const filtered = news.filter((n) => n.id !== id);
     saveNews(filtered);
     addLog("Menghapus Berita", target?.title || id);
+
+    if (target) {
+      try {
+        supabase.from("news").delete().eq("slug", target.slug).then(({ error }) => {
+          if (error) console.warn("Supabase news delete notice:", error.message);
+        });
+      } catch (e) {
+        console.warn("DB notice:", e);
+      }
+    }
   };
 
   // User Actions
@@ -714,16 +946,56 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const newLec: Lecturer = { ...data, id: "lec-" + Date.now().toString() };
     saveLecturers([...lecturers, newLec]);
     addLog("Menambah Dosen", data.name);
+
+    try {
+      supabase.from("collections").insert({
+        collection_type: "masyayikh",
+        data: newLec,
+        order_index: newLec.order || lecturers.length + 1,
+        is_published: true
+      }).then(({ error }) => {
+        if (error) console.warn("Supabase lecturer insert notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
+
   const updateLecturer = (id: string, updatedData: Partial<Lecturer>) => {
+    const target = lecturers.find((l) => l.id === id);
     const updated = lecturers.map((l) => (l.id === id ? { ...l, ...updatedData } : l));
     saveLecturers(updated);
     addLog("Memperbarui Dosen", updatedData.name || id);
+
+    if (target) {
+      const merged = { ...target, ...updatedData };
+      try {
+        supabase.from("collections").upsert({
+          collection_type: "masyayikh",
+          data: merged,
+          order_index: merged.order || 1,
+          is_published: merged.isActive !== false
+        }).then(({ error }) => {
+          if (error) console.warn("Supabase lecturer update notice:", error.message);
+        });
+      } catch (e) {
+        console.warn("DB notice:", e);
+      }
+    }
   };
+
   const deleteLecturer = (id: string) => {
     const target = lecturers.find((l) => l.id === id);
     saveLecturers(lecturers.filter((l) => l.id !== id));
     addLog("Menghapus Dosen", target?.name || id);
+
+    try {
+      supabase.from("collections").delete().eq("id", id).then(({ error }) => {
+        if (error) console.warn("Supabase lecturer delete notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
 
   // Facility Actions
@@ -731,16 +1003,56 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const newFac: Facility = { ...data, id: "fac-" + Date.now().toString() };
     saveFacilities([...facilities, newFac]);
     addLog("Menambah Sarana", data.name);
+
+    try {
+      supabase.from("collections").insert({
+        collection_type: "sarana",
+        data: newFac,
+        order_index: facilities.length + 1,
+        is_published: true
+      }).then(({ error }) => {
+        if (error) console.warn("Supabase facility insert notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
+
   const updateFacility = (id: string, updatedData: Partial<Facility>) => {
+    const target = facilities.find((f) => f.id === id);
     const updated = facilities.map((f) => (f.id === id ? { ...f, ...updatedData } : f));
     saveFacilities(updated);
     addLog("Memperbarui Sarana", updatedData.name || id);
+
+    if (target) {
+      const merged = { ...target, ...updatedData };
+      try {
+        supabase.from("collections").upsert({
+          collection_type: "sarana",
+          data: merged,
+          order_index: 1,
+          is_published: true
+        }).then(({ error }) => {
+          if (error) console.warn("Supabase facility update notice:", error.message);
+        });
+      } catch (e) {
+        console.warn("DB notice:", e);
+      }
+    }
   };
+
   const deleteFacility = (id: string) => {
     const target = facilities.find((f) => f.id === id);
     saveFacilities(facilities.filter((f) => f.id !== id));
     addLog("Menghapus Sarana", target?.name || id);
+
+    try {
+      supabase.from("collections").delete().eq("id", id).then(({ error }) => {
+        if (error) console.warn("Supabase facility delete notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
 
   // Accreditation Actions
@@ -921,6 +1233,20 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const merged = { ...footerSettings, ...updated };
     saveFooterSettings(merged);
     addLog("Memperbarui Pengaturan Footer", "Footer Manager");
+
+    try {
+      supabase.from("site_content").upsert({
+        key: "footer",
+        group_name: "footer",
+        label: "Footer Settings",
+        value: merged,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "key" }).then(({ error }) => {
+        if (error) console.warn("Supabase footer save notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
 
   const addFooterNav = (link: Omit<FooterNavLink, "id">) => {
@@ -964,6 +1290,18 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     saveFooterNav(INITIAL_FOOTER_NAV);
     saveFooterFocus(INITIAL_FOOTER_FOCUS);
     addLog("Reset Footer ke Default", "Footer Manager");
+
+    try {
+      supabase.from("site_content").upsert({
+        key: "footer",
+        group_name: "footer",
+        label: "Footer Settings",
+        value: INITIAL_FOOTER_SETTINGS,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "key" });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
 
   // Site Settings Action
@@ -971,6 +1309,20 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const updated = { ...settings, ...newSettings };
     saveSettings(updated);
     addLog("Memperbarui Pengaturan Website", "Identitas & Konfigurasi");
+
+    try {
+      supabase.from("site_content").upsert({
+        key: "site_settings",
+        group_name: "settings",
+        label: "Site Settings",
+        value: updated,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "key" }).then(({ error }) => {
+        if (error) console.warn("Supabase site_settings save notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
 
   // Export / Import Backup

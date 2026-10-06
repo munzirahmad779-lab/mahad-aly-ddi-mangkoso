@@ -23,6 +23,7 @@ interface ImageUploaderProps {
   maxSizeMB?: number;
   className?: string;
   showManualUrl?: boolean;
+  onUploadComplete?: (mediaItem: any) => void;
 }
 
 export default function ImageUploader({
@@ -35,6 +36,7 @@ export default function ImageUploader({
   maxSizeMB = 5,
   className = "",
   showManualUrl = true,
+  onUploadComplete,
 }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -102,6 +104,19 @@ export default function ImageUploader({
 
       setUploadProgress(100);
       onChange(data.url);
+
+      const newMediaItem = {
+        id: data.mediaRecord?.id || `med-${Date.now()}`,
+        name: data.filename || file.name,
+        url: data.url,
+        size: data.size_kb > 1024 ? `${(data.size_kb / 1024).toFixed(1)} MB` : `${data.size_kb} KB`,
+        type: (data.mime_type || file.type).startsWith("image/") ? "image" : ((data.mime_type || file.type).includes("pdf") ? "pdf" : "document"),
+        uploadedAt: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }),
+      };
+
+      if (onUploadComplete) {
+        onUploadComplete(newMediaItem);
+      }
     } catch (err: any) {
       console.error("Upload error:", err);
       setErrorMessage(err.message || "Gagal mengupload file ke Cloudflare R2.");

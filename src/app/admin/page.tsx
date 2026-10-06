@@ -1071,8 +1071,9 @@ export default function AdminPage() {
             {/* Sub: Sejarah */}
             {(activeSubMenu === "overview" || activeSubMenu === "sejarah") && (
               <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-xs">
-                <h3 className="font-serif font-bold text-lg text-slate-900 pb-2 border-b">
-                  Edit Sejarah Pendirian Lembaga (2013)
+                <h3 className="font-serif font-bold text-lg text-slate-900 pb-2 border-b flex items-center gap-2">
+                  <span>🏛️</span>
+                  <span>Sejarah Pendirian Lembaga</span>
                 </h3>
                 <form onSubmit={handleSaveSettings} className="space-y-4">
                   <div>
@@ -3387,9 +3388,15 @@ export default function AdminPage() {
                   value={uploadedMediaUrl}
                   onChange={(url) => {
                     setUploadedMediaUrl(url);
-                    if (url) {
-                      alert("✅ File berhasil diunggah ke Media Library!");
-                    }
+                  }}
+                  onUploadComplete={(newMedia) => {
+                    addMedia({
+                      name: newMedia.name,
+                      url: newMedia.url,
+                      size: newMedia.size,
+                      type: newMedia.type,
+                    });
+                    alert("✅ Berkas berhasil diunggah ke Cloudflare R2 dan tercatat di Media Library!");
                   }}
                   folder={mediaUploadFolder}
                   label={`Unggah File Baru ke /${mediaUploadFolder}`}

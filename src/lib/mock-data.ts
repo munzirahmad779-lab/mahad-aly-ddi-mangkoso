@@ -591,7 +591,7 @@ export const INITIAL_PAGE_SEO: PageSeoItem[] = [
   {
     pageKey: "profil",
     pageName: "Profil Lembaga",
-    title: "Profil & Sejarah Ma'had Aly DDI Mangkoso — Sejak 2013",
+    title: "Profil & Sejarah Ma'had Aly DDI Mangkoso — Kaderisasi Ulama",
     description: "Sejarah pendirian, visi misi, profil masyaikh dewan dosen, struktur organisasi, dan sertifikat akreditasi resmi Kemenag RI.",
     keywords: "profil mahad aly, sejarah ddi mangkoso, ambo dalle, faried wadjedy",
     ogImage: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1200&q=80"

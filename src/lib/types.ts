@@ -69,6 +69,7 @@ export interface NewsItem {
   content: string;
   category: "Berita" | "Pengumuman" | "Agenda";
   author: string;
+  imageUrl?: string;
 }
 
 export interface AdminUser {
