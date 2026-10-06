@@ -71,6 +71,67 @@ export interface NewsItem {
   author: string;
 }
 
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: "Super Admin" | "Editor" | "Penulis";
+  status: "Aktif" | "Nonaktif";
+  lastLogin: string;
+}
+
+export interface ActivityLog {
+  id: string;
+  user: string;
+  action: string;
+  target: string;
+  timestamp: string;
+}
+
+export interface MediaItem {
+  id: string;
+  name: string;
+  url: string;
+  size: string;
+  type: "image" | "pdf" | "document";
+  uploadedAt: string;
+}
+
+export interface TestimonialItem {
+  id: string;
+  name: string;
+  role: string;
+  text: string;
+}
+
+export interface HeroSectionData {
+  badge: string;
+  title: string;
+  subtitle: string;
+  arabicMotto: string;
+  ctaPrimaryText: string;
+  ctaPrimaryLink: string;
+  ctaSecondaryText: string;
+  ctaSecondaryLink: string;
+}
+
+export interface QuoteSectionData {
+  arabicQuote: string;
+  source: string;
+  translation: string;
+  context: string;
+}
+
+export interface SeoSettings {
+  siteTitle: string;
+  metaDescription: string;
+  keywords: string;
+  ogImage: string;
+  googleAnalyticsId: string;
+  searchConsoleCode: string;
+  enableSitemap: boolean;
+}
+
 export interface SiteSettings {
   institutionName: string;
   takhassus: string;
@@ -83,4 +144,8 @@ export interface SiteSettings {
   emailSubmission: string;
   visi: string;
   misi: string[];
+  hero?: HeroSectionData;
+  quote?: QuoteSectionData;
+  seo?: SeoSettings;
+  maintenanceMode?: boolean;
 }

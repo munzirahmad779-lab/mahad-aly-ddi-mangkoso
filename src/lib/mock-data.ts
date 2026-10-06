@@ -1,4 +1,44 @@
-import { Article, CategoryInfo, Thesis, NewsItem, SiteSettings } from "./types";
+import {
+  Article,
+  CategoryInfo,
+  Thesis,
+  NewsItem,
+  SiteSettings,
+  AdminUser,
+  ActivityLog,
+  MediaItem,
+  HeroSectionData,
+  QuoteSectionData,
+  SeoSettings
+} from "./types";
+
+export const INITIAL_HERO: HeroSectionData = {
+  badge: "Pusat Kaderisasi Fuqaha Kontemporer",
+  title: "Meneguhkan Khazanah Turats, Menjawab Dinamika Fiqh Kontemporer",
+  subtitle: "Pendidikan Tinggi Kader Ulama Takhassus Fiqh wa Usuluhu — Berakar kuat pada sanad keilmuan klasik Anregurutta, progresif merespons tantangan zaman.",
+  arabicMotto: "تَفَقُّهٌ فِي الدِّيْنِ · بَصِيْرَةٌ فِي الزَّمَانِ · خِدْمَةٌ لِلْأُمَّةِ",
+  ctaPrimaryText: "Jelajahi Kajian Fiqh",
+  ctaPrimaryLink: "/artikel",
+  ctaSecondaryText: "Repositori Skripsi",
+  ctaSecondaryLink: "/skripsi"
+};
+
+export const INITIAL_QUOTE: QuoteSectionData = {
+  arabicQuote: "مَنْ يُرِدِ اللَّهُ بِهِ خَيْرًا يُفَقِّهْهُ فِي الدِّينِ",
+  source: "HR. Al-Bukhari no. 71 & Muslim no. 1037",
+  translation: "Barangsiapa yang Allah kehendaki kebaikan baginya, niscaya Allah akan pahamkan dia secara mendalam dalam urusan agama.",
+  context: "Landasan Visi Pendidikan Kader Ulama Ma'had Aly DDI Mangkoso"
+};
+
+export const INITIAL_SEO: SeoSettings = {
+  siteTitle: "Ma'had Aly DDI Mangkoso — Takhassus Fiqh wa Usuluhu",
+  metaDescription: "Portal resmi Ma'had Aly Pendidikan Tinggi Kader Ulama DDI Abdurrahman Ambo Dalle Mangkoso, Barru. Pusat kajian Fiqh Mu'asarah, turats, dan riset hukum Islam.",
+  keywords: "mahad aly ddi mangkoso, fiqh muasarah, fiqh kontemporer, ushul fikih, anregurutta ambo dalle, barru sulawesi selatan",
+  ogImage: "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=1200&q=80",
+  googleAnalyticsId: "G-MAHADALY2026",
+  searchConsoleCode: "google-site-verification-mangkoso-example",
+  enableSitemap: true
+};
 
 export const INITIAL_SETTINGS: SiteSettings = {
   institutionName: "Ma'had Aly Pendidikan Tinggi Kader Ulama DDI Abdurrahman Ambo Dalle, Mangkoso",
@@ -16,8 +56,97 @@ export const INITIAL_SETTINGS: SiteSettings = {
     "Mengembangkan riset Fiqh Mu'asarah yang responsif terhadap isu teknologi, ekonomi, medis, dan bioetika.",
     "Menanamkan integritas moral, keikhlasan, dan wawasan moderasi beragama (wasathiyyah Islamiyah).",
     "Membekali mahasantri dengan kecakapan metodologi istinbath hukum dan Bahtsul Masail kontemporer."
-  ]
+  ],
+  hero: INITIAL_HERO,
+  quote: INITIAL_QUOTE,
+  seo: INITIAL_SEO,
+  maintenanceMode: false
 };
+
+export const INITIAL_ADMIN_USERS: AdminUser[] = [
+  {
+    id: "usr-1",
+    name: "Ahmad Yusuf Mubarak",
+    email: "munzirahmad779@gmail.com",
+    role: "Super Admin",
+    status: "Aktif",
+    lastLogin: "Hari ini, 20:45 WITA"
+  },
+  {
+    id: "usr-2",
+    name: "Redaksi Bahtsul Masail",
+    email: "bahtsulmasail@ddimangkoso.ac.id",
+    role: "Editor",
+    status: "Aktif",
+    lastLogin: "Kemarin, 14:12 WITA"
+  },
+  {
+    id: "usr-3",
+    name: "Biro Akademik & Mahasantri",
+    email: "akademik@ddimangkoso.ac.id",
+    role: "Penulis",
+    status: "Aktif",
+    lastLogin: "3 hari lalu"
+  }
+];
+
+export const INITIAL_ACTIVITY_LOGS: ActivityLog[] = [
+  {
+    id: "log-1",
+    user: "Super Admin",
+    action: "Menerbitkan Artikel",
+    target: "Tinjauan Fiqh Mu'asarah atas Smart Contract dan Aset Kripto",
+    timestamp: "10 menit lalu"
+  },
+  {
+    id: "log-2",
+    user: "Super Admin",
+    action: "Menambahkan Skripsi",
+    target: "Rekonstruksi Ijtihad Jama'i dalam Fatwa Fintech",
+    timestamp: "1 jam lalu"
+  },
+  {
+    id: "log-3",
+    user: "Editor",
+    action: "Menyetujui Naskah",
+    target: "Kajian Fiqh Medis Bayi Tabung",
+    timestamp: "5 jam lalu"
+  },
+  {
+    id: "log-4",
+    user: "Super Admin",
+    action: "Memperbarui Pengaturan",
+    target: "Visi Misi & Kontak Lembaga",
+    timestamp: "Kemarin"
+  }
+];
+
+export const INITIAL_MEDIA: MediaItem[] = [
+  {
+    id: "med-1",
+    name: "logo-mahad-aly-vector.png",
+    url: "/images/logo-ddi.png",
+    size: "245 KB",
+    type: "image",
+    uploadedAt: "06 Okt 2026"
+  },
+  {
+    id: "med-2",
+    name: "gedung-kampus-mangkoso.jpg",
+    url: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=800&q=80",
+    size: "1.2 MB",
+    type: "image",
+    uploadedAt: "04 Okt 2026"
+  },
+  {
+    id: "med-3",
+    name: "pedoman-penulisan-skripsi-2026.pdf",
+    url: "https://drive.google.com/file/d/pedoman-skripsi-contoh",
+    size: "2.8 MB",
+    type: "pdf",
+    uploadedAt: "01 Okt 2026"
+  }
+];
 
 export const INITIAL_CATEGORIES: CategoryInfo[] = [
   {
