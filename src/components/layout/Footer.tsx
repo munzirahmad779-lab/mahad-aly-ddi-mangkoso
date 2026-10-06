@@ -119,6 +119,16 @@ export default function Footer() {
               <p>Email: <span className="text-white font-medium">mahadaly@ddimangkoso.ac.id</span></p>
               <p>WhatsApp: <span className="text-white font-medium">+62 812-3456-7890</span></p>
             </div>
+            
+            {/* Tautan Khusus Admin */}
+            <div className="pt-4 mt-4 border-t border-emerald-900">
+              <Link
+                href="/admin"
+                className="text-[11px] text-mahad-gold hover:underline flex items-center gap-1 opacity-75 hover:opacity-100 transition"
+              >
+                <span>🔒 Masuk Panel Redaksi (Admin)</span>
+              </Link>
+            </div>
           </div>
 
         </div>

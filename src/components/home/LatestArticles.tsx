@@ -2,18 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Article } from "@/lib/types";
+import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
 
-interface LatestArticlesProps {
-  articles: Article[];
-}
-
-export default function LatestArticles({ articles }: LatestArticlesProps) {
+export default function LatestArticles() {
+  const { articles } = useArticles();
   const [selectedCategory, setSelectedCategory] = useState<string>("semua");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Filter artikel berdasarkan tombol kategori dan pencarian nama/judul
   const filteredArticles = articles.filter((art) => {
     const matchesCategory =
       selectedCategory === "semua" || art.category === selectedCategory;
@@ -39,7 +35,7 @@ export default function LatestArticles({ articles }: LatestArticlesProps) {
             </h2>
             <div className="h-1.5 w-20 bg-mahad-gold mt-4 mb-2 rounded-full"></div>
             <p className="text-slate-600 text-sm sm:text-base">
-              Kumpulan tulisan akademik, telaah usuliyah, dan esai sivitas akademika.
+              Kumpulan tulisan akademik, telaah usuliyah, dan esai sivitas akademika ({articles.length} artikel terbit).
             </p>
           </div>
 

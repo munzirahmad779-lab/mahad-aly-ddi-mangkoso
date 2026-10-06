@@ -13,7 +13,7 @@ export default function Hero() {
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
         
-        {/* Logo Ma'had Murni (Tanpa Lingkaran Putih) */}
+        {/* Logo Ma'had Murni (Tanpa Lingkaran Putih & Tanpa Teks Marhalah Ula) */}
         <div className="inline-block relative mb-6">
           <div className="w-28 h-28 sm:w-36 sm:h-36 mx-auto relative drop-shadow-2xl">
             <Image
@@ -25,9 +25,6 @@ export default function Hero() {
               priority
             />
           </div>
-          <span className="inline-block mt-3 bg-mahad-gold text-mahad-green-dark text-xs font-bold tracking-widest uppercase px-4 py-1 rounded-full shadow">
-            Marhalah Ula (M.1)
-          </span>
         </div>
 
         {/* Kaligrafi Basmalah */}

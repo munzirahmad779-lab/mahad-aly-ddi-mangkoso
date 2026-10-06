@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useArticles } from "@/context/ArticleContext";
 
 export default function KirimTulisanPage() {
+  const { addSubmission } = useArticles();
+
   const [formData, setFormData] = useState({
     nama: "",
-    kategori: "",
+    kategori: "Usul Fikih",
     afiliasi: "",
     judul: "",
     abstrak: "",
@@ -16,7 +19,7 @@ export default function KirimTulisanPage() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.nama || !formData.kategori || !formData.judul || !formData.abstrak) {
@@ -33,18 +36,27 @@ export default function KirimTulisanPage() {
 
     setStatus("submitting");
 
-    // Simulasi pengiriman front-end sebelum integrasi database Supabase
+    // 1. Simpan ke sistem Admin Redaksi
+    addSubmission({
+      nama: formData.nama,
+      kategori: formData.kategori,
+      afiliasi: formData.afiliasi,
+      judul: formData.judul,
+      abstrak: formData.abstrak,
+    });
+
+    // 2. Berikan delay singkat & konfirmasi sukses
     setTimeout(() => {
       setStatus("success");
       setFormData({
         nama: "",
-        kategori: "",
+        kategori: "Usul Fikih",
         afiliasi: "",
         judul: "",
         abstrak: "",
         orisinalitas: false,
       });
-    }, 1200);
+    }, 1000);
   };
 
   return (
@@ -81,7 +93,7 @@ export default function KirimTulisanPage() {
                 Alhamdulillah! Naskah Berhasil Terkirim
               </h3>
               <p className="text-slate-600 text-sm max-w-md mx-auto leading-relaxed">
-                Tulisan Anda telah tercatat dan akan ditelaah oleh Dewan Redaksi Mimbar Kajian Ma&apos;had Aly DDI Mangkoso.
+                Tulisan Anda telah tercatat langsung di sistem Redaksi Ma&apos;had Aly DDI Mangkoso dan akan segera ditelaah untuk diterbitkan.
               </p>
               <button
                 type="button"
@@ -127,10 +139,9 @@ export default function KirimTulisanPage() {
                     onChange={(e) => setFormData({ ...formData, kategori: e.target.value })}
                     className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
                   >
-                    <option value="">-- Pilih Kategori --</option>
-                    <option value="karya-anregurutta">Karya Anregurutta</option>
-                    <option value="usul-fikih">Usul Fikih</option>
-                    <option value="tafsir-hadis">Tafsir &amp; Hadis</option>
+                    <option value="Karya Anregurutta">Karya Anregurutta</option>
+                    <option value="Usul Fikih">Usul Fikih</option>
+                    <option value="Tafsir & Hadis">Tafsir &amp; Hadis</option>
                   </select>
                 </div>
 
