@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { useArticles } from "@/context/ArticleContext";
+import ImageUploader from "@/components/common/ImageUploader";
 import {
   Article,
   CategoryInfo,
@@ -444,6 +445,10 @@ export default function AdminPage() {
     size: "1.5 MB",
     type: "image" as "image" | "pdf" | "document"
   });
+  const [mediaSearch, setMediaSearch] = useState("");
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<"all" | "image" | "pdf">("all");
+  const [mediaUploadFolder, setMediaUploadFolder] = useState<"logo" | "masyayikh" | "sarana" | "artikel" | "berita" | "galeri" | "skripsi-cover" | "umum">("umum");
+  const [uploadedMediaUrl, setUploadedMediaUrl] = useState("");
 
   // 16. Settings Form State
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(settings);
@@ -529,6 +534,11 @@ export default function AdminPage() {
     e.preventDefault();
     if (!thesisForm.title || !thesisForm.author || !thesisForm.downloadUrl) {
       alert("Mohon lengkapi judul, penulis, dan link Google Drive!");
+      return;
+    }
+
+    if (!thesisForm.downloadUrl.startsWith("http://") && !thesisForm.downloadUrl.startsWith("https://")) {
+      alert("Tautan Google Drive harus diawali dengan https:// atau http://");
       return;
     }
 
@@ -1179,13 +1189,12 @@ export default function AdminPage() {
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">URL Foto Dosen</label>
-                      <input
-                        type="url"
+                      <ImageUploader
                         value={lecturerForm.photoUrl}
-                        onChange={(e) => setLecturerForm({ ...lecturerForm, photoUrl: e.target.value })}
-                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
-                        placeholder="https://..."
+                        onChange={(url) => setLecturerForm({ ...lecturerForm, photoUrl: url })}
+                        folder="masyayikh"
+                        label="Foto Masyayikh / Dosen"
+                        helperText="Foto formal/portrait ustadz/dosen pengampu (Maks. 5 MB)"
                       />
                     </div>
                     <div>
@@ -1300,12 +1309,12 @@ export default function AdminPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">URL Foto Sarana</label>
-                      <input
-                        type="url"
+                      <ImageUploader
                         value={facilityForm.photoUrl}
-                        onChange={(e) => setFacilityForm({ ...facilityForm, photoUrl: e.target.value })}
-                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                        onChange={(url) => setFacilityForm({ ...facilityForm, photoUrl: url })}
+                        folder="sarana"
+                        label="Foto Sarana / Prasarana"
+                        helperText="Gedung, masjid, asrama, lab atau perpustakaan (Maks. 5 MB)"
                       />
                     </div>
                     <div>
@@ -2202,16 +2211,39 @@ export default function AdminPage() {
                         />
                       </div>
                     </div>
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">Link Google Drive PDF *</label>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block font-bold text-slate-700">Link Google Drive PDF *</label>
+                        {thesisForm.downloadUrl && (
+                          <button
+                            type="button"
+                            onClick={() => window.open(thesisForm.downloadUrl, "_blank", "noopener,noreferrer")}
+                            className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 underline flex items-center gap-1"
+                          >
+                            <span>🔗</span>
+                            <span>Test Buka Link</span>
+                          </button>
+                        )}
+                      </div>
                       <input
                         type="url"
                         required
                         value={thesisForm.downloadUrl}
                         onChange={(e) => setThesisForm({ ...thesisForm, downloadUrl: e.target.value })}
-                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
-                        placeholder="https://drive.google.com/file/d/..."
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-mono"
+                        placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
                       />
+                      <div className="p-2.5 bg-emerald-50/60 border border-emerald-200 rounded-lg text-[11px] text-emerald-900 leading-relaxed">
+                        <p className="font-semibold flex items-center gap-1">
+                          <span>💡</span>
+                          <span>Petunjuk Berkas Google Drive:</span>
+                        </p>
+                        <ul className="list-disc list-inside mt-1 space-y-0.5 text-emerald-800">
+                          <li>Buka file di Google Drive &rarr; Klik <strong>Bagikan (Share)</strong>.</li>
+                          <li>Ubah akses menjadi: <strong>"Siapa saja yang memiliki link (Anyone with the link)"</strong> sebagai <strong>Viewer</strong>.</li>
+                          <li>Ukuran file disarankan <strong>&lt; 10 MB</strong> agar cepat diunduh mahasantri.</li>
+                        </ul>
+                      </div>
                     </div>
                     <div>
                       <label className="block font-bold text-slate-700 mb-1">Abstrak Indonesia</label>
@@ -2851,14 +2883,12 @@ export default function AdminPage() {
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">URL Foto Sampul *</label>
-                      <input
-                        type="url"
-                        required
+                      <ImageUploader
                         value={galleryForm.coverUrl}
-                        onChange={(e) => setGalleryForm({ ...galleryForm, coverUrl: e.target.value })}
-                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
-                        placeholder="https://images.unsplash.com/..."
+                        onChange={(url) => setGalleryForm({ ...galleryForm, coverUrl: url })}
+                        folder="galeri"
+                        label="Foto Sampul Album *"
+                        helperText="Upload foto resolusi tinggi untuk sampul album galeri"
                       />
                     </div>
                     <div>
@@ -3317,87 +3347,185 @@ export default function AdminPage() {
         )}
 
         {/* ══════════════════════════════════════════════════════════════
-            13. MEDIA LIBRARY
+            13. MEDIA LIBRARY (SUPABASE STORAGE & DATABASE)
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "media" && (
-          <div className="space-y-6 text-xs">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <h3 className="font-serif font-bold text-lg text-slate-900 pb-2 border-b">
-                Unggah Berkas ke Media Library
-              </h3>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!mediaForm.name || !mediaForm.url) return;
-                  if (!validatePdfSize(mediaForm.size)) return;
-                  addMedia(mediaForm);
-                  alert("Berkas berhasil disimpan ke Library!");
-                  setMediaForm({ name: "", url: "", size: "1.5 MB", type: "image" });
-                }}
-                className="grid grid-cols-1 sm:grid-cols-12 gap-3"
-              >
-                <div className="sm:col-span-4">
-                  <label className="block font-bold text-slate-700 mb-1">Nama Berkas *</label>
-                  <input
-                    type="text"
-                    required
-                    value={mediaForm.name}
-                    onChange={(e) => setMediaForm({ ...mediaForm, name: e.target.value })}
-                    className="w-full p-2 bg-slate-50 border rounded-lg"
-                    placeholder="foto-gedung.jpg"
-                  />
+          <div className="space-y-6 text-xs font-medium">
+            {/* Upload Box */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-slate-900 flex items-center gap-2">
+                    <span>🖼️</span>
+                    <span>Media Library &amp; Cloud Storage</span>
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-0.5">
+                    Unggah gambar, logo, foto masyayikh, atau dokumen langsung ke Supabase Storage (Bucket: <code className="text-emerald-700 font-mono font-bold">media</code>).
+                  </p>
                 </div>
-                <div className="sm:col-span-5">
-                  <label className="block font-bold text-slate-700 mb-1">Tautan / URL Berkas *</label>
-                  <input
-                    type="text"
-                    required
-                    value={mediaForm.url}
-                    onChange={(e) => setMediaForm({ ...mediaForm, url: e.target.value })}
-                    className="w-full p-2 bg-slate-50 border rounded-lg"
-                    placeholder="https://..."
-                  />
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-500 text-[11px]">Folder Target:</span>
+                  <select
+                    value={mediaUploadFolder}
+                    onChange={(e) => setMediaUploadFolder(e.target.value as any)}
+                    className="p-1.5 bg-slate-50 border rounded-lg text-xs font-bold text-emerald-800 focus:ring-emerald-500"
+                  >
+                    <option value="umum">📁 /umum</option>
+                    <option value="logo">📁 /logo</option>
+                    <option value="masyayikh">📁 /masyayikh</option>
+                    <option value="sarana">📁 /sarana</option>
+                    <option value="artikel">📁 /artikel</option>
+                    <option value="berita">📁 /berita</option>
+                    <option value="galeri">📁 /galeri</option>
+                    <option value="skripsi-cover">📁 /skripsi-cover</option>
+                  </select>
                 </div>
-                <div className="sm:col-span-3 flex items-end">
-                  <button type="submit" className="w-full py-2 bg-emerald-800 text-white font-bold rounded-lg shadow">
-                    Simpan ke Library
-                  </button>
-                </div>
-              </form>
+              </div>
+
+              <div className="max-w-2xl mx-auto py-2">
+                <ImageUploader
+                  value={uploadedMediaUrl}
+                  onChange={(url) => {
+                    setUploadedMediaUrl(url);
+                    if (url) {
+                      alert("✅ File berhasil diunggah ke Media Library!");
+                    }
+                  }}
+                  folder={mediaUploadFolder}
+                  label={`Unggah File Baru ke /${mediaUploadFolder}`}
+                  helperText="Format: JPG, PNG, WebP, SVG (Maks. 5 MB) atau PDF (Maks. 10 MB)"
+                  maxSizeMB={10}
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {media.map((med) => (
-                <div key={med.id} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-xs">
-                  <div className="h-28 bg-slate-100 rounded-xl flex items-center justify-center text-3xl border">
-                    {med.type === "image" ? "🖼️" : "📄"}
-                  </div>
-                  <h4 className="font-bold text-slate-900 truncate" title={med.name}>{med.name}</h4>
-                  <p className="text-[11px] text-slate-400">{med.size} &bull; {med.uploadedAt}</p>
-                  <div className="flex gap-2 pt-2 border-t">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(med.url);
-                        alert("URL berhasil disalin ke clipboard!");
-                      }}
-                      className="flex-1 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded text-[11px]"
-                    >
-                      Salin URL
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (confirm(`Hapus media "${med.name}"?`)) deleteMedia(med.id);
-                      }}
-                      className="px-2.5 py-1 bg-red-100 text-red-700 font-bold rounded text-[11px]"
-                    >
-                      Hapus
-                    </button>
-                  </div>
-                </div>
-              ))}
+            {/* Filter & Search Toolbar */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              {/* Type Filter Buttons */}
+              <div className="flex items-center gap-1.5">
+                {[
+                  { id: "all", label: `Semua (${media.length})` },
+                  { id: "image", label: `🖼️ Gambar (${media.filter(m => m.type === "image").length})` },
+                  { id: "pdf", label: `📄 PDF / Berkas (${media.filter(m => m.type !== "image").length})` }
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setMediaTypeFilter(f.id as any)}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition text-xs ${
+                      mediaTypeFilter === f.id
+                        ? "bg-emerald-800 text-white shadow"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search Input */}
+              <div className="relative w-full sm:w-64">
+                <input
+                  type="text"
+                  value={mediaSearch}
+                  onChange={(e) => setMediaSearch(e.target.value)}
+                  placeholder="Cari nama berkas..."
+                  className="w-full text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+                <span className="absolute left-2.5 top-2.5 text-slate-400">🔍</span>
+              </div>
             </div>
+
+            {/* Media Grid Cards */}
+            {(() => {
+              const filteredMedia = media.filter((med) => {
+                const matchType =
+                  mediaTypeFilter === "all" ||
+                  (mediaTypeFilter === "image" && med.type === "image") ||
+                  (mediaTypeFilter === "pdf" && med.type !== "image");
+                const matchSearch =
+                  !mediaSearch ||
+                  med.name.toLowerCase().includes(mediaSearch.toLowerCase()) ||
+                  med.url.toLowerCase().includes(mediaSearch.toLowerCase());
+                return matchType && matchSearch;
+              });
+
+              if (filteredMedia.length === 0) {
+                return (
+                  <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 shadow-sm text-slate-400">
+                    <p className="text-3xl mb-2">📁</p>
+                    <p className="font-bold text-slate-700">Tidak ada berkas media yang cocok.</p>
+                    <p className="text-xs text-slate-400 mt-1">Gunakan form di atas untuk mengunggah file baru.</p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {filteredMedia.map((med) => (
+                    <div
+                      key={med.id}
+                      className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5 flex flex-col justify-between group hover:border-emerald-300 transition-all"
+                    >
+                      <div>
+                        <div className="h-36 bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border relative group-hover:shadow-inner">
+                          {med.type === "image" ? (
+                            <img
+                              src={med.url}
+                              alt={med.name}
+                              className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <div className="text-4xl text-emerald-700">📄</div>
+                          )}
+                          <a
+                            href={med.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white text-[10px] px-2 py-0.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            Buka ↗
+                          </a>
+                        </div>
+                        <h4 className="font-bold text-slate-900 mt-2 truncate text-xs" title={med.name}>
+                          {med.name}
+                        </h4>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          {med.size} &bull; {med.uploadedAt}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 pt-2 border-t">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(med.url);
+                            alert(`URL berkas disalin ke clipboard:\n${med.url}`);
+                          }}
+                          className="flex-1 py-1.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 font-bold rounded-lg text-[11px] transition flex items-center justify-center gap-1"
+                        >
+                          <span>📋</span>
+                          <span>Salin URL</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(`Hapus media "${med.name}" dari Library?`)) deleteMedia(med.id);
+                          }}
+                          className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-lg text-[11px] transition"
+                          title="Hapus Media"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -3545,13 +3673,12 @@ export default function AdminPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Logo URL / Path Gambar *</label>
-                    <input
-                      type="text"
+                    <ImageUploader
                       value={footerForm.logoUrl}
-                      onChange={(e) => setFooterForm({ ...footerForm, logoUrl: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 border rounded-lg font-mono text-xs"
-                      placeholder="/image_067524.png"
+                      onChange={(url) => setFooterForm({ ...footerForm, logoUrl: url })}
+                      folder="logo"
+                      label="Logo Lembaga di Footer"
+                      helperText="Format PNG transparan atau SVG disarankan (Maks. 5 MB)"
                     />
                     <div className="flex gap-2 mt-1.5 text-[11px]">
                       <button
@@ -3559,7 +3686,7 @@ export default function AdminPage() {
                         onClick={() => setFooterForm({ ...footerForm, logoUrl: "/image_067524.png" })}
                         className="text-emerald-700 hover:underline"
                       >
-                        Gunakan Logo Resmi DDI
+                        Gunakan Logo Resmi DDI Bawaan
                       </button>
                     </div>
                   </div>

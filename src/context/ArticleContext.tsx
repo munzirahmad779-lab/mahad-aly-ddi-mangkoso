@@ -355,6 +355,29 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
             }));
           if (dbLecturers.length > 0) setLecturers(dbLecturers);
         }
+
+        // Fetch Media Library
+        const { data: dbMedia } = await supabase
+          .from("media")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (dbMedia && dbMedia.length > 0) {
+          setMedia(
+            dbMedia.map((m: any) => ({
+              id: m.id,
+              name: m.filename,
+              url: m.url,
+              size: m.size_kb > 1024 ? `${(m.size_kb / 1024).toFixed(1)} MB` : `${m.size_kb} KB`,
+              type: m.mime_type?.startsWith("image/") ? "image" : (m.mime_type?.includes("pdf") ? "pdf" : "document"),
+              uploadedAt: new Date(m.created_at).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric"
+              })
+            }))
+          );
+        }
       } catch (err) {
         console.warn("Supabase live fetch notice:", err);
       }
@@ -670,10 +693,15 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     addLog("Mengunggah Media", item.name);
   };
 
-  const deleteMedia = (id: string) => {
+  const deleteMedia = async (id: string) => {
     const target = media.find((m) => m.id === id);
     const filtered = media.filter((m) => m.id !== id);
     saveMedia(filtered);
+    try {
+      await supabase.from("media").delete().eq("id", id);
+    } catch (e) {
+      console.warn("Error deleting media from Supabase:", e);
+    }
     addLog("Menghapus Media", target?.name || id);
   };
 
