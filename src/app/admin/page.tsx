@@ -266,7 +266,7 @@ export default function AdminPage() {
                     <label className="block text-slate-700 mb-1">Kategori *</label>
                     <select
                       value={formData.category}
-                      onChange={(e) => handleCategoryChange(e.target.value as any)}
+                      onChange={(e) => handleCategoryChange(e.target.value as "karya-anregurutta" | "usul-fikih" | "tafsir-hadis")}
                       className="w-full p-2.5 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:bg-white"
                     >
                       <option value="karya-anregurutta">Karya Anregurutta</option>
@@ -326,7 +326,7 @@ export default function AdminPage() {
                 Daftar Artikel di Website ({articles.length})
               </h3>
 
-              <div className="space-y-3 max-h-[700px] overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-175 overflow-y-auto pr-1">
                 {articles.map((art) => (
                   <div
                     key={art.id}
@@ -342,7 +342,7 @@ export default function AdminPage() {
                       <p className="text-xs text-slate-500">Oleh: {art.author} &bull; {art.date}</p>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
                       <button
                         type="button"
                         onClick={() => handleEditClick(art)}
@@ -406,7 +406,6 @@ export default function AdminPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          // Otomatis pindah ke form editor untuk dijadikan artikel resmi
                           setActiveTab("articles");
                           setFormData({
                             title: sub.judul,
@@ -414,7 +413,7 @@ export default function AdminPage() {
                             content: sub.abstrak,
                             author: sub.nama,
                             authorRole: sub.afiliasi || "Mahasantri",
-                            category: (sub.kategori as any) || "usul-fikih",
+                            category: (sub.kategori as "karya-anregurutta" | "usul-fikih" | "tafsir-hadis") || "usul-fikih",
                             categoryLabel: sub.kategori || "Usul Fikih",
                             date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
                             hijriDate: "1448 H",
