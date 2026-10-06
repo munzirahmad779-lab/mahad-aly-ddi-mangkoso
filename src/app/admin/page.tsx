@@ -3347,7 +3347,7 @@ export default function AdminPage() {
         )}
 
         {/* ══════════════════════════════════════════════════════════════
-            13. MEDIA LIBRARY (SUPABASE STORAGE & DATABASE)
+            13. MEDIA LIBRARY (CLOUDFLARE R2 & SUPABASE DB)
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "media" && (
           <div className="space-y-6 text-xs font-medium">
@@ -3357,10 +3357,10 @@ export default function AdminPage() {
                 <div>
                   <h3 className="font-serif font-bold text-lg text-slate-900 flex items-center gap-2">
                     <span>🖼️</span>
-                    <span>Media Library &amp; Cloud Storage</span>
+                    <span>Media Library &amp; Cloudflare R2 Storage</span>
                   </h3>
                   <p className="text-slate-500 text-xs mt-0.5">
-                    Unggah gambar, logo, foto masyayikh, atau dokumen langsung ke Supabase Storage (Bucket: <code className="text-emerald-700 font-mono font-bold">media</code>).
+                    Unggah gambar, logo, foto masyayikh, atau dokumen langsung ke Cloudflare R2 Storage (Bucket: <code className="text-emerald-700 font-mono font-bold">media-mahad-aly</code>).
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { supabase } from "@/lib/supabase/client";
 import { 
   UploadCloud, 
   X, 
@@ -55,14 +54,14 @@ export default function ImageUploader({
   const processUpload = async (file: File) => {
     setErrorMessage(null);
 
-    // 1. Validasi Ukuran
+    // 1. Validasi Ukuran File Lokal
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      setErrorMessage(`Ukuran file melebihi batas maksimal ${maxSizeMB} MB.`);
+      setErrorMessage(`Ukuran file (${(file.size / (1024 * 1024)).toFixed(1)} MB) melebihi batas maksimal ${maxSizeMB} MB.`);
       return;
     }
 
-    // 2. Validasi Tipe
+    // 2. Validasi Tipe File
     const acceptedTypes = accept.split(",").map((t) => t.trim().toLowerCase());
     const isAccepted = acceptedTypes.some((type) => {
       if (type.endsWith("/*")) {
@@ -79,62 +78,33 @@ export default function ImageUploader({
 
     try {
       setIsUploading(true);
-      setUploadProgress(20);
+      setUploadProgress(25);
 
-      // Generate Clean Filename
-      const fileExt = file.name.split(".").pop()?.toLowerCase() || "png";
-      const cleanBase = file.name
-        .replace(/\.[^/.]+$/, "")
-        .replace(/[^a-zA-Z0-9]/g, "-")
-        .toLowerCase()
-        .slice(0, 30);
-      const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-      const fileName = `${cleanBase}-${uniqueSuffix}.${fileExt}`;
-      const filePath = `${folder}/${fileName}`;
+      // 3. Siapkan FormData untuk Server-Side Upload ke Cloudflare R2
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", folder);
 
       setUploadProgress(50);
 
-      // Upload ke Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from("media")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-      if (uploadError) {
-        throw new Error(uploadError.message);
-      }
+      setUploadProgress(85);
 
-      setUploadProgress(80);
+      const data = await res.json();
 
-      // Ambil Public URL
-      const { data: publicUrlData } = supabase.storage
-        .from("media")
-        .getPublicUrl(filePath);
-
-      const publicUrl = publicUrlData.publicUrl;
-
-      // Catat ke tabel public.media (Media Library)
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        await supabase.from("media").insert({
-          filename: file.name,
-          url: publicUrl,
-          mime_type: file.type || `image/${fileExt}`,
-          size_kb: Math.round(file.size / 1024),
-          uploaded_by: user?.email || "admin",
-        });
-      } catch (dbErr) {
-        // Non-fatal if media table record insertion fails
-        console.warn("Gagal mencatat media ke database log:", dbErr);
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Gagal mengunggah file ke Cloudflare R2.");
       }
 
       setUploadProgress(100);
-      onChange(publicUrl);
+      onChange(data.url);
     } catch (err: any) {
       console.error("Upload error:", err);
-      setErrorMessage(err.message || "Gagal mengupload file ke Supabase Storage.");
+      setErrorMessage(err.message || "Gagal mengupload file ke Cloudflare R2.");
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -186,18 +156,18 @@ export default function ImageUploader({
               onClick={() => setMode("upload")}
               className={`px-2.5 py-1 rounded-md font-medium transition-all ${
                 mode === "upload"
-                  ? "bg-white text-emerald-700 shadow-sm"
+                  ? "bg-white text-emerald-700 shadow-sm font-semibold"
                   : "text-stone-500 hover:text-stone-800"
               }`}
             >
-              Upload File
+              Upload R2
             </button>
             <button
               type="button"
               onClick={() => setMode("url")}
               className={`px-2.5 py-1 rounded-md font-medium transition-all ${
                 mode === "url"
-                  ? "bg-white text-emerald-700 shadow-sm"
+                  ? "bg-white text-emerald-700 shadow-sm font-semibold"
                   : "text-stone-500 hover:text-stone-800"
               }`}
             >
@@ -215,7 +185,7 @@ export default function ImageUploader({
               type="url"
               value={value}
               onChange={(e) => onChange(e.target.value)}
-              placeholder="https://domain.com/path/gambar.jpg"
+              placeholder="https://pub-xxxx.r2.dev/folder/gambar.jpg"
               className="w-full text-xs pl-8 pr-8 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-mono"
             />
             <LinkIcon className="w-4 h-4 text-stone-400 absolute left-2.5 top-3" />
@@ -271,7 +241,7 @@ export default function ImageUploader({
               <div className="flex items-center justify-between text-xs font-semibold text-emerald-800">
                 <span className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
-                  Mengunggah ke Supabase Storage...
+                  Mengunggah ke Cloudflare R2...
                 </span>
                 <span>{uploadProgress}%</span>
               </div>
@@ -312,7 +282,7 @@ export default function ImageUploader({
                 href={value}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[10px] bg-white/90 text-stone-800 px-1.5 py-0.5 rounded shadow"
+                className="text-[10px] bg-white/90 text-stone-800 px-1.5 py-0.5 rounded shadow font-semibold"
               >
                 Lihat
               </a>
@@ -323,7 +293,7 @@ export default function ImageUploader({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>File Tersimpan</span>
+              <span>Tersimpan di Cloudflare R2</span>
             </div>
             <p className="text-xs text-stone-600 font-mono truncate mt-0.5">
               {value}

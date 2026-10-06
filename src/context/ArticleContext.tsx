@@ -698,9 +698,13 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const filtered = media.filter((m) => m.id !== id);
     saveMedia(filtered);
     try {
-      await supabase.from("media").delete().eq("id", id);
+      await fetch("/api/upload", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, url: target?.url }),
+      });
     } catch (e) {
-      console.warn("Error deleting media from Supabase:", e);
+      console.warn("Error deleting media from R2/Supabase:", e);
     }
     addLog("Menghapus Media", target?.name || id);
   };
