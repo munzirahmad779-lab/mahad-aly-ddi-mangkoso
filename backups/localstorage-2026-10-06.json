@@ -1,0 +1,110 @@
+{
+  "backupDate": "2026-10-06T23:29:00.000Z",
+  "version": "2.4.0",
+  "institution": "Ma'had Aly DDI Mangkoso",
+  "data": {
+    "site_content": [
+      {
+        "key": "home.hero",
+        "group_name": "home",
+        "label": "Hero Section",
+        "value": {
+          "badge": "Pusat Kaderisasi Fuqaha Kontemporer",
+          "title": "Meneguhkan Khazanah Turats, Menjawab Dinamika Fiqh Kontemporer",
+          "subtitle": "Pendidikan Tinggi Kader Ulama Takhassus Fiqh wa Usuluhu — Berakar kuat pada sanad keilmuan klasik Anregurutta, progresif merespons tantangan zaman.",
+          "arabicMotto": "تَفَقُّهٌ فِي الدِّيْنِ · بَصِيْرَةٌ فِي الزَّمَانِ · خِدْمَةٌ لِلْأُمَّةِ",
+          "ctaPrimaryText": "Jelajahi Kajian Fiqh",
+          "ctaPrimaryLink": "/artikel",
+          "ctaSecondaryText": "Repositori Skripsi",
+          "ctaSecondaryLink": "/skripsi"
+        }
+      },
+      {
+        "key": "home.quote",
+        "group_name": "home",
+        "label": "Kalam Hikmah",
+        "value": {
+          "arabicQuote": "مَنْ يُرِدِ اللَّهُ بِهِ خَيْرًا يُفَقِّهْهُ فِي الدِّينِ",
+          "source": "HR. Al-Bukhari no. 71 & Muslim no. 1037",
+          "translation": "Barangsiapa yang Allah kehendaki kebaikan baginya, niscaya Allah akan pahamkan dia secara mendalam dalam urusan agama.",
+          "context": "Landasan Visi Pendidikan Kader Ulama Ma'had Aly DDI Mangkoso"
+        }
+      },
+      {
+        "key": "footer",
+        "group_name": "footer",
+        "label": "Footer Settings",
+        "value": {
+          "logoUrl": "/image_067524.png",
+          "orgName": "Ma'had Aly",
+          "orgSubname": "DDI Mangkoso",
+          "description": "Pendidikan Tinggi Kader Ulama jenjang Marhalah Ula (M.1). Berkhidmat melahirkan generasi mutafaqqih fiddin berwawasan wasathiyyah dan berakhlak mulia.",
+          "address": "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
+          "kanalDescription": "Ikuti kabar pengajian, kajian halaqah, dan penerbitan jurnal resmi Ma'had Aly DDI Mangkoso:",
+          "email": "mahadaly@ddimangkoso.ac.id",
+          "whatsapp": "+62 812-3456-7890",
+          "facebookUrl": "https://facebook.com/mahadalyddimangkoso",
+          "instagramUrl": "https://instagram.com/mahadalyddimangkoso",
+          "youtubeUrl": "https://youtube.com/@mahadalyddimangkoso",
+          "copyrightText": "© 2026 Ma'had Aly DDI Mangkoso. Hak Cipta Dilindungi.",
+          "tagline": "Mewarisi Khazanah Turats • Menjaga Sanad Ulama Nusantara",
+          "showAdminLink": true,
+          "adminLinkLabel": "🔒 Masuk Panel Redaksi (Admin)",
+          "adminLinkUrl": "/admin",
+          "footerBgColor": "#0b4a25",
+          "footerTextColor": "#f4e8c1",
+          "columnLayout": 4
+        }
+      },
+      {
+        "key": "profile.history",
+        "group_name": "profile",
+        "label": "Sejarah & Visi Misi",
+        "value": {
+          "sejarah": "Didirikan pada 5 November 2013 (1 Muharram 1435 H) oleh AGH. Prof. Dr. M. Faried Wadjedy, MA, Ma'had Aly DDI Mangkoso merupakan kelanjutan dari tradisi keilmuan halaqah 'Mangaji Tudang' yang dirintis oleh AGH. Abdurrahman Ambo Dalle sejak tahun 1938.",
+          "visi": "Menjadi pusat keunggulan kaderisasi fuqaha mutafaqqih fiddin tingkat tinggi yang otoritatif dalam khazanah turats klasik dan progresif menjawab dinamika Fiqh Mu'asarah.",
+          "misi": [
+            "Menyelenggarakan pendidikan tinggi kader ulama berbasis kitab kuning (turats) dengan metodologi ushul fikih yang mendalam.",
+            "Mengembangkan riset Fiqh Mu'asarah untuk menjawab problematika keumatan dan kebangsaan modern.",
+            "Melestarikan sanad keilmuan dan ajaran wasathiyyah Anregurutta Ambo Dalle.",
+            "Menyiapkan lulusan bergelar Sarjana Agama (S.Ag.) yang berintegritas moral dan berwawasan global."
+          ]
+        }
+      }
+    ],
+    "collections": {
+      "masyayikh": [
+        {
+          "name": "AGH. Prof. Dr. M. Faried Wadjedy, MA",
+          "role": "Mudir / Pimpinan Ma'had Aly",
+          "title": "Guru Besar Fiqh & Tafsir",
+          "photoUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80",
+          "expertise": "Ushul Fikih, Tafsir Ahkam, Fiqh Mu'asarah",
+          "education": "S1 & S2 Al-Azhar Cairo Mesir, S3 UIN Alauddin",
+          "order": 1,
+          "isActive": true
+        },
+        {
+          "name": "AGH. Dr. Muhammad Agus, M.Th.I.",
+          "role": "Wakil Mudir Bidang Akademik",
+          "title": "Doktor Dirasah Islamiyah",
+          "photoUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+          "expertise": "Fiqh Muqaran & Hadits Ahkam",
+          "education": "S1 UIN Syarif Hidayatullah, S2 & S3 UIN Alauddin",
+          "order": 2,
+          "isActive": true
+        }
+      ],
+      "sarana": [
+        { "name": "Masjid Jami' Pesantren DDI Mangkoso", "category": "Masjid", "description": "Pusat halaqah pengajian kitab kuning subuh dan maghrib.", "order": 1 },
+        { "name": "Gedung Perkuliahan Marhalah Ula", "category": "Ruang Kelas", "description": "Ruang kuliah modern ber-AC dilengkapi proyektor.", "order": 2 },
+        { "name": "Maktabah Turats & Digital E-Library", "category": "Perpustakaan", "description": "Koleksi lebih dari 10.000 judul kitab kuning klasik.", "order": 3 }
+      ]
+    },
+    "articles_count": 5,
+    "theses_count": 3,
+    "news_count": 2,
+    "pmb_waves_count": 2,
+    "categories_count": 8
+  }
+}

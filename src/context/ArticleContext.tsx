@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase/client";
 import {
   Article,
   CategoryInfo,
@@ -225,8 +226,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const [footerNav, setFooterNav] = useState<FooterNavLink[]>(INITIAL_FOOTER_NAV);
   const [footerFocus, setFooterFocus] = useState<FooterFocusItem[]>(INITIAL_FOOTER_FOCUS);
 
-  // Load from LocalStorage
+  // Load from Supabase + LocalStorage fallback
   useEffect(() => {
+    // 1. Initial hydration from local cache
     try {
       const savedArticles = localStorage.getItem("mahad_articles");
       if (savedArticles) setArticles(JSON.parse(savedArticles));
@@ -237,74 +239,128 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       const savedTheses = localStorage.getItem("mahad_theses");
       if (savedTheses) setTheses(JSON.parse(savedTheses));
 
-      const savedSubmissions = localStorage.getItem("mahad_submissions");
-      if (savedSubmissions) setSubmissions(JSON.parse(savedSubmissions));
-
-      const savedNews = localStorage.getItem("mahad_news");
-      if (savedNews) setNews(JSON.parse(savedNews));
-
-      const savedSettings = localStorage.getItem("mahad_settings");
-      if (savedSettings) setSettings(JSON.parse(savedSettings));
-
-      const savedUsers = localStorage.getItem("mahad_users");
-      if (savedUsers) setUsers(JSON.parse(savedUsers));
-
-      const savedLogs = localStorage.getItem("mahad_logs");
-      if (savedLogs) setLogs(JSON.parse(savedLogs));
-
-      const savedMedia = localStorage.getItem("mahad_media");
-      if (savedMedia) setMedia(JSON.parse(savedMedia));
-
-      const savedLecturers = localStorage.getItem("mahad_lecturers");
-      if (savedLecturers) setLecturers(JSON.parse(savedLecturers));
-
-      const savedFacilities = localStorage.getItem("mahad_facilities");
-      if (savedFacilities) setFacilities(JSON.parse(savedFacilities));
-
-      const savedAccreditations = localStorage.getItem("mahad_accreditations");
-      if (savedAccreditations) setAccreditations(JSON.parse(savedAccreditations));
-
-      const savedCourses = localStorage.getItem("mahad_courses");
-      if (savedCourses) setCourses(JSON.parse(savedCourses));
-
-      const savedCalendar = localStorage.getItem("mahad_calendar");
-      if (savedCalendar) setCalendarEvents(JSON.parse(savedCalendar));
-
-      const savedBahtsul = localStorage.getItem("mahad_bahtsul");
-      if (savedBahtsul) setBahtsulQA(JSON.parse(savedBahtsul));
-
-      const savedPmbWaves = localStorage.getItem("mahad_pmb_waves");
-      if (savedPmbWaves) setPmbWaves(JSON.parse(savedPmbWaves));
-
-      const savedPmbFAQs = localStorage.getItem("mahad_pmb_faqs");
-      if (savedPmbFAQs) setPmbFAQs(JSON.parse(savedPmbFAQs));
-
-      const savedSubscribers = localStorage.getItem("mahad_subscribers");
-      if (savedSubscribers) setSubscribers(JSON.parse(savedSubscribers));
-
-      const savedEmailLogs = localStorage.getItem("mahad_email_logs");
-      if (savedEmailLogs) setEmailLogs(JSON.parse(savedEmailLogs));
-
-      const savedGallery = localStorage.getItem("mahad_gallery");
-      if (savedGallery) setGalleryAlbums(JSON.parse(savedGallery));
-
-      const savedComingSoon = localStorage.getItem("mahad_coming_soon");
-      if (savedComingSoon) setComingSoonPages(JSON.parse(savedComingSoon));
-
-      const savedPageSeo = localStorage.getItem("mahad_page_seo");
-      if (savedPageSeo) setPageSeoList(JSON.parse(savedPageSeo));
-
       const savedFooterSettings = localStorage.getItem("mahad_footer_settings");
       if (savedFooterSettings) setFooterSettings(JSON.parse(savedFooterSettings));
-
-      const savedFooterNav = localStorage.getItem("mahad_footer_nav");
-      if (savedFooterNav) setFooterNav(JSON.parse(savedFooterNav));
-
-      const savedFooterFocus = localStorage.getItem("mahad_footer_focus");
-      if (savedFooterFocus) setFooterFocus(JSON.parse(savedFooterFocus));
-    } catch (err) {
-      console.error("Gagal membaca LocalStorage:", err);
+    } catch (e) {
+      console.warn("LocalStorage read skipped:", e);
     }
+
+    // 2. Fetch live data from Supabase PostgreSQL
+    async function fetchFromSupabase() {
+      try {
+        // Fetch Articles
+        const { data: dbArticles } = await supabase
+          .from("articles")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (dbArticles && dbArticles.length > 0) {
+          const mappedArticles: Article[] = dbArticles.map((a: any) => ({
+            id: a.id,
+            slug: a.slug,
+            title: a.title,
+            excerpt: a.excerpt || "",
+            content: a.content,
+            author: a.author_name || "Redaksi",
+            authorRole: a.author_role || "Mahasantri Marhalah Ula",
+            authorBio: "",
+            category: a.category_id || "fiqh-muamalah-kontemporer",
+            categoryLabel: "Fiqh Mu'asarah",
+            date: new Date(a.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+            hijriDate: "1448 H",
+            readTime: "5 menit",
+            views: a.views || 0,
+            tags: a.tags || []
+          }));
+          setArticles(mappedArticles);
+        }
+
+        // Fetch Theses
+        const { data: dbTheses } = await supabase
+          .from("theses")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (dbTheses && dbTheses.length > 0) {
+          const mappedTheses: Thesis[] = dbTheses.map((t: any) => ({
+            id: t.id,
+            slug: t.slug,
+            title: t.judul,
+            author: t.penulis,
+            nim: t.nim,
+            angkatan: t.angkatan,
+            year: t.tahun,
+            advisor1: t.pembimbing_1,
+            advisor2: t.pembimbing_2,
+            abstractId: t.abstrak_id || "",
+            abstractAr: t.abstrak_ar || "",
+            keywords: t.keyword || [],
+            category: "Fiqh Mu'asarah",
+            categoryLabel: "Fiqh Mu'asarah",
+            downloadUrl: t.pdf_url || "",
+            fileSize: t.pdf_size_mb || "3.5 MB"
+          }));
+          setTheses(mappedTheses);
+        }
+
+        // Fetch Categories
+        const { data: dbCategories } = await supabase
+          .from("categories")
+          .select("*")
+          .order("urutan", { ascending: true });
+
+        if (dbCategories && dbCategories.length > 0) {
+          setCategories(
+            dbCategories.map((c: any) => ({
+              id: c.id,
+              slug: c.slug,
+              name: c.nama,
+              description: c.deskripsi || "",
+              iconName: c.icon || "book"
+            }))
+          );
+        }
+
+        // Fetch Footer from site_content
+        const { data: footerData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "footer")
+          .single();
+
+        if (footerData?.value) {
+          setFooterSettings((prev) => ({ ...prev, ...footerData.value }));
+        }
+
+        // Fetch Masyayikh & Sarana from collections
+        const { data: dbCollections } = await supabase
+          .from("collections")
+          .select("*")
+          .order("order_index", { ascending: true });
+
+        if (dbCollections && dbCollections.length > 0) {
+          const dbLecturers = dbCollections
+            .filter((c: any) => c.collection_type === "masyayikh")
+            .map((c: any, idx: number) => ({
+              id: c.id,
+              name: c.data?.name || "Nama Dosen",
+              title: c.data?.title || "",
+              role: c.data?.role || "Dosen Pengampu",
+              photoUrl: c.data?.photoUrl || "",
+              expertise: c.data?.expertise || "",
+              education: c.data?.education || "",
+              publications: c.data?.publications || "",
+              order: idx + 1,
+              isActive: c.data?.isActive !== false
+            }));
+          if (dbLecturers.length > 0) setLecturers(dbLecturers);
+        }
+      } catch (err) {
+        console.warn("Supabase live fetch notice:", err);
+      }
+    }
+
+    fetchFromSupabase();
   }, []);
 
   // Helper savers

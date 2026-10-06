@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase/client";
 import { useArticles } from "@/context/ArticleContext";
 import {
   Article,
@@ -24,6 +26,18 @@ import {
 } from "@/lib/types";
 
 export default function AdminPage() {
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<{ role: string; nama_lengkap: string; email: string } | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Invite user state
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"editor" | "penulis">("editor");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [dbUsers, setDbUsers] = useState<any[]>([]);
+
   const {
     articles,
     addArticle,
@@ -114,10 +128,92 @@ export default function AdminPage() {
     resetAllData
   } = useArticles();
 
-  // Authentication PIN
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [pinInput, setPinInput] = useState("");
-  const [pinError, setPinError] = useState(false);
+  // Load and verify Supabase Auth session on mount
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          router.push("/admin/login");
+          return;
+        }
+
+        setCurrentUser(session.user);
+
+        // Fetch user profile from public.users
+        const { data: profile } = await supabase
+          .from("users")
+          .select("role, nama_lengkap, email, is_active")
+          .eq("id", session.user.id)
+          .single();
+
+        if (profile) {
+          setUserProfile(profile);
+        } else {
+          // Fallback if not in users table yet
+          setUserProfile({
+            role: session.user.email === "munzirahmad779@gmail.com" ? "super_admin" : "editor",
+            nama_lengkap: session.user.email?.split("@")[0] || "Admin",
+            email: session.user.email || ""
+          });
+        }
+
+        // Fetch real database users list
+        const { data: userList } = await supabase.from("users").select("*").order("created_at", { ascending: false });
+        if (userList) setDbUsers(userList);
+      } catch (err) {
+        console.error("Auth check error:", err);
+      } finally {
+        setAuthLoading(false);
+      }
+    }
+
+    checkAuth();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.push("/admin/login");
+      }
+    });
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
+  }, [router]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/admin/login");
+  };
+
+  const handleInviteUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail) return;
+    setInviteLoading(true);
+    try {
+      const res = await fetch("/api/admin/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: inviteEmail,
+          role: inviteRole,
+          nama_lengkap: inviteName
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal mengundang user.");
+      alert(`✅ Undangan berhasil dikirim ke ${inviteEmail}!`);
+      setInviteEmail("");
+      setInviteName("");
+      // Refresh user list
+      const { data: userList } = await supabase.from("users").select("*").order("created_at", { ascending: false });
+      if (userList) setDbUsers(userList);
+    } catch (err: any) {
+      alert("❌ Error: " + err.message);
+    } finally {
+      setInviteLoading(false);
+    }
+  };
 
   // Navigation State
   const [activeMenu, setActiveMenu] = useState<
@@ -367,16 +463,6 @@ export default function AdminPage() {
   };
 
   const pendingSubmissionsCount = submissions.filter((s) => s.status === "review").length;
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pinInput === "1234" || pinInput === "admin") {
-      setIsAuthenticated(true);
-      setPinError(false);
-    } else {
-      setPinError(true);
-    }
-  };
 
   // Article Save
   const handleSaveArticle = (e: React.FormEvent) => {
@@ -674,42 +760,15 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   };
 
-  // 1. PIN Lock Screen
-  if (!isAuthenticated) {
+  // 1. Auth Loading Screen
+  if (authLoading) {
     return (
-      <main className="min-h-screen pt-28 pb-16 bg-slate-950 text-white flex items-center justify-center p-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl text-center space-y-6">
-          <div className="w-16 h-16 bg-mahad-gold text-mahad-green-dark rounded-full flex items-center justify-center mx-auto text-2xl font-bold shadow-lg">
-            🔒
+      <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 bg-mahad-gold text-mahad-green-dark rounded-full flex items-center justify-center mx-auto text-3xl font-bold animate-pulse shadow-lg">
+            🕌
           </div>
-          <div>
-            <h1 className="font-serif font-bold text-2xl text-white">Super Admin Panel</h1>
-            <p className="text-slate-400 text-xs mt-1">
-              Ma&apos;had Aly DDI Mangkoso &bull; Fiqh Mu&apos;asarah
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <input
-                type="password"
-                placeholder="Masukkan PIN Admin (Default: 1234)"
-                value={pinInput}
-                onChange={(e) => setPinInput(e.target.value)}
-                className="w-full text-center tracking-widest text-lg px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mahad-gold text-white placeholder:text-slate-600"
-              />
-              {pinError && <p className="text-xs text-red-400 mt-2">PIN salah! Coba ketik: 1234</p>}
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold py-3 rounded-xl shadow transition"
-            >
-              Masuk ke Panel Kendali
-            </button>
-          </form>
-          <p className="text-[11px] text-slate-500">
-            PIN default awal: <strong className="text-slate-300">1234</strong>
-          </p>
+          <p className="text-sm font-semibold text-slate-300">Memverifikasi Hak Akses Super Admin...</p>
         </div>
       </main>
     );
@@ -813,13 +872,29 @@ export default function AdminPage() {
             <span>🌐</span>
             {sidebarOpen && <span>Buka Website Live</span>}
           </Link>
+          
+          {/* User Session Profile */}
+          {sidebarOpen && (
+            <div className="px-3 py-2 bg-slate-800/80 rounded-xl border border-slate-700/50">
+              <p className="font-bold text-white truncate text-[11px]">
+                {userProfile?.nama_lengkap || currentUser?.email || "Super Admin"}
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">
+                  {userProfile?.role || "super_admin"}
+                </span>
+              </div>
+            </div>
+          )}
+
           <button
             type="button"
-            onClick={() => setIsAuthenticated(false)}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-red-950/60 hover:bg-red-900 text-red-300 transition"
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-red-950/60 hover:bg-red-900 text-red-300 transition font-bold"
           >
             <span>🚪</span>
-            {sidebarOpen && <span>Kunci &amp; Keluar</span>}
+            {sidebarOpen && <span>Keluar / Logout</span>}
           </button>
         </div>
       </aside>
@@ -3087,119 +3162,152 @@ export default function AdminPage() {
             12. USER & PERAN
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "users" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-xs">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-xs font-medium">
+            
+            {/* Form Invite User */}
             <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                {isEditingUser ? "✏️ Edit Pengguna" : "➕ Tambah Admin Baru"}
-              </h3>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!userForm.name || !userForm.email) return;
-                  if (isEditingUser && editingUserId) {
-                    updateUser(editingUserId, userForm);
-                    alert("Pengguna berhasil diperbarui!");
-                  } else {
-                    addUser({ ...userForm, lastLogin: "Belum pernah" });
-                    alert("Pengguna baru didaftarkan!");
-                  }
-                  setIsEditingUser(false);
-                  setEditingUserId(null);
-                  setUserForm({ name: "", email: "", role: "Editor", status: "Aktif" });
-                }}
-                className="space-y-3"
-              >
+              <div className="border-b pb-2">
+                <span className="inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px] mb-1">
+                  Supabase Auth Invite-Only
+                </span>
+                <h3 className="font-serif font-bold text-lg text-slate-900">
+                  📨 Undang Pengguna Baru
+                </h3>
+                <p className="text-slate-500 text-[11px] mt-0.5">
+                  Undang Editor atau Penulis resmi via email. Penerima akan mendapatkan link untuk membuat password mereka.
+                </p>
+              </div>
+
+              <form onSubmit={handleInviteUser} className="space-y-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Nama Lengkap *</label>
+                  <label className="block font-bold text-slate-700 mb-1">Nama Lengkap Pengguna</label>
                   <input
                     type="text"
-                    required
-                    value={userForm.name}
-                    onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-                    className="w-full p-2 bg-slate-50 border rounded-lg"
+                    value={inviteName}
+                    onChange={(e) => setInviteName(e.target.value)}
+                    placeholder="Ust. Ahmad Fauzi, M.Ag."
+                    className="w-full p-2.5 bg-slate-50 border rounded-lg text-xs"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Email *</label>
+                  <label className="block font-bold text-slate-700 mb-1">Alamat Email Resmi *</label>
                   <input
                     type="email"
                     required
-                    value={userForm.email}
-                    onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-                    className="w-full p-2 bg-slate-50 border rounded-lg"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="editor@ddimangkoso.ac.id"
+                    className="w-full p-2.5 bg-slate-50 border rounded-lg text-xs"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Role</label>
-                    <select
-                      value={userForm.role}
-                      onChange={(e) => setUserForm({ ...userForm, role: e.target.value as any })}
-                      className="w-full p-2 bg-slate-50 border rounded-lg"
-                    >
-                      <option value="Super Admin">Super Admin</option>
-                      <option value="Editor">Editor</option>
-                      <option value="Penulis">Penulis</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Status</label>
-                    <select
-                      value={userForm.status}
-                      onChange={(e) => setUserForm({ ...userForm, status: e.target.value as any })}
-                      className="w-full p-2 bg-slate-50 border rounded-lg"
-                    >
-                      <option value="Aktif">Aktif</option>
-                      <option value="Nonaktif">Nonaktif</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Peran Akses (Role)</label>
+                  <select
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value as any)}
+                    className="w-full p-2.5 bg-slate-50 border rounded-lg text-xs font-semibold"
+                  >
+                    <option value="editor">Editor (Bisa kelola artikel, skripsi, kategori &amp; media)</option>
+                    <option value="penulis">Penulis (Hanya bisa menulis dan mengedit artikel miliknya)</option>
+                  </select>
                 </div>
-                <button type="submit" className="w-full py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow">
-                  {isEditingUser ? "Simpan Perubahan" : "Daftarkan Pengguna"}
+
+                <button
+                  type="submit"
+                  disabled={inviteLoading}
+                  className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {inviteLoading ? (
+                    <>
+                      <span className="animate-spin text-sm">⏳</span>
+                      <span>Mengirim Undangan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>✉️</span>
+                      <span>Kirim Undangan Email</span>
+                    </>
+                  )}
                 </button>
               </form>
             </div>
 
-            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-              <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                Daftar Admin ({users.length})
-              </h3>
+            {/* List User Terdaftar di Database */}
+            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b pb-2">
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-slate-900">
+                    👥 Pengguna Terdaftar ({dbUsers.length || 1})
+                  </h3>
+                  <p className="text-slate-500 text-[11px]">Data tersinkronisasi langsung dari tabel PostgreSQL `public.users`</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const { data } = await supabase.from("users").select("*").order("created_at", { ascending: false });
+                    if (data) setDbUsers(data);
+                  }}
+                  className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold"
+                  title="Segarkan data user"
+                >
+                  🔄 Refresh
+                </button>
+              </div>
+
               <div className="space-y-2.5">
-                {users.map((usr) => (
-                  <div key={usr.id} className="p-3 bg-slate-50 rounded-xl border flex items-center justify-between">
-                    <div>
+                {(dbUsers.length > 0 ? dbUsers : [
+                  {
+                    id: "usr-admin",
+                    email: "munzirahmad779@gmail.com",
+                    nama_lengkap: "Ahmad Yusuf Mubarak",
+                    role: "super_admin",
+                    is_active: true,
+                    created_at: new Date().toISOString()
+                  }
+                ]).map((usr) => (
+                  <div key={usr.id} className="p-3.5 bg-slate-50 rounded-xl border flex items-center justify-between gap-3">
+                    <div className="space-y-1 overflow-hidden">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-slate-900">{usr.name}</h4>
-                        <span className="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded text-[10px]">{usr.role}</span>
+                        <h4 className="font-bold text-slate-900 truncate text-xs">{usr.nama_lengkap || usr.email}</h4>
+                        <span
+                          className={`font-bold px-2 py-0.5 rounded text-[9px] uppercase tracking-wider ${
+                            usr.role === "super_admin"
+                              ? "bg-amber-100 text-amber-900 border border-amber-300"
+                              : usr.role === "editor"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          {usr.role}
+                        </span>
+                        {usr.is_active ? (
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" title="Akun Aktif"></span>
+                        ) : (
+                          <span className="w-2 h-2 rounded-full bg-red-500" title="Akun Nonaktif"></span>
+                        )}
                       </div>
-                      <p className="text-slate-500 text-[11px]">{usr.email} &bull; Login: {usr.lastLogin}</p>
+                      <p className="text-slate-500 text-[11px] truncate font-mono">{usr.email}</p>
                     </div>
-                    <div className="flex gap-1.5 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsEditingUser(true);
-                          setEditingUserId(usr.id);
-                          setUserForm({
-                            name: usr.name,
-                            email: usr.email,
-                            role: usr.role,
-                            status: usr.status
-                          });
-                        }}
-                        className="px-2.5 py-1 bg-amber-500 text-white rounded font-bold"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (confirm(`Hapus pengguna: "${usr.name}"?`)) deleteUser(usr.id);
-                        }}
-                        className="px-2.5 py-1 bg-red-600 text-white rounded font-bold"
-                      >
-                        Hapus
-                      </button>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {usr.role !== "super_admin" && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const newStatus = !usr.is_active;
+                            const { error } = await supabase.from("users").update({ is_active: newStatus }).eq("id", usr.id);
+                            if (!error) {
+                              setDbUsers(dbUsers.map((u) => (u.id === usr.id ? { ...u, is_active: newStatus } : u)));
+                              alert(`Status pengguna ${usr.email} diubah menjadi ${newStatus ? "Aktif" : "Nonaktif"}!`);
+                            }
+                          }}
+                          className={`px-2 py-1 rounded text-[10px] font-bold ${
+                            usr.is_active ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                          }`}
+                        >
+                          {usr.is_active ? "Nonaktifkan" : "Aktifkan"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
