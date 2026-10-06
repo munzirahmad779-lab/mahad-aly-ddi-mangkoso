@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  /* Warna Resmi Lembaga Ma'had Aly DDI Mangkoso */
+  --color-mahad-green: #116a37;
+  --color-mahad-green-dark: #0b4a25;
+  --color-mahad-gold: #d4af37;
+  --color-mahad-gold-light: #f4e8c1;
+
+  /* Font Resmi */
+  --font-sans: var(--font-inter), sans-serif;
+  --font-serif: var(--font-amiri), serif;
+  --font-display: var(--font-cinzel), serif;
+}
+
+/* Pola Geometris Halus untuk Background */
+.bg-islamic-pattern {
+  background-image: radial-gradient(rgba(212, 175, 55, 0.15) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
