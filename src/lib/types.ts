@@ -238,6 +238,46 @@ export interface SocialMediaSettings {
   fullAddress: string;
 }
 
+export interface FooterNavLink {
+  id: string;
+  label: string;
+  url: string;
+  position: number;
+  isActive: boolean;
+}
+
+export interface FooterFocusItem {
+  id: string;
+  name: string;
+  icon?: string;
+  position: number;
+  isActive: boolean;
+}
+
+export interface FooterSettings {
+  logoUrl: string;
+  orgName: string;
+  orgSubname: string;
+  description: string;
+  address: string;
+  kanalDescription: string;
+  email: string;
+  whatsapp: string;
+  facebookUrl: string;
+  instagramUrl: string;
+  youtubeUrl: string;
+  telegramUrl?: string;
+  tiktokUrl?: string;
+  copyrightText: string;
+  tagline: string;
+  showAdminLink: boolean;
+  adminLinkLabel: string;
+  adminLinkUrl: string;
+  footerBgColor: string;
+  footerTextColor: string;
+  columnLayout: number; // 2, 3, or 4
+}
+
 export interface HeroSectionData {
   badge: string;
   title: string;
@@ -290,5 +330,6 @@ export interface SiteSettings {
   quote?: QuoteSectionData;
   seo?: SeoSettings;
   socialMedia?: SocialMediaSettings;
+  footer?: FooterSettings;
   maintenanceMode?: boolean;
 }

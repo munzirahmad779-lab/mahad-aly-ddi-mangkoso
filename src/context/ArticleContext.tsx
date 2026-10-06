@@ -23,7 +23,10 @@ import {
   EmailLog,
   GalleryAlbum,
   ComingSoonPageSetting,
-  PageSeoItem
+  PageSeoItem,
+  FooterSettings,
+  FooterNavLink,
+  FooterFocusItem
 } from "@/lib/types";
 import {
   INITIAL_ARTICLES,
@@ -46,7 +49,10 @@ import {
   INITIAL_EMAIL_LOGS,
   INITIAL_GALLERY_ALBUMS,
   INITIAL_COMING_SOON_PAGES,
-  INITIAL_PAGE_SEO
+  INITIAL_PAGE_SEO,
+  INITIAL_FOOTER_SETTINGS,
+  INITIAL_FOOTER_NAV,
+  INITIAL_FOOTER_FOCUS
 } from "@/lib/mock-data";
 
 interface DataContextType {
@@ -167,6 +173,19 @@ interface DataContextType {
   pageSeoList: PageSeoItem[];
   updatePageSeo: (pageKey: PageSeoItem["pageKey"], updatedData: Partial<PageSeoItem>) => void;
 
+  // Footer Manager
+  footerSettings: FooterSettings;
+  updateFooterSettings: (updated: Partial<FooterSettings>) => void;
+  footerNav: FooterNavLink[];
+  addFooterNav: (link: Omit<FooterNavLink, "id">) => void;
+  updateFooterNav: (id: string, updated: Partial<FooterNavLink>) => void;
+  deleteFooterNav: (id: string) => void;
+  footerFocus: FooterFocusItem[];
+  addFooterFocus: (item: Omit<FooterFocusItem, "id">) => void;
+  updateFooterFocus: (id: string, updated: Partial<FooterFocusItem>) => void;
+  deleteFooterFocus: (id: string) => void;
+  resetFooterToDefault: () => void;
+
   // Site Settings
   settings: SiteSettings;
   updateSettings: (newSettings: Partial<SiteSettings>) => void;
@@ -202,6 +221,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const [galleryAlbums, setGalleryAlbums] = useState<GalleryAlbum[]>(INITIAL_GALLERY_ALBUMS);
   const [comingSoonPages, setComingSoonPages] = useState<ComingSoonPageSetting[]>(INITIAL_COMING_SOON_PAGES);
   const [pageSeoList, setPageSeoList] = useState<PageSeoItem[]>(INITIAL_PAGE_SEO);
+  const [footerSettings, setFooterSettings] = useState<FooterSettings>(INITIAL_FOOTER_SETTINGS);
+  const [footerNav, setFooterNav] = useState<FooterNavLink[]>(INITIAL_FOOTER_NAV);
+  const [footerFocus, setFooterFocus] = useState<FooterFocusItem[]>(INITIAL_FOOTER_FOCUS);
 
   // Load from LocalStorage
   useEffect(() => {
@@ -271,6 +293,15 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
       const savedPageSeo = localStorage.getItem("mahad_page_seo");
       if (savedPageSeo) setPageSeoList(JSON.parse(savedPageSeo));
+
+      const savedFooterSettings = localStorage.getItem("mahad_footer_settings");
+      if (savedFooterSettings) setFooterSettings(JSON.parse(savedFooterSettings));
+
+      const savedFooterNav = localStorage.getItem("mahad_footer_nav");
+      if (savedFooterNav) setFooterNav(JSON.parse(savedFooterNav));
+
+      const savedFooterFocus = localStorage.getItem("mahad_footer_focus");
+      if (savedFooterFocus) setFooterFocus(JSON.parse(savedFooterFocus));
     } catch (err) {
       console.error("Gagal membaca LocalStorage:", err);
     }
@@ -364,6 +395,18 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const savePageSeoList = (data: PageSeoItem[]) => {
     setPageSeoList(data);
     localStorage.setItem("mahad_page_seo", JSON.stringify(data));
+  };
+  const saveFooterSettings = (data: FooterSettings) => {
+    setFooterSettings(data);
+    localStorage.setItem("mahad_footer_settings", JSON.stringify(data));
+  };
+  const saveFooterNav = (data: FooterNavLink[]) => {
+    setFooterNav(data);
+    localStorage.setItem("mahad_footer_nav", JSON.stringify(data));
+  };
+  const saveFooterFocus = (data: FooterFocusItem[]) => {
+    setFooterFocus(data);
+    localStorage.setItem("mahad_footer_focus", JSON.stringify(data));
   };
 
   const addLog = (action: string, target: string, user: string = "Super Admin") => {
@@ -785,6 +828,56 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     addLog("Memperbarui SEO Halaman", pageKey);
   };
 
+  // Footer Manager Actions
+  const updateFooterSettings = (updated: Partial<FooterSettings>) => {
+    const merged = { ...footerSettings, ...updated };
+    saveFooterSettings(merged);
+    addLog("Memperbarui Pengaturan Footer", "Footer Manager");
+  };
+
+  const addFooterNav = (link: Omit<FooterNavLink, "id">) => {
+    const newLink: FooterNavLink = { ...link, id: "fnav-" + Date.now().toString() };
+    saveFooterNav([...footerNav, newLink]);
+    addLog("Menambah Link Navigasi Footer", link.label);
+  };
+
+  const updateFooterNav = (id: string, updated: Partial<FooterNavLink>) => {
+    const merged = footerNav.map((n) => (n.id === id ? { ...n, ...updated } : n));
+    saveFooterNav(merged);
+    addLog("Memperbarui Link Navigasi Footer", id);
+  };
+
+  const deleteFooterNav = (id: string) => {
+    const target = footerNav.find((n) => n.id === id);
+    saveFooterNav(footerNav.filter((n) => n.id !== id));
+    addLog("Menghapus Link Navigasi Footer", target?.label || id);
+  };
+
+  const addFooterFocus = (item: Omit<FooterFocusItem, "id">) => {
+    const newItem: FooterFocusItem = { ...item, id: "ffoc-" + Date.now().toString() };
+    saveFooterFocus([...footerFocus, newItem]);
+    addLog("Menambah Fokus Keilmuan Footer", item.name);
+  };
+
+  const updateFooterFocus = (id: string, updated: Partial<FooterFocusItem>) => {
+    const merged = footerFocus.map((f) => (f.id === id ? { ...f, ...updated } : f));
+    saveFooterFocus(merged);
+    addLog("Memperbarui Fokus Keilmuan Footer", id);
+  };
+
+  const deleteFooterFocus = (id: string) => {
+    const target = footerFocus.find((f) => f.id === id);
+    saveFooterFocus(footerFocus.filter((f) => f.id !== id));
+    addLog("Menghapus Fokus Keilmuan Footer", target?.name || id);
+  };
+
+  const resetFooterToDefault = () => {
+    saveFooterSettings(INITIAL_FOOTER_SETTINGS);
+    saveFooterNav(INITIAL_FOOTER_NAV);
+    saveFooterFocus(INITIAL_FOOTER_FOCUS);
+    addLog("Reset Footer ke Default", "Footer Manager");
+  };
+
   // Site Settings Action
   const updateSettings = (newSettings: Partial<SiteSettings>) => {
     const updated = { ...settings, ...newSettings };
@@ -816,6 +909,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       galleryAlbums,
       comingSoonPages,
       pageSeoList,
+      footerSettings,
+      footerNav,
+      footerFocus,
       exportedAt: new Date().toISOString()
     };
     return JSON.stringify(fullBackup, null, 2);
@@ -845,6 +941,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       if (data.galleryAlbums) saveGalleryAlbums(data.galleryAlbums);
       if (data.comingSoonPages) saveComingSoonPages(data.comingSoonPages);
       if (data.pageSeoList) savePageSeoList(data.pageSeoList);
+      if (data.footerSettings) saveFooterSettings(data.footerSettings);
+      if (data.footerNav) saveFooterNav(data.footerNav);
+      if (data.footerFocus) saveFooterFocus(data.footerFocus);
       addLog("Memulihkan Data Backup", "JSON Restore");
       return true;
     } catch (e) {
@@ -878,6 +977,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setGalleryAlbums(INITIAL_GALLERY_ALBUMS);
     setComingSoonPages(INITIAL_COMING_SOON_PAGES);
     setPageSeoList(INITIAL_PAGE_SEO);
+    setFooterSettings(INITIAL_FOOTER_SETTINGS);
+    setFooterNav(INITIAL_FOOTER_NAV);
+    setFooterFocus(INITIAL_FOOTER_FOCUS);
   };
 
   return (
@@ -959,6 +1061,17 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         updateComingSoonPage,
         pageSeoList,
         updatePageSeo,
+        footerSettings,
+        updateFooterSettings,
+        footerNav,
+        addFooterNav,
+        updateFooterNav,
+        deleteFooterNav,
+        footerFocus,
+        addFooterFocus,
+        updateFooterFocus,
+        deleteFooterFocus,
+        resetFooterToDefault,
         settings,
         updateSettings,
         exportBackupJson,

@@ -23,7 +23,10 @@ import {
   GalleryAlbum,
   ComingSoonPageSetting,
   PageSeoItem,
-  SocialMediaSettings
+  SocialMediaSettings,
+  FooterSettings,
+  FooterNavLink,
+  FooterFocusItem
 } from "./types";
 
 export const INITIAL_HERO: HeroSectionData = {
@@ -59,9 +62,49 @@ export const INITIAL_SOCIAL_MEDIA: SocialMediaSettings = {
   instagram: "https://instagram.com/mahadalyddimangkoso",
   youtube: "https://youtube.com/@mahadalyddimangkoso",
   whatsapp: "+62 812-3456-7890",
-  emailOfficial: "munzirahmad779@gmail.com",
+  emailOfficial: "mahadaly@ddimangkoso.ac.id",
   fullAddress: "Kompleks Pondok Pesantren DDI Mangkoso, Kel. Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulawesi Selatan 90752"
 };
+
+export const INITIAL_FOOTER_SETTINGS: FooterSettings = {
+  logoUrl: "/image_067524.png",
+  orgName: "Ma'had Aly",
+  orgSubname: "DDI Mangkoso",
+  description: "Pendidikan Tinggi Kader Ulama jenjang Marhalah Ula (M.1). Berkhidmat melahirkan generasi mutafaqqih fiddin berwawasan wasathiyyah dan berakhlak mulia.",
+  address: "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
+  kanalDescription: "Ikuti kabar pengajian, kajian halaqah, dan penerbitan jurnal resmi Ma'had Aly DDI Mangkoso:",
+  email: "mahadaly@ddimangkoso.ac.id",
+  whatsapp: "+62 812-3456-7890",
+  facebookUrl: "https://facebook.com/mahadalyddimangkoso",
+  instagramUrl: "https://instagram.com/mahadalyddimangkoso",
+  youtubeUrl: "https://youtube.com/@mahadalyddimangkoso",
+  telegramUrl: "",
+  tiktokUrl: "",
+  copyrightText: "© 2026 Ma'had Aly DDI Mangkoso. Hak Cipta Dilindungi.",
+  tagline: "Mewarisi Khazanah Turats • Menjaga Sanad Ulama Nusantara",
+  showAdminLink: true,
+  adminLinkLabel: "🔒 Masuk Panel Redaksi (Admin)",
+  adminLinkUrl: "/admin",
+  footerBgColor: "#0b4a25",
+  footerTextColor: "#f4e8c1",
+  columnLayout: 4
+};
+
+export const INITIAL_FOOTER_NAV: FooterNavLink[] = [
+  { id: "fnav-1", label: "Beranda", url: "/", position: 1, isActive: true },
+  { id: "fnav-2", label: "Profil & Sejarah", url: "/profil", position: 2, isActive: true },
+  { id: "fnav-3", label: "Mimbar Kajian", url: "/artikel", position: 3, isActive: true },
+  { id: "fnav-4", label: "Karya Anregurutta", url: "/kategori/karya-anregurutta", position: 4, isActive: true },
+  { id: "fnav-5", label: "Kirim Karya Tulisan", url: "/kirim-tulisan", position: 5, isActive: true }
+];
+
+export const INITIAL_FOOTER_FOCUS: FooterFocusItem[] = [
+  { id: "ffoc-1", name: "Usul Fikih & Qawa'id Fiqhiyyah", icon: "⚖️", position: 1, isActive: true },
+  { id: "ffoc-2", name: "Fiqh Muqaran (Perbandingan Madzhab)", icon: "📖", position: 2, isActive: true },
+  { id: "ffoc-3", name: "'Ulumul Qur'an & Tafsir Turats", icon: "✨", position: 3, isActive: true },
+  { id: "ffoc-4", name: "Dirasah Hadits wa Rijaluha", icon: "📜", position: 4, isActive: true },
+  { id: "ffoc-5", name: "Manuskrip Gurutta Ambo Dalle", icon: "👑", position: 5, isActive: true }
+];
 
 export const INITIAL_SETTINGS: SiteSettings = {
   institutionName: "Ma'had Aly Pendidikan Tinggi Kader Ulama DDI Abdurrahman Ambo Dalle, Mangkoso",
@@ -91,6 +134,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
   quote: INITIAL_QUOTE,
   seo: INITIAL_SEO,
   socialMedia: INITIAL_SOCIAL_MEDIA,
+  footer: INITIAL_FOOTER_SETTINGS,
   maintenanceMode: false
 };
 
@@ -601,7 +645,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     email: "munzirahmad779@gmail.com",
     role: "Super Admin",
     status: "Aktif",
-    lastLogin: "Hari ini, 21:20 WITA"
+    lastLogin: "Hari ini, 21:40 WITA"
   },
   {
     id: "usr-2",
