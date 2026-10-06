@@ -5,14 +5,14 @@ export default function HomePage() {
     <main className="min-h-screen bg-mahad-green-dark text-white flex flex-col items-center justify-center p-6 bg-islamic-pattern relative overflow-hidden">
       <div className="max-w-2xl text-center space-y-6 z-10">
         
-        {/* Logo Ma'had */}
-        <div className="w-28 h-28 mx-auto rounded-full bg-white p-2 ring-4 ring-mahad-gold shadow-2xl relative">
+        {/* Logo Ma'had Murni Tanpa Lingkaran Putih */}
+        <div className="w-28 h-28 sm:w-32 sm:h-32 mx-auto relative drop-shadow-2xl">
           <Image
             src="/image_067524.png"
             alt="Logo Ma'had Aly DDI Mangkoso"
-            width={112}
-            height={112}
-            className="w-full h-full object-contain rounded-full"
+            width={128}
+            height={128}
+            className="w-full h-full object-contain"
             priority
           />
         </div>
@@ -35,10 +35,10 @@ export default function HomePage() {
         {/* Kotak Status Setup */}
         <div className="bg-white/10 backdrop-blur-md border border-mahad-gold/40 rounded-2xl p-6 text-sm text-emerald-100 shadow-xl space-y-2">
           <p className="font-bold text-mahad-gold text-base">
-            ✅ Tahap 1 Berhasil Selesai!
+            ✅ Tahap 1 Selesai &amp; Logo Sudah Bersih!
           </p>
           <p>
-            Struktur Next.js (App Router), TypeScript, Tailwind CSS, palet warna resmi (Emerald &amp; Gold), serta font Amiri + Inter + Cinzel sudah aktif dan siap digunakan.
+            Fondasi Next.js, font resmi, dan palet warna sudah siap 100%. Kita siap membangun komponen navigasi dan isi website.
           </p>
         </div>
 
