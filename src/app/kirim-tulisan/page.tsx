@@ -5,14 +5,17 @@ import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 
 export default function KirimTulisanPage() {
-  const { addSubmission } = useArticles();
+  const { categories, addSubmission, settings } = useArticles();
 
   const [formData, setFormData] = useState({
     nama: "",
-    kategori: "Usul Fikih",
+    email: "",
     afiliasi: "",
+    kategori: categories[0]?.name || "Fiqh Muamalah Kontemporer",
     judul: "",
     abstrak: "",
+    keywords: "",
+    fileLink: "",
     orisinalitas: false,
   });
 
@@ -22,7 +25,7 @@ export default function KirimTulisanPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.nama || !formData.kategori || !formData.judul || !formData.abstrak) {
+    if (!formData.nama || !formData.email || !formData.kategori || !formData.judul || !formData.abstrak) {
       setStatus("error");
       setErrorMessage("Mohon lengkapi semua kolom yang bertanda bintang (*).");
       return;
@@ -30,7 +33,7 @@ export default function KirimTulisanPage() {
 
     if (!formData.orisinalitas) {
       setStatus("error");
-      setErrorMessage("Anda wajib mencentang pernyataan orisinalitas naskah.");
+      setErrorMessage("Anda wajib mencentang pernyataan integritas & orisinalitas naskah.");
       return;
     }
 
@@ -39,10 +42,13 @@ export default function KirimTulisanPage() {
     // 1. Simpan ke sistem Admin Redaksi
     addSubmission({
       nama: formData.nama,
-      kategori: formData.kategori,
+      email: formData.email,
       afiliasi: formData.afiliasi,
+      kategori: formData.kategori,
       judul: formData.judul,
       abstrak: formData.abstrak,
+      keywords: formData.keywords,
+      fileLink: formData.fileLink,
     });
 
     // 2. Berikan delay singkat & konfirmasi sukses
@@ -50,10 +56,13 @@ export default function KirimTulisanPage() {
       setStatus("success");
       setFormData({
         nama: "",
-        kategori: "Usul Fikih",
+        email: "",
         afiliasi: "",
+        kategori: categories[0]?.name || "Fiqh Muamalah Kontemporer",
         judul: "",
         abstrak: "",
+        keywords: "",
+        fileLink: "",
         orisinalitas: false,
       });
     }, 1000);
@@ -64,7 +73,7 @@ export default function KirimTulisanPage() {
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <Link
-            href="/#mimbar-kajian"
+            href="/"
             className="inline-flex items-center gap-1.5 text-xs text-mahad-gold-light hover:text-mahad-gold mb-4"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,10 +82,13 @@ export default function KirimTulisanPage() {
             <span>Kembali ke Beranda</span>
           </Link>
           <h1 className="font-serif font-bold text-3xl sm:text-4xl text-white">
-            Kirim Naskah Tulisan
+            Kirim Naskah Kajian Ilmiah
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base mt-2">
-            Salurkan karya ilmiah, riset thurats, dan gagasan keislaman Anda ke Mimbar Kajian Ma&apos;had Aly DDI Mangkoso.
+            Salurkan karya ilmiah, riset thurats, dan kajian Fiqh Mu&apos;asarah Anda ke Redaksi Mimbar Kajian Ma&apos;had Aly DDI Mangkoso.
+          </p>
+          <p className="text-xs text-mahad-gold mt-1 font-mono">
+            Naskah masuk otomatis terdata ke Redaksi &bull; Notifikasi ke {settings.emailSubmission}
           </p>
         </div>
       </section>
@@ -93,7 +105,7 @@ export default function KirimTulisanPage() {
                 Alhamdulillah! Naskah Berhasil Terkirim
               </h3>
               <p className="text-slate-600 text-sm max-w-md mx-auto leading-relaxed">
-                Tulisan Anda telah tercatat langsung di sistem Redaksi Ma&apos;had Aly DDI Mangkoso dan akan segera ditelaah untuk diterbitkan.
+                Tulisan Anda telah tercatat langsung di sistem Redaksi Ma&apos;had Aly DDI Mangkoso dan notifikasi telah dikirimkan ke email redaksi ({settings.emailSubmission}).
               </p>
               <button
                 type="button"
@@ -112,19 +124,35 @@ export default function KirimTulisanPage() {
                 </div>
               )}
 
-              {/* Nama Penulis */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                  Nama Lengkap &amp; Gelar <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Ahmad Yusuf Mubarak, S.Ag."
-                  value={formData.nama}
-                  onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-                  className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
-                />
+              {/* Nama & Email */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Nama Lengkap &amp; Gelar <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Ahmad Yusuf Mubarak, S.Ag."
+                    value={formData.nama}
+                    onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
+                    className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Alamat Email Aktif <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="email.anda@gmail.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
+                  />
+                </div>
               </div>
 
               {/* Kategori & Afiliasi */}
@@ -139,9 +167,9 @@ export default function KirimTulisanPage() {
                     onChange={(e) => setFormData({ ...formData, kategori: e.target.value })}
                     className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
                   >
-                    <option value="Karya Anregurutta">Karya Anregurutta</option>
-                    <option value="Usul Fikih">Usul Fikih</option>
-                    <option value="Tafsir & Hadis">Tafsir &amp; Hadis</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.name}>{c.name}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -151,7 +179,7 @@ export default function KirimTulisanPage() {
                   </label>
                   <input
                     type="text"
-                    placeholder="Contoh: Mahasantri Semester VI"
+                    placeholder="Contoh: Mahasantri Marhalah Ula"
                     value={formData.afiliasi}
                     onChange={(e) => setFormData({ ...formData, afiliasi: e.target.value })}
                     className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
@@ -162,12 +190,12 @@ export default function KirimTulisanPage() {
               {/* Judul */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                  Judul Karya Ilmiah <span className="text-red-500">*</span>
+                  Judul Karya Ilmiah / Artikel <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Tuliskan judul lengkap naskah Anda"
+                  placeholder="Tuliskan judul lengkap kajian naskah Anda"
                   value={formData.judul}
                   onChange={(e) => setFormData({ ...formData, judul: e.target.value })}
                   className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
@@ -177,7 +205,7 @@ export default function KirimTulisanPage() {
               {/* Abstrak */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                  Abstrak / Pokok Pikiran <span className="text-red-500">*</span>
+                  Abstrak / Pokok Pikiran Kajian <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   rows={4}
@@ -187,6 +215,35 @@ export default function KirimTulisanPage() {
                   onChange={(e) => setFormData({ ...formData, abstrak: e.target.value })}
                   className="w-full p-4 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
                 />
+              </div>
+
+              {/* Kata Kunci & Link File Drive */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Kata Kunci (Keywords)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Pisahkan dengan koma (misal: Fiqh AI, Maqashid)"
+                    value={formData.keywords}
+                    onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
+                    className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Link Naskah PDF/DOCX (Google Drive)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://drive.google.com/file/d/..."
+                    value={formData.fileLink}
+                    onChange={(e) => setFormData({ ...formData, fileLink: e.target.value })}
+                    className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
+                  />
+                </div>
               </div>
 
               {/* Checkbox Orisinalitas */}
@@ -199,7 +256,7 @@ export default function KirimTulisanPage() {
                   className="mt-1 w-4 h-4 rounded text-emerald-800 focus:ring-mahad-gold"
                 />
                 <label htmlFor="orisinalitasCheck" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
-                  Saya menyatakan bahwa naskah ini merupakan karya asli, menjunjung tinggi amanah ilmiah, dan tidak bertentangan dengan kaidah ahlussunnah wal jama&apos;ah.
+                  Saya menyatakan bahwa naskah ini merupakan karya ilmiah orisinal, menjunjung tinggi amanah keilmuan, dan selaras dengan manhaj Ahlussunnah wal Jama&apos;ah.
                 </label>
               </div>
 
@@ -211,10 +268,10 @@ export default function KirimTulisanPage() {
                   className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition flex items-center justify-center gap-2"
                 >
                   {status === "submitting" ? (
-                    <span>Sedang Mengirim Naskah...</span>
+                    <span>Sedang Merekam Naskah...</span>
                   ) : (
                     <>
-                      <span>Kirim Naskah ke Redaksi</span>
+                      <span>Kirim Naskah ke Redaksi ({settings.emailSubmission})</span>
                       <svg className="w-4 h-4 text-mahad-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                       </svg>
