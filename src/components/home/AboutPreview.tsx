@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useArticles } from "@/context/ArticleContext";
 
 export default function AboutPreview() {
+  const { settings } = useArticles();
+
   return (
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,7 +20,15 @@ export default function AboutPreview() {
           </h2>
           <div className="h-1.5 w-20 bg-mahad-gold mx-auto mt-4 mb-6 rounded-full"></div>
           <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-            Diresmikan pada <strong className="text-emerald-900 font-semibold">5 November 2013 (1 Muharram 1435 H)</strong> atas inisiasi AGH. Prof. Dr. M. Faried Wadjedy, MA dan dewan masyaikh demi membina kader ulama fukaha yang berdedikasi tinggi.
+            {settings.historyContent ? (
+              settings.historyContent.length > 250
+                ? `${settings.historyContent.slice(0, 250)}...`
+                : settings.historyContent
+            ) : (
+              <>
+                Diresmikan atas inisiasi {settings.mudirName || "AGH. Prof. Dr. M. Faried Wadjedy, MA"} dan dewan masyaikh demi membina kader ulama fukaha yang berdedikasi tinggi.
+              </>
+            )}
           </p>
         </div>
 

@@ -64,7 +64,7 @@ export default function Footer() {
                   width={44}
                   height={44}
                   className="w-full h-full object-contain"
-                  unoptimized={logoUrl.startsWith("data:")}
+                  unoptimized={true}
                 />
               </div>
               <div>

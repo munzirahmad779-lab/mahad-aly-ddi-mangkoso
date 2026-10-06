@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export const metadata = {
   title: "Profil & Sejarah — Ma'had Aly DDI Mangkoso",
-  description: "Sejarah berdirinya Ma'had Aly DDI Mangkoso pada 5 November 2013, visi keulamaan, sistem halaqah, dan beasiswa penuh.",
+  description: "Sejarah berdirinya Ma'had Aly DDI Mangkoso, visi keulamaan, sistem halaqah, dan beasiswa penuh.",
 };
 
 export default function TentangPage() {
@@ -31,10 +31,10 @@ export default function TentangPage() {
         <section className="bg-white rounded-2xl p-8 sm:p-10 border border-slate-200 shadow-sm space-y-4">
           <h2 className="font-serif font-bold text-2xl sm:text-3xl text-emerald-950 flex items-center gap-3">
             <span className="w-2.5 h-8 bg-mahad-gold rounded-full inline-block"></span>
-            <span>Sejarah Berdirinya</span>
+            <span>Sejarah Lembaga</span>
           </h2>
           <p className="text-slate-700 leading-relaxed">
-            Ma&apos;had Aly DDI Mangkoso didirikan pada tanggal <strong className="text-emerald-900 font-semibold">5 November 2013 (1 Muharram 1435 H)</strong>. Pendirian lembaga pendidikan tinggi kader ulama ini lahir dari rasa keprihatinan yang mendalam dari <strong>AGH. Prof. Dr. M. Faried Wadjedy, MA</strong> bersama para masyaikh Pondok Pesantren DDI Mangkoso atas semakin langkanya sosok ulama dan fukaha di tengah perkembangan zaman.
+            Ma&apos;had Aly DDI Mangkoso didirikan di Kompleks Pondok Pesantren DDI Mangkoso, Barru, Sulawesi Selatan. Pendirian lembaga pendidikan tinggi kader ulama ini lahir dari rasa keprihatinan yang mendalam dari <strong>AGH. Prof. Dr. M. Faried Wadjedy, MA</strong> bersama para masyaikh Pondok Pesantren DDI Mangkoso atas semakin langkanya sosok ulama dan fukaha di tengah perkembangan zaman.
           </p>
           <p className="text-slate-700 leading-relaxed">
             Melanjutkan estafet cita-cita pendiri utama Darud Da&apos;wah wal Irsyad (DDI), <strong>AGH. Abdurrahman Ambo Dalle</strong>, Ma&apos;had Aly DDI Mangkoso disiapkan secara khusus untuk menggembleng santri-santri pilihan melalui masa studi 4 tahun (8 semester) pada jenjang Marhalah Ula (M.1).

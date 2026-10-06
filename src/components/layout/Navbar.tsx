@@ -65,7 +65,7 @@ export default function Navbar() {
             </button>
             <div className="absolute left-0 top-full hidden group-hover:block w-56 bg-mahad-green-dark border border-emerald-800 rounded-xl shadow-2xl py-2 z-50">
               <Link href="/profil#sejarah" className="block px-4 py-2 hover:bg-white/10 hover:text-mahad-gold transition">
-                Sejarah Berdiri (2013)
+                Sejarah Lembaga
               </Link>
               <Link href="/profil#visi-misi" className="block px-4 py-2 hover:bg-white/10 hover:text-mahad-gold transition">
                 Visi &amp; Misi
@@ -262,7 +262,7 @@ export default function Navbar() {
             </button>
             {activeDropdown === "profil" && (
               <div className="pl-6 py-1 space-y-1 bg-black/20 rounded-lg text-xs">
-                <Link href="/profil#sejarah" onClick={closeMenu} className="block py-1.5 text-emerald-200 hover:text-mahad-gold">Sejarah (2013)</Link>
+                <Link href="/profil#sejarah" onClick={closeMenu} className="block py-1.5 text-emerald-200 hover:text-mahad-gold">Sejarah Lembaga</Link>
                 <Link href="/profil#visi-misi" onClick={closeMenu} className="block py-1.5 text-emerald-200 hover:text-mahad-gold">Visi &amp; Misi</Link>
                 <Link href="/profil#masyayikh" onClick={closeMenu} className="block py-1.5 text-emerald-200 hover:text-mahad-gold">Masyayikh &amp; Dewan Dosen</Link>
                 <Link href="/profil#struktur" onClick={closeMenu} className="block py-1.5 text-emerald-200 hover:text-mahad-gold">Struktur Organisasi</Link>

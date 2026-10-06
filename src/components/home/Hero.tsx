@@ -1,7 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useArticles } from "@/context/ArticleContext";
 
 export default function Hero() {
+  const { settings } = useArticles();
+  const displayYear = settings.establishedDate ? (settings.establishedDate.match(/\b(19\d\d|20\d\d)\b/)?.[0] || settings.establishedDate) : "2013";
+
   return (
     <header className="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-mahad-green-dark text-white overflow-hidden flex items-center min-h-[90vh]">
       {/* Background Pattern */}
@@ -64,7 +70,7 @@ export default function Hero() {
         {/* 4 Pilar Metrik Cepat */}
         <div className="mt-14 pt-8 border-t border-emerald-800/80 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div className="p-3">
-            <div className="font-serif font-bold text-2xl sm:text-3xl text-mahad-gold">2013</div>
+            <div className="font-serif font-bold text-2xl sm:text-3xl text-mahad-gold">{displayYear}</div>
             <div className="text-xs text-emerald-200/80 mt-1 uppercase tracking-wider">Tahun Berdiri</div>
           </div>
           <div className="p-3">

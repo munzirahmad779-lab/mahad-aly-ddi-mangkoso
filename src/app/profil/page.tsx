@@ -32,7 +32,7 @@ export default function ProfilPage() {
         {/* Tab Selector */}
         <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-4 bg-white p-3 rounded-2xl shadow-sm">
           {[
-            { id: "sejarah", label: "Sejarah Berdiri (2013)" },
+            { id: "sejarah", label: "Sejarah Lembaga" },
             { id: "visi-misi", label: "Visi & Misi" },
             { id: "masyayikh", label: `Masyayikh & Dosen (${lecturers.filter(l => l.isActive).length})` },
             { id: "struktur", label: "Struktur Organisasi" },
@@ -71,16 +71,23 @@ export default function ProfilPage() {
             )}
             
             <div className="text-slate-700 space-y-4 text-sm sm:text-base leading-relaxed">
-              <p>
-                Ma&apos;had Aly DDI Mangkoso resmi didirikan pada tanggal <strong className="text-emerald-900 font-semibold">{settings.establishedDate}</strong> di Kompleks Kampus Pondok Pesantren DDI Mangkoso, Kabupaten Barru, Sulawesi Selatan.
-              </p>
-              <p>
-                {settings.historyContent ||
-                  `Gagasan luhur ini diinisiasi oleh ${settings.mudirName} bersama dewan masyaikh dan pimpinan Pondok Pesantren DDI Mangkoso. Kelahiran lembaga ini didorong oleh keprihatinan yang mendalam atas semakin langkanya ulama fukaha (mutafaqqih fiddin) yang menguasai khazanah turats klasik secara mendalam sekaligus memiliki kelenturan nalar dalam menjawab problematika umat di era modern (Fiqh Mu'asarah).`}
-              </p>
-              <p>
-                Melanjutkan wasiat perjuangan pendiri utama Darud Da&apos;wah wal Irsyad (DDI), <strong>AGH. Abdurrahman Ambo Dalle</strong>, Ma&apos;had Aly DDI Mangkoso berkomitmen penuh mencetak kader-kader mujtahid kontemporer melalui masa pengkaderan intensif 4 tahun dengan beasiswa penuh 100% via program Orang Tua Asuh.
-              </p>
+              {settings.historyContent ? (
+                <div className="space-y-4 whitespace-pre-line leading-relaxed">
+                  {settings.historyContent}
+                </div>
+              ) : (
+                <>
+                  <p>
+                    Ma&apos;had Aly DDI Mangkoso didirikan di Kompleks Kampus Pondok Pesantren DDI Mangkoso, Kabupaten Barru, Sulawesi Selatan{settings.establishedDate ? ` (${settings.establishedDate})` : ""}.
+                  </p>
+                  <p>
+                    Gagasan luhur ini diinisiasi oleh {settings.mudirName} bersama dewan masyaikh dan pimpinan Pondok Pesantren DDI Mangkoso. Kelahiran lembaga ini didorong oleh keprihatinan yang mendalam atas semakin langkanya ulama fukaha (mutafaqqih fiddin) yang menguasai khazanah turats klasik secara mendalam sekaligus memiliki kelenturan nalar dalam menjawab problematika umat di era modern (Fiqh Mu&apos;asarah).
+                  </p>
+                  <p>
+                    Melanjutkan wasiat perjuangan pendiri utama Darud Da&apos;wah wal Irsyad (DDI), <strong>AGH. Abdurrahman Ambo Dalle</strong>, Ma&apos;had Aly DDI Mangkoso berkomitmen penuh mencetak kader-kader mujtahid kontemporer melalui masa pengkaderan intensif 4 tahun dengan beasiswa penuh 100% via program Orang Tua Asuh.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -137,6 +144,7 @@ export default function ProfilPage() {
                           width={64}
                           height={64}
                           className="w-full h-full object-cover"
+                          unoptimized={true}
                         />
                       ) : (
                         <span>👳</span>
@@ -205,6 +213,7 @@ export default function ProfilPage() {
                         width={400}
                         height={200}
                         className="w-full h-full object-cover"
+                        unoptimized={true}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-3xl">🏛️</div>

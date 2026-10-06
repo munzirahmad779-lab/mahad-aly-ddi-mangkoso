@@ -447,11 +447,18 @@ export default function AdminPage() {
   });
   const [mediaSearch, setMediaSearch] = useState("");
   const [mediaTypeFilter, setMediaTypeFilter] = useState<"all" | "image" | "pdf">("all");
+  const [mediaFolderFilter, setMediaFolderFilter] = useState<string>("all");
   const [mediaUploadFolder, setMediaUploadFolder] = useState<"logo" | "masyayikh" | "sarana" | "artikel" | "berita" | "galeri" | "skripsi-cover" | "umum">("umum");
   const [uploadedMediaUrl, setUploadedMediaUrl] = useState("");
 
-  // 16. Settings Form State
+  // 16. Settings Form State & Auto-sync with Supabase/Context
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(settings);
+
+  useEffect(() => {
+    if (settings) {
+      setSettingsForm(settings);
+    }
+  }, [settings]);
 
   // 17. Backup Import State
   const [importJsonText, setImportJsonText] = useState("");
@@ -978,24 +985,73 @@ export default function AdminPage() {
             {/* Quick Chart & Pintasan */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b">
-                  <h3 className="font-serif font-bold text-base text-slate-900">
-                    📈 Tren Pengunjung Website (30 Hari)
-                  </h3>
-                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg">
-                    12.480 Pembaca
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b gap-2">
+                  <div>
+                    <h3 className="font-serif font-bold text-base text-slate-900 flex items-center gap-2">
+                      <span>📊</span>
+                      <span>Statistik &amp; Peringkat Pembaca Artikel</span>
+                    </h3>
+                    <p className="text-[11px] text-slate-500">
+                      Dihitung secara riil dari akumulasi data tayangan seluruh artikel di database
+                    </p>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl self-start sm:self-auto">
+                    👁️ {articles.reduce((acc, a) => acc + (a.views || 0), 0).toLocaleString("id-ID")} Total Pembaca Riil
                   </span>
                 </div>
-                <div className="h-44 flex items-end justify-between gap-1 sm:gap-2 pt-6 px-2">
-                  {[35, 45, 60, 50, 75, 90, 65, 80, 110, 95, 120, 140, 130, 160, 175].map((h, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-                      <div
-                        style={{ height: `${h}px` }}
-                        className="w-full bg-emerald-700 group-hover:bg-mahad-gold rounded-t transition-all duration-200"
-                      ></div>
-                      <span className="text-[9px] text-slate-400">{i + 1}</span>
+
+                {/* Top 5 Artikel Terbanyak Dibaca */}
+                <div className="space-y-2">
+                  <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Top 5 Artikel Fiqh Paling Banyak Dibaca:
+                  </h4>
+                  {articles.length > 0 ? (
+                    <div className="divide-y divide-slate-100">
+                      {[...articles]
+                        .sort((a, b) => (b.views || 0) - (a.views || 0))
+                        .slice(0, 5)
+                        .map((art, idx) => (
+                          <div key={art.id} className="py-2 flex items-center justify-between gap-3 text-xs hover:bg-slate-50/80 px-2 rounded-lg transition">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-[10px] shrink-0">
+                                {idx + 1}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-900 truncate">
+                                  {art.title}
+                                </p>
+                                <p className="text-[10px] text-slate-500">
+                                  {art.category} • Penulis: {art.author}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded text-[11px]">
+                                {(art.views || 0).toLocaleString("id-ID")}x dibaca
+                              </span>
+                            </div>
+                          </div>
+                        ))}
                     </div>
-                  ))}
+                  ) : (
+                    <p className="text-xs text-slate-400 italic">Belum ada artikel yang diterbitkan.</p>
+                  )}
+                </div>
+
+                {/* Ringkasan Metrik Riil */}
+                <div className="pt-3 border-t border-slate-100 grid grid-cols-3 gap-2 text-center text-xs">
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <span className="text-[10px] text-slate-500 block">Warta &amp; Berita</span>
+                    <span className="font-bold text-slate-800">{news.length} warta</span>
+                  </div>
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <span className="text-[10px] text-slate-500 block">Berkas Media R2</span>
+                    <span className="font-bold text-slate-800">{media.length} file</span>
+                  </div>
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <span className="text-[10px] text-slate-500 block">Total Pengunjung PMB</span>
+                    <span className="font-bold text-slate-800">{subscribers.length} pendaftar</span>
+                  </div>
                 </div>
               </div>
 
@@ -3368,7 +3424,10 @@ export default function AdminPage() {
                   <span className="text-slate-500 text-[11px]">Folder Target:</span>
                   <select
                     value={mediaUploadFolder}
-                    onChange={(e) => setMediaUploadFolder(e.target.value as any)}
+                    onChange={(e) => {
+                      setMediaUploadFolder(e.target.value as any);
+                      setUploadedMediaUrl("");
+                    }}
                     className="p-1.5 bg-slate-50 border rounded-lg text-xs font-bold text-emerald-800 focus:ring-emerald-500"
                   >
                     <option value="umum">📁 /umum</option>
@@ -3396,42 +3455,77 @@ export default function AdminPage() {
                       size: newMedia.size,
                       type: newMedia.type,
                     });
-                    alert("✅ Berkas berhasil diunggah ke Cloudflare R2 dan tercatat di Media Library!");
                   }}
                   folder={mediaUploadFolder}
                   label={`Unggah File Baru ke /${mediaUploadFolder}`}
                   helperText="Format: JPG, PNG, WebP, SVG (Maks. 5 MB) atau PDF (Maks. 10 MB)"
                   maxSizeMB={10}
                 />
+                {uploadedMediaUrl && (
+                  <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="text-xs text-emerald-900 font-semibold flex items-center gap-1.5">
+                      <span>✓</span> Berkas berhasil diunggah ke folder <code className="font-mono bg-emerald-100 px-1 py-0.5 rounded text-emerald-800">/{mediaUploadFolder}</code> di Cloudflare R2!
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setUploadedMediaUrl("")}
+                      className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-1.5 self-start sm:self-auto shrink-0"
+                    >
+                      <span>➕</span> Unggah Berkas Baru Lagi
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Filter & Search Toolbar */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              {/* Type Filter Buttons */}
-              <div className="flex items-center gap-1.5">
-                {[
-                  { id: "all", label: `Semua (${media.length})` },
-                  { id: "image", label: `🖼️ Gambar (${media.filter(m => m.type === "image").length})` },
-                  { id: "pdf", label: `📄 PDF / Berkas (${media.filter(m => m.type !== "image").length})` }
-                ].map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => setMediaTypeFilter(f.id as any)}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition text-xs ${
-                      mediaTypeFilter === f.id
-                        ? "bg-emerald-800 text-white shadow"
-                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                    }`}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Type Filter Buttons */}
+                <div className="flex items-center gap-1.5">
+                  {[
+                    { id: "all", label: `Semua (${media.length})` },
+                    { id: "image", label: `🖼️ Gambar (${media.filter(m => m.type === "image").length})` },
+                    { id: "pdf", label: `📄 PDF (${media.filter(m => m.type !== "image").length})` }
+                  ].map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setMediaTypeFilter(f.id as any)}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition text-xs ${
+                        mediaTypeFilter === f.id
+                          ? "bg-emerald-800 text-white shadow"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Folder Filter Selector */}
+                <div className="flex items-center gap-1 pl-2 border-l border-slate-200">
+                  <span className="text-[11px] text-slate-400 font-bold">Folder:</span>
+                  <select
+                    value={mediaFolderFilter}
+                    onChange={(e) => setMediaFolderFilter(e.target.value)}
+                    className="p-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700"
                   >
-                    {f.label}
-                  </button>
-                ))}
+                    <option value="all">Semua Folder</option>
+                    <option value="umum">/umum</option>
+                    <option value="logo">/logo</option>
+                    <option value="masyayikh">/masyayikh</option>
+                    <option value="sarana">/sarana</option>
+                    <option value="artikel">/artikel</option>
+                    <option value="berita">/berita</option>
+                    <option value="galeri">/galeri</option>
+                    <option value="skripsi-cover">/skripsi-cover</option>
+                  </select>
+                </div>
               </div>
 
               {/* Search Input */}
-              <div className="relative w-full sm:w-64">
+              <div className="relative w-full md:w-64">
                 <input
                   type="text"
                   value={mediaSearch}
@@ -3450,11 +3544,15 @@ export default function AdminPage() {
                   mediaTypeFilter === "all" ||
                   (mediaTypeFilter === "image" && med.type === "image") ||
                   (mediaTypeFilter === "pdf" && med.type !== "image");
+                const matchFolder =
+                  mediaFolderFilter === "all" ||
+                  med.url.includes(`/${mediaFolderFilter}/`) ||
+                  (med as any).folder === mediaFolderFilter;
                 const matchSearch =
                   !mediaSearch ||
                   med.name.toLowerCase().includes(mediaSearch.toLowerCase()) ||
                   med.url.toLowerCase().includes(mediaSearch.toLowerCase());
-                return matchType && matchSearch;
+                return matchType && matchFolder && matchSearch;
               });
 
               if (filteredMedia.length === 0) {
