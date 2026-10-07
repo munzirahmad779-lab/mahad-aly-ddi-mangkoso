@@ -23,8 +23,10 @@ import {
   PMBWave,
   PMBFAQ,
   GalleryAlbum,
-  PageSeoItem
+  PageSeoItem,
+  PageTextsSettings
 } from "@/lib/types";
+import { INITIAL_PAGE_TEXTS } from "@/lib/mock-data";
 
 const SYSTEM_NAV_PAGES = [
   { label: "🏠 Beranda", url: "/" },
@@ -175,6 +177,8 @@ export default function AdminPage() {
     updateEmailTemplates,
     aboutPageContent,
     updateAboutPageContent,
+    pageTexts,
+    updatePageTexts,
     publishSubmissionAsArticle,
     settings,
     updateSettings,
@@ -429,7 +433,36 @@ export default function AdminPage() {
     | "homesections"
     | "aboutpage"
     | "emailtemplates"
+    | "pagetexts"
   >("dashboard");
+
+  // Page Texts CMS State
+  const [localPageTexts, setLocalPageTexts] = useState<PageTextsSettings>(pageTexts || INITIAL_PAGE_TEXTS);
+  const [pageTextsSaved, setPageTextsSaved] = useState(false);
+  const [activePageTextTab, setActivePageTextTab] = useState<
+    "artikel" | "opini" | "profil" | "akademik" | "skripsi" | "berita" | "kirim" | "kontak"
+  >("artikel");
+
+  useEffect(() => {
+    if (pageTexts) {
+      setLocalPageTexts(pageTexts);
+    }
+  }, [pageTexts]);
+
+  const handleSavePageTexts = (e: React.FormEvent) => {
+    e.preventDefault();
+    updatePageTexts(localPageTexts);
+    setPageTextsSaved(true);
+    setTimeout(() => setPageTextsSaved(false), 3500);
+  };
+
+  const handleResetPageTexts = () => {
+    if (!confirm("Reset semua teks halaman publik ke pengaturan bawaan awal?")) return;
+    setLocalPageTexts(INITIAL_PAGE_TEXTS);
+    updatePageTexts(INITIAL_PAGE_TEXTS);
+    setPageTextsSaved(true);
+    setTimeout(() => setPageTextsSaved(false), 3500);
+  };
 
   // Submissions Management States
   const [submissionFilter, setSubmissionFilter] = useState<"all" | "review" | "revision" | "accepted" | "rejected">("all");
@@ -1090,6 +1123,7 @@ export default function AdminPage() {
               { id: "dashboard", icon: "📊", label: "Dashboard" },
               { id: "submissions", icon: "📥", label: "Submission Naskah", alertBadge: pendingSubmissionsCount },
               { id: "publications", icon: "📚", label: "Publikasi Fiqh", badge: articles.length + theses.length },
+              { id: "pagetexts", icon: "✍️", label: "Teks Halaman (CMS)", badge: "Tanpa Ngoding" },
               { id: "header", icon: "🧭", label: "Header & Navbar" },
               { id: "hero", icon: "🌟", label: "Hero & Metrik" },
               { id: "homesections", icon: "📑", label: "Section Beranda" },
@@ -1205,6 +1239,7 @@ export default function AdminPage() {
               {activeMenu === "academic" && "📖 Kelola Akademik (Takhassus, Kurikulum 8 Semester, Kalender)"}
               {activeMenu === "content" && "🎨 Kustomisasi Kalam Hikmah Anregurutta (Arab RTL)"}
               {activeMenu === "publications" && "📚 Publikasi Fiqh (Artikel, Kategori Tanpa Batas, Skripsi + Drive)"}
+              {activeMenu === "pagetexts" && "✍️ Edit Teks & Narasi Halaman Publik (CMS Tanpa Ngoding)"}
               {activeMenu === "bahtsul" && "🕌 Bahtsul Masail (Persiapan Fatwa, Soal Jawab & Subscriber)"}
               {activeMenu === "pmb" && "🎓 Penerimaan Mahasantri Baru (PMB Online, Gelombang & FAQ)"}
               {activeMenu === "information" && "📰 Warta Berita, Agenda & Galeri Foto Dokumentasi"}
@@ -2233,6 +2268,368 @@ export default function AdminPage() {
                 </button>
               </form>
             </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            4.B TEKS HALAMAN PUBLIK (CMS TANPA NGODING)
+           ══════════════════════════════════════════════════════════════ */}
+        {activeMenu === "pagetexts" && (
+          <div className="space-y-6">
+            {/* Header Banner */}
+            <div className="p-6 bg-gradient-to-r from-emerald-900 to-teal-900 text-white rounded-2xl shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <span className="inline-block px-3 py-1 bg-emerald-700/60 text-emerald-200 text-xs font-bold rounded-full mb-2">
+                  ✨ CMS Dinamis Tanpa Ngoding
+                </span>
+                <h2 className="text-xl md:text-2xl font-serif font-bold text-white">
+                  Kelola Teks &amp; Narasi Halaman Publik
+                </h2>
+                <p className="text-emerald-100/80 text-sm mt-1 max-w-2xl leading-relaxed">
+                  Ubah judul, badge kategori, subjudul, dan deskripsi narasi pembuka di seluruh halaman publik tanpa perlu menyentuh kode. Perubahan otomatis tersimpan ke database &amp; tampil live.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleResetPageTexts}
+                  className="px-4 py-2 text-xs font-semibold bg-white/10 hover:bg-white/20 text-white rounded-xl transition border border-white/20"
+                >
+                  🔄 Reset Standar
+                </button>
+              </div>
+            </div>
+
+            {/* Notification Toast */}
+            {pageTextsSaved && (
+              <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 flex items-center justify-between animate-fadeIn shadow-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">✅</span>
+                  <div>
+                    <p className="font-bold text-sm">Perubahan Teks Halaman Berhasil Disimpan!</p>
+                    <p className="text-xs text-emerald-700">Tersinkronisasi ke Cloud Database dan langsung tampil di website publik tanpa perlu deploy ulang.</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPageTextsSaved(false)}
+                  className="text-emerald-700 hover:text-emerald-900 text-xs font-bold px-2 py-1"
+                >
+                  ✕ Tutup
+                </button>
+              </div>
+            )}
+
+            {/* Nav Tabs Per Halaman */}
+            <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-1.5">
+              {[
+                { id: "artikel", label: "📝 Artikel Fiqh", path: "/artikel" },
+                { id: "opini", label: "✍️ Opini Santri", path: "/opini" },
+                { id: "profil", label: "🏛️ Profil & Masyayikh", path: "/profil" },
+                { id: "akademik", label: "📖 Akademik", path: "/akademik" },
+                { id: "skripsi", label: "🎓 Skripsi", path: "/skripsi" },
+                { id: "berita", label: "📰 Berita & Warta", path: "/berita" },
+                { id: "kirim", label: "📤 Kirim Tulisan", path: "/kirim-tulisan" },
+                { id: "kontak", label: "📞 Kontak Sekretariat", path: "/kontak" }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActivePageTextTab(tab.id as any)}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    activePageTextTab === tab.id
+                      ? "bg-emerald-800 text-white shadow-sm"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Form Editor & Live Preview Grid */}
+            {(() => {
+              const PAGE_TEXT_CONFIG: Record<
+                "artikel" | "opini" | "profil" | "akademik" | "skripsi" | "berita" | "kirim" | "kontak",
+                {
+                  name: string;
+                  path: string;
+                  badgeKey: keyof PageTextsSettings;
+                  titleKey: keyof PageTextsSettings;
+                  descKey: keyof PageTextsSettings;
+                }
+              > = {
+                artikel: {
+                  name: "Artikel Fiqh",
+                  path: "/artikel",
+                  badgeKey: "artikelBadge",
+                  titleKey: "artikelTitle",
+                  descKey: "artikelDesc"
+                },
+                opini: {
+                  name: "Opini Santri",
+                  path: "/opini",
+                  badgeKey: "opiniBadge",
+                  titleKey: "opiniTitle",
+                  descKey: "opiniDesc"
+                },
+                profil: {
+                  name: "Profil Lembaga",
+                  path: "/profil",
+                  badgeKey: "profilBadge",
+                  titleKey: "profilTitle",
+                  descKey: "profilDesc"
+                },
+                akademik: {
+                  name: "Akademik",
+                  path: "/akademik",
+                  badgeKey: "akademikBadge",
+                  titleKey: "akademikTitle",
+                  descKey: "akademikDesc"
+                },
+                skripsi: {
+                  name: "Skripsi & Risalah",
+                  path: "/skripsi",
+                  badgeKey: "skripsiBadge",
+                  titleKey: "skripsiTitle",
+                  descKey: "skripsiDesc"
+                },
+                berita: {
+                  name: "Berita & Warta",
+                  path: "/berita",
+                  badgeKey: "beritaBadge",
+                  titleKey: "beritaTitle",
+                  descKey: "beritaDesc"
+                },
+                kirim: {
+                  name: "Kirim Tulisan",
+                  path: "/kirim-tulisan",
+                  badgeKey: "kirimBadge",
+                  titleKey: "kirimTitle",
+                  descKey: "kirimDesc"
+                },
+                kontak: {
+                  name: "Kontak & Sekretariat",
+                  path: "/kontak",
+                  badgeKey: "kontakBadge",
+                  titleKey: "kontakTitle",
+                  descKey: "kontakDesc"
+                }
+              };
+
+              const activeConf = PAGE_TEXT_CONFIG[activePageTextTab];
+              const currentBadge = (localPageTexts[activeConf.badgeKey] as string) || "";
+              const currentTitle = (localPageTexts[activeConf.titleKey] as string) || "";
+              const currentDesc = (localPageTexts[activeConf.descKey] as string) || "";
+
+              return (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Form Editor Kolom Kiri */}
+                  <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                      <h3 className="font-serif font-bold text-base text-slate-900 flex items-center gap-2">
+                        <span>✏️</span>
+                        <span>Formulir Teks: Halaman {activeConf.name}</span>
+                      </h3>
+                      <a
+                        href={activeConf.path}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-emerald-700 hover:text-emerald-800 font-semibold flex items-center gap-1 hover:underline"
+                      >
+                        <span>Lihat Halaman Publik</span>
+                        <span>↗</span>
+                      </a>
+                    </div>
+
+                    <form onSubmit={handleSavePageTexts} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Badge / Label Kategori Atas (Kecil di Atas Judul)
+                        </label>
+                        <input
+                          type="text"
+                          value={currentBadge}
+                          onChange={(e) =>
+                            setLocalPageTexts((prev) => ({
+                              ...prev,
+                              [activeConf.badgeKey]: e.target.value
+                            }))
+                          }
+                          placeholder="Contoh: Publikasi Ilmiah Takhassus"
+                          className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                        />
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Tampil sebagai badge kapsul hijau kecil di atas judul utama.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Judul Utama Halaman (Heading H1 Besar)
+                        </label>
+                        <input
+                          type="text"
+                          value={currentTitle}
+                          onChange={(e) =>
+                            setLocalPageTexts((prev) => ({
+                              ...prev,
+                              [activeConf.titleKey]: e.target.value
+                            }))
+                          }
+                          placeholder="Contoh: Mimbar Kajian Fiqh Mu'asarah"
+                          className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                          required
+                        />
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Judul paling mencolok di bagian banner atas halaman.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Deskripsi Narasi Lengkap (Paragraf Pengantar)
+                        </label>
+                        <textarea
+                          rows={4}
+                          value={currentDesc}
+                          onChange={(e) =>
+                            setLocalPageTexts((prev) => ({
+                              ...prev,
+                              [activeConf.descKey]: e.target.value
+                            }))
+                          }
+                          placeholder="Tuliskan deskripsi atau narasi pengantar halaman ini..."
+                          className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm leading-relaxed focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                          required
+                        />
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Paragraf pembuka yang menjelaskan isi dan tujuan halaman kepada pengunjung.
+                        </p>
+                      </div>
+
+                      {/* Tambahan Khusus untuk Halaman Profil (Dewan Masyayikh) */}
+                      {activePageTextTab === "profil" && (
+                        <div className="pt-4 border-t border-slate-200 space-y-4 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">👳‍♂️</span>
+                            <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
+                              Teks Khusus: Bagian Dewan Masyayikh
+                            </h4>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">
+                              Judul Section Dewan Masyayikh
+                            </label>
+                            <input
+                              type="text"
+                              value={localPageTexts?.profilMasyaikhTitle || ""}
+                              onChange={(e) =>
+                                setLocalPageTexts((prev) => ({
+                                  ...prev,
+                                  profilMasyaikhTitle: e.target.value
+                                }))
+                              }
+                              placeholder="Masyayikh & Dewan Dosen Pengampu"
+                              className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">
+                              Subjudul / Keterangan Dewan Masyayikh
+                            </label>
+                            <input
+                              type="text"
+                              value={localPageTexts?.profilMasyaikhDesc || ""}
+                              onChange={(e) =>
+                                setLocalPageTexts((prev) => ({
+                                  ...prev,
+                                  profilMasyaikhDesc: e.target.value
+                                }))
+                              }
+                              placeholder="Pendidik & Ulama Otoritatif Turats & Fiqh Mu'asarah"
+                              className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="pt-3 flex items-center justify-between">
+                        <p className="text-xs text-slate-400">
+                          * Perubahan langsung berlaku seketika setelah disimpan
+                        </p>
+                        <button
+                          type="submit"
+                          className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-md transition flex items-center gap-2"
+                        >
+                          <span>💾</span>
+                          <span>Simpan Teks Halaman</span>
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Live Preview Card Kolom Kanan */}
+                  <div className="lg:col-span-5 space-y-4">
+                    <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-sm flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span className="text-xs font-bold tracking-wide text-slate-200">
+                          LIVE PREVIEW REAL-TIME
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-400 font-mono">
+                        {activeConf.path}
+                      </span>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-950 text-white p-7 rounded-2xl shadow-lg border border-emerald-900/40 space-y-4 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-600/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                      {currentBadge && (
+                        <span className="inline-block px-3 py-1 bg-emerald-800/80 text-emerald-300 text-xs font-bold rounded-full border border-emerald-700/50">
+                          {currentBadge}
+                        </span>
+                      )}
+
+                      <h3 className="text-2xl font-serif font-bold text-white tracking-tight">
+                        {currentTitle || "Judul Halaman"}
+                      </h3>
+
+                      <p className="text-xs text-slate-300 leading-relaxed pt-2 border-t border-white/10">
+                        {currentDesc || "Deskripsi narasi halaman akan tampil di sini..."}
+                      </p>
+
+                      {activePageTextTab === "profil" && (
+                        <div className="mt-4 pt-4 border-t border-emerald-800/60 bg-emerald-900/30 p-3 rounded-xl space-y-1">
+                          <p className="text-[11px] font-bold text-amber-300 uppercase">
+                            Preview Header Masyayikh:
+                          </p>
+                          <p className="font-serif font-bold text-sm text-white">
+                            {localPageTexts?.profilMasyaikhTitle || "Masyayikh & Dewan Dosen Pengampu"}
+                          </p>
+                          <p className="text-xs text-slate-300">
+                            {localPageTexts?.profilMasyaikhDesc || "Pendidik & Ulama Otoritatif Turats & Fiqh Mu'asarah"}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl space-y-2 text-xs text-amber-900">
+                      <div className="font-bold flex items-center gap-1.5 text-amber-950">
+                        <span>💡</span>
+                        <span>Petunjuk Redaksi:</span>
+                      </div>
+                      <p className="leading-relaxed text-amber-800">
+                        Anda bebas mengubah narasi kata-kata sesuai arahan pimpinan atau kebutuhan redaksi tanpa khawatir merusak layout tampilan website. Seluruh format font, warna, dan responsivitas telah diatur rapi secara otomatis.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 

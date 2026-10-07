@@ -4,27 +4,29 @@ import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 
 export default function BeritaPage() {
-  const { news } = useArticles();
+  const { news, pageTexts } = useArticles();
+  const safeNews = Array.isArray(news) ? news : [];
 
   return (
     <main className="pt-24 pb-20 bg-slate-50 min-h-screen">
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-3.5 py-1 rounded-full">
-            Kabar Pesantren &amp; Halaqah
+            {pageTexts?.beritaBadge || "Kabar Pesantren & Halaqah"}
           </span>
           <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white mt-3">
-            Berita, Pengumuman &amp; Agenda
+            {pageTexts?.beritaTitle || "Berita, Pengumuman & Agenda"}
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-2">
-            Informasi terkini kegiatan akademik, simposium ilmiah, dan agenda resmi Ma&apos;had Aly DDI Mangkoso.
+            {pageTexts?.beritaDesc ||
+              "Informasi terkini kegiatan akademik, simposium ilmiah, dan agenda resmi Ma'had Aly DDI Mangkoso."}
           </p>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {news.map((item) => (
+          {safeNews.map((item) => (
             <article
               key={item.id}
               className="bg-white rounded-2xl p-6 border border-slate-200 hover:border-emerald-700 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"

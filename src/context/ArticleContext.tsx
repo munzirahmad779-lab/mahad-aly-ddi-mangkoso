@@ -33,7 +33,8 @@ import {
   HomeSectionConfigItem,
   EmailTemplateItem,
   AboutPageContent,
-  SubmissionTimelineEvent
+  SubmissionTimelineEvent,
+  PageTextsSettings
 } from "@/lib/types";
 import {
   INITIAL_ARTICLES,
@@ -64,7 +65,8 @@ import {
   INITIAL_HERO_SETTINGS,
   INITIAL_HOME_SECTIONS,
   INITIAL_EMAIL_TEMPLATES,
-  INITIAL_ABOUT_CONTENT
+  INITIAL_ABOUT_CONTENT,
+  INITIAL_PAGE_TEXTS
 } from "@/lib/mock-data";
 
 interface DataContextType {
@@ -221,6 +223,10 @@ interface DataContextType {
   aboutPageContent: AboutPageContent;
   updateAboutPageContent: (updated: Partial<AboutPageContent>) => void;
 
+  // Page Texts CMS (Teks Halaman Tanpa Ngoding)
+  pageTexts: PageTextsSettings;
+  updatePageTexts: (updated: Partial<PageTextsSettings>) => void;
+
   // Site Settings
   settings: SiteSettings;
   updateSettings: (newSettings: Partial<SiteSettings>) => void;
@@ -264,6 +270,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const [homeSections, setHomeSections] = useState<HomeSectionConfigItem[]>(INITIAL_HOME_SECTIONS);
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplateItem[]>(INITIAL_EMAIL_TEMPLATES);
   const [aboutPageContent, setAboutPageContent] = useState<AboutPageContent>(INITIAL_ABOUT_CONTENT);
+  const [pageTexts, setPageTexts] = useState<PageTextsSettings>(INITIAL_PAGE_TEXTS);
 
   // Load from Supabase + LocalStorage fallback
   useEffect(() => {
@@ -295,6 +302,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
       const savedAboutPage = localStorage.getItem("mahad_about_page_content");
       if (savedAboutPage) setAboutPageContent(JSON.parse(savedAboutPage));
+
+      const savedPageTexts = localStorage.getItem("mahad_page_texts");
+      if (savedPageTexts) setPageTexts(JSON.parse(savedPageTexts));
 
       const savedSubmissions = localStorage.getItem("mahad_submissions");
       if (savedSubmissions) setSubmissions(JSON.parse(savedSubmissions));
@@ -414,8 +424,16 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
               role: c.data?.role || "Dosen Pengampu",
               photoUrl: c.data?.photoUrl || "",
               expertise: c.data?.expertise || "",
-              education: c.data?.education || "",
-              publications: c.data?.publications || "",
+              education: Array.isArray(c.data?.education)
+                ? c.data.education
+                : typeof c.data?.education === "string" && c.data.education.trim().length > 0
+                ? c.data.education.split("•").map((s: string) => s.trim()).filter(Boolean)
+                : [],
+              publications: Array.isArray(c.data?.publications)
+                ? c.data.publications
+                : typeof c.data?.publications === "string" && c.data.publications.trim().length > 0
+                ? c.data.publications.split("•").map((s: string) => s.trim()).filter(Boolean)
+                : [],
               order: idx + 1,
               isActive: c.data?.isActive !== false
             }));
@@ -582,6 +600,16 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           .single();
         if (aboutData?.value) {
           setAboutPageContent((prev) => ({ ...prev, ...aboutData.value }));
+        }
+
+        // Fetch Page Texts CMS from site_content
+        const { data: pageTextsData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "page_texts")
+          .single();
+        if (pageTextsData?.value) {
+          setPageTexts((prev) => ({ ...prev, ...pageTextsData.value }));
         }
       } catch (err) {
         console.warn("Supabase live fetch notice:", err);
@@ -1959,6 +1987,23 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updatePageTexts = (updated: Partial<PageTextsSettings>) => {
+    const next = { ...pageTexts, ...updated };
+    setPageTexts(next);
+    localStorage.setItem("mahad_page_texts", JSON.stringify(next));
+    addLog("Memperbarui Narasi Teks Halaman Publik", "CMS Halaman");
+    try {
+      supabase.from("site_content").upsert({
+        key: "page_texts",
+        group_name: "content",
+        label: "Page Texts CMS",
+        value: next
+      }, { onConflict: "key" }).then();
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -2062,6 +2107,8 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         updateEmailTemplates,
         aboutPageContent,
         updateAboutPageContent,
+        pageTexts,
+        updatePageTexts,
         settings,
         updateSettings,
         exportBackupJson,

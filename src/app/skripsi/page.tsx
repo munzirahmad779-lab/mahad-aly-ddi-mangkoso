@@ -6,21 +6,28 @@ import { useArticles } from "@/context/ArticleContext";
 import ThesisCard from "@/components/theses/ThesisCard";
 
 export default function SkripsiListPage() {
-  const { theses } = useArticles();
+  const { theses, pageTexts } = useArticles();
   const [search, setSearch] = useState("");
   const [selectedYear, setSelectedYear] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  const years = Array.from(new Set(theses.map((t) => t.year)));
-  const categories = Array.from(new Set(theses.map((t) => t.categoryLabel)));
+  const safeTheses = Array.isArray(theses) ? theses : [];
+  const years = Array.from(new Set(safeTheses.map((t) => t.year)));
+  const categories = Array.from(new Set(safeTheses.map((t) => t.categoryLabel)));
 
-  const filteredTheses = theses.filter((t) => {
+  const filteredTheses = safeTheses.filter((t) => {
+    const kws = Array.isArray(t.keywords)
+      ? t.keywords
+      : typeof t.keywords === "string" && (t.keywords as string).length > 0
+      ? [(t.keywords as string)]
+      : [];
+
     const matchesSearch =
-      t.title.toLowerCase().includes(search.toLowerCase()) ||
-      t.author.toLowerCase().includes(search.toLowerCase()) ||
-      t.keywords.some((k) => k.toLowerCase().includes(search.toLowerCase())) ||
-      t.advisor1.toLowerCase().includes(search.toLowerCase()) ||
-      t.advisor2.toLowerCase().includes(search.toLowerCase());
+      (t.title || "").toLowerCase().includes(search.toLowerCase()) ||
+      (t.author || "").toLowerCase().includes(search.toLowerCase()) ||
+      kws.some((k) => k.toLowerCase().includes(search.toLowerCase())) ||
+      (t.advisor1 || "").toLowerCase().includes(search.toLowerCase()) ||
+      (t.advisor2 || "").toLowerCase().includes(search.toLowerCase());
 
     const matchesYear = selectedYear === "all" || t.year === selectedYear;
     const matchesCategory = selectedCategory === "all" || t.categoryLabel === selectedCategory;
@@ -34,13 +41,14 @@ export default function SkripsiListPage() {
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-3.5 py-1 rounded-full">
-            Repositori Riset Mahasantri (M.1)
+            {pageTexts?.skripsiBadge || "Repositori Riset Mahasantri (M.1)"}
           </span>
           <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white mt-3">
-            Skripsi &amp; Risalah Fiqh Mu&apos;asarah
+            {pageTexts?.skripsiTitle || "Skripsi & Risalah Fiqh Mu'asarah"}
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-2">
-            Karya ilmiah orisinal mahasantri Marhalah Ula Ma&apos;had Aly DDI Mangkoso dalam merespons dinamika hukum Islam kontemporer.
+            {pageTexts?.skripsiDesc ||
+              "Karya ilmiah orisinal mahasantri Marhalah Ula Ma'had Aly DDI Mangkoso dalam merespons dinamika hukum Islam kontemporer."}
           </p>
         </div>
       </section>

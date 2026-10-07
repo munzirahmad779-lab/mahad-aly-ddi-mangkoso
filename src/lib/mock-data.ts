@@ -33,7 +33,8 @@ import {
   HeroSectionSettings,
   HomeSectionConfigItem,
   EmailTemplateItem,
-  AboutPageContent
+  AboutPageContent,
+  PageTextsSettings
 } from "./types";
 
 export const INITIAL_HERO: HeroSectionData = {
@@ -1252,4 +1253,48 @@ export const INITIAL_ABOUT_CONTENT: AboutPageContent = {
   beasiswaDesc: "Seluruh mahasantri yang lulus seleksi ketat mendapatkan beasiswa pendidikan dan asrama secara penuh melalui program Orang Tua Asuh.",
   kurikulumTitle: "Jenjang Marhalah Ula (M.1)",
   kurikulumDesc: "Pendidikan setara sarjana (S1) dengan konsentrasi Fiqh wa Usuluhu, berfokus pada Fiqh Mu'asarah (Fiqh Kontemporer)."
+};
+
+export const INITIAL_PAGE_TEXTS: PageTextsSettings = {
+  // Halaman Publikasi Artikel / Fiqh (/artikel)
+  artikelBadge: "Publikasi Ilmiah Takhassus",
+  artikelTitle: "Mimbar Kajian Fiqh Mu'asarah",
+  artikelDesc: "Kumpulan artikel telaah hukum Islam kontemporer, kajian ushul fikih, dan risalah pemikiran ulama DDI Mangkoso.",
+
+  // Halaman Opini & Refleksi Santri (/opini)
+  opiniBadge: "Ruang Gagasan Santri & Esai",
+  opiniTitle: "Mimbar Opini & Refleksi Santri",
+  opiniDesc: "Refleksi sosial keagamaan, catatan adab santri, dan esai pemikiran mahasantri serta asatidz Ma'had Aly DDI Mangkoso.",
+
+  // Halaman Profil Lembaga (/profil)
+  profilBadge: "Identitas & Sejarah Lembaga",
+  profilTitle: "Profil Ma'had Aly DDI Mangkoso",
+  profilDesc: "Pusat Pendidikan Tinggi Kader Ulama Takhassus Fiqh wa Usuluhu Berfokus pada Fiqh Mu'asarah.",
+  profilMasyaikhTitle: "Masyayikh & Dewan Dosen Pengampu",
+  profilMasyaikhDesc: "Pendidik & Ulama Otoritatif Turats & Fiqh Mu'asarah",
+
+  // Halaman Akademik (/akademik)
+  akademikBadge: "Struktur Pendidikan & Kurikulum",
+  akademikTitle: "Akademik Fiqh wa Usuluhu",
+  akademikDesc: "Pendidikan intensif 4 tahun (8 Semester) jenjang Marhalah Ula dengan kurikulum terpadu Turats Salaf dan Riset Fiqh Mu'asarah.",
+
+  // Halaman Skripsi (/skripsi)
+  skripsiBadge: "Repositori Riset Mahasantri (M.1)",
+  skripsiTitle: "Skripsi & Risalah Fiqh Mu'asarah",
+  skripsiDesc: "Karya ilmiah orisinal mahasantri Marhalah Ula Ma'had Aly DDI Mangkoso dalam merespons dinamika hukum Islam kontemporer.",
+
+  // Halaman Berita & Warta (/berita)
+  beritaBadge: "Warta & Informasi Terkini",
+  beritaTitle: "Warta & Agenda Ma'had Aly",
+  beritaDesc: "Kabar aktivitas akademis, halaqah ilmiah, bahtsul masail, dan dinamika kelembagaan Ma'had Aly DDI Mangkoso.",
+
+  // Halaman Kirim Tulisan (/kirim-tulisan)
+  kirimBadge: "Pusat Pengajuan Naskah",
+  kirimTitle: "Kirim Tulisan / Opini Anda",
+  kirimDesc: "Wadah publikasi karya ilmiah, telaah fiqh mu'asarah, dan refleksi santri bagi civitas akademika dan umum.",
+
+  // Halaman Kontak (/kontak)
+  kontakBadge: "Pusat Informasi & Layanan",
+  kontakTitle: "Hubungi Ma'had Aly",
+  kontakDesc: "Silakan hubungi sekretariat atau datang langsung ke kampus Ma'had Aly DDI Mangkoso."
 };

@@ -481,3 +481,47 @@ export interface AboutPageContent {
     badge?: string;
   }>;
 }
+
+export interface PageTextsSettings {
+  // Halaman Publikasi Artikel / Fiqh
+  artikelBadge: string;
+  artikelTitle: string;
+  artikelDesc: string;
+
+  // Halaman Opini & Refleksi Santri
+  opiniBadge: string;
+  opiniTitle: string;
+  opiniDesc: string;
+
+  // Halaman Profil Lembaga
+  profilBadge: string;
+  profilTitle: string;
+  profilDesc: string;
+  profilMasyaikhTitle?: string;
+  profilMasyaikhDesc?: string;
+
+  // Halaman Akademik
+  akademikBadge: string;
+  akademikTitle: string;
+  akademikDesc: string;
+
+  // Halaman Skripsi
+  skripsiBadge: string;
+  skripsiTitle: string;
+  skripsiDesc: string;
+
+  // Halaman Berita & Warta
+  beritaBadge: string;
+  beritaTitle: string;
+  beritaDesc: string;
+
+  // Halaman Kirim Tulisan
+  kirimBadge: string;
+  kirimTitle: string;
+  kirimDesc: string;
+
+  // Halaman Kontak
+  kontakBadge: string;
+  kontakTitle: string;
+  kontakDesc: string;
+}

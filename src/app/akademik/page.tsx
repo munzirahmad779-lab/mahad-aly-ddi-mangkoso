@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 
 export default function AkademikPage() {
-  const { settings, courses, calendarEvents } = useArticles();
+  const { settings, courses, calendarEvents, pageTexts } = useArticles();
   const [selectedSemester, setSelectedSemester] = useState<number>(1);
 
-  const filteredCourses = courses.filter((c) => c.semester === selectedSemester);
+  const safeCourses = Array.isArray(courses) ? courses : [];
+  const safeCalendarEvents = Array.isArray(calendarEvents) ? calendarEvents : [];
+  const filteredCourses = safeCourses.filter((c) => c.semester === selectedSemester);
 
   return (
     <main className="pt-24 pb-20 bg-slate-50 min-h-screen">
@@ -16,13 +18,14 @@ export default function AkademikPage() {
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-3.5 py-1 rounded-full">
-            Struktur Pendidikan &amp; Kurikulum
+            {pageTexts?.akademikBadge || "Struktur Pendidikan & Kurikulum"}
           </span>
           <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white mt-3">
-            Akademik {settings.takhassus}
+            {pageTexts?.akademikTitle || `Akademik ${settings?.takhassus || "Fiqh wa Usuluhu"}`}
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-2">
-            Pendidikan intensif 4 tahun (8 Semester) jenjang Marhalah Ula dengan kurikulum terpadu Turats Salaf dan Riset Fiqh Mu&apos;asarah.
+            {pageTexts?.akademikDesc ||
+              "Pendidikan intensif 4 tahun (8 Semester) jenjang Marhalah Ula dengan kurikulum terpadu Turats Salaf dan Riset Fiqh Mu'asarah."}
           </p>
         </div>
       </section>

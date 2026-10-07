@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 export default function KirimTulisanPage() {
-  const { categories, settings } = useArticles();
+  const { categories, settings, pageTexts } = useArticles();
 
   const [formData, setFormData] = useState({
     nama: "",
@@ -232,10 +232,11 @@ export default function KirimTulisanPage() {
             <span>Kembali ke Beranda</span>
           </Link>
           <h1 className="font-serif font-bold text-3xl sm:text-4xl text-white">
-            Kirim Naskah Kajian Ilmiah
+            {pageTexts?.kirimTitle || "Kirim Naskah Kajian Ilmiah"}
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto">
-            Salurkan karya ilmiah, risalah fatwa, opini fikih, atau kajian Fiqh Mu&apos;asarah Anda langsung ke Dewan Redaksi Ma&apos;had Aly DDI Mangkoso.
+            {pageTexts?.kirimDesc ||
+              "Salurkan karya ilmiah, risalah fatwa, opini fikih, atau kajian Fiqh Mu'asarah Anda langsung ke Dewan Redaksi Ma'had Aly DDI Mangkoso."}
           </p>
           <div className="inline-flex items-center gap-2 bg-emerald-950/70 border border-emerald-800 px-3.5 py-1.5 rounded-full text-xs text-mahad-gold font-mono">
             <span>📧 Berkas langsung terlampir ke email admin</span>

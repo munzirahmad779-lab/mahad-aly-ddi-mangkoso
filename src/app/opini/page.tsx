@@ -6,7 +6,7 @@ import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
 
 export default function OpiniPage() {
-  const { articles, categories } = useArticles();
+  const { articles, categories, pageTexts } = useArticles();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
@@ -37,13 +37,14 @@ export default function OpiniPage() {
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-3">
           <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-3.5 py-1 rounded-full">
-            Ruang Gagasan Santri &bull; Kolom &amp; Esai
+            {pageTexts?.opiniBadge || "Ruang Gagasan Santri • Kolom & Esai"}
           </span>
           <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white">
-            Mimbar Opini &amp; Refleksi Santri
+            {pageTexts?.opiniTitle || "Mimbar Opini & Refleksi Santri"}
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto">
-            Wadah ekspresi pemikiran kritis, catatan spiritual adab penuntut ilmu, serta refleksi sosial keagamaan mahasantri dan asatidz Ma&apos;had Aly DDI Mangkoso.
+            {pageTexts?.opiniDesc ||
+              "Wadah ekspresi pemikiran kritis, catatan spiritual adab penuntut ilmu, serta refleksi sosial keagamaan mahasantri dan asatidz Ma'had Aly DDI Mangkoso."}
           </p>
         </div>
       </section>
