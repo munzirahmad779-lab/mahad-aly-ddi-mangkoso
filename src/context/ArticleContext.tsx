@@ -96,6 +96,7 @@ interface DataContextType {
   saveSubmissionFullPaper: (id: string, fullPaper: import("@/lib/types").SubmissionFullPaper) => Promise<{ success: boolean }>;
   deleteSubmission: (id: string) => void;
   publishSubmissionAsArticle: (submissionId: string) => Promise<{ success: boolean; article?: Article; emailResult?: any }>;
+  publishSubmissionAsThesis: (submissionId: string) => Promise<{ success: boolean; thesis?: Thesis; emailResult?: any; error?: string }>;
 
   // News / Berita
   news: NewsItem[];
@@ -1213,6 +1214,70 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     return { success: true, article: newArt, emailResult: updateRes.emailResult };
   };
 
+  const publishSubmissionAsThesis = async (submissionId: string) => {
+    const sub = submissions.find((s) => s.id === submissionId);
+    if (!sub) return { success: false, error: "Submission tidak ditemukan" };
+
+    const thesisSlug = sub.judul
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+    const newThesis: Thesis = {
+      id: "thesis-" + Date.now().toString(),
+      title: sub.judul,
+      slug: `${thesisSlug}-${Date.now().toString().slice(-4)}`,
+      author: sub.nama,
+      nim: sub.nim || "Alumni",
+      angkatan: sub.angkatan || "Takhassus",
+      year: sub.year || new Date().getFullYear().toString(),
+      category: sub.kategori || "fiqh-muamalah-kontemporer",
+      categoryLabel: sub.kategori || "Fiqh Mu'asarah",
+      advisor1: sub.advisor1 || "Dewan Pembina Ilmiah",
+      advisor2: sub.advisor2 || "Dewan Asatidzah",
+      abstractId: sub.abstrak,
+      abstractAr: "",
+      keywords: Array.isArray(sub.keyword)
+        ? sub.keyword
+        : typeof sub.keywords === "string"
+        ? sub.keywords.split(",").map((k) => k.trim())
+        : ["Fiqh Mu'asarah", "Skripsi"],
+      downloadUrl: sub.driveUrl || sub.fileLink || "",
+      fileSize: sub.fileSize || "1.5 MB"
+    };
+
+    saveTheses([newThesis, ...theses]);
+    addLog("Menerbitkan Submission ke Repositori Skripsi", sub.judul);
+
+    try {
+      await supabase.from("theses").insert({
+        judul: newThesis.title,
+        slug: newThesis.slug,
+        penulis: newThesis.author,
+        nim: newThesis.nim,
+        tahun_lulus: parseInt(newThesis.year) || 2024,
+        abstrak: newThesis.abstractId,
+        pembimbing1: newThesis.advisor1,
+        pembimbing2: newThesis.advisor2,
+        file_url: newThesis.downloadUrl
+      });
+    } catch (e) {
+      console.warn("DB notice thesis insert:", e);
+    }
+
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://mahadalymangkoso.ac.id";
+    const publishedLink = `${origin}/skripsi/${newThesis.slug}`;
+
+    const updateRes = await updateSubmissionStatus(
+      submissionId,
+      "published",
+      `Risalah skripsi telah resmi diterbitkan di Repositori Skripsi: ${publishedLink}`,
+      publishedLink
+    );
+
+    return { success: true, thesis: newThesis, emailResult: updateRes.emailResult };
+  };
+
   const deleteSubmission = (id: string) => {
     const target = submissions.find((s) => s.id === id);
     const filtered = submissions.filter((s) => s.id !== id);
@@ -2026,6 +2091,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         saveSubmissionFullPaper,
         deleteSubmission,
         publishSubmissionAsArticle,
+        publishSubmissionAsThesis,
         news,
         addNews,
         updateNews,

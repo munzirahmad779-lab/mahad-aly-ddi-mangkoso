@@ -102,6 +102,12 @@ export interface Submission {
   status: "submitted" | "review" | "under_review" | "revisi" | "revision" | "publish" | "published" | "rejected" | "accepted";
   reviewNote?: string;
   feedback?: string;
+  nim?: string;
+  angkatan?: string;
+  year?: string;
+  advisor1?: string;
+  advisor2?: string;
+  driveUrl?: string;
   timeline?: SubmissionTimelineEvent[];
   adminEmailSent?: boolean;
   adminEmailError?: string;
@@ -483,45 +489,71 @@ export interface AboutPageContent {
 }
 
 export interface PageTextsSettings {
-  // Halaman Publikasi Artikel / Fiqh
+  // 1. Halaman Publikasi Artikel / Fiqh
   artikelBadge: string;
   artikelTitle: string;
   artikelDesc: string;
+  artikelFiqhTabLabel?: string;
+  artikelOpiniTabLabel?: string;
 
-  // Halaman Opini & Refleksi Santri
+  // 2. Halaman Opini & Refleksi Santri
   opiniBadge: string;
   opiniTitle: string;
   opiniDesc: string;
 
-  // Halaman Profil Lembaga
+  // 3. Halaman Profil Lembaga
   profilBadge: string;
   profilTitle: string;
   profilDesc: string;
   profilMasyaikhTitle?: string;
   profilMasyaikhDesc?: string;
+  profilSejarahTitle?: string;
+  profilSejarahDesc?: string;
+  profilVisiTitle?: string;
+  profilSaranaTitle?: string;
+  profilAkreditasiTitle?: string;
 
-  // Halaman Akademik
+  // 4. Halaman Akademik
   akademikBadge: string;
   akademikTitle: string;
   akademikDesc: string;
+  akademikTakhassusBadge?: string;
+  akademikTakhassusTitle?: string;
+  akademikTakhassusDesc?: string;
+  akademikFokusBadge?: string;
+  akademikFokusTitle?: string;
+  akademikFokusDesc?: string;
+  akademikKurikulumTitle?: string;
+  akademikKurikulumDesc?: string;
+  akademikKalenderTitle?: string;
+  akademikPedomanTitle?: string;
+  akademikPedomanDesc?: string;
+  akademikPenilaianTitle?: string;
+  akademikPenilaianDesc?: string;
 
-  // Halaman Skripsi
+  // 5. Halaman Skripsi
   skripsiBadge: string;
   skripsiTitle: string;
   skripsiDesc: string;
+  skripsiSubmitTitle?: string;
+  skripsiSubmitDesc?: string;
 
-  // Halaman Berita & Warta
+  // 6. Halaman Berita & Warta
   beritaBadge: string;
   beritaTitle: string;
   beritaDesc: string;
 
-  // Halaman Kirim Tulisan
+  // 7. Halaman Kirim Tulisan
   kirimBadge: string;
   kirimTitle: string;
   kirimDesc: string;
+  kirimPanduanTitle?: string;
+  kirimPanduanDesc?: string;
 
-  // Halaman Kontak
+  // 8. Halaman Kontak
   kontakBadge: string;
   kontakTitle: string;
   kontakDesc: string;
+  kontakSekretariatTitle?: string;
+  kontakSekretariatDesc?: string;
 }

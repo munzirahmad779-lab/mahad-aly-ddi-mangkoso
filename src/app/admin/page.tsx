@@ -180,6 +180,7 @@ export default function AdminPage() {
     pageTexts,
     updatePageTexts,
     publishSubmissionAsArticle,
+    publishSubmissionAsThesis,
     settings,
     updateSettings,
     exportBackupJson,
@@ -2508,49 +2509,443 @@ export default function AdminPage() {
                         </p>
                       </div>
 
-                      {/* Tambahan Khusus untuk Halaman Profil (Dewan Masyayikh) */}
+                      {/* Granular Section Fields per Halaman */}
                       {activePageTextTab === "profil" && (
                         <div className="pt-4 border-t border-slate-200 space-y-4 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
                           <div className="flex items-center gap-2">
                             <span className="text-base">👳‍♂️</span>
                             <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
-                              Teks Khusus: Bagian Dewan Masyayikh
+                              Sub-Elemen: Tab &amp; Bagian Khusus Profil
+                            </h4>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">
+                                Judul Bagian Dewan Masyayikh
+                              </label>
+                              <input
+                                type="text"
+                                value={localPageTexts?.profilMasyaikhTitle || ""}
+                                onChange={(e) =>
+                                  setLocalPageTexts((prev) => ({
+                                    ...prev,
+                                    profilMasyaikhTitle: e.target.value
+                                  }))
+                                }
+                                placeholder="Masyayikh & Dewan Dosen Pengampu"
+                                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">
+                                Subjudul Dewan Masyayikh
+                              </label>
+                              <input
+                                type="text"
+                                value={localPageTexts?.profilMasyaikhDesc || ""}
+                                onChange={(e) =>
+                                  setLocalPageTexts((prev) => ({
+                                    ...prev,
+                                    profilMasyaikhDesc: e.target.value
+                                  }))
+                                }
+                                placeholder="Pendidik & Ulama Otoritatif Turats & Fiqh Mu'asarah"
+                                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">
+                                Judul Tab Sejarah Lembaga
+                              </label>
+                              <input
+                                type="text"
+                                value={localPageTexts?.profilSejarahTitle || ""}
+                                onChange={(e) =>
+                                  setLocalPageTexts((prev) => ({
+                                    ...prev,
+                                    profilSejarahTitle: e.target.value
+                                  }))
+                                }
+                                placeholder="Sejarah Pendirian Ma'had Aly DDI Mangkoso"
+                                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">
+                                Judul Tab Visi Kelembagaan
+                              </label>
+                              <input
+                                type="text"
+                                value={localPageTexts?.profilVisiTitle || ""}
+                                onChange={(e) =>
+                                  setLocalPageTexts((prev) => ({
+                                    ...prev,
+                                    profilVisiTitle: e.target.value
+                                  }))
+                                }
+                                placeholder="Visi Kelembagaan"
+                                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">
+                                Judul Tab Sarana &amp; Prasarana
+                              </label>
+                              <input
+                                type="text"
+                                value={localPageTexts?.profilSaranaTitle || ""}
+                                onChange={(e) =>
+                                  setLocalPageTexts((prev) => ({
+                                    ...prev,
+                                    profilSaranaTitle: e.target.value
+                                  }))
+                                }
+                                placeholder="Sarana & Prasarana Pembelajaran"
+                                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">
+                                Judul Tab Status Akreditasi
+                              </label>
+                              <input
+                                type="text"
+                                value={localPageTexts?.profilAkreditasiTitle || ""}
+                                onChange={(e) =>
+                                  setLocalPageTexts((prev) => ({
+                                    ...prev,
+                                    profilAkreditasiTitle: e.target.value
+                                  }))
+                                }
+                                placeholder="Status & Sertifikat Akreditasi"
+                                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {activePageTextTab === "akademik" && (
+                        <div className="pt-4 border-t border-slate-200 space-y-4 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">🎓</span>
+                            <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
+                              Sub-Elemen: Seluruh Kartu &amp; Section Akademik
+                            </h4>
+                          </div>
+
+                          <div className="space-y-4">
+                            {/* Card 1: Takhassus */}
+                            <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2">
+                              <span className="text-[11px] font-bold text-emerald-800 uppercase block">1. Kartu Takhassus:</span>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <input
+                                  type="text"
+                                  value={localPageTexts?.akademikTakhassusBadge || ""}
+                                  onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikTakhassusBadge: e.target.value }))}
+                                  placeholder="Badge: Takhassus Ma'had Aly"
+                                  className="w-full px-3 py-1.5 border rounded-lg text-xs"
+                                />
+                                <input
+                                  type="text"
+                                  value={localPageTexts?.akademikTakhassusTitle || ""}
+                                  onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikTakhassusTitle: e.target.value }))}
+                                  placeholder="Judul: Fiqh wa Usuluhu"
+                                  className="w-full px-3 py-1.5 border rounded-lg text-xs font-semibold"
+                                />
+                              </div>
+                              <textarea
+                                rows={2}
+                                value={localPageTexts?.akademikTakhassusDesc || ""}
+                                onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikTakhassusDesc: e.target.value }))}
+                                placeholder="Deskripsi kartu Takhassus..."
+                                className="w-full px-3 py-1.5 border rounded-lg text-xs"
+                              />
+                            </div>
+
+                            {/* Card 2: Fokus Keilmuan */}
+                            <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2">
+                              <span className="text-[11px] font-bold text-emerald-800 uppercase block">2. Kartu Fokus Kajian:</span>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <input
+                                  type="text"
+                                  value={localPageTexts?.akademikFokusBadge || ""}
+                                  onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikFokusBadge: e.target.value }))}
+                                  placeholder="Badge: Fokus Kajian Utama"
+                                  className="w-full px-3 py-1.5 border rounded-lg text-xs"
+                                />
+                                <input
+                                  type="text"
+                                  value={localPageTexts?.akademikFokusTitle || ""}
+                                  onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikFokusTitle: e.target.value }))}
+                                  placeholder="Judul: Fiqh Mu'asarah"
+                                  className="w-full px-3 py-1.5 border rounded-lg text-xs font-semibold"
+                                />
+                              </div>
+                              <textarea
+                                rows={2}
+                                value={localPageTexts?.akademikFokusDesc || ""}
+                                onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikFokusDesc: e.target.value }))}
+                                placeholder="Deskripsi kartu Fokus Keilmuan..."
+                                className="w-full px-3 py-1.5 border rounded-lg text-xs"
+                              />
+                            </div>
+
+                            {/* Kurikulum & Kalender */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5">
+                                <span className="text-[11px] font-bold text-slate-800 block">Judul Section Kurikulum:</span>
+                                <input
+                                  type="text"
+                                  value={localPageTexts?.akademikKurikulumTitle || ""}
+                                  onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikKurikulumTitle: e.target.value }))}
+                                  placeholder="Struktur Kurikulum Pendidikan Mahad Aly"
+                                  className="w-full px-3 py-1.5 border rounded-lg text-xs"
+                                />
+                              </div>
+                              <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5">
+                                <span className="text-[11px] font-bold text-slate-800 block">Judul Section Kalender:</span>
+                                <input
+                                  type="text"
+                                  value={localPageTexts?.akademikKalenderTitle || ""}
+                                  onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikKalenderTitle: e.target.value }))}
+                                  placeholder="Kalender Pendidikan & Siklus Perkuliahan"
+                                  className="w-full px-3 py-1.5 border rounded-lg text-xs"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Buku Pedoman & Penilaian */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5">
+                                <span className="text-[11px] font-bold text-slate-800 block">Buku Pedoman Akademik:</span>
+                                <input
+                                  type="text"
+                                  value={localPageTexts?.akademikPedomanTitle || ""}
+                                  onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikPedomanTitle: e.target.value }))}
+                                  placeholder="Buku Pedoman Akademik & Disiplin Santri"
+                                  className="w-full px-3 py-1.5 border rounded-lg text-xs font-semibold"
+                                />
+                                <input
+                                  type="text"
+                                  value={localPageTexts?.akademikPedomanDesc || ""}
+                                  onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikPedomanDesc: e.target.value }))}
+                                  placeholder="Deskripsi buku pedoman..."
+                                  className="w-full px-3 py-1.5 border rounded-lg text-xs"
+                                />
+                              </div>
+                              <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5">
+                                <span className="text-[11px] font-bold text-slate-800 block">Sistem Evaluasi &amp; Penilaian:</span>
+                                <input
+                                  type="text"
+                                  value={localPageTexts?.akademikPenilaianTitle || ""}
+                                  onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikPenilaianTitle: e.target.value }))}
+                                  placeholder="Sistem Evaluasi & Penilaian Komprehensif"
+                                  className="w-full px-3 py-1.5 border rounded-lg text-xs font-semibold"
+                                />
+                                <input
+                                  type="text"
+                                  value={localPageTexts?.akademikPenilaianDesc || ""}
+                                  onChange={(e) => setLocalPageTexts((prev) => ({ ...prev, akademikPenilaianDesc: e.target.value }))}
+                                  placeholder="Deskripsi sistem penilaian..."
+                                  className="w-full px-3 py-1.5 border rounded-lg text-xs"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {activePageTextTab === "skripsi" && (
+                        <div className="pt-4 border-t border-slate-200 space-y-3 bg-blue-50/60 p-4 rounded-xl border border-blue-200">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">🎓</span>
+                            <h4 className="text-xs font-bold text-blue-950 uppercase tracking-wider">
+                              Sub-Elemen: Banner Callout Setor Skripsi Alumni
                             </h4>
                           </div>
 
                           <div>
                             <label className="block text-xs font-bold text-slate-700 mb-1">
-                              Judul Section Dewan Masyayikh
+                              Judul Banner Setor Skripsi
                             </label>
                             <input
                               type="text"
-                              value={localPageTexts?.profilMasyaikhTitle || ""}
+                              value={localPageTexts?.skripsiSubmitTitle || ""}
                               onChange={(e) =>
                                 setLocalPageTexts((prev) => ({
                                   ...prev,
-                                  profilMasyaikhTitle: e.target.value
+                                  skripsiSubmitTitle: e.target.value
                                 }))
                               }
-                              placeholder="Masyayikh & Dewan Dosen Pengampu"
-                              className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                              placeholder="Setor Skripsi Alumni & Mahasantri"
+                              className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none"
                             />
                           </div>
 
                           <div>
                             <label className="block text-xs font-bold text-slate-700 mb-1">
-                              Subjudul / Keterangan Dewan Masyayikh
+                              Deskripsi Banner Setor Skripsi
                             </label>
-                            <input
-                              type="text"
-                              value={localPageTexts?.profilMasyaikhDesc || ""}
+                            <textarea
+                              rows={2}
+                              value={localPageTexts?.skripsiSubmitDesc || ""}
                               onChange={(e) =>
                                 setLocalPageTexts((prev) => ({
                                   ...prev,
-                                  profilMasyaikhDesc: e.target.value
+                                  skripsiSubmitDesc: e.target.value
                                 }))
                               }
-                              placeholder="Pendidik & Ulama Otoritatif Turats & Fiqh Mu'asarah"
-                              className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                              placeholder="Khusus alumni dan mahasantri tingkat akhir Ma'had Aly DDI Mangkoso..."
+                              className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs leading-relaxed focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {activePageTextTab === "artikel" && (
+                        <div className="pt-4 border-t border-slate-200 space-y-3 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">📑</span>
+                            <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
+                              Sub-Elemen: Label Tab Switcher Artikel
+                            </h4>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">
+                                Label Tab Fiqh Mu&apos;asarah
+                              </label>
+                              <input
+                                type="text"
+                                value={localPageTexts?.artikelFiqhTabLabel || ""}
+                                onChange={(e) =>
+                                  setLocalPageTexts((prev) => ({
+                                    ...prev,
+                                    artikelFiqhTabLabel: e.target.value
+                                  }))
+                                }
+                                placeholder="Kajian Fiqh Mu'asarah"
+                                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">
+                                Label Tab Opini Santri
+                              </label>
+                              <input
+                                type="text"
+                                value={localPageTexts?.artikelOpiniTabLabel || ""}
+                                onChange={(e) =>
+                                  setLocalPageTexts((prev) => ({
+                                    ...prev,
+                                    artikelOpiniTabLabel: e.target.value
+                                  }))
+                                }
+                                placeholder="Opini & Refleksi Santri"
+                                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {activePageTextTab === "kirim" && (
+                        <div className="pt-4 border-t border-slate-200 space-y-3 bg-amber-50/50 p-4 rounded-xl border border-amber-200">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">📝</span>
+                            <h4 className="text-xs font-bold text-amber-950 uppercase tracking-wider">
+                              Sub-Elemen: Kotak Panduan Redaksi
+                            </h4>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">
+                              Judul Panduan Penulisan
+                            </label>
+                            <input
+                              type="text"
+                              value={localPageTexts?.kirimPanduanTitle || ""}
+                              onChange={(e) =>
+                                setLocalPageTexts((prev) => ({
+                                  ...prev,
+                                  kirimPanduanTitle: e.target.value
+                                }))
+                              }
+                              placeholder="Ketentuan & Alur Publikasi Naskah"
+                              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">
+                              Deskripsi Panduan Penulisan
+                            </label>
+                            <input
+                              type="text"
+                              value={localPageTexts?.kirimPanduanDesc || ""}
+                              onChange={(e) =>
+                                setLocalPageTexts((prev) => ({
+                                  ...prev,
+                                  kirimPanduanDesc: e.target.value
+                                }))
+                              }
+                              placeholder="Panduan resmi dewan redaksi LP2M Ma'had Aly DDI Mangkoso bagi penulis."
+                              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 outline-none"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {activePageTextTab === "kontak" && (
+                        <div className="pt-4 border-t border-slate-200 space-y-3 bg-slate-100/70 p-4 rounded-xl border border-slate-200">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">🏢</span>
+                            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                              Sub-Elemen: Kotak Sekretariat
+                            </h4>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">
+                              Judul Kotak Sekretariat
+                            </label>
+                            <input
+                              type="text"
+                              value={localPageTexts?.kontakSekretariatTitle || ""}
+                              onChange={(e) =>
+                                setLocalPageTexts((prev) => ({
+                                  ...prev,
+                                  kontakSekretariatTitle: e.target.value
+                                }))
+                              }
+                              placeholder="Sekretariat & Kampus"
+                              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">
+                              Deskripsi Kotak Sekretariat
+                            </label>
+                            <input
+                              type="text"
+                              value={localPageTexts?.kontakSekretariatDesc || ""}
+                              onChange={(e) =>
+                                setLocalPageTexts((prev) => ({
+                                  ...prev,
+                                  kontakSekretariatDesc: e.target.value
+                                }))
+                              }
+                              placeholder="Pusat layanan administrasi, kantor akademik, dan kampus..."
+                              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
                             />
                           </div>
                         </div>
@@ -4200,6 +4595,7 @@ export default function AdminPage() {
                   .map((sub) => {
                     const trackingCode = sub.trackingCode || `MAD-2026-${sub.id.slice(-4)}`;
                     const isOpiniType = sub.tipeNaskah?.toLowerCase().includes("opini");
+                    const isSkripsiType = sub.tipeNaskah?.toLowerCase().includes("skripsi") || Boolean(sub.nim);
                     return (
                       <div key={sub.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-emerald-700 transition">
                         {/* Top Meta */}
@@ -4212,9 +4608,13 @@ export default function AdminPage() {
                               {sub.kategori}
                             </span>
                             <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
-                              isOpiniType ? "bg-amber-100 text-amber-900 border border-amber-200" : "bg-emerald-100 text-emerald-900 border border-emerald-200"
+                              isSkripsiType
+                                ? "bg-blue-100 text-blue-900 border border-blue-200"
+                                : isOpiniType
+                                ? "bg-amber-100 text-amber-900 border border-amber-200"
+                                : "bg-emerald-100 text-emerald-900 border border-emerald-200"
                             }`}>
-                              {isOpiniType ? "✍️ Opini / Refleksi" : "📚 Artikel Ilmiah"}
+                              {isSkripsiType ? "🎓 Skripsi / Risalah" : isOpiniType ? "✍️ Opini / Refleksi" : "📚 Artikel Ilmiah"}
                             </span>
                           </div>
 
@@ -4265,6 +4665,40 @@ export default function AdminPage() {
                               <span>{sub.afiliasi || "-"}</span>
                             </div>
                           </div>
+
+                          {isSkripsiType && (
+                            <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-slate-700 bg-blue-50/80 p-3 rounded-xl border border-blue-200 text-xs">
+                              <div>
+                                <span className="text-blue-900 font-bold block text-[10px] uppercase">NIM Mahasantri</span>
+                                <span className="font-mono font-bold">{sub.nim || "-"}</span>
+                              </div>
+                              <div>
+                                <span className="text-blue-900 font-bold block text-[10px] uppercase">Angkatan / Thn Lulus</span>
+                                <span>{sub.angkatan || "-"} ({sub.year || "-"})</span>
+                              </div>
+                              <div>
+                                <span className="text-blue-900 font-bold block text-[10px] uppercase">Pembimbing 1</span>
+                                <span>{sub.advisor1 || "-"}</span>
+                              </div>
+                              <div>
+                                <span className="text-blue-900 font-bold block text-[10px] uppercase">Pembimbing 2</span>
+                                <span>{sub.advisor2 || "-"}</span>
+                              </div>
+                              {sub.driveUrl && (
+                                <div className="col-span-2 sm:col-span-4 pt-1.5 border-t border-blue-200 flex items-center gap-2">
+                                  <span className="text-blue-900 font-bold text-[10px] uppercase shrink-0">Link Drive / Naskah:</span>
+                                  <a
+                                    href={sub.driveUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-700 underline truncate font-semibold hover:text-blue-900"
+                                  >
+                                    {sub.driveUrl} ↗
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         {/* Abstract */}
@@ -4420,33 +4854,59 @@ export default function AdminPage() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              disabled={publishingSubId === sub.id}
-                              onClick={async () => {
-                                const tipeLabel = isOpiniType ? "Opini/Refleksi Santri" : "Artikel Ilmiah";
-                                if (confirm(`Setujui & terbitkan naskah "${sub.judul}" langsung sebagai ${tipeLabel} di portal publik?`)) {
-                                  setPublishingSubId(sub.id);
-                                  const res = await publishSubmissionAsArticle(sub.id);
-                                  setPublishingSubId(null);
-                                  if (res.success) {
-                                    if (res.emailResult?.success) {
-                                      alert(`✓ Naskah berhasil diterbitkan sebagai ${tipeLabel} dan notifikasi email berhasil dikirim ke ${sub.email}!`);
+                            {isSkripsiType ? (
+                              <button
+                                type="button"
+                                disabled={publishingSubId === sub.id}
+                                onClick={async () => {
+                                  if (confirm(`Setujui & terbitkan skripsi "${sub.judul}" karya ${sub.nama} langsung ke Repositori Skripsi publik?`)) {
+                                    setPublishingSubId(sub.id);
+                                    const res = await publishSubmissionAsThesis(sub.id);
+                                    setPublishingSubId(null);
+                                    if (res.success) {
+                                      alert(`✓ Skripsi "${sub.judul}" karya ${sub.nama} berhasil diterbitkan langsung ke Repositori Skripsi publik!`);
                                     } else {
-                                      const errInfo = res.emailResult?.error || "Resend API key belum aktif";
-                                      alert(`✓ Naskah berhasil diterbitkan langsung sebagai ${tipeLabel} live!\n⚠️ Email konfirmasi ke penulis belum terkirim: ${errInfo}`);
+                                      alert(`Gagal menerbitkan skripsi: ${res.error || "Terjadi kesalahan"}`);
                                     }
                                   }
-                                }
-                              }}
-                              className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 disabled:opacity-50"
-                            >
-                              {publishingSubId === sub.id ? (
-                                <span>Sedang menerbitkan...</span>
-                              ) : (
-                                <span>✓ Setujui &amp; Terbitkan Live</span>
-                              )}
-                            </button>
+                                }}
+                                className="px-5 py-2 bg-blue-800 hover:bg-blue-900 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 disabled:opacity-50"
+                              >
+                                {publishingSubId === sub.id ? (
+                                  <span>Sedang menerbitkan...</span>
+                                ) : (
+                                  <span>🎓 Terbitkan ke Repositori Skripsi</span>
+                                )}
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={publishingSubId === sub.id}
+                                onClick={async () => {
+                                  const tipeLabel = isOpiniType ? "Opini/Refleksi Santri" : "Artikel Ilmiah";
+                                  if (confirm(`Setujui & terbitkan naskah "${sub.judul}" langsung sebagai ${tipeLabel} di portal publik?`)) {
+                                    setPublishingSubId(sub.id);
+                                    const res = await publishSubmissionAsArticle(sub.id);
+                                    setPublishingSubId(null);
+                                    if (res.success) {
+                                      if (res.emailResult?.success) {
+                                        alert(`✓ Naskah berhasil diterbitkan sebagai ${tipeLabel} dan notifikasi email berhasil dikirim ke ${sub.email}!`);
+                                      } else {
+                                        const errInfo = res.emailResult?.error || "Resend API key belum aktif";
+                                        alert(`✓ Naskah berhasil diterbitkan langsung sebagai ${tipeLabel} live!\n⚠️ Email konfirmasi ke penulis belum terkirim: ${errInfo}`);
+                                      }
+                                    }
+                                  }
+                                }}
+                                className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 disabled:opacity-50"
+                              >
+                                {publishingSubId === sub.id ? (
+                                  <span>Sedang menerbitkan...</span>
+                                ) : (
+                                  <span>✓ Setujui &amp; Terbitkan Live</span>
+                                )}
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() => {

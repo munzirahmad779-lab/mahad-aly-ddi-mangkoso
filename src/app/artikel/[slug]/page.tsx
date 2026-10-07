@@ -39,19 +39,23 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
       {/* Header Artikel */}
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link
-            href={article.type === "opini" ? "/opini" : "/artikel"}
-            className="inline-flex items-center gap-1.5 text-xs text-mahad-gold-light hover:text-mahad-gold mb-6 transition"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            <span>{article.type === "opini" ? "Kembali ke Opini Santri" : "Kembali ke Mimbar Kajian"}</span>
-          </Link>
+          <div className="mb-4">
+            <Link
+              href={article.type === "opini" ? "/opini" : "/artikel"}
+              className="inline-flex items-center gap-1.5 text-xs text-mahad-gold-light hover:text-white bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-full transition border border-white/15"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>{article.type === "opini" ? "Kembali ke Opini Santri" : "Kembali ke Mimbar Kajian"}</span>
+            </Link>
+          </div>
 
-          <span className="inline-block text-xs font-bold uppercase tracking-wider bg-mahad-gold text-mahad-green-dark px-3 py-1 rounded-full mb-3 shadow">
-            {article.categoryLabel}
-          </span>
+          <div className="mb-3">
+            <span className="inline-block text-xs font-bold uppercase tracking-wider bg-mahad-gold text-mahad-green-dark px-3 py-1 rounded-full shadow-xs">
+              {article.categoryLabel}
+            </span>
+          </div>
 
           <h1 className="font-serif font-bold text-2xl sm:text-4xl lg:text-5xl text-white leading-tight">
             {article.title}

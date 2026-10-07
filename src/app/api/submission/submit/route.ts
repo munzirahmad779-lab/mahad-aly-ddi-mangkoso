@@ -4,11 +4,12 @@ import { sendSubmissionEmailToAdmin, sendConfirmationEmailToAuthor } from "@/lib
 
 export const dynamic = "force-dynamic";
 
-// Allowed MIME types and extensions for Word documents
-const ALLOWED_EXTENSIONS = [".doc", ".docx"];
+// Allowed MIME types and extensions for manuscripts & thesis documents
+const ALLOWED_EXTENSIONS = [".doc", ".docx", ".pdf"];
 const ALLOWED_MIME_TYPES = [
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/pdf",
   "application/octet-stream", // Fallback for some OS/browser uploads
 ];
 
@@ -28,6 +29,14 @@ export async function POST(req: NextRequest) {
     const keyword = (formData.get("keyword") as string)?.trim();
     const originalitas = formData.get("originalitas");
     const file = formData.get("file") as File | null;
+
+    // Field Tambahan Khusus Skripsi Alumni / Mahasantri
+    const nim = (formData.get("nim") as string)?.trim() || "";
+    const angkatan = (formData.get("angkatan") as string)?.trim() || "";
+    const thesisYear = (formData.get("year") as string)?.trim() || "";
+    const advisor1 = (formData.get("advisor1") as string)?.trim() || "";
+    const advisor2 = (formData.get("advisor2") as string)?.trim() || "";
+    const driveUrl = (formData.get("driveUrl") as string)?.trim() || "";
 
     // 1. Validasi Keberadaan Field Wajib
     if (!nama || !email || !judul || !abstrak || !keyword || !file) {
@@ -84,12 +93,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 6. Validasi Berkas Word (.doc / .docx saja, Maks 10 MB)
+    // 6. Validasi Berkas Word / PDF (.doc, .docx, .pdf, Maks 10 MB)
     const fileName = file.name.toLowerCase();
     const hasValidExt = ALLOWED_EXTENSIONS.some((ext) => fileName.endsWith(ext));
     if (!hasValidExt) {
       return NextResponse.json(
-        { error: "Format file tidak didukung! File naskah HANYA boleh berupa dokumen Microsoft Word (.doc atau .docx)." },
+        { error: "Format file tidak didukung! File naskah/skripsi harus berupa dokumen Microsoft Word (.doc, .docx) atau PDF (.pdf)." },
         { status: 400 }
       );
     }
@@ -124,9 +133,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 8. Generate Kode Tracking Unik (Format: MAD-YYYY-XXXX)
-    const year = new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const trackingCode = `MAD-${year}-${randomSuffix}`;
+    const trackingCode = `MAD-${currentYear}-${randomSuffix}`;
 
     // 9. Persiapan Data Berkas untuk Attachment Email
     const arrayBuffer = await file.arrayBuffer();
@@ -188,6 +197,12 @@ export async function POST(req: NextRequest) {
       trackingCode,
       tipeNaskah,
       hp,
+      nim,
+      angkatan,
+      year: thesisYear || currentYear.toString(),
+      advisor1,
+      advisor2,
+      driveUrl,
       fileName: file.name,
       fileSize: fileSizeStr,
       kategoriNama: kategori,

@@ -55,6 +55,30 @@ export default function SkripsiListPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         
+        {/* Callout Setor Skripsi Alumni / Mahasantri */}
+        <div className="bg-gradient-to-r from-emerald-900 to-teal-900 text-white p-6 sm:p-7 rounded-2xl shadow-md border border-emerald-800 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-1.5 max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-mahad-gold text-mahad-green-dark">
+              <span>🎓</span>
+              <span>Layanan Repositori Digital</span>
+            </span>
+            <h3 className="font-serif font-bold text-xl sm:text-2xl text-white">
+              {pageTexts?.skripsiSubmitTitle || "Setor Skripsi Alumni & Mahasantri"}
+            </h3>
+            <p className="text-emerald-100 text-xs sm:text-sm leading-relaxed">
+              {pageTexts?.skripsiSubmitDesc ||
+                "Khusus alumni dan mahasantri tingkat akhir Ma'had Aly DDI Mangkoso yang ingin menyetor risalah skripsi ke dalam repositori digital resmi."}
+            </p>
+          </div>
+          <Link
+            href="/kirim-tulisan?type=skripsi"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-xs sm:text-sm rounded-xl shadow transition transform hover:-translate-y-0.5 shrink-0"
+          >
+            <span>📤 Setor Skripsi Online</span>
+            <span>&rarr;</span>
+          </Link>
+        </div>
+
         {/* Filter & Search Bar */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">

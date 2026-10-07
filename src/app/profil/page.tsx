@@ -97,7 +97,7 @@ export default function ProfilPage() {
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-8 bg-mahad-gold rounded-full inline-block"></span>
               <h2 className="font-serif font-bold text-2xl sm:text-3xl text-emerald-950">
-                Sejarah Pendirian Ma&apos;had Aly DDI Mangkoso
+                {pageTexts?.profilSejarahTitle || "Sejarah Pendirian Ma'had Aly DDI Mangkoso"}
               </h2>
             </div>
 
@@ -133,7 +133,9 @@ export default function ProfilPage() {
         {activeTab === "visi-misi" && (
           <div id="visi-misi" className="space-y-6">
             <div className="bg-emerald-900 text-white rounded-2xl p-8 border border-emerald-800 shadow-md">
-              <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold">Visi Kelembagaan</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold">
+                {pageTexts?.profilVisiTitle || "Visi Kelembagaan"}
+              </span>
               <h3 className="font-serif font-bold text-xl sm:text-2xl text-white mt-2 leading-relaxed">
                 &ldquo;{settings?.visi || "Mencetak Ulama Pewaris Para Nabi yang Menguasai Sanad Turats dan Fiqh Kontemporer."}&rdquo;
               </h3>
@@ -263,7 +265,9 @@ export default function ProfilPage() {
         {/* TAB 5: SARANA & PRASARANA */}
         {activeTab === "sarana" && (
           <div id="sarana" className="bg-white rounded-2xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-6">
-            <h2 className="font-serif font-bold text-2xl text-emerald-950">Sarana &amp; Prasarana Pembelajaran</h2>
+            <h2 className="font-serif font-bold text-2xl text-emerald-950">
+              {pageTexts?.profilSaranaTitle || "Sarana & Prasarana Pembelajaran"}
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-xs sm:text-sm">
               {safeFacilities.map((fac) => (
                 <div key={fac.id} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
@@ -297,7 +301,9 @@ export default function ProfilPage() {
         {/* TAB 6: AKREDITASI */}
         {activeTab === "akreditasi" && (
           <div id="akreditasi" className="bg-white rounded-2xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-6">
-            <h2 className="font-serif font-bold text-2xl text-emerald-950">Status &amp; Sertifikat Akreditasi</h2>
+            <h2 className="font-serif font-bold text-2xl text-emerald-950">
+              {pageTexts?.profilAkreditasiTitle || "Status & Sertifikat Akreditasi"}
+            </h2>
             <div className="space-y-4">
               {safeAccreditations.map((acc) => (
                 <div key={acc.id} className="p-6 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-3">

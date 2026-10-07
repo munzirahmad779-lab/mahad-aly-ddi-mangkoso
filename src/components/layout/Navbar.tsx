@@ -10,6 +10,10 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
+  const safeCategories = Array.isArray(categories) ? categories : [];
+  const fiqhCategories = safeCategories.filter((c) => c.type !== "opini");
+  const opiniCategories = safeCategories.filter((c) => c.type === "opini");
+
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => {
     setIsOpen(false);
@@ -116,7 +120,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Dropdown Kajian Fiqh Mu'asarah */}
+          {/* Dropdown Kajian Fiqh Mu'asarah & Opini */}
           <div className="relative group">
             <button
               type="button"
@@ -127,16 +131,37 @@ export default function Navbar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7-7-7-7" />
               </svg>
             </button>
-            <div className="absolute left-0 top-full hidden group-hover:block w-72 bg-mahad-green-dark border border-emerald-800 rounded-xl shadow-2xl py-2 z-50 max-h-96 overflow-y-auto">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/kategori/${cat.slug}`}
-                  className="block px-4 py-2 text-xs hover:bg-white/10 hover:text-mahad-gold transition"
-                >
-                  {cat.name}
-                </Link>
-              ))}
+            <div className="absolute left-0 top-full hidden group-hover:block w-72 bg-mahad-green-dark border border-emerald-800 rounded-xl shadow-2xl py-2 z-50 max-h-96 overflow-y-auto divide-y divide-emerald-800/60">
+              <div className="py-1">
+                <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold">
+                  🏛️ Kajian Fiqh Mu&apos;asarah
+                </div>
+                {fiqhCategories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/kategori/${cat.slug}`}
+                    className="block px-4 py-1.5 text-xs hover:bg-white/10 hover:text-mahad-gold transition"
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
+              </div>
+              {opiniCategories.length > 0 && (
+                <div className="py-1">
+                  <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold">
+                    ✍️ Opini &amp; Refleksi Santri
+                  </div>
+                  {opiniCategories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/kategori/${cat.slug}`}
+                      className="block px-4 py-1.5 text-xs hover:bg-white/10 hover:text-mahad-gold transition"
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -300,30 +325,52 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Accordion Kajian */}
+          {/* Accordion Kajian & Kategori */}
           <div>
             <button
               type="button"
               onClick={() => toggleDropdown("kajian")}
               className="w-full flex items-center justify-between py-2 px-3 rounded-lg text-emerald-100 hover:bg-white/5 hover:text-mahad-gold"
             >
-              <span>Kajian Fiqh Mu&apos;asarah</span>
+              <span>Kajian &amp; Kategori</span>
               <svg className={`w-4 h-4 transform transition-transform ${activeDropdown === "kajian" ? "rotate-180 text-mahad-gold" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             {activeDropdown === "kajian" && (
-              <div className="pl-6 py-1 space-y-1 bg-black/20 rounded-lg text-xs max-h-48 overflow-y-auto">
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/kategori/${cat.slug}`}
-                    onClick={closeMenu}
-                    className="block py-1 text-emerald-200 hover:text-mahad-gold"
-                  >
-                    {cat.name}
-                  </Link>
-                ))}
+              <div className="pl-6 py-2 space-y-2 bg-black/20 rounded-lg text-xs max-h-56 overflow-y-auto">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-mahad-gold mb-1">
+                    🏛️ Fiqh Mu&apos;asarah
+                  </div>
+                  {fiqhCategories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/kategori/${cat.slug}`}
+                      onClick={closeMenu}
+                      className="block py-1 text-emerald-200 hover:text-mahad-gold"
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+                {opiniCategories.length > 0 && (
+                  <div className="pt-1.5 border-t border-emerald-900/60">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-mahad-gold mb-1">
+                      ✍️ Opini &amp; Refleksi
+                    </div>
+                    {opiniCategories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/kategori/${cat.slug}`}
+                        onClick={closeMenu}
+                        className="block py-1 text-emerald-200 hover:text-mahad-gold"
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

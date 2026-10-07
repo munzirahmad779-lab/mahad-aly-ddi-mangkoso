@@ -1260,6 +1260,8 @@ export const INITIAL_PAGE_TEXTS: PageTextsSettings = {
   artikelBadge: "Publikasi Ilmiah Takhassus",
   artikelTitle: "Mimbar Kajian Fiqh Mu'asarah",
   artikelDesc: "Kumpulan artikel telaah hukum Islam kontemporer, kajian ushul fikih, dan risalah pemikiran ulama DDI Mangkoso.",
+  artikelFiqhTabLabel: "Kajian Fiqh Mu'asarah",
+  artikelOpiniTabLabel: "Opini & Refleksi Santri",
 
   // Halaman Opini & Refleksi Santri (/opini)
   opiniBadge: "Ruang Gagasan Santri & Esai",
@@ -1272,16 +1274,36 @@ export const INITIAL_PAGE_TEXTS: PageTextsSettings = {
   profilDesc: "Pusat Pendidikan Tinggi Kader Ulama Takhassus Fiqh wa Usuluhu Berfokus pada Fiqh Mu'asarah.",
   profilMasyaikhTitle: "Masyayikh & Dewan Dosen Pengampu",
   profilMasyaikhDesc: "Pendidik & Ulama Otoritatif Turats & Fiqh Mu'asarah",
+  profilSejarahTitle: "Sejarah Berdirinya Lembaga",
+  profilSejarahDesc: "Napak tilas perjuangan keilmuan para muassis DDI Mangkoso dalam mendirikan pusat kaderisasi fukaha.",
+  profilVisiTitle: "Visi & Misi Lembaga",
+  profilSaranaTitle: "Sarana & Prasarana Pembelajaran",
+  profilAkreditasiTitle: "Akreditasi & Legalitas Resmi",
 
   // Halaman Akademik (/akademik)
   akademikBadge: "Struktur Pendidikan & Kurikulum",
   akademikTitle: "Akademik Fiqh wa Usuluhu",
   akademikDesc: "Pendidikan intensif 4 tahun (8 Semester) jenjang Marhalah Ula dengan kurikulum terpadu Turats Salaf dan Riset Fiqh Mu'asarah.",
+  akademikTakhassusBadge: "Program Takhassus",
+  akademikTakhassusTitle: "Fiqh wa Usuluhu",
+  akademikTakhassusDesc: "Program ini membina kemampuan mahasantri dalam membaca naskah klasik tanpa harakat, memahami konteks sosio-historis teks fiqih, dan menguasai kaidah tarjih lintas madzhab.",
+  akademikFokusBadge: "Fokus Spesialisasi Utama",
+  akademikFokusTitle: "Fiqh Mu'asarah (Fiqih Kontemporer)",
+  akademikFokusDesc: "Mahasantri dibekali keterampilan istinbath hukum atas isu-isu mutakhir: transaksi kripto, fintech syariah, bioetika medis, kecerdasan buatan (AI), green economy, dan hukum kewarganegaraan modern.",
+  akademikKurikulumTitle: "Struktur Kurikulum 8 Semester",
+  akademikKurikulumDesc: "Kurikulum komprehensif mengintegrasikan kajian kitab turats mu'tabarah dengan metodologi riset ilmiah modern.",
+  akademikKalenderTitle: "Kalender Akademik",
+  akademikPedomanTitle: "Buku Pedoman Akademik",
+  akademikPedomanDesc: "Panduan resmi sistem SKS halaqah, tata tertib mahasantri, kurikulum turats, dan pedoman penulisan risalah skripsi.",
+  akademikPenilaianTitle: "Sistem Penilaian & Kelulusan",
+  akademikPenilaianDesc: "Sistem penilaian menggabungkan pengujian hafalan matan turats (ikhtibar), penguasaan qawa'id fiqhiyyah, keaktifan halaqah Bahtsul Masail, serta penulisan risalah ilmiah skripsi (munaqasyah) dengan predikat Mumtaz.",
 
   // Halaman Skripsi (/skripsi)
   skripsiBadge: "Repositori Riset Mahasantri (M.1)",
   skripsiTitle: "Skripsi & Risalah Fiqh Mu'asarah",
   skripsiDesc: "Karya ilmiah orisinal mahasantri Marhalah Ula Ma'had Aly DDI Mangkoso dalam merespons dinamika hukum Islam kontemporer.",
+  skripsiSubmitTitle: "Setor Skripsi Alumni & Mahasantri",
+  skripsiSubmitDesc: "Khusus alumni dan mahasantri tingkat akhir Ma'had Aly DDI Mangkoso yang ingin menyetor risalah skripsi ke dalam repositori digital resmi.",
 
   // Halaman Berita & Warta (/berita)
   beritaBadge: "Warta & Informasi Terkini",
@@ -1290,11 +1312,15 @@ export const INITIAL_PAGE_TEXTS: PageTextsSettings = {
 
   // Halaman Kirim Tulisan (/kirim-tulisan)
   kirimBadge: "Pusat Pengajuan Naskah",
-  kirimTitle: "Kirim Tulisan / Opini Anda",
-  kirimDesc: "Wadah publikasi karya ilmiah, telaah fiqh mu'asarah, dan refleksi santri bagi civitas akademika dan umum.",
+  kirimTitle: "Kirim Tulisan & Naskah Ilmiah",
+  kirimDesc: "Wadah publikasi karya ilmiah, telaah fiqh mu'asarah, skripsi alumni, dan refleksi santri bagi civitas akademika dan umum.",
+  kirimPanduanTitle: "Panduan & Ketentuan Pengiriman Naskah",
+  kirimPanduanDesc: "Naskah yang diajukan akan melalui proses penelaahan oleh Dewan Redaksi sebelum diterbitkan resmi.",
 
   // Halaman Kontak (/kontak)
   kontakBadge: "Pusat Informasi & Layanan",
   kontakTitle: "Hubungi Ma'had Aly",
-  kontakDesc: "Silakan hubungi sekretariat atau datang langsung ke kampus Ma'had Aly DDI Mangkoso."
+  kontakDesc: "Silakan hubungi sekretariat atau datang langsung ke kampus Ma'had Aly DDI Mangkoso.",
+  kontakSekretariatTitle: "Sekretariat & Layanan Informasi",
+  kontakSekretariatDesc: "Pusat bantuan administrasi, akademik, pendaftaran mahasantri baru, dan konsultasi Bahtsul Masail."
 };

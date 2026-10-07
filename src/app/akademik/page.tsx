@@ -36,25 +36,27 @@ export default function AkademikPage() {
         <div id="takhassus" className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
-              Program Takhassus
+              {pageTexts?.akademikTakhassusBadge || "Program Takhassus"}
             </span>
             <h2 className="font-serif font-bold text-2xl text-slate-900">
-              {settings.takhassus}
+              {pageTexts?.akademikTakhassusTitle || settings.takhassus}
             </h2>
             <p className="text-slate-600 text-sm leading-relaxed">
-              Program ini membina kemampuan mahasantri dalam membaca naskah klasik tanpa harakat, memahami konteks sosio-historis teks fiqih, dan menguasai kaidah tarjih lintas madzhab.
+              {pageTexts?.akademikTakhassusDesc ||
+                "Program ini membina kemampuan mahasantri dalam membaca naskah klasik tanpa harakat, memahami konteks sosio-historis teks fiqih, dan menguasai kaidah tarjih lintas madzhab."}
             </p>
           </div>
 
           <div id="fiqh-muasarah" className="bg-linear-to-br from-emerald-900 to-emerald-950 text-white p-8 rounded-2xl shadow-xl space-y-4 border border-mahad-gold/30">
             <span className="text-xs font-bold uppercase tracking-wider text-mahad-gold bg-white/10 px-3 py-1 rounded-full">
-              Fokus Spesialisasi Utama
+              {pageTexts?.akademikFokusBadge || "Fokus Spesialisasi Utama"}
             </span>
             <h2 className="font-serif font-bold text-2xl text-mahad-gold">
-              {settings.focusField}
+              {pageTexts?.akademikFokusTitle || settings.focusField}
             </h2>
             <p className="text-emerald-100 text-sm leading-relaxed">
-              Mahasantri dibekali keterampilan istinbath hukum atas isu-isu mutakhir: transaksi kripto, fintech syariah, bioetika medis, kecerdasan buatan (AI), green economy, dan hukum kewarganegaraan modern.
+              {pageTexts?.akademikFokusDesc ||
+                "Mahasantri dibekali keterampilan istinbath hukum atas isu-isu mutakhir: transaksi kripto, fintech syariah, bioetika medis, kecerdasan buatan (AI), green economy, dan hukum kewarganegaraan modern."}
             </p>
           </div>
         </div>
@@ -126,7 +128,7 @@ export default function AkademikPage() {
           <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="font-serif font-bold text-xl text-slate-900 flex items-center gap-2">
               <span>📅</span>
-              <span>Kalender Akademik ({calendarEvents.length} Agenda)</span>
+              <span>{pageTexts?.akademikKalenderTitle || "Kalender Akademik"} ({calendarEvents.length} Agenda)</span>
             </h3>
             <div className="space-y-3">
               {calendarEvents.map((ev) => (
@@ -152,10 +154,11 @@ export default function AkademikPage() {
             <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
               <h3 className="font-serif font-bold text-lg text-slate-900 flex items-center gap-2">
                 <span>📘</span>
-                <span>Buku Pedoman Akademik</span>
+                <span>{pageTexts?.akademikPedomanTitle || "Buku Pedoman Akademik"}</span>
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Panduan resmi sistem SKS halaqah, tata tertib mahasantri, kurikulum turats, dan pedoman penulisan risalah skripsi.
+                {pageTexts?.akademikPedomanDesc ||
+                  "Panduan resmi sistem SKS halaqah, tata tertib mahasantri, kurikulum turats, dan pedoman penulisan risalah skripsi."}
               </p>
               {settings.academicGuideBookUrl && (
                 <a
@@ -172,9 +175,11 @@ export default function AkademikPage() {
             </div>
 
             <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-100 space-y-2">
-              <h4 className="font-serif font-bold text-base text-emerald-950">Sistem Penilaian &amp; Kelulusan</h4>
+              <h4 className="font-serif font-bold text-base text-emerald-950">
+                {pageTexts?.akademikPenilaianTitle || "Sistem Penilaian & Kelulusan"}
+              </h4>
               <p className="text-xs text-emerald-900 leading-relaxed">
-                {settings.gradingSystemRules ||
+                {pageTexts?.akademikPenilaianDesc || settings.gradingSystemRules ||
                   "Sistem penilaian menggabungkan pengujian hafalan matan turats (ikhtibar), penguasaan qawa'id fiqhiyyah, keaktifan halaqah Bahtsul Masail, serta penulisan risalah ilmiah skripsi (munaqasyah) dengan predikat kelulusan Mumtaz (Cum Laude)."}
               </p>
             </div>

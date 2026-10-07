@@ -25,23 +25,34 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   return (
     <main className="pt-24 pb-20 bg-slate-50 min-h-screen">
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Link
-            href="/artikel"
-            className="inline-flex items-center gap-1.5 text-xs text-mahad-gold-light hover:text-mahad-gold mb-4"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            <span>Kembali ke Semua Kajian</span>
-          </Link>
-          <span className="inline-block bg-mahad-gold text-mahad-green-dark text-xs font-bold px-3 py-0.5 rounded-full mb-2">
-            Kategori Fiqh Mu&apos;asarah
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
+          <div className="mb-4">
+            <Link
+              href="/artikel"
+              className="inline-flex items-center gap-2 text-xs text-emerald-100 hover:text-white bg-white/10 hover:bg-white/20 px-4 py-1.5 rounded-full transition border border-white/15"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>Kembali ke Semua Kajian &amp; Opini</span>
+            </Link>
+          </div>
+
+          <span className="inline-block bg-mahad-gold text-mahad-green-dark text-xs font-bold px-3.5 py-1 rounded-full mb-3 shadow-xs">
+            {categoryInfo.slug.includes("opini") ||
+            categoryInfo.slug.includes("sosial-budaya") ||
+            categoryInfo.slug.includes("refleksi") ||
+            categoryInfo.slug.includes("kolom")
+              ? "Kategori Opini & Refleksi"
+              : categoryInfo.slug === "karya-anregurutta"
+              ? "Koleksi Turats & Pemikiran Anregurutta"
+              : "Kategori Kajian Fiqh Mu'asarah"}
           </span>
-          <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white">
+
+          <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white tracking-tight">
             {categoryInfo.name}
           </h1>
-          <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-2 leading-relaxed">
+          <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-3 leading-relaxed">
             {categoryInfo.description}
           </p>
         </div>

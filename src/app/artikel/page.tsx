@@ -79,7 +79,7 @@ export default function AllArticlesPage() {
               }`}
             >
               <span>🏛️</span>
-              <span>Kajian Fiqh Mu&apos;asarah</span>
+              <span>{pageTexts?.artikelFiqhTabLabel || "Kajian Fiqh Mu'asarah"}</span>
               <span className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === "fiqh" ? "bg-emerald-950 text-emerald-200" : "bg-slate-200 text-slate-600"}`}>
                 {fiqhArticles.length}
               </span>
@@ -97,7 +97,7 @@ export default function AllArticlesPage() {
               }`}
             >
               <span>✍️</span>
-              <span>Opini &amp; Refleksi Santri</span>
+              <span>{pageTexts?.artikelOpiniTabLabel || "Opini & Refleksi Santri"}</span>
               <span className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === "opini" ? "bg-amber-800 text-amber-200" : "bg-slate-200 text-slate-600"}`}>
                 {opiniArticles.length}
               </span>

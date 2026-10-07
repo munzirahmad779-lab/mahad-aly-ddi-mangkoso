@@ -36,12 +36,38 @@ export default function KirimTulisanPage() {
     abstrak: "",
     keyword: "",
     originalitas: false,
+    // Field Khusus Skripsi
+    nim: "",
+    angkatan: "",
+    year: new Date().getFullYear().toString(),
+    advisor1: "",
+    advisor2: "",
+    driveUrl: ""
   });
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Deteksi URL query parameter ?type=skripsi atau ?type=opini
+  useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get("type");
+      if (t === "skripsi") {
+        setFormData((prev) => ({
+          ...prev,
+          tipeNaskah: "Skripsi / Risalah Kelulusan (Alumni & Mahasantri)"
+        }));
+      } else if (t === "opini") {
+        setFormData((prev) => ({
+          ...prev,
+          tipeNaskah: "Opini & Refleksi Santri"
+        }));
+      }
+    }
+  });
 
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -54,8 +80,9 @@ export default function KirimTulisanPage() {
   }>({});
   const [copied, setCopied] = useState(false);
 
-  // Filter kategori berdasarkan tipe naskah (Artikel Ilmiah = Fiqh, Opini & Refleksi = Opini)
+  // Filter kategori berdasarkan tipe naskah
   const isOpiniType = formData.tipeNaskah.includes("Opini");
+  const isSkripsiType = formData.tipeNaskah.includes("Skripsi");
   const availableCategories = categories.filter((c) => {
     if (isOpiniType) {
       return c.type === "opini";
@@ -71,9 +98,11 @@ export default function KirimTulisanPage() {
     setFileError(null);
     const fileName = file.name.toLowerCase();
 
-    // Validasi ekstensi Word (.doc / .docx)
-    if (!fileName.endsWith(".doc") && !fileName.endsWith(".docx")) {
-      setFileError("Format berkas tidak didukung! Naskah wajib berekstensi Microsoft Word (.doc atau .docx).");
+    // Validasi ekstensi Word (.doc / .docx) atau PDF (.pdf)
+    const isDoc = fileName.endsWith(".doc") || fileName.endsWith(".docx");
+    const isPdf = fileName.endsWith(".pdf");
+    if (!isDoc && !isPdf) {
+      setFileError("Format berkas tidak didukung! Naskah/skripsi wajib berekstensi Microsoft Word (.doc, .docx) atau dokumen PDF (.pdf).");
       setSelectedFile(null);
       return;
     }
@@ -146,7 +175,11 @@ export default function KirimTulisanPage() {
 
     if (!selectedFile) {
       setStatus("error");
-      setErrorMessage("Berkas naskah Microsoft Word (.doc/.docx) wajib diunggah.");
+      setErrorMessage(
+        isSkripsiType
+          ? "Berkas naskah risalah skripsi (.pdf, .doc, atau .docx) wajib diunggah."
+          : "Berkas naskah (.doc, .docx, atau .pdf) wajib diunggah."
+      );
       return;
     }
 
@@ -170,6 +203,12 @@ export default function KirimTulisanPage() {
       formPayload.append("abstrak", formData.abstrak.trim());
       formPayload.append("keyword", kwList.join(", "));
       formPayload.append("originalitas", "true");
+      if (formData.nim) formPayload.append("nim", formData.nim.trim());
+      if (formData.angkatan) formPayload.append("angkatan", formData.angkatan.trim());
+      if (formData.year) formPayload.append("year", formData.year.trim());
+      if (formData.advisor1) formPayload.append("advisor1", formData.advisor1.trim());
+      if (formData.advisor2) formPayload.append("advisor2", formData.advisor2.trim());
+      if (formData.driveUrl) formPayload.append("driveUrl", formData.driveUrl.trim());
       formPayload.append("file", selectedFile);
 
       const res = await fetch("/api/submission/submit", {
@@ -211,6 +250,12 @@ export default function KirimTulisanPage() {
       abstrak: "",
       keyword: "",
       originalitas: false,
+      nim: "",
+      angkatan: "",
+      year: "",
+      advisor1: "",
+      advisor2: "",
+      driveUrl: ""
     });
     setSelectedFile(null);
     setTrackingCodeResult(null);
@@ -255,10 +300,11 @@ export default function KirimTulisanPage() {
               Pedoman &amp; Prosedur Redaksi
             </span>
             <h2 className="font-serif font-bold text-2xl sm:text-3xl text-slate-900">
-              Tutorial Alur Pengiriman &amp; Ketentuan Naskah
+              {pageTexts?.kirimPanduanTitle || "Tutorial Alur Pengiriman & Ketentuan Naskah"}
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto">
-              Ma&apos;had Aly DDI Mangkoso menerapkan sistem penerbitan 2-Tahap terstruktur guna memastikan mutu ilmiah, orisinalitas riset, dan ketepatan metodologi Fiqh Mu&apos;asarah.
+              {pageTexts?.kirimPanduanDesc ||
+                "Ma'had Aly DDI Mangkoso menerapkan sistem penerbitan 2-Tahap terstruktur guna memastikan mutu ilmiah, orisinalitas riset, dan ketepatan metodologi Fiqh Mu'asarah."}
             </p>
           </div>
 
@@ -352,7 +398,7 @@ export default function KirimTulisanPage() {
                 </div>
                 <h3 className="font-serif font-bold text-sm text-slate-900">Penerbitan Resmi</h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Naskah yang disetujui diterbitkan resmi di portal Mimbar Kajian atau Opini Santri dengan tata letak ilmiah standar NU &amp; pesantren.
+                  Naskah yang disetujui diterbitkan resmi di portal Mimbar Kajian atau Opini Santri dengan tata letak ilmiah standar keilmuan DDI &amp; tradisi pesantren.
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row gap-1.5">
@@ -596,10 +642,13 @@ export default function KirimTulisanPage() {
                     className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                   >
                     <option value="Artikel Ilmiah (Fiqh Mu'asarah)">📄 Artikel Ilmiah (Fiqh Mu&apos;asarah)</option>
-                    <option value="Opini & Refleksi">✍️ Opini &amp; Refleksi</option>
+                    <option value="Opini & Refleksi Santri">✍️ Opini &amp; Refleksi Santri</option>
+                    <option value="Skripsi / Risalah Kelulusan (Alumni & Mahasantri)">🎓 Skripsi / Risalah Kelulusan (Alumni &amp; Mahasantri)</option>
                   </select>
                   <p className="text-[10px] text-slate-500 mt-1">
-                    {formData.tipeNaskah === "Opini & Refleksi"
+                    {formData.tipeNaskah.includes("Skripsi")
+                      ? "Khusus alumni & mahasantri tingkat akhir untuk diterbitkan ke Repositori Skripsi Ma'had Aly."
+                      : formData.tipeNaskah.includes("Opini")
                       ? "Esai populer, refleksi santri, pemikiran kemasyarakatan."
                       : "Kajian hukum Islam kontemporer, Fiqh Mu'asarah, turats, atau ushul fikih."}
                   </p>
@@ -633,6 +682,98 @@ export default function KirimTulisanPage() {
                   </p>
                 </div>
               </div>
+
+              {/* Form Khusus Skripsi Alumni / Mahasantri */}
+              {isSkripsiType && (
+                <div className="p-5 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-4 animate-fadeIn">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🎓</span>
+                    <h4 className="text-xs font-bold uppercase text-amber-950 tracking-wider">
+                      Informasi Akademik Risalah Skripsi Mahasantri
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                        NIM (Nomor Induk Mahasantri) <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required={isSkripsiType}
+                        value={formData.nim}
+                        onChange={(e) => setFormData({ ...formData, nim: e.target.value })}
+                        placeholder="Contoh: 2020.01.042"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-700 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                        Angkatan Mahasantri
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.angkatan}
+                        onChange={(e) => setFormData({ ...formData, angkatan: e.target.value })}
+                        placeholder="Contoh: Angkatan IV (Takhassus)"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-700 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                        Tahun Kelulusan Munaqasyah
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.year}
+                        onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                        placeholder="Contoh: 2024"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-700 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                        Dosen Pembimbing I
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.advisor1}
+                        onChange={(e) => setFormData({ ...formData, advisor1: e.target.value })}
+                        placeholder="Nama Pembimbing 1"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-700 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                        Dosen Pembimbing II
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.advisor2}
+                        onChange={(e) => setFormData({ ...formData, advisor2: e.target.value })}
+                        placeholder="Nama Pembimbing 2"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-700 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                      Link Google Drive Naskah Lengkap PDF (Opsional)
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.driveUrl}
+                      onChange={(e) => setFormData({ ...formData, driveUrl: e.target.value })}
+                      placeholder="https://drive.google.com/file/d/... (Pastikan akses diset 'Siapa saja yang memiliki link')"
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-700 outline-none"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Sertakan link Google Drive jika ukuran file PDF Anda melebihi kapasitas lampiran langsung.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Judul Naskah */}
               <div>
