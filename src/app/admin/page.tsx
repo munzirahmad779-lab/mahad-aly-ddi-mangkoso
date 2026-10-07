@@ -24,7 +24,8 @@ import {
   PMBFAQ,
   GalleryAlbum,
   PageSeoItem,
-  PageTextsSettings
+  PageTextsSettings,
+  CustomPageElement
 } from "@/lib/types";
 import { INITIAL_PAGE_TEXTS } from "@/lib/mock-data";
 
@@ -463,6 +464,51 @@ export default function AdminPage() {
     updatePageTexts(INITIAL_PAGE_TEXTS);
     setPageTextsSaved(true);
     setTimeout(() => setPageTextsSaved(false), 3500);
+  };
+
+  // Custom Page Elements State & Handlers
+  const [newElementForm, setNewElementForm] = useState({
+    title: "",
+    desc: "",
+    badge: "",
+    icon: "📌",
+    link: ""
+  });
+  const [showAddElementModal, setShowAddElementModal] = useState(false);
+
+  const handleAddCustomElement = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newElementForm.title.trim() || !newElementForm.desc.trim()) {
+      alert("Judul dan Deskripsi elemen wajib diisi!");
+      return;
+    }
+
+    const newEl: CustomPageElement = {
+      id: "el-" + Date.now().toString(),
+      page: activePageTextTab,
+      title: newElementForm.title.trim(),
+      desc: newElementForm.desc.trim(),
+      badge: newElementForm.badge.trim() || undefined,
+      icon: newElementForm.icon.trim() || "📌",
+      link: newElementForm.link.trim() || undefined,
+      order: ((localPageTexts.customElements || []).filter((el) => el.page === activePageTextTab).length) + 1
+    };
+
+    const updatedElements = [...(localPageTexts.customElements || []), newEl];
+    const updatedTexts = { ...localPageTexts, customElements: updatedElements };
+    setLocalPageTexts(updatedTexts);
+    updatePageTexts(updatedTexts);
+    setNewElementForm({ title: "", desc: "", badge: "", icon: "📌", link: "" });
+    setShowAddElementModal(false);
+    alert(`✓ Elemen "${newEl.title}" berhasil ditambahkan ke halaman ${activePageTextTab}!`);
+  };
+
+  const handleDeleteCustomElement = (id: string) => {
+    if (!confirm("Hapus elemen ini dari halaman?")) return;
+    const updatedElements = (localPageTexts.customElements || []).filter((el) => el.id !== id);
+    const updatedTexts = { ...localPageTexts, customElements: updatedElements };
+    setLocalPageTexts(updatedTexts);
+    updatePageTexts(updatedTexts);
   };
 
   // Submissions Management States
@@ -2950,6 +2996,161 @@ export default function AdminPage() {
                           </div>
                         </div>
                       )}
+
+                      {/* ══════════════════════════════════════════════════════════════
+                          ELEMEN & KARTU KUSTOM TAMBAHAN (BEBAS DITAMBAH DI SEMUA HALAMAN)
+                         ══════════════════════════════════════════════════════════════ */}
+                      <div className="pt-4 border-t border-slate-200 space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">🧩</span>
+                            <div>
+                              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                                Sub-Elemen &amp; Kartu Tambahan (Halaman {activeConf.name})
+                              </h4>
+                              <p className="text-[11px] text-slate-500">
+                                Tambahkan elemen, program, atau kartu kustom baru di halaman ini tanpa ngoding.
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowAddElementModal(!showAddElementModal)}
+                            className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm"
+                          >
+                            <span>{showAddElementModal ? "✕ Batal" : "➕ Tambah Elemen Baru"}</span>
+                          </button>
+                        </div>
+
+                        {/* Formulir Tambah Elemen Baru */}
+                        {showAddElementModal && (
+                          <div className="p-4 bg-white rounded-xl border-2 border-emerald-500/40 space-y-3 animate-fadeIn">
+                            <strong className="block text-xs font-bold text-emerald-900 uppercase">
+                              Formulir Elemen Baru:
+                            </strong>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                              <div className="sm:col-span-1">
+                                <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Ikon / Emoji</label>
+                                <input
+                                  type="text"
+                                  value={newElementForm.icon}
+                                  onChange={(e) => setNewElementForm({ ...newElementForm, icon: e.target.value })}
+                                  placeholder="Contoh: 🌟, 📚, 🏛️"
+                                  className="w-full px-2.5 py-1.5 border rounded-lg text-xs"
+                                />
+                              </div>
+                              <div className="sm:col-span-1">
+                                <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Badge / Label</label>
+                                <input
+                                  type="text"
+                                  value={newElementForm.badge}
+                                  onChange={(e) => setNewElementForm({ ...newElementForm, badge: e.target.value })}
+                                  placeholder="Contoh: Unggulan, Baru"
+                                  className="w-full px-2.5 py-1.5 border rounded-lg text-xs"
+                                />
+                              </div>
+                              <div className="sm:col-span-1">
+                                <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Link / URL Tombol</label>
+                                <input
+                                  type="text"
+                                  value={newElementForm.link}
+                                  onChange={(e) => setNewElementForm({ ...newElementForm, link: e.target.value })}
+                                  placeholder="Contoh: /akademik#kurikulum"
+                                  className="w-full px-2.5 py-1.5 border rounded-lg text-xs"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Judul Elemen *</label>
+                              <input
+                                type="text"
+                                value={newElementForm.title}
+                                onChange={(e) => setNewElementForm({ ...newElementForm, title: e.target.value })}
+                                placeholder="Contoh: Program Penguatan Bahtsul Masail"
+                                className="w-full px-3 py-1.5 border rounded-lg text-xs font-bold"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Deskripsi / Penjelasan *</label>
+                              <textarea
+                                rows={2}
+                                value={newElementForm.desc}
+                                onChange={(e) => setNewElementForm({ ...newElementForm, desc: e.target.value })}
+                                placeholder="Tuliskan narasi atau isi detail dari elemen ini..."
+                                className="w-full px-3 py-1.5 border rounded-lg text-xs"
+                              />
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={() => setShowAddElementModal(false)}
+                                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs rounded-lg font-medium"
+                              >
+                                Batal
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleAddCustomElement}
+                                className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-lg shadow-sm"
+                              >
+                                ✓ Simpan Elemen Ini
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Daftar Elemen yang Sudah Ditambahkan di Halaman Ini */}
+                        {(() => {
+                          const pageEls = (localPageTexts.customElements || []).filter(
+                            (el) => el.page === activePageTextTab
+                          );
+                          if (pageEls.length === 0) {
+                            return (
+                              <p className="text-[11px] text-slate-400 italic">
+                                Belum ada elemen/kartu tambahan di halaman {activeConf.name}. Klik tombol hijau di atas untuk menambahkan.
+                              </p>
+                            );
+                          }
+
+                          return (
+                            <div className="space-y-2">
+                              {pageEls.map((el) => (
+                                <div
+                                  key={el.id}
+                                  className="p-3 bg-white rounded-xl border border-slate-200 flex items-start justify-between gap-3 shadow-xs"
+                                >
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-1.5">
+                                      {el.icon && <span className="text-base">{el.icon}</span>}
+                                      <strong className="text-xs font-serif font-bold text-slate-900">{el.title}</strong>
+                                      {el.badge && (
+                                        <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                                          {el.badge}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-[11px] text-slate-600 leading-relaxed whitespace-pre-line">{el.desc}</p>
+                                    {el.link && (
+                                      <span className="text-[10px] text-emerald-700 font-mono block">Link: {el.link}</span>
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteCustomElement(el.id)}
+                                    className="text-slate-400 hover:text-red-600 p-1 text-xs shrink-0"
+                                    title="Hapus Elemen"
+                                  >
+                                    🗑️
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                      </div>
 
                       <div className="pt-3 flex items-center justify-between">
                         <p className="text-xs text-slate-400">

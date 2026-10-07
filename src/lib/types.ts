@@ -556,4 +556,18 @@ export interface PageTextsSettings {
   kontakDesc: string;
   kontakSekretariatTitle?: string;
   kontakSekretariatDesc?: string;
+
+  // 9. Elemen / Kartu Kustom Tambahan per Halaman
+  customElements?: CustomPageElement[];
+}
+
+export interface CustomPageElement {
+  id: string;
+  page: "akademik" | "profil" | "skripsi" | "artikel" | "kirim" | "kontak" | string;
+  title: string;
+  desc: string;
+  badge?: string;
+  icon?: string;
+  link?: string;
+  order?: number;
 }

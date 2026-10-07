@@ -1322,5 +1322,8 @@ export const INITIAL_PAGE_TEXTS: PageTextsSettings = {
   kontakTitle: "Hubungi Ma'had Aly",
   kontakDesc: "Silakan hubungi sekretariat atau datang langsung ke kampus Ma'had Aly DDI Mangkoso.",
   kontakSekretariatTitle: "Sekretariat & Layanan Informasi",
-  kontakSekretariatDesc: "Pusat bantuan administrasi, akademik, pendaftaran mahasantri baru, dan konsultasi Bahtsul Masail."
+  kontakSekretariatDesc: "Pusat bantuan administrasi, akademik, pendaftaran mahasantri baru, dan konsultasi Bahtsul Masail.",
+
+  // Elemen Kustom Tambahan
+  customElements: []
 };

@@ -186,6 +186,54 @@ export default function AkademikPage() {
           </div>
         </div>
 
+        {/* Elemen / Kartu Tambahan Kustom CMS */}
+        {(() => {
+          const customCards = (pageTexts?.customElements || []).filter((el) => el.page === "akademik");
+          if (customCards.length === 0) return null;
+
+          return (
+            <div className="space-y-6 pt-4">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-8 bg-mahad-gold rounded-full inline-block"></span>
+                <h2 className="font-serif font-bold text-2xl text-slate-900">
+                  Program &amp; Informasi Akademik Tambahan
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {customCards.map((el) => (
+                  <div
+                    key={el.id}
+                    className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      {el.icon && <span className="text-2xl">{el.icon}</span>}
+                      {el.badge && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
+                          {el.badge}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-serif font-bold text-lg text-slate-900">{el.title}</h3>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line">{el.desc}</p>
+                    {el.link && (
+                      <div className="pt-2">
+                        <a
+                          href={el.link}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 hover:text-emerald-950 underline"
+                        >
+                          <span>Pelajari Selengkapnya</span>
+                          <span>&rarr;</span>
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
       </div>
     </main>
   );

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { r2Client, r2BucketName, r2PublicUrl } from "@/lib/r2/client";
+import { r2Client, r2BucketName, r2PublicUrl, r2Endpoint, isR2Configured } from "@/lib/r2/client";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -60,24 +59,64 @@ export async function POST(req: NextRequest) {
     const sanitizedFileName = `${cleanBase}-${uniqueSuffix}.${fileExt}`;
     const key = `${folder}/${sanitizedFileName}`;
 
-    // 4. Convert File to Buffer & Upload to Cloudflare R2
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    let publicUrl = "";
+    let storageProvider = "r2";
 
-    await r2Client.send(
-      new PutObjectCommand({
-        Bucket: r2BucketName,
-        Key: key,
-        Body: buffer,
-        ContentType: file.type,
-      })
-    );
+    // 4. Upload ke Cloudflare R2 jika kredensial R2 dikonfigurasi
+    if (isR2Configured && r2Client && r2Endpoint) {
+      try {
+        const cleanEndpoint = r2Endpoint.replace(/\/+$/, "");
+        const uploadUrl = `${cleanEndpoint}/${r2BucketName}/${key}`;
 
-    // 5. Construct Public URL
-    const cleanBaseUrl = (r2PublicUrl || "").replace(/\/+$/, "");
-    const publicUrl = cleanBaseUrl ? `${cleanBaseUrl}/${key}` : `/${key}`;
+        const r2Res = await r2Client.fetch(uploadUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+          },
+          body: arrayBuffer,
+        });
 
-    // 6. Save Metadata to Supabase DB via Service Role (Bypassing RLS)
+        if (r2Res.ok) {
+          const cleanBaseUrl = (r2PublicUrl || "").replace(/\/+$/, "");
+          publicUrl = cleanBaseUrl ? `${cleanBaseUrl}/${key}` : `/${key}`;
+          storageProvider = "cloudflare-r2";
+        } else {
+          console.warn("R2 upload status not OK:", r2Res.status);
+        }
+      } catch (r2Err) {
+        console.warn("R2 upload notice (falling back to Supabase):", r2Err);
+      }
+    }
+
+    // 5. Fallback ke Supabase Storage (media bucket) jika R2 belum dikonfigurasi atau terkendala
+    if (!publicUrl) {
+      try {
+        const { data: supaData, error: supaErr } = await supabaseAdmin.storage
+          .from("media")
+          .upload(key, arrayBuffer, {
+            contentType: file.type || "application/octet-stream",
+            upsert: true,
+          });
+
+        if (supaErr) {
+          throw new Error(`Supabase Storage upload error: ${supaErr.message}`);
+        }
+
+        const { data: urlData } = supabaseAdmin.storage
+          .from("media")
+          .getPublicUrl(key);
+
+        publicUrl = urlData.publicUrl;
+        storageProvider = "supabase-storage";
+      } catch (fallbackErr: any) {
+        throw new Error(
+          fallbackErr?.message || "Gagal mengunggah berkas ke R2 maupun Supabase Storage."
+        );
+      }
+    }
+
+    // 6. Simpan Metadata ke Supabase DB 'media' table
     let mediaRecord = null;
     try {
       const isValidUuid = (val?: string) =>
@@ -97,8 +136,6 @@ export async function POST(req: NextRequest) {
 
       if (!dbError && data) {
         mediaRecord = data;
-      } else if (dbError) {
-        console.warn("Notice: Gagal mencatat media ke database log:", dbError.message);
       }
     } catch (dbErr) {
       console.warn("Notice: DB logging exception:", dbErr);
@@ -111,12 +148,13 @@ export async function POST(req: NextRequest) {
       filename: file.name,
       size_kb: Math.round(file.size / 1024),
       mime_type: file.type,
-      mediaRecord: mediaRecord,
+      storageProvider,
+      mediaRecord,
     });
   } catch (err: any) {
-    console.error("R2 Upload Error:", err);
+    console.error("Upload Error:", err);
     return NextResponse.json(
-      { error: err?.message || "Gagal mengunggah file ke Cloudflare R2." },
+      { error: err?.message || "Gagal mengunggah file." },
       { status: 500 }
     );
   }
@@ -128,36 +166,43 @@ export async function DELETE(req: NextRequest) {
 
     let key = directKey;
     if (!key && url) {
-      // Extract key from full public URL
       const cleanBaseUrl = (r2PublicUrl || "").replace(/\/+$/, "");
       if (cleanBaseUrl && url.startsWith(cleanBaseUrl)) {
         key = url.slice(cleanBaseUrl.length).replace(/^\/+/, "");
       } else {
-        // Fallback: take pathname after domain
         try {
           const parsed = new URL(url);
           key = parsed.pathname.replace(/^\/+/, "");
+          if (key.includes("object/public/media/")) {
+            key = key.split("object/public/media/")[1];
+          }
         } catch {
           key = url.replace(/^\/+/, "");
         }
       }
     }
 
-    // 1. Delete from Cloudflare R2
-    if (key) {
+    // 1. Hapus dari Cloudflare R2
+    if (key && isR2Configured && r2Client && r2Endpoint) {
       try {
-        await r2Client.send(
-          new DeleteObjectCommand({
-            Bucket: r2BucketName,
-            Key: key,
-          })
-        );
+        const cleanEndpoint = r2Endpoint.replace(/\/+$/, "");
+        const deleteUrl = `${cleanEndpoint}/${r2BucketName}/${key}`;
+        await r2Client.fetch(deleteUrl, { method: "DELETE" });
       } catch (r2Err) {
-        console.warn("R2 Delete notice:", r2Err);
+        console.warn("R2 delete notice:", r2Err);
       }
     }
 
-    // 2. Delete from Supabase Database via Service Role
+    // 2. Hapus dari Supabase Storage
+    if (key) {
+      try {
+        await supabaseAdmin.storage.from("media").remove([key]);
+      } catch (supaErr) {
+        console.warn("Supabase Storage remove notice:", supaErr);
+      }
+    }
+
+    // 3. Hapus catatan database
     if (id) {
       await supabaseAdmin.from("media").delete().eq("id", id);
     } else if (url) {
@@ -166,10 +211,10 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Berkas berhasil dihapus dari Cloudflare R2 dan database.",
+      message: "Berkas berhasil dihapus.",
     });
   } catch (err: any) {
-    console.error("R2 Delete Error:", err);
+    console.error("Delete Error:", err);
     return NextResponse.json(
       { error: err?.message || "Gagal menghapus file." },
       { status: 500 }
