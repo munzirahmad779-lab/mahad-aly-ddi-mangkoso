@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 
 export default function AboutPreview() {
-  const { settings } = useArticles();
+  const { settings, aboutPageContent } = useArticles();
 
   return (
     <section className="py-24 bg-white">
@@ -32,69 +32,69 @@ export default function AboutPreview() {
           </p>
         </div>
 
-        {/* 4 Kartu Bento Grid */}
+        {/* 4 Kartu Bento Grid Dinamis */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          
-          <div className="bg-slate-50 hover:bg-white rounded-2xl p-7 border border-slate-200 hover:border-emerald-700 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl mb-5 font-bold">
-                01
+          {(aboutPageContent?.educationCards && aboutPageContent.educationCards.length > 0
+            ? aboutPageContent.educationCards
+            : [
+                {
+                  id: "ed-1",
+                  title: "Pengkaderan 4 Tahun",
+                  description: "Masa studi delapan semester (Marhalah Ula) untuk mendalami metodologi pemikiran hukum Islam dan kepemimpinan moral.",
+                  badge: "Jenjang Marhalah Ula"
+                },
+                {
+                  id: "ed-2",
+                  title: "Kitab Klasik (Turats)",
+                  description: "Membahas kitab-kitab induk mu'tabar dalam Usul Fikih, Fiqh Muqaran, Qawa'id, Tafsir, dan Nahwu-Sharaf.",
+                  badge: "Sanad Keilmuan Shahih"
+                },
+                {
+                  id: "ed-3",
+                  title: "Sistem Halaqah",
+                  description: "Metode pengajian wetonan, sorogan mandiri di hadapan kiai, serta mudzakarah bahtsul masail secara kontinu.",
+                  badge: "Wetonan & Sorogan"
+                },
+                {
+                  id: "ed-4",
+                  title: "Beasiswa Penuh",
+                  description: "Bebas biaya pendidikan 100% melalui dukungan filantropis program Orang Tua Asuh (OTA) dan donatur keumatan.",
+                  badge: "Filantropi Umat"
+                }
+              ]
+          ).map((card: any, idx: number) => (
+            <div
+              key={card.id || idx}
+              className={`bg-slate-50 hover:bg-white rounded-2xl p-7 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between ${
+                idx % 2 === 0 ? "hover:border-emerald-700" : "hover:border-mahad-gold"
+              }`}
+            >
+              <div>
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-5 font-bold ${
+                    idx % 2 === 0
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-amber-100 text-amber-800"
+                  }`}
+                >
+                  {String(idx + 1).padStart(2, "0")}
+                </div>
+                <h3 className="font-serif font-bold text-xl text-slate-900 mb-2">
+                  {card.title}
+                </h3>
+                <p className="text-slate-600 text-sm leading-relaxed">
+                  {card.description}
+                </p>
               </div>
-              <h3 className="font-serif font-bold text-xl text-slate-900 mb-2">Pengkaderan 4 Tahun</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Masa studi delapan semester (Marhalah Ula) untuk mendalami metodologi pemikiran hukum Islam dan kepemimpinan moral.
-              </p>
+              <span
+                className={`mt-6 pt-4 border-t border-slate-200 text-xs font-semibold ${
+                  idx % 2 === 0 ? "text-emerald-700" : "text-amber-700"
+                }`}
+              >
+                {card.badge}
+              </span>
             </div>
-            <span className="mt-6 pt-4 border-t border-slate-200 text-xs font-semibold text-emerald-700">
-              Jenjang Marhalah Ula
-            </span>
-          </div>
-
-          <div className="bg-slate-50 hover:bg-white rounded-2xl p-7 border border-slate-200 hover:border-mahad-gold shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl mb-5 font-bold">
-                02
-              </div>
-              <h3 className="font-serif font-bold text-xl text-slate-900 mb-2">Kitab Klasik (Turats)</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Membahas kitab-kitab induk mu&apos;tabar dalam Usul Fikih, Fiqh Muqaran, Qawa&apos;id, Tafsir, dan Nahwu-Sharaf.
-              </p>
-            </div>
-            <span className="mt-6 pt-4 border-t border-slate-200 text-xs font-semibold text-amber-700">
-              Sanad Keilmuan Shahih
-            </span>
-          </div>
-
-          <div className="bg-slate-50 hover:bg-white rounded-2xl p-7 border border-slate-200 hover:border-emerald-700 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl mb-5 font-bold">
-                03
-              </div>
-              <h3 className="font-serif font-bold text-xl text-slate-900 mb-2">Sistem Halaqah</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Metode pengajian wetonan, sorogan mandiri di hadapan kiai, serta mudzakarah bahtsul masail secara kontinu.
-              </p>
-            </div>
-            <span className="mt-6 pt-4 border-t border-slate-200 text-xs font-semibold text-emerald-700">
-              Wetonan &amp; Sorogan
-            </span>
-          </div>
-
-          <div className="bg-slate-50 hover:bg-white rounded-2xl p-7 border border-slate-200 hover:border-mahad-gold shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl mb-5 font-bold">
-                04
-              </div>
-              <h3 className="font-serif font-bold text-xl text-slate-900 mb-2">Beasiswa Penuh</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Bebas biaya pendidikan 100% melalui dukungan filantropis program Orang Tua Asuh (OTA) dan donatur keumatan.
-              </p>
-            </div>
-            <span className="mt-6 pt-4 border-t border-slate-200 text-xs font-semibold text-amber-700">
-              Filantropi Umat
-            </span>
-          </div>
-
+          ))}
         </div>
 
         <div className="mt-12 text-center">

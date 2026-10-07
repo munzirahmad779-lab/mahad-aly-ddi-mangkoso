@@ -33,17 +33,30 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         )}
 
         <div className="p-6">
-          {/* Badge Kategori */}
-          <Link
-            href={`/kategori/${article.category}`}
-            className={`inline-block text-xs font-bold px-3 py-1 rounded-full mb-3 transition-colors ${
-              isAnregurutta
-                ? "bg-amber-100 text-amber-900 hover:bg-amber-200"
-                : "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-            }`}
-          >
-            {article.categoryLabel}
-          </Link>
+          {/* Badge Kategori & Tipe */}
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <Link
+              href={`/kategori/${article.category}`}
+              className={`inline-block text-xs font-bold px-3 py-1 rounded-full transition-colors ${
+                isAnregurutta
+                  ? "bg-amber-100 text-amber-900 hover:bg-amber-200"
+                  : article.type === "opini"
+                  ? "bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300"
+                  : "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+              }`}
+            >
+              {article.categoryLabel}
+            </Link>
+            {article.type === "opini" ? (
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                ✍️ Opini &amp; Refleksi
+              </span>
+            ) : (
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                📚 Kajian Fiqh
+              </span>
+            )}
+          </div>
 
           {/* Judul Artikel */}
           <h3 className="font-serif font-bold text-xl sm:text-2xl text-slate-900 leading-snug mb-3 hover:text-emerald-800 transition-colors">
@@ -67,7 +80,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
           href={`/artikel/${article.slug}`}
           className="font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1 group"
         >
-          <span>Baca Kajian</span>
+          <span>{article.type === "opini" ? "Baca Opini" : "Baca Kajian"}</span>
           <svg className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>

@@ -150,13 +150,13 @@ export default function Footer() {
                 <p>WhatsApp: <span className="text-white font-medium">{whatsapp}</span></p>
               )}
               {footerSettings?.facebookUrl && (
-                <p>FB: <a href={footerSettings.facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-emerald-300">{footerSettings.facebookUrl}</a></p>
+                <p>FB: <a href={footerSettings.facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-emerald-300 font-medium">Facebook Resmi &rarr;</a></p>
               )}
               {footerSettings?.youtubeUrl && (
-                <p>YT: <a href={footerSettings.youtubeUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-emerald-300">{footerSettings.youtubeUrl}</a></p>
+                <p>YT: <a href={footerSettings.youtubeUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-emerald-300 font-medium">YouTube Channel &rarr;</a></p>
               )}
               {footerSettings?.instagramUrl && (
-                <p>IG: <a href={footerSettings.instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-emerald-300">{footerSettings.instagramUrl}</a></p>
+                <p>IG: <a href={footerSettings.instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-emerald-300 font-medium">Instagram Resmi &rarr;</a></p>
               )}
             </div>
             

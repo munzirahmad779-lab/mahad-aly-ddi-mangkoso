@@ -40,13 +40,13 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
-            href="/artikel"
+            href={article.type === "opini" ? "/opini" : "/artikel"}
             className="inline-flex items-center gap-1.5 text-xs text-mahad-gold-light hover:text-mahad-gold mb-6 transition"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            <span>Kembali ke Mimbar Kajian</span>
+            <span>{article.type === "opini" ? "Kembali ke Opini Santri" : "Kembali ke Mimbar Kajian"}</span>
           </Link>
 
           <span className="inline-block text-xs font-bold uppercase tracking-wider bg-mahad-gold text-mahad-green-dark px-3 py-1 rounded-full mb-3 shadow">

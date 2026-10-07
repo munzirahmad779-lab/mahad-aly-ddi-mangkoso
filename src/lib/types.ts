@@ -16,6 +16,17 @@ export interface Article {
   isSpecial?: boolean;
   tags?: string[];
   arabicSnippet?: string;
+  type?: "artikel" | "opini"; // "artikel" untuk Kajian Fikih Ilmiah, "opini" untuk Opini/Refleksi
+  imageUrl?: string;
+  featuredImage?: string;
+  source?: "admin" | "submission"; // 🟢 "Admin" | 🔵 "Kiriman"
+  submission_id?: string;
+  status?: "draft" | "published";
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    ogImage?: string;
+  };
 }
 
 export interface CategoryInfo {
@@ -24,6 +35,7 @@ export interface CategoryInfo {
   name: string;
   description: string;
   iconName: string;
+  type?: "artikel" | "opini"; // "artikel" (Fiqh) atau "opini" (Opini/Refleksi)
 }
 
 export interface Thesis {
@@ -45,19 +57,55 @@ export interface Thesis {
   fileSize: string; // e.g. "3.2 MB"
 }
 
+export interface SubmissionTimelineEvent {
+  status: "submitted" | "review" | "under_review" | "revision" | "accepted" | "rejected" | "published";
+  label?: string;
+  timestamp?: string;
+  notes?: string;
+  date?: string;
+  note?: string;
+}
+
+export interface SubmissionSection {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export interface SubmissionFullPaper {
+  sections: SubmissionSection[];
+  footnotes?: string;
+  wordAttachmentUrl?: string;
+  lastSaved?: string;
+  submittedAt?: string;
+}
+
 export interface Submission {
   id: string;
+  trackingCode?: string; // MAD-YYYY-XXXX
+  accessCode?: string; // MAD2-YYYY-XXXX untuk Tahap 2
   nama: string;
   email: string;
+  hp?: string;
   afiliasi: string;
+  tipeNaskah?: "Artikel Ilmiah" | "Opini/Refleksi" | string;
   kategori: string;
+  kategoriId?: string;
   judul: string;
   abstrak: string;
-  keywords: string;
+  keywords?: string;
+  keyword?: string[] | string;
+  fileName?: string;
+  fileSize?: string;
   fileLink?: string;
   tanggal: string;
-  status: "draft" | "review" | "revisi" | "publish";
+  status: "submitted" | "review" | "under_review" | "revisi" | "revision" | "publish" | "published" | "rejected" | "accepted";
   reviewNote?: string;
+  feedback?: string;
+  timeline?: SubmissionTimelineEvent[];
+  adminEmailSent?: boolean;
+  adminEmailError?: string;
+  fullPaper?: SubmissionFullPaper;
 }
 
 export interface NewsItem {
@@ -72,11 +120,13 @@ export interface NewsItem {
   imageUrl?: string;
 }
 
+export type AdminUserRole = "super_admin" | "admin" | "penulis" | "Super Admin" | "Admin" | "Editor" | "Penulis";
+
 export interface AdminUser {
   id: string;
   name: string;
   email: string;
-  role: "Super Admin" | "Editor" | "Penulis";
+  role: AdminUserRole;
   status: "Aktif" | "Nonaktif";
   lastLogin: string;
 }
@@ -194,6 +244,10 @@ export interface EmailLog {
   subject: string;
   status: "Terkirim" | "Gagal";
   timestamp: string;
+  errorReason?: string;
+  htmlContent?: string;
+  resendId?: string;
+  submissionId?: string;
 }
 
 export interface GalleryPhoto {
@@ -333,4 +387,97 @@ export interface SiteSettings {
   socialMedia?: SocialMediaSettings;
   footer?: FooterSettings;
   maintenanceMode?: boolean;
+}
+
+export interface NavbarLink {
+  id: string;
+  label: string;
+  url: string;
+  order: number;
+  isActive: boolean;
+  children?: NavbarLink[];
+}
+
+export interface NavbarSettings {
+  logoUrl: string;
+  brandTitle: string;
+  brandSubtitle: string;
+  bgColor: string;
+  textColor: string;
+  isSticky: boolean;
+  isTransparent: boolean;
+  ctaButton: {
+    text?: string;
+    label?: string;
+    url: string;
+    isActive?: boolean;
+    isVisible?: boolean;
+  };
+  navLinks: NavbarLink[];
+}
+
+export interface HeroMetricItem {
+  id: string;
+  value: string;
+  label: string;
+}
+
+export interface HeroSectionSettings {
+  logoUrl: string;
+  arabicBismillah: string;
+  title: string;
+  titleHighlight: string;
+  subtitle: string;
+  cta1Text: string;
+  cta1Url: string;
+  cta2Text: string;
+  cta2Url: string;
+  metrics: HeroMetricItem[];
+  bgType?: "color" | "image";
+  bgImageUrl?: string;
+  bgColor?: string;
+}
+
+export interface HomeSectionConfigItem {
+  id: string;
+  name: string;
+  label: string;
+  isActive: boolean;
+  order: number;
+  title?: string;
+  subtitle?: string;
+  badge?: string;
+  maxItems?: number;
+}
+
+export interface EmailTemplateItem {
+  id: "submission_admin" | "confirmation_author" | "revision_author" | "accepted_author" | "rejected_author" | "published_author" | string;
+  name: string;
+  recipientRole: "admin" | "author";
+  subject: string;
+  body: string; // supports {nama}, {judul}, {kode}, {catatan}, {link}
+}
+
+export interface AboutPageContent {
+  title: string;
+  subtitle: string;
+  badge: string;
+  historyTitle: string;
+  historyNarrative: string;
+  historyArabic?: string;
+  visi: string;
+  misi: string[];
+  halaqahTitle: string;
+  halaqahDesc: string;
+  beasiswaTitle: string;
+  beasiswaDesc: string;
+  kurikulumTitle: string;
+  kurikulumDesc: string;
+  educationCards?: Array<{
+    id?: string;
+    title: string;
+    description?: string;
+    desc?: string;
+    badge?: string;
+  }>;
 }

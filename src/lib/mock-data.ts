@@ -26,7 +26,14 @@ import {
   SocialMediaSettings,
   FooterSettings,
   FooterNavLink,
-  FooterFocusItem
+  FooterFocusItem,
+  NavbarSettings,
+  NavbarLink,
+  HeroMetricItem,
+  HeroSectionSettings,
+  HomeSectionConfigItem,
+  EmailTemplateItem,
+  AboutPageContent
 } from "./types";
 
 export const INITIAL_HERO: HeroSectionData = {
@@ -111,7 +118,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
   takhassus: "Fiqh wa Usuluhu (Fiqh dan Ushul Fikih)",
   focusField: "Fiqh Mu'asarah (الفقه المعاصر) — Fiqh Kontemporer",
   mudirName: "AGH. Prof. Dr. M. Faried Wadjedy, MA",
-  establishedDate: "5 November 2013 (1 Muharram 1435 H)",
+  establishedDate: "1 Muharram 1435 H",
   location: "Kab. Barru, Sulawesi Selatan",
   address: "Kompleks Pondok Pesantren DDI Mangkoso, Kel. Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulawesi Selatan 90752",
   phone: "+62 812-3456-7890",
@@ -124,7 +131,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
     "Menanamkan integritas moral, keikhlasan, dan wawasan moderasi beragama (wasathiyyah Islamiyah).",
     "Membekali mahasantri dengan kecakapan metodologi istinbath hukum dan Bahtsul Masail kontemporer."
   ],
-  historyContent: "Ma'had Aly DDI Mangkoso didirikan pada tanggal 5 November 2013 (1 Muharram 1435 H) oleh AGH. Prof. Dr. M. Faried Wadjedy, MA bersama dewan masyaikh dalam rangka meregenerasi ulama fuqaha yang mumpuni dalam khazanah turats klasik dan responsif terhadap problematika zaman modern.",
+  historyContent: "Ma'had Aly DDI Mangkoso didirikan oleh AGH. Prof. Dr. M. Faried Wadjedy, MA bersama para masyaikh dalam rangka meregenerasi ulama fuqaha yang mumpuni dalam khazanah turats klasik dan responsif terhadap problematika zaman modern.",
   historyArabic: "تَأْسِيْسُ مَعْهَدِ عَالِي لِتَخْرِيْجِ عُلَمَاءِ الْفِقْهِ الْمُعَاصِرِ عَلَى مَنْهَجِ أَهْلِ السُّنَّةِ وَالْجَمَاعَةِ",
   gradingSystemRules: "Sistem penilaian menggabungkan pengujian hafalan matan turats (ikhtibar), penguasaan qawa'id fiqhiyyah, keaktifan halaqah Bahtsul Masail, serta penulisan risalah ilmiah skripsi (munaqasyah) dengan standar kelulusan predikat Mumtaz (Cum Laude).",
   academicGuideBookUrl: "https://drive.google.com/file/d/pedoman-akademik-mahad-aly-2026/view?usp=sharing",
@@ -792,14 +799,48 @@ export const INITIAL_CATEGORIES: CategoryInfo[] = [
     slug: "fiqh-muqaran",
     name: "Fiqh Muqaran (Perbandingan Madzhab)",
     description: "Studi komparatif lintas madzhab empat dalam menentukan pendapat yang paling maslahat dan rajih bagi kemaslahatan masyarakat.",
-    iconName: "book-open"
+    iconName: "book-open",
+    type: "artikel"
   },
   {
     id: "cat-11",
     slug: "karya-anregurutta",
     name: "Karya Anregurutta",
     description: "Khazanah manuskrip, fatwa, dan risalah pemikiran AGH. Abdurrahman Ambo Dalle serta para masyayikh DDI Mangkoso.",
-    iconName: "crown"
+    iconName: "crown",
+    type: "artikel"
+  },
+  {
+    id: "cat-opini-1",
+    slug: "opini-santri",
+    name: "Opini Santri",
+    description: "Gagasan, pandangan kritis, dan sudut pandang mahasantri atas dinamika keagamaan, sosial, dan kebangsaan.",
+    iconName: "pen-tool",
+    type: "opini"
+  },
+  {
+    id: "cat-opini-2",
+    slug: "refleksi-pesantren",
+    name: "Refleksi Pesantren & Kehidupan",
+    description: "Renungan spiritual, catatan adab thalabul ilmi, dan hikmah keseharian santri di pondok pesantren.",
+    iconName: "feather",
+    type: "opini"
+  },
+  {
+    id: "cat-opini-3",
+    slug: "kolom-pemikiran",
+    name: "Kolom Pemikiran & Moderasi",
+    description: "Esai pemikiran Islam wasathiyyah, harmoni sosial, dan dialektika tradisi pesantren dengan kemajuan zaman.",
+    iconName: "sparkles",
+    type: "opini"
+  },
+  {
+    id: "cat-opini-4",
+    slug: "sosial-budaya",
+    name: "Sosial Budaya Nusantara",
+    description: "Sorotan budaya, kearifan lokal, dan transformasi sosial masyarakat dari kacamata santri.",
+    iconName: "globe",
+    type: "opini"
   }
 ];
 
@@ -912,7 +953,33 @@ Berdasarkan kaidah *Ad-Dhararu Yuzal* (Kemudharatan harus dihilangkan), segala a
     hijriDate: "08 Rabiul Akhir 1448 H",
     readTime: "6 menit",
     views: 210,
-    tags: ["Fiqh Lingkungan", "Green Economy", "Konservasi", "Krisis Iklim"]
+    tags: ["Fiqh Lingkungan", "Green Economy", "Konservasi", "Krisis Iklim"],
+    type: "artikel"
+  },
+  {
+    id: "art-6",
+    slug: "refleksi-adab-menuntut-ilmu-di-era-digital",
+    title: "Refleksi Adab Menuntut Ilmu di Tengah Riuhnya Arus Digital",
+    excerpt: "Sebuah catatan reflektif mahasantri tentang pentingnya menjaga takzim pada sanad guru dan keheningan batin saat informasi begitu melimpah ruah.",
+    content: `Di era ketika jutaan potongan fatwa dan kutipan teks agama dapat diakses hanya dalam hitungan detik melalui layar gawai, ada satu hal yang kerap terlupakan: adab talaqqi dan ketundukan hati di hadapan guru.
+
+Imam Malik rahimahullah berpesan kepada seorang pemuda Quraisy:
+تَعَلَّمِ الأَدَبَ قَبْلَ أَنْ تَتَعَلَّمَ العِلْمَ
+*"Pelajarilah adab sebelum engkau mempelajari ilmu."*
+
+Kemudahan berselancar di internet tidak boleh mengikis rasa takzim kepada masyayikh. Ilmu agama bukanlah sekadar akumulasi data kognitif, melainkan cahaya nurani (*nurun yaqdzifuhullahu fi al-qalb*) yang dialirkan melalui berkah sanad dan keridhaan para guru. Bagi mahasantri Ma'had Aly, berinteraksi dengan dunia digital menuntut kewaspadaan ganda: memanfaatkan teknologi sebagai jembatan syiar dakwah, tanpa kehilangan kemurnian akhlak dan ketawadukan santri salaf.`,
+    author: "Muhammad Raihan",
+    authorRole: "Mahasantri Marhalah Ula",
+    authorBio: "Mahasantri penggiat literasi dan kajian reflektif Ma'had Aly DDI Mangkoso.",
+    category: "refleksi-pesantren",
+    categoryLabel: "Refleksi Pesantren & Kehidupan",
+    date: "05 Oktober 2026",
+    hijriDate: "23 Rabiul Akhir 1448 H",
+    readTime: "4 menit",
+    views: 185,
+    type: "opini",
+    tags: ["Refleksi", "Adab Santri", "Era Digital", "Pesantren"],
+    arabicSnippet: "تَعَلَّمِ الأَدَبَ قَبْلَ أَنْ تَتَعَلَّمَ العِلْمَ"
   }
 ];
 
@@ -999,3 +1066,190 @@ Setiap peserta wajib mengunggah naskah lengkap skripsi berformat PDF yang telah 
     author: "Biro Akademik"
   }
 ];
+
+export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
+  logoUrl: "/image_067524.png",
+  brandTitle: "Ma'had Aly",
+  brandSubtitle: "DDI Mangkoso • Fiqh Mu'asarah",
+  bgColor: "#064e3b",
+  textColor: "#ffffff",
+  isSticky: true,
+  isTransparent: false,
+  ctaButton: {
+    text: "PMB Online",
+    url: "/pmb",
+    isActive: true
+  },
+  navLinks: [
+    { id: "nav-1", label: "Beranda", url: "/", order: 1, isActive: true },
+    {
+      id: "nav-2",
+      label: "Profil",
+      url: "/profil",
+      order: 2,
+      isActive: true,
+      children: [
+        { id: "nav-2-1", label: "Sejarah Lembaga", url: "/profil#sejarah", order: 1, isActive: true },
+        { id: "nav-2-2", label: "Visi & Misi", url: "/profil#visi-misi", order: 2, isActive: true },
+        { id: "nav-2-3", label: "Masyayikh & Dewan Dosen", url: "/profil#masyayikh", order: 3, isActive: true },
+        { id: "nav-2-4", label: "Struktur Organisasi", url: "/profil#struktur", order: 4, isActive: true },
+        { id: "nav-2-5", label: "Sarana & Prasarana", url: "/profil#sarana", order: 5, isActive: true },
+        { id: "nav-2-6", label: "Sertifikat Akreditasi", url: "/profil#akreditasi", order: 6, isActive: true }
+      ]
+    },
+    {
+      id: "nav-3",
+      label: "Akademik",
+      url: "/akademik",
+      order: 3,
+      isActive: true,
+      children: [
+        { id: "nav-3-1", label: "Kurikulum & Kitab Turats", url: "/akademik#kurikulum", order: 1, isActive: true },
+        { id: "nav-3-2", label: "Kalender Akademik", url: "/akademik#kalender", order: 2, isActive: true },
+        { id: "nav-3-3", label: "Pedoman Skripsi & Akademik", url: "/akademik#pedoman", order: 3, isActive: true }
+      ]
+    },
+    { id: "nav-4", label: "Mimbar Fiqh", url: "/artikel", order: 4, isActive: true },
+    { id: "nav-5", label: "Skripsi", url: "/skripsi", order: 5, isActive: true },
+    { id: "nav-6", label: "Warta", url: "/berita", order: 6, isActive: true },
+    { id: "nav-7", label: "Kirim Tulisan", url: "/kirim-tulisan", order: 7, isActive: true }
+  ]
+};
+
+export const INITIAL_HERO_SETTINGS: HeroSectionSettings = {
+  logoUrl: "/image_067524.png",
+  arabicBismillah: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+  title: "Pendidikan Tinggi",
+  titleHighlight: "Kader Ulama",
+  subtitle: "Pusat kaderisasi ulama berwawasan wasathiyyah, berakar kuat pada tradisi sanad dan khazanah kitab klasik (Turats), serta berakhlakul karimah untuk kemaslahatan umat.",
+  cta1Text: "Kenali Ma'had",
+  cta1Url: "/tentang",
+  cta2Text: "Baca Mimbar Kajian",
+  cta2Url: "#mimbar-kajian",
+  metrics: [
+    { id: "m-1", value: "M.1", label: "Jenjang Marhalah Ula" },
+    { id: "m-2", value: "4 Tahun", label: "Masa Pengkaderan" },
+    { id: "m-3", value: "100%", label: "Beasiswa Penuh" },
+    { id: "m-4", value: "Turats", label: "Sanad Kitab Salaf" }
+  ]
+};
+
+export const INITIAL_HOME_SECTIONS: HomeSectionConfigItem[] = [
+  { id: "sec-hero", name: "hero", label: "Hero Section", isActive: true, order: 1 },
+  { id: "sec-quote", name: "quote", label: "Kalam Hikmah (Quote)", isActive: true, order: 2 },
+  { id: "sec-about", name: "about", label: "Pilar Pendidikan (About Preview)", isActive: true, order: 3 },
+  { id: "sec-categories", name: "categories", label: "Kategori Kajian Mimbar", isActive: true, order: 4 },
+  { id: "sec-articles", name: "articles", label: "Artikel Fiqh Terbaru", isActive: true, order: 5, maxItems: 6 },
+  { id: "sec-theses", name: "theses", label: "Repositori Skripsi Mahasantri", isActive: true, order: 6, maxItems: 4 },
+  { id: "sec-news", name: "news", label: "Warta & Berita Terkini", isActive: true, order: 7, maxItems: 3 },
+  { id: "sec-submission", name: "submission", label: "CTA Kirim Tulisan Mahasantri", isActive: true, order: 8 }
+];
+
+export const INITIAL_EMAIL_TEMPLATES: EmailTemplateItem[] = [
+  {
+    id: "submission_admin",
+    name: "Notifikasi Naskah Baru (ke Admin)",
+    recipientRole: "admin",
+    subject: "[Submission Baru] {judul} — {nama}",
+    body: `<p>Assalamu'alaikum Warahmatullahi Wabarakatuh,</p>
+<p>Ada naskah baru yang masuk dari pembaca/mahasantri dengan detail berikut:</p>
+<ul>
+  <li><strong>Kode Tracking:</strong> {kode}</li>
+  <li><strong>Nama Penulis:</strong> {nama}</li>
+  <li><strong>Judul Naskah:</strong> {judul}</li>
+  <li><strong>Catatan/Ringkasan:</strong> {catatan}</li>
+</ul>
+<p>Berkas naskah terlampir pada email ini dalam format Word (.doc/.docx).</p>
+<p><a href="{link}" style="background:#064e3b;color:#ffffff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:bold;">Buka Panel Review Redaksi &rarr;</a></p>`
+  },
+  {
+    id: "confirmation_author",
+    name: "Konfirmasi Penerimaan Naskah (ke Penulis)",
+    recipientRole: "author",
+    subject: "Naskah Diterima — Kode: {kode}",
+    body: `<p>Assalamu'alaikum Warahmatullahi Wabarakatuh,</p>
+<p>Yth. <strong>{nama}</strong>,</p>
+<p>Terima kasih telah mengirimkan karya ilmiah Anda yang berjudul: <em>"{judul}"</em> ke Redaksi Ma'had Aly DDI Mangkoso.</p>
+<p>Naskah Anda telah kami terima dan saat ini sedang dalam antrean penelaahan oleh Dewan Redaksi. Anda dapat memantau status perkembangan naskah Anda kapan saja melalui tautan pelacakan berikut:</p>
+<p><a href="{link}" style="background:#064e3b;color:#ffffff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:bold;">Lacak Status Naskah ({kode})</a></p>
+<p>Wassalamu'alaikum Warahmatullahi Wabarakatuh,<br/><strong>Dewan Redaksi Ma'had Aly DDI Mangkoso</strong></p>`
+  },
+  {
+    id: "revision_author",
+    name: "Permintaan Revisi Naskah (ke Penulis)",
+    recipientRole: "author",
+    subject: "Catatan Revisi Naskah — Kode: {kode}",
+    body: `<p>Assalamu'alaikum Warahmatullahi Wabarakatuh,</p>
+<p>Yth. <strong>{nama}</strong>,</p>
+<p>Dewan Redaksi telah menelaah naskah Anda yang berjudul: <em>"{judul}"</em> (Kode: {kode}).</p>
+<p>Naskah Anda memiliki substansi yang baik, namun memerlukan beberapa perbaikan sebelum dapat diterbitkan:</p>
+<div style="background:#fef3c7;padding:14px;border-left:4px solid #f59e0b;margin:15px 0;">
+  <strong>Catatan Revisi Redaksi:</strong><br/>
+  {catatan}
+</div>
+<p><a href="{link}" style="background:#064e3b;color:#ffffff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:bold;">Kirim Revisi Naskah &rarr;</a></p>
+<p>Wassalamu'alaikum Warahmatullahi Wabarakatuh,<br/><strong>Dewan Redaksi Ma'had Aly DDI Mangkoso</strong></p>`
+  },
+  {
+    id: "accepted_author",
+    name: "Naskah Diterima / Approved (ke Penulis)",
+    recipientRole: "author",
+    subject: "Selamat! Naskah Diterima untuk Publikasi — Kode: {kode}",
+    body: `<p>Assalamu'alaikum Warahmatullahi Wabarakatuh,</p>
+<p>Yth. <strong>{nama}</strong>,</p>
+<p>Kabar gembira! Naskah Anda yang berjudul: <strong>"{judul}"</strong> (Kode: {kode}) telah dinyatakan <strong>DITERIMA</strong> oleh Dewan Redaksi Ma'had Aly DDI Mangkoso.</p>
+<p>Naskah akan segera dijadwalkan untuk terbit pada Mimbar Kajian Fiqh Mu'asarah.</p>
+<p>Terima kasih atas kontribusi keilmuan yang telah Anda sumbangkan.</p>
+<p>Wassalamu'alaikum Warahmatullahi Wabarakatuh,<br/><strong>Dewan Redaksi Ma'had Aly DDI Mangkoso</strong></p>`
+  },
+  {
+    id: "rejected_author",
+    name: "Penolakan Naskah (ke Penulis)",
+    recipientRole: "author",
+    subject: "Pemberitahuan Status Naskah — Kode: {kode}",
+    body: `<p>Assalamu'alaikum Warahmatullahi Wabarakatuh,</p>
+<p>Yth. <strong>{nama}</strong>,</p>
+<p>Terima kasih atas partisipasi Anda mengirimkan naskah berjudul: <em>"{judul}"</em> (Kode: {kode}) ke Ma'had Aly DDI Mangkoso.</p>
+<p>Setelah melalui proses telaah redaksi, mohon maaf naskah Anda saat ini <strong>belum dapat kami terbitkan</strong> dengan pertimbangan sebagai berikut:</p>
+<div style="background:#fee2e2;padding:14px;border-left:4px solid #ef4444;margin:15px 0;">
+  {catatan}
+</div>
+<p>Tetap semangat menulis dan berkarya dalam khazanah keilmuan Islam.</p>
+<p>Wassalamu'alaikum Warahmatullahi Wabarakatuh,<br/><strong>Dewan Redaksi Ma'had Aly DDI Mangkoso</strong></p>`
+  },
+  {
+    id: "published_author",
+    name: "Naskah Telah Terbit (ke Penulis)",
+    recipientRole: "author",
+    subject: "Artikel Anda Telah Terbit di Mimbar Kajian — Kode: {kode}",
+    body: `<p>Assalamu'alaikum Warahmatullahi Wabarakatuh,</p>
+<p>Yth. <strong>{nama}</strong>,</p>
+<p>Naskah Anda berjudul <strong>"{judul}"</strong> telah resmi diterbitkan di portal Ma'had Aly DDI Mangkoso!</p>
+<p>Anda dapat membaca dan membagikan artikel tersebut melalui tautan berikut:</p>
+<p><a href="{link}" style="background:#064e3b;color:#ffffff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:bold;">Lihat Artikel Terbit</a></p>
+<p>Jazakumullah khairan katsiran atas kontribusi dakwah ilmiah Anda.</p>
+<p>Wassalamu'alaikum Warahmatullahi Wabarakatuh,<br/><strong>Dewan Redaksi Ma'had Aly DDI Mangkoso</strong></p>`
+  }
+];
+
+export const INITIAL_ABOUT_CONTENT: AboutPageContent = {
+  title: "Profil Ma'had Aly DDI Mangkoso",
+  subtitle: "Mencetak Ulama Pewaris Para Nabi Berwawasan Wasathiyyah dan Berintegritas Turats.",
+  badge: "Tentang Lembaga",
+  historyTitle: "Sejarah Lembaga",
+  historyNarrative: "Ma'had Aly DDI Mangkoso didirikan di Kompleks Pondok Pesantren DDI Mangkoso, Barru, Sulawesi Selatan. Pendirian lembaga pendidikan tinggi kader ulama ini lahir dari keprihatinan yang mendalam dari AGH. Prof. Dr. M. Faried Wadjedy, MA bersama para masyaikh atas semakin langkanya ulama fukaha di tengah perkembangan zaman.\n\nMelanjutkan estafet cita-cita pendiri utama Darud Da'wah wal Irsyad (DDI), AGH. Abdurrahman Ambo Dalle, Ma'had Aly DDI Mangkoso disiapkan secara khusus untuk menggembleng santri-santri pilihan melalui masa studi 4 tahun (8 semester) pada jenjang Marhalah Ula (M.1).",
+  historyArabic: "تَأْسِيْسُ مَعْهَدِ عَالِي لِتَخْرِيْجِ عُلَمَاءِ الْفِقْهِ الْمُعَاصِرِ عَلَى مَنْهَجِ أَهْلِ السُّنَّةِ وَالْجَمَاعَةِ",
+  visi: "Menjadi pusat keunggulan pendidikan kader ulama tingkat tinggi di Indonesia timur yang kokoh dalam sanad turats klasik, berakhlak mulia, dan mumpuni dalam merespon persoalan hukum Islam kontemporer.",
+  misi: [
+    "Menyelenggarakan kajian kutubut turats dengan sanad yang bersambung.",
+    "Membina nalar kritis metodologi istinbath hukum Islam (Usul Fikih).",
+    "Menerapkan nilai keteladanan akhlak dan keikhlasan santri salaf.",
+    "Membekali mahasantri dengan kecakapan Bahtsul Masail kontemporer."
+  ],
+  halaqahTitle: "Sistem Halaqah Murni",
+  halaqahDesc: "Pembelajaran berpusat pada majelis halaqah talaqqi langsung di hadapan para masyaikh dengan sanad keilmuan yang muttashil.",
+  beasiswaTitle: "Beasiswa Penuh 100%",
+  beasiswaDesc: "Seluruh mahasantri yang lulus seleksi ketat mendapatkan beasiswa pendidikan dan asrama secara penuh melalui program Orang Tua Asuh.",
+  kurikulumTitle: "Jenjang Marhalah Ula (M.1)",
+  kurikulumDesc: "Pendidikan setara sarjana (S1) dengan konsentrasi Fiqh wa Usuluhu, berfokus pada Fiqh Mu'asarah (Fiqh Kontemporer)."
+};

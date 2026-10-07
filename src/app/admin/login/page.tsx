@@ -13,6 +13,47 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Remember Me & Forgot Password State
+  const [rememberMe, setRememberMe] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotMsg, setForgotMsg] = useState<{ success: boolean; text: string } | null>(null);
+
+  // Restore remembered email on mount
+  useState(() => {
+    if (typeof window !== "undefined") {
+      const savedEmail = localStorage.getItem("mahad_remember_email");
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+      }
+    }
+  });
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    setForgotMsg(null);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
+        redirectTo: `${window.location.origin}/admin/login`
+      });
+      if (error) throw error;
+      setForgotMsg({
+        success: true,
+        text: "Tautan reset kata sandi telah dikirim ke email Anda! Periksa kotak masuk atau spam."
+      });
+    } catch (err: any) {
+      setForgotMsg({
+        success: false,
+        text: err?.message || "Gagal mengirim email reset kata sandi."
+      });
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -47,6 +88,14 @@ export default function AdminLoginPage() {
           setErrorMessage("Akun Anda tidak aktif atau belum memiliki hak akses panel admin.");
           setLoading(false);
           return;
+        }
+
+        if (rememberMe) {
+          localStorage.setItem("mahad_remember_email", email.trim());
+          localStorage.setItem("mahad_session_remember", "true");
+        } else {
+          localStorage.removeItem("mahad_remember_email");
+          localStorage.removeItem("mahad_session_remember");
         }
 
         router.push("/admin");
@@ -101,15 +150,36 @@ export default function AdminLoginPage() {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-slate-300 font-bold">Kata Sandi (Password)</label>
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-[11px] text-mahad-gold hover:underline font-semibold"
+              >
+                Lupa Password?
+              </button>
             </div>
             <input
               type="password"
               required
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
               className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mahad-gold text-white placeholder:text-slate-600 text-sm"
             />
+          </div>
+
+          {/* Remember Me Checkbox */}
+          <div className="flex items-center justify-between pt-1">
+            <label className="flex items-center gap-2 cursor-pointer text-slate-300 text-xs">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded bg-slate-950 border-slate-700 text-mahad-gold focus:ring-mahad-gold"
+              />
+              <span>Ingat saya (Simpan sesi 7 hari)</span>
+            </label>
           </div>
 
           <button
@@ -130,6 +200,57 @@ export default function AdminLoginPage() {
             )}
           </button>
         </form>
+
+        {/* Modal Lupa Password */}
+        {showForgotPassword && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 className="font-serif font-bold text-base text-white">Reset Kata Sandi</h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setForgotMsg(null);
+                  }}
+                  className="text-slate-400 hover:text-white"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {forgotMsg ? (
+                <div className={`p-3 rounded-xl text-xs ${
+                  forgotMsg.success ? "bg-emerald-950 border border-emerald-800 text-emerald-200" : "bg-rose-950 border border-rose-800 text-rose-200"
+                }`}>
+                  {forgotMsg.text}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400">
+                  Masukkan alamat email resmi Anda. Kami akan mengirimkan tautan reset kata sandi ke kotak masuk email Anda.
+                </p>
+              )}
+
+              <form onSubmit={handleForgotPassword} className="space-y-3">
+                <input
+                  type="email"
+                  required
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  placeholder="nama@ddimangkoso.ac.id"
+                  className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-mahad-gold"
+                />
+                <button
+                  type="submit"
+                  disabled={forgotLoading}
+                  className="w-full py-2.5 bg-mahad-gold text-mahad-green-dark font-bold rounded-xl text-xs transition disabled:opacity-50"
+                >
+                  {forgotLoading ? "Mengirim Tautan..." : "Kirim Tautan Reset"}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Footer Info */}
         <div className="pt-4 border-t border-slate-800 text-center space-y-2">

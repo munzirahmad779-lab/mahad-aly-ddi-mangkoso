@@ -26,9 +26,41 @@ const cinzel = Cinzel({
 });
 
 export const metadata: Metadata = {
-  title: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://mahadalymangkoso.ac.id"),
+  title: {
+    default: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
+    template: "%s | Ma'had Aly DDI Mangkoso"
+  },
   description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso. Membina kader ulama berakar pada sanad kitab klasik dan berwawasan wasathiyyah.",
-  keywords: ["Ma'had Aly", "DDI Mangkoso", "Pendidikan Kader Ulama", "Turats", "Usul Fikih", "Tafsir Hadis"],
+  keywords: ["Ma'had Aly", "DDI Mangkoso", "Pendidikan Kader Ulama", "Turats", "Fiqh Mu'asarah", "Usul Fikih", "Barru", "Sulawesi Selatan"],
+  authors: [{ name: "Ma'had Aly DDI Mangkoso" }],
+  creator: "Ma'had Aly DDI Mangkoso",
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    url: "https://mahadalymangkoso.ac.id",
+    siteName: "Ma'had Aly DDI Mangkoso",
+    title: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
+    description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso. Membina kader ulama berakar pada sanad kitab klasik dan berwawasan wasathiyyah.",
+    images: [
+      {
+        url: "/image_067524.png",
+        width: 800,
+        height: 800,
+        alt: "Logo Ma'had Aly DDI Mangkoso",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
+    description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso.",
+    images: ["/image_067524.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

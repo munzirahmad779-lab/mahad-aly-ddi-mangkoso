@@ -27,7 +27,13 @@ import {
   PageSeoItem,
   FooterSettings,
   FooterNavLink,
-  FooterFocusItem
+  FooterFocusItem,
+  NavbarSettings,
+  HeroSectionSettings,
+  HomeSectionConfigItem,
+  EmailTemplateItem,
+  AboutPageContent,
+  SubmissionTimelineEvent
 } from "@/lib/types";
 import {
   INITIAL_ARTICLES,
@@ -53,7 +59,12 @@ import {
   INITIAL_PAGE_SEO,
   INITIAL_FOOTER_SETTINGS,
   INITIAL_FOOTER_NAV,
-  INITIAL_FOOTER_FOCUS
+  INITIAL_FOOTER_FOCUS,
+  INITIAL_NAVBAR_SETTINGS,
+  INITIAL_HERO_SETTINGS,
+  INITIAL_HOME_SECTIONS,
+  INITIAL_EMAIL_TEMPLATES,
+  INITIAL_ABOUT_CONTENT
 } from "@/lib/mock-data";
 
 interface DataContextType {
@@ -79,8 +90,10 @@ interface DataContextType {
   // Submissions
   submissions: Submission[];
   addSubmission: (submission: Omit<Submission, "id" | "tanggal" | "status">) => void;
-  updateSubmissionStatus: (id: string, status: Submission["status"], reviewNote?: string) => void;
+  updateSubmissionStatus: (id: string, status: Submission["status"], reviewNote?: string, publishedArticleLink?: string) => Promise<{ success: boolean; emailResult?: any; accessCode?: string }>;
+  saveSubmissionFullPaper: (id: string, fullPaper: import("@/lib/types").SubmissionFullPaper) => Promise<{ success: boolean }>;
   deleteSubmission: (id: string) => void;
+  publishSubmissionAsArticle: (submissionId: string) => Promise<{ success: boolean; article?: Article; emailResult?: any }>;
 
   // News / Berita
   news: NewsItem[];
@@ -155,9 +168,10 @@ interface DataContextType {
   addSubscriber: (subscriber: Omit<EmailSubscriber, "id" | "subscribedAt">) => void;
   deleteSubscriber: (id: string) => void;
 
-  // Email Logs & Send Simulation
+  // Email Logs & Real Dispatch
   emailLogs: EmailLog[];
-  sendEmailNotification: (to: string, subject: string) => void;
+  sendEmailNotification: (to: string, subject: string, htmlContent?: string) => Promise<{ success: boolean; error?: string }>;
+  retryEmailSend: (logId: string) => Promise<{ success: boolean; error?: string; id?: string }>;
 
   // Gallery Albums
   galleryAlbums: GalleryAlbum[];
@@ -186,6 +200,26 @@ interface DataContextType {
   updateFooterFocus: (id: string, updated: Partial<FooterFocusItem>) => void;
   deleteFooterFocus: (id: string) => void;
   resetFooterToDefault: () => void;
+
+  // Header / Navbar Settings
+  navbarSettings: NavbarSettings;
+  updateNavbarSettings: (updated: Partial<NavbarSettings>) => void;
+
+  // Hero Section Settings
+  heroSettings: HeroSectionSettings;
+  updateHeroSettings: (updated: Partial<HeroSectionSettings>) => void;
+
+  // Homepage Sections Config
+  homeSections: HomeSectionConfigItem[];
+  updateHomeSections: (updated: HomeSectionConfigItem[]) => void;
+
+  // Email Templates
+  emailTemplates: EmailTemplateItem[];
+  updateEmailTemplates: (updated: EmailTemplateItem[]) => void;
+
+  // About Page Content
+  aboutPageContent: AboutPageContent;
+  updateAboutPageContent: (updated: Partial<AboutPageContent>) => void;
 
   // Site Settings
   settings: SiteSettings;
@@ -225,6 +259,11 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const [footerSettings, setFooterSettings] = useState<FooterSettings>(INITIAL_FOOTER_SETTINGS);
   const [footerNav, setFooterNav] = useState<FooterNavLink[]>(INITIAL_FOOTER_NAV);
   const [footerFocus, setFooterFocus] = useState<FooterFocusItem[]>(INITIAL_FOOTER_FOCUS);
+  const [navbarSettings, setNavbarSettings] = useState<NavbarSettings>(INITIAL_NAVBAR_SETTINGS);
+  const [heroSettings, setHeroSettings] = useState<HeroSectionSettings>(INITIAL_HERO_SETTINGS);
+  const [homeSections, setHomeSections] = useState<HomeSectionConfigItem[]>(INITIAL_HOME_SECTIONS);
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplateItem[]>(INITIAL_EMAIL_TEMPLATES);
+  const [aboutPageContent, setAboutPageContent] = useState<AboutPageContent>(INITIAL_ABOUT_CONTENT);
 
   // Load from Supabase + LocalStorage fallback
   useEffect(() => {
@@ -241,6 +280,24 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
       const savedFooterSettings = localStorage.getItem("mahad_footer_settings");
       if (savedFooterSettings) setFooterSettings(JSON.parse(savedFooterSettings));
+
+      const savedNavbar = localStorage.getItem("mahad_navbar_settings");
+      if (savedNavbar) setNavbarSettings(JSON.parse(savedNavbar));
+
+      const savedHero = localStorage.getItem("mahad_hero_settings");
+      if (savedHero) setHeroSettings(JSON.parse(savedHero));
+
+      const savedHomeSections = localStorage.getItem("mahad_home_sections");
+      if (savedHomeSections) setHomeSections(JSON.parse(savedHomeSections));
+
+      const savedEmailTemplates = localStorage.getItem("mahad_email_templates");
+      if (savedEmailTemplates) setEmailTemplates(JSON.parse(savedEmailTemplates));
+
+      const savedAboutPage = localStorage.getItem("mahad_about_page_content");
+      if (savedAboutPage) setAboutPageContent(JSON.parse(savedAboutPage));
+
+      const savedSubmissions = localStorage.getItem("mahad_submissions");
+      if (savedSubmissions) setSubmissions(JSON.parse(savedSubmissions));
     } catch (e) {
       console.warn("LocalStorage read skipped:", e);
     }
@@ -311,13 +368,22 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
         if (dbCategories && dbCategories.length > 0) {
           setCategories(
-            dbCategories.map((c: any) => ({
-              id: c.id,
-              slug: c.slug,
-              name: c.nama,
-              description: c.deskripsi || "",
-              iconName: c.icon || "book"
-            }))
+            dbCategories.map((c: any) => {
+              const isOpini =
+                c.type === "opini" ||
+                c.slug?.startsWith("opini-") ||
+                c.slug?.startsWith("refleksi-") ||
+                c.slug?.startsWith("kolom-") ||
+                c.slug?.startsWith("sosial-");
+              return {
+                id: c.id,
+                slug: c.slug,
+                name: c.nama,
+                description: c.deskripsi || "",
+                iconName: c.icon || "book",
+                type: isOpini ? ("opini" as const) : ("artikel" as const)
+              };
+            })
           );
         }
 
@@ -423,6 +489,99 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
               })
             }))
           );
+        }
+
+        // Fetch Submissions
+        const { data: dbSubmissions } = await supabase
+          .from("submissions")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (dbSubmissions && dbSubmissions.length > 0) {
+          const mappedSubmissions: Submission[] = dbSubmissions.map((s: any) => {
+            let extraMeta: any = {};
+            if (s.catatan_admin) {
+              try {
+                extraMeta = JSON.parse(s.catatan_admin);
+              } catch {
+                extraMeta = { feedback: s.catatan_admin };
+              }
+            }
+            return {
+              id: s.id,
+              trackingCode: extraMeta.trackingCode || `MAD-${new Date(s.created_at).getFullYear()}-${s.id.slice(0, 4)}`,
+              nama: s.nama,
+              email: s.email,
+              hp: extraMeta.hp || "",
+              afiliasi: s.afiliasi || "",
+              tipeNaskah: extraMeta.tipeNaskah || "Artikel Fikih Kontemporer",
+              judul: s.judul,
+              kategori: s.kategori_id || "Fiqh Mu'asarah",
+              abstrak: s.abstrak,
+              keyword: s.keyword || [],
+              keywords: Array.isArray(s.keyword) ? s.keyword.join(", ") : (s.keyword || ""),
+              fileName: extraMeta.fileName || "Naskah.docx",
+              fileSize: extraMeta.fileSize || "1.2 MB",
+              tanggal: new Date(s.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+              status: (s.status as any) || "review",
+              reviewNote: extraMeta.feedback || s.catatan_admin || "",
+              feedback: extraMeta.feedback || "",
+              timeline: extraMeta.timeline || [
+                { status: "submitted", label: "Naskah Dikirim", timestamp: new Date(s.created_at).toISOString(), notes: "Naskah berhasil diterima oleh sistem" }
+              ]
+            };
+          });
+          setSubmissions(mappedSubmissions);
+        }
+
+        // Fetch Header from site_content
+        const { data: headerData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "header")
+          .single();
+        if (headerData?.value) {
+          setNavbarSettings((prev) => ({ ...prev, ...headerData.value }));
+        }
+
+        // Fetch Hero from site_content
+        const { data: heroData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "home.hero")
+          .single();
+        if (heroData?.value) {
+          setHeroSettings((prev) => ({ ...prev, ...heroData.value }));
+        }
+
+        // Fetch Home Sections from site_content
+        const { data: sectionsData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "home_sections")
+          .single();
+        if (sectionsData?.value && Array.isArray(sectionsData.value)) {
+          setHomeSections(sectionsData.value);
+        }
+
+        // Fetch Email Templates from site_content
+        const { data: emailTemplatesData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "email_templates")
+          .single();
+        if (emailTemplatesData?.value && Array.isArray(emailTemplatesData.value)) {
+          setEmailTemplates(emailTemplatesData.value);
+        }
+
+        // Fetch About Page from site_content
+        const { data: aboutData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "about_page")
+          .single();
+        if (aboutData?.value) {
+          setAboutPageContent((prev) => ({ ...prev, ...aboutData.value }));
         }
       } catch (err) {
         console.warn("Supabase live fetch notice:", err);
@@ -556,7 +715,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       ...data,
       id: "art-" + Date.now().toString(),
       slug: `${slugBase}-${Date.now().toString().slice(-4)}`,
-      views: 0
+      views: 0,
+      source: data.source || "admin",
+      status: data.status || "published"
     };
     saveArticles([newArticle, ...articles]);
     addLog("Menerbitkan Artikel", data.title);
@@ -571,7 +732,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         author_name: data.author,
         author_role: data.authorRole,
         tags: data.tags || [],
-        status: "published",
+        status: newArticle.status,
       }).then(({ error }) => {
         if (error) console.warn("Supabase insert article notice:", error.message);
       });
@@ -630,15 +791,19 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
   // Category Actions
   const addCategory = (data: Omit<CategoryInfo, "id" | "slug">) => {
-    const slug = data.name
+    let baseSlug = data.name
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
       .trim()
       .replace(/\s+/g, "-");
+    if (data.type === "opini" && !baseSlug.startsWith("opini-")) {
+      baseSlug = `opini-${baseSlug}`;
+    }
     const newCat: CategoryInfo = {
       ...data,
+      type: data.type || "artikel",
       id: "cat-" + Date.now().toString(),
-      slug: `${slug}-${Date.now().toString().slice(-3)}`
+      slug: `${baseSlug}-${Date.now().toString().slice(-3)}`
     };
     saveCategories([...categories, newCat]);
     addLog("Menambah Kategori", data.name);
@@ -799,13 +964,225 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     addLog("Naskah Masuk Baru", data.judul, data.nama);
   };
 
-  const updateSubmissionStatus = (id: string, status: Submission["status"], reviewNote?: string) => {
-    const updated = submissions.map((s) =>
-      s.id === id ? { ...s, status, reviewNote: reviewNote ?? s.reviewNote } : s
-    );
-    saveSubmissions(updated);
+  const updateSubmissionStatus = async (
+    id: string,
+    status: Submission["status"],
+    reviewNote?: string,
+    publishedArticleLink?: string
+  ): Promise<{ success: boolean; emailResult?: any; accessCode?: string }> => {
     const target = submissions.find((s) => s.id === id);
-    addLog(`Ubah Status Naskah (${status})`, target?.judul || id);
+    if (!target) return { success: false };
+
+    let stageLabel = "Naskah Sedang Direview";
+    if (status === "revision") stageLabel = "Permintaan Revisi dari Redaksi";
+    else if (status === "accepted") stageLabel = "Naskah Diterima untuk Diterbitkan";
+    else if (status === "rejected") stageLabel = "Naskah Ditolak";
+
+    const accessCode = target.accessCode || (status === "accepted" ? `MAD2-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}` : undefined);
+
+    const newTimelineEvent: SubmissionTimelineEvent = {
+      status: status === "revision" ? "revision" : status === "accepted" ? "accepted" : status === "rejected" ? "rejected" : "under_review",
+      label: stageLabel,
+      timestamp: new Date().toISOString(),
+      notes: reviewNote || (status === "accepted" ? `Abstrak disetujui (ACC). Kode Akses Tahap 2: ${accessCode}` : "Status diperbarui oleh admin")
+    };
+
+    const updatedTimeline = [...(target.timeline || []), newTimelineEvent];
+    const updatedSub: Submission = {
+      ...target,
+      status,
+      accessCode: accessCode || target.accessCode,
+      feedback: reviewNote || target.feedback,
+      reviewNote: reviewNote || target.reviewNote,
+      timeline: updatedTimeline
+    };
+
+    const updatedList = submissions.map((s) => (s.id === id ? updatedSub : s));
+    saveSubmissions(updatedList);
+    addLog(`Ubah Status Naskah (${status})`, target.judul);
+
+    // Sync to Supabase
+    try {
+      const extraMeta = {
+        trackingCode: target.trackingCode,
+        accessCode: updatedSub.accessCode,
+        hp: target.hp,
+        tipeNaskah: target.tipeNaskah,
+        fileName: target.fileName,
+        fileSize: target.fileSize,
+        timeline: updatedTimeline,
+        feedback: reviewNote || target.feedback,
+        fullPaper: target.fullPaper
+      };
+      await supabase
+        .from("submissions")
+        .update({
+          status,
+          catatan_admin: JSON.stringify(extraMeta),
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id);
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
+
+    // Trigger email notification via API route
+    let emailResult: any = null;
+    try {
+      const res = await fetch("/api/submission/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          status,
+          accessCode: updatedSub.accessCode,
+          note: reviewNote,
+          publishedArticleLink
+        })
+      });
+      const resJson = await res.json();
+      emailResult = resJson?.emailResult || null;
+    } catch (e: any) {
+      console.warn("Email notify notice:", e);
+      emailResult = { success: false, error: e?.message || "Koneksi ke endpoint notifikasi gagal" };
+    }
+
+    return { success: true, emailResult, accessCode: updatedSub.accessCode };
+  };
+
+  const saveSubmissionFullPaper = async (id: string, fullPaper: import("@/lib/types").SubmissionFullPaper) => {
+    const target = submissions.find((s) => s.id === id);
+    if (!target) return { success: false };
+
+    const updatedTimeline = [...(target.timeline || [])];
+    if (!updatedTimeline.some((t) => t.notes?.includes("Tahap 2 (Full Paper)"))) {
+      updatedTimeline.push({
+        status: "under_review",
+        label: "Naskah Lengkap Dikirim",
+        timestamp: new Date().toISOString(),
+        notes: "Penulis telah mengirimkan naskah lengkap Tahap 2 (Full Paper) untuk ditelaah redaksi."
+      });
+    }
+
+    const updatedSub: Submission = {
+      ...target,
+      status: "under_review",
+      fullPaper,
+      timeline: updatedTimeline
+    };
+
+    const updatedList = submissions.map((s) => (s.id === id ? updatedSub : s));
+    saveSubmissions(updatedList);
+    addLog("Pengiriman Full Paper Tahap 2", target.judul);
+
+    try {
+      const extraMeta = {
+        trackingCode: target.trackingCode,
+        accessCode: target.accessCode,
+        hp: target.hp,
+        tipeNaskah: target.tipeNaskah,
+        fileName: target.fileName,
+        fileSize: target.fileSize,
+        timeline: updatedTimeline,
+        feedback: target.feedback,
+        fullPaper
+      };
+      await supabase
+        .from("submissions")
+        .update({
+          status: "under_review",
+          catatan_admin: JSON.stringify(extraMeta),
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id);
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
+
+    return { success: true };
+  };
+
+  const publishSubmissionAsArticle = async (submissionId: string): Promise<{ success: boolean; article?: Article; emailResult?: any }> => {
+    const sub = submissions.find((s) => s.id === submissionId);
+    if (!sub) return { success: false };
+
+    const isOpini = sub.tipeNaskah?.toLowerCase().includes("opini");
+
+    const slugBase = sub.judul
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-");
+    const articleSlug = `${slugBase}-${Date.now().toString().slice(-4)}`;
+
+    let articleContent = "";
+    if (sub.fullPaper && sub.fullPaper.sections && sub.fullPaper.sections.length > 0) {
+      articleContent = sub.fullPaper.sections
+        .map((s) => `<section class="mb-6"><h3 class="text-xl font-serif font-bold text-slate-800 mb-2">${s.title}</h3><div class="prose max-w-none text-slate-700 leading-relaxed">${s.content}</div></section>`)
+        .join("");
+      if (sub.fullPaper.footnotes) {
+        articleContent += `<hr class="my-6 border-slate-200"/><div class="text-xs text-slate-500 font-serif"><strong>Catatan Kaki (Footnotes):</strong><p class="whitespace-pre-line mt-1">${sub.fullPaper.footnotes}</p></div>`;
+      }
+    } else {
+      articleContent = `<p>${sub.abstrak}</p><p><em>Naskah lengkap telah ditelaah dan disetujui dewan redaksi Ma'had Aly DDI Mangkoso.</em></p>`;
+    }
+
+    const newArt: Article = {
+      id: "art-" + Date.now().toString(),
+      slug: articleSlug,
+      title: sub.judul,
+      type: isOpini ? "opini" : "artikel",
+      source: "submission",
+      submission_id: submissionId,
+      status: "published",
+      excerpt: sub.abstrak ? sub.abstrak.slice(0, 160) + "..." : (isOpini ? "Opini & refleksi santri Ma'had Aly." : "Artikel ilmiah kajian fikih kontemporer."),
+      content: articleContent,
+      author: sub.nama,
+      authorRole: sub.afiliasi || "Kontributor / Penulis Tamu",
+      authorBio: sub.afiliasi ? `Penulis dari ${sub.afiliasi}` : "",
+      category: sub.kategori || (isOpini ? "opini-santri" : "fiqh-muamalah-kontemporer"),
+      categoryLabel: sub.kategori || (isOpini ? "Opini Santri" : "Fiqh Mu'asarah"),
+      date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+      hijriDate: "1448 H",
+      readTime: "5 menit",
+      views: 0,
+      tags: Array.isArray(sub.keyword)
+        ? sub.keyword
+        : typeof sub.keywords === "string"
+        ? sub.keywords.split(",").map((k) => k.trim())
+        : [isOpini ? "Opini Santri" : "Fiqh Kontemporer"]
+    };
+
+    saveArticles([newArt, ...articles]);
+    addLog("Menerbitkan Submission ke Artikel", sub.judul);
+
+    try {
+      await supabase.from("articles").insert({
+        title: newArt.title,
+        slug: newArt.slug,
+        excerpt: newArt.excerpt,
+        content: newArt.content,
+        author_name: newArt.author,
+        author_role: newArt.authorRole,
+        tags: newArt.tags,
+        status: "published"
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
+
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://mahadalymangkoso.ac.id";
+    const pathPrefix = isOpini ? "/opini" : "/artikel";
+    const publishedLink = `${origin}${pathPrefix}/${articleSlug}`;
+    
+    const updateRes = await updateSubmissionStatus(
+      submissionId,
+      "published",
+      `Naskah telah resmi diterbitkan di portal: ${publishedLink}`,
+      publishedLink
+    );
+
+    return { success: true, article: newArt, emailResult: updateRes.emailResult };
   };
 
   const deleteSubmission = (id: string) => {
@@ -813,6 +1190,14 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const filtered = submissions.filter((s) => s.id !== id);
     saveSubmissions(filtered);
     addLog("Menghapus Submission", target?.judul || id);
+
+    try {
+      supabase.from("submissions").delete().eq("id", id).then(({ error }) => {
+        if (error) console.warn("Supabase delete submission notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
 
   // News Actions
@@ -1174,22 +1559,111 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     addLog("Menghapus Subscriber", id);
   };
 
-  // Email Notification Simulator
-  const sendEmailNotification = (to: string, subject: string) => {
-    const newLog: EmailLog = {
-      id: "elog-" + Date.now().toString(),
-      to,
-      subject,
-      status: "Terkirim",
-      timestamp: new Date().toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit"
-      })
-    };
-    saveEmailLogs([newLog, ...emailLogs]);
-    addLog("Kirim Email Notifikasi", subject);
+  // Real Email Notification Sender via Resend API
+  const sendEmailNotification = async (to: string, subject: string, htmlContent?: string): Promise<{ success: boolean; error?: string }> => {
+    const defaultHtml = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #1e293b; max-width: 600px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h3 style="color: #064e3b; margin-top: 0;">Ma'had Aly DDI Mangkoso</h3>
+        <p><strong>Subjek:</strong> ${subject}</p>
+        <p>Pemberitahuan dari sistem administrasi portal Ma'had Aly DDI Mangkoso.</p>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 16px 0;" />
+        <p style="font-size: 12px; color: #64748b;">Pondok Pesantren DDI Mangkoso, Barru, Sulawesi Selatan</p>
+      </div>
+    `;
+    const finalHtml = htmlContent || defaultHtml;
+
+    try {
+      const res = await fetch("/api/admin/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to,
+          subject,
+          html: finalHtml
+        })
+      });
+      const data = await res.json();
+
+      const newLog: EmailLog = {
+        id: "elog-" + Date.now().toString(),
+        to,
+        subject,
+        status: data.success ? "Terkirim" : "Gagal",
+        errorReason: data.success ? undefined : (data.error || "Gagal mengirim email via Resend API"),
+        resendId: data.resendId,
+        htmlContent: finalHtml,
+        timestamp: new Date().toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      };
+
+      saveEmailLogs([newLog, ...emailLogs]);
+      addLog(data.success ? "Kirim Email Berhasil" : "Kirim Email Gagal", `${subject} (${to})`);
+      return { success: Boolean(data.success), error: data.error };
+    } catch (err: any) {
+      const newLog: EmailLog = {
+        id: "elog-" + Date.now().toString(),
+        to,
+        subject,
+        status: "Gagal",
+        errorReason: err.message || "Gagal menghubungi server",
+        htmlContent: finalHtml,
+        timestamp: new Date().toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      };
+      saveEmailLogs([newLog, ...emailLogs]);
+      addLog("Kirim Email Gagal", `${subject} (${to})`);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const retryEmailSend = async (logId: string): Promise<{ success: boolean; error?: string; id?: string }> => {
+    const targetLog = emailLogs.find((l) => l.id === logId);
+    if (!targetLog) return { success: false, error: "Log email tidak ditemukan." };
+
+    try {
+      const res = await fetch("/api/admin/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: targetLog.to,
+          subject: targetLog.subject,
+          html: targetLog.htmlContent || `<p>${targetLog.subject}</p>`
+        })
+      });
+      const data = await res.json();
+
+      const updatedLogs: EmailLog[] = emailLogs.map((l) => {
+        if (l.id === logId) {
+          return {
+            ...l,
+            status: data.success ? ("Terkirim" as const) : ("Gagal" as const),
+            errorReason: data.success ? undefined : (data.error || "Gagal saat kirim ulang"),
+            resendId: data.resendId || l.resendId,
+            timestamp: new Date().toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit"
+            })
+          };
+        }
+        return l;
+      });
+
+      saveEmailLogs(updatedLogs);
+      addLog(data.success ? "Kirim Ulang Email Berhasil" : "Kirim Ulang Email Gagal", `${targetLog.subject} (${targetLog.to})`);
+      return { success: Boolean(data.success), error: data.error, id: data.resendId };
+    } catch (err: any) {
+      return { success: false, error: err.message || "Gagal kirim ulang email" };
+    }
   };
 
   // Gallery Album Actions
@@ -1420,6 +1894,69 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setFooterSettings(INITIAL_FOOTER_SETTINGS);
     setFooterNav(INITIAL_FOOTER_NAV);
     setFooterFocus(INITIAL_FOOTER_FOCUS);
+    setNavbarSettings(INITIAL_NAVBAR_SETTINGS);
+    setHeroSettings(INITIAL_HERO_SETTINGS);
+    setHomeSections(INITIAL_HOME_SECTIONS);
+    setEmailTemplates(INITIAL_EMAIL_TEMPLATES);
+    setAboutPageContent(INITIAL_ABOUT_CONTENT);
+  };
+
+  const updateNavbarSettings = (updated: Partial<NavbarSettings>) => {
+    const next = { ...navbarSettings, ...updated };
+    setNavbarSettings(next);
+    localStorage.setItem("mahad_navbar_settings", JSON.stringify(next));
+    addLog("Memperbarui Header & Navbar", "Pengaturan Header");
+    try {
+      supabase.from("site_content").upsert({ key: "header", value: next }, { onConflict: "key" }).then();
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
+  };
+
+  const updateHeroSettings = (updated: Partial<HeroSectionSettings>) => {
+    const next = { ...heroSettings, ...updated };
+    setHeroSettings(next);
+    localStorage.setItem("mahad_hero_settings", JSON.stringify(next));
+    addLog("Memperbarui Hero Section", "Banner Utama");
+    try {
+      supabase.from("site_content").upsert({ key: "home.hero", value: next }, { onConflict: "key" }).then();
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
+  };
+
+  const updateHomeSections = (updated: HomeSectionConfigItem[]) => {
+    setHomeSections(updated);
+    localStorage.setItem("mahad_home_sections", JSON.stringify(updated));
+    addLog("Memperbarui Urutan & Visibilitas Beranda", "Section Homepage");
+    try {
+      supabase.from("site_content").upsert({ key: "home_sections", value: updated }, { onConflict: "key" }).then();
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
+  };
+
+  const updateEmailTemplates = (updated: EmailTemplateItem[]) => {
+    setEmailTemplates(updated);
+    localStorage.setItem("mahad_email_templates", JSON.stringify(updated));
+    addLog("Memperbarui Template Email", "Notifikasi Resend");
+    try {
+      supabase.from("site_content").upsert({ key: "email_templates", value: updated }, { onConflict: "key" }).then();
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
+  };
+
+  const updateAboutPageContent = (updated: Partial<AboutPageContent>) => {
+    const next = { ...aboutPageContent, ...updated };
+    setAboutPageContent(next);
+    localStorage.setItem("mahad_about_page_content", JSON.stringify(next));
+    addLog("Memperbarui Narasi Halaman Tentang", "Profil & Sejarah");
+    try {
+      supabase.from("site_content").upsert({ key: "about_page", value: next }, { onConflict: "key" }).then();
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
   };
 
   return (
@@ -1441,7 +1978,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         submissions,
         addSubmission,
         updateSubmissionStatus,
+        saveSubmissionFullPaper,
         deleteSubmission,
+        publishSubmissionAsArticle,
         news,
         addNews,
         updateNews,
@@ -1492,6 +2031,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         deleteSubscriber,
         emailLogs,
         sendEmailNotification,
+        retryEmailSend,
         galleryAlbums,
         addGalleryAlbum,
         updateGalleryAlbum,
@@ -1512,6 +2052,16 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         updateFooterFocus,
         deleteFooterFocus,
         resetFooterToDefault,
+        navbarSettings,
+        updateNavbarSettings,
+        heroSettings,
+        updateHeroSettings,
+        homeSections,
+        updateHomeSections,
+        emailTemplates,
+        updateEmailTemplates,
+        aboutPageContent,
+        updateAboutPageContent,
         settings,
         updateSettings,
         exportBackupJson,

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useArticles } from "@/context/ArticleContext";
 
 export default function Navbar() {
-  const { categories } = useArticles();
+  const { categories, navbarSettings } = useArticles();
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -20,6 +20,10 @@ export default function Navbar() {
     setActiveDropdown(activeDropdown === name ? null : name);
   };
 
+  const logoUrl = navbarSettings?.logoUrl || "/image_067524.png";
+  const brandTitle = navbarSettings?.brandTitle || "Ma'had Aly";
+  const brandSubtitle = navbarSettings?.brandSubtitle || "DDI Mangkoso • Fiqh Mu'asarah";
+
   return (
     <nav className="fixed top-0 inset-x-0 z-50 bg-mahad-green-dark/95 backdrop-blur-md text-white border-b border-emerald-900 transition-shadow shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -28,7 +32,7 @@ export default function Navbar() {
         <Link href="/" onClick={closeMenu} className="flex items-center gap-3.5 group shrink-0">
           <div className="w-12 h-12 relative shrink-0 drop-shadow-md group-hover:scale-105 transition-transform duration-200">
             <Image
-              src="/image_067524.png"
+              src={logoUrl}
               alt="Logo Ma'had Aly DDI Mangkoso"
               width={48}
               height={48}
@@ -38,10 +42,10 @@ export default function Navbar() {
           </div>
           <div className="leading-tight">
             <span className="block font-serif font-bold text-lg sm:text-xl text-white group-hover:text-mahad-gold transition-colors">
-              Ma&apos;had Aly
+              {brandTitle}
             </span>
             <span className="block text-[11px] font-semibold text-mahad-gold tracking-wider uppercase">
-              DDI Mangkoso &bull; Fiqh Mu&apos;asarah
+              {brandSubtitle}
             </span>
           </div>
         </Link>
@@ -202,15 +206,17 @@ export default function Navbar() {
 
         {/* Action Button & Hamburger */}
         <div className="flex items-center gap-3">
-          <Link
-            href="/kirim-tulisan"
-            className="hidden sm:inline-flex items-center gap-2 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-            <span>Kirim Tulisan</span>
-          </Link>
+          {navbarSettings?.ctaButton?.isActive !== false && navbarSettings?.ctaButton?.isVisible !== false && (
+            <Link
+              href={navbarSettings?.ctaButton?.url || "/kirim-tulisan"}
+              className="hidden sm:inline-flex items-center gap-2 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              <span>{navbarSettings?.ctaButton?.text || navbarSettings?.ctaButton?.label || "Kirim Tulisan"}</span>
+            </Link>
+          )}
 
           {/* Mobile Hamburger Button */}
           <button

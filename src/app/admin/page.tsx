@@ -26,18 +26,59 @@ import {
   PageSeoItem
 } from "@/lib/types";
 
+const SYSTEM_NAV_PAGES = [
+  { label: "🏠 Beranda", url: "/" },
+  { label: "📚 Mimbar Kajian (Artikel Fiqh)", url: "/artikel" },
+  { label: "✍️ Opini & Refleksi Santri", url: "/opini" },
+  { label: "🎓 Repositori Skripsi", url: "/skripsi" },
+  { label: "🕌 Bahtsul Masail", url: "/bahtsul-masail" },
+  { label: "🏛️ Tentang Lembaga", url: "/tentang" },
+  { label: "📜 Profil: Sejarah", url: "/tentang#sejarah" },
+  { label: "🎯 Profil: Visi & Misi", url: "/tentang#visi-misi" },
+  { label: "👳 Profil: Dewan Masyayikh / Dosen", url: "/tentang#dosen" },
+  { label: "🏢 Profil: Sarana & Prasarana", url: "/tentang#sarana" },
+  { label: "📜 Profil: Sertifikat Akreditasi", url: "/tentang#akreditasi" },
+  { label: "👥 Profil: Struktur Organisasi", url: "/tentang#struktur" },
+  { label: "📖 Akademik: Takhassus", url: "/akademik#takhassus" },
+  { label: "📑 Akademik: Kurikulum", url: "/akademik#kurikulum" },
+  { label: "📅 Akademik: Kalender Pendidikan", url: "/akademik#kalender" },
+  { label: "📰 Warta Berita & Agenda", url: "/warta" },
+  { label: "📝 Kirim Naskah", url: "/kirim-tulisan" },
+  { label: "🔍 Lacak Status Naskah", url: "/submission/track" },
+  { label: "✍️ Dashboard Penulis", url: "/penulis" },
+  { label: "🔗 URL Kustom Lainnya...", url: "custom" }
+];
+
 export default function AdminPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<{ role: string; nama_lengkap: string; email: string } | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Invite user state
+  const isSuperAdmin = userProfile?.role === "super_admin" || currentUser?.email === "munzirahmad779@gmail.com";
+
+  // User Management State (Username, Email, Kata Sandi & Role)
+  const [userTab, setUserTab] = useState<"list" | "create" | "mypassword">("list");
+  const [createAccountMode, setCreateAccountMode] = useState<"direct" | "invite">("direct");
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"editor" | "penulis">("editor");
+  const [inviteRole, setInviteRole] = useState<"super_admin" | "admin" | "penulis">("admin");
   const [inviteName, setInviteName] = useState("");
-  const [inviteLoading, setInviteLoading] = useState(false);
+  const [directPassword, setDirectPassword] = useState("");
+  const [userActionLoading, setUserActionLoading] = useState(false);
   const [dbUsers, setDbUsers] = useState<any[]>([]);
+
+  // Password Reset Modal (Admin Resets Other User)
+  const [resetTargetUser, setResetTargetUser] = useState<any | null>(null);
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+
+  // Edit User Profile Modal (Username & Role)
+  const [editTargetUser, setEditTargetUser] = useState<any | null>(null);
+  const [editNameInput, setEditNameInput] = useState("");
+  const [editRoleInput, setEditRoleInput] = useState<string>("admin");
+
+  // Change Super Admin's Own Password
+  const [myNewPassword, setMyNewPassword] = useState("");
+  const [myConfirmPassword, setMyConfirmPassword] = useState("");
 
   const {
     articles,
@@ -103,6 +144,8 @@ export default function AdminPage() {
     deleteSubscriber,
     emailLogs,
     sendEmailNotification,
+    retryEmailSend,
+    saveSubmissionFullPaper,
     galleryAlbums,
     addGalleryAlbum,
     updateGalleryAlbum,
@@ -122,6 +165,17 @@ export default function AdminPage() {
     updateFooterFocus,
     deleteFooterFocus,
     resetFooterToDefault,
+    navbarSettings,
+    updateNavbarSettings,
+    heroSettings,
+    updateHeroSettings,
+    homeSections,
+    updateHomeSections,
+    emailTemplates,
+    updateEmailTemplates,
+    aboutPageContent,
+    updateAboutPageContent,
+    publishSubmissionAsArticle,
     settings,
     updateSettings,
     exportBackupJson,
@@ -187,32 +241,168 @@ export default function AdminPage() {
     router.push("/admin/login");
   };
 
-  const handleInviteUser = async (e: React.FormEvent) => {
+  const handleCreateOrInviteUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail) return;
-    setInviteLoading(true);
+    setUserActionLoading(true);
+
     try {
-      const res = await fetch("/api/admin/invite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: inviteEmail,
-          role: inviteRole,
-          nama_lengkap: inviteName
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gagal mengundang user.");
-      alert(`✅ Undangan berhasil dikirim ke ${inviteEmail}!`);
-      setInviteEmail("");
-      setInviteName("");
-      // Refresh user list
+      if (createAccountMode === "direct") {
+        if (!directPassword || directPassword.length < 6) {
+          throw new Error("Kata sandi akun baru minimal 6 karakter.");
+        }
+        const res = await fetch("/api/admin/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "create_user",
+            email: inviteEmail,
+            password: directPassword,
+            nama_lengkap: inviteName,
+            role: inviteRole
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Gagal membuat pengguna.");
+        alert(`✅ Akun pengguna ${inviteEmail} berhasil dibuat langsung dengan kata sandi!`);
+        setInviteEmail("");
+        setInviteName("");
+        setDirectPassword("");
+        setUserTab("list");
+      } else {
+        const res = await fetch("/api/admin/invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: inviteEmail,
+            role: inviteRole,
+            nama_lengkap: inviteName
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Gagal mengundang user.");
+        alert(`✅ Undangan email berhasil dikirim ke ${inviteEmail}!`);
+        setInviteEmail("");
+        setInviteName("");
+        setUserTab("list");
+      }
+
+      // Refresh data pengguna
       const { data: userList } = await supabase.from("users").select("*").order("created_at", { ascending: false });
       if (userList) setDbUsers(userList);
     } catch (err: any) {
       alert("❌ Error: " + err.message);
     } finally {
-      setInviteLoading(false);
+      setUserActionLoading(false);
+    }
+  };
+
+  const handleResetUserPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetTargetUser || !newPasswordInput) return;
+    if (newPasswordInput.length < 6) {
+      alert("Kata sandi minimal 6 karakter.");
+      return;
+    }
+    setUserActionLoading(true);
+
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "reset_password",
+          userId: resetTargetUser.id,
+          password: newPasswordInput
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal mereset kata sandi.");
+      alert(`✅ Kata sandi untuk ${resetTargetUser.email} (${resetTargetUser.nama_lengkap || "User"}) berhasil diubah!`);
+      setResetTargetUser(null);
+      setNewPasswordInput("");
+    } catch (err: any) {
+      alert("❌ Error: " + err.message);
+    } finally {
+      setUserActionLoading(false);
+    }
+  };
+
+  const handleUpdateUserProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTargetUser) return;
+    setUserActionLoading(true);
+
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_profile",
+          userId: editTargetUser.id,
+          nama_lengkap: editNameInput,
+          role: editRoleInput
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal memperbarui profil pengguna.");
+      alert(`✅ Profil ${editTargetUser.email} berhasil diperbarui!`);
+      setEditTargetUser(null);
+      const { data: userList } = await supabase.from("users").select("*").order("created_at", { ascending: false });
+      if (userList) setDbUsers(userList);
+    } catch (err: any) {
+      alert("❌ Error: " + err.message);
+    } finally {
+      setUserActionLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, email: string) => {
+    if (!confirm(`Hapus pengguna ${email} secara permanen dari sistem login dan database?`)) return;
+    setUserActionLoading(true);
+
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete_user",
+          userId
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menghapus pengguna.");
+      alert(`✅ Pengguna ${email} berhasil dihapus.`);
+      setDbUsers(dbUsers.filter((u) => u.id !== userId));
+    } catch (err: any) {
+      alert("❌ Error: " + err.message);
+    } finally {
+      setUserActionLoading(false);
+    }
+  };
+
+  const handleChangeMyOwnPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!myNewPassword || myNewPassword.length < 6) {
+      alert("Kata sandi minimal 6 karakter.");
+      return;
+    }
+    if (myNewPassword !== myConfirmPassword) {
+      alert("Konfirmasi kata sandi baru tidak cocok.");
+      return;
+    }
+    setUserActionLoading(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password: myNewPassword });
+      if (error) throw error;
+      alert("✅ Kata sandi akun Anda berhasil diperbarui! Gunakan sandi baru saat login berikutnya.");
+      setMyNewPassword("");
+      setMyConfirmPassword("");
+    } catch (err: any) {
+      alert("❌ Error: " + err.message);
+    } finally {
+      setUserActionLoading(false);
     }
   };
 
@@ -234,7 +424,63 @@ export default function AdminPage() {
     | "seo"
     | "footer"
     | "settings"
+    | "header"
+    | "hero"
+    | "homesections"
+    | "aboutpage"
+    | "emailtemplates"
   >("dashboard");
+
+  // Submissions Management States
+  const [submissionFilter, setSubmissionFilter] = useState<"all" | "review" | "revision" | "accepted" | "rejected">("all");
+  const [subTypeFilter, setSubTypeFilter] = useState<"all" | "artikel" | "opini">("all");
+  const [revisionModalSub, setRevisionModalSub] = useState<any | null>(null);
+  const [revisionNote, setRevisionNote] = useState("");
+  const [rejectModalSub, setRejectModalSub] = useState<any | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [publishingSubId, setPublishingSubId] = useState<string | null>(null);
+  const [previewFullPaperModalSub, setPreviewFullPaperModalSub] = useState<any | null>(null);
+
+  // Email Management States (Super Admin)
+  const [emailSubTab, setEmailSubTab] = useState<"settings" | "templates" | "logs" | "subscribers">("settings");
+  const [testEmailTo, setTestEmailTo] = useState("munzirahmad779@gmail.com");
+  const [testEmailSubject, setTestEmailSubject] = useState("");
+  const [testEmailMessage, setTestEmailMessage] = useState("");
+  const [testEmailLoading, setTestEmailLoading] = useState(false);
+  const [testEmailResult, setTestEmailResult] = useState<{ success: boolean; message: string; resendId?: string } | null>(null);
+  const [retryingLogId, setRetryingLogId] = useState<string | null>(null);
+
+  // Header & Navbar Form State
+  const [headerForm, setHeaderForm] = useState(navbarSettings);
+  const [newHeaderLink, setNewHeaderLink] = useState({ label: "", url: "/", order: 1, isActive: true });
+  useEffect(() => {
+    setHeaderForm(navbarSettings);
+  }, [navbarSettings]);
+
+  // Hero Section Form State
+  const [heroForm, setHeroForm] = useState(heroSettings);
+  useEffect(() => {
+    setHeroForm(heroSettings);
+  }, [heroSettings]);
+
+  // Home Sections Form State
+  const [homeSectionsForm, setHomeSectionsForm] = useState(homeSections);
+  useEffect(() => {
+    setHomeSectionsForm(homeSections);
+  }, [homeSections]);
+
+  // About Page Form State
+  const [aboutForm, setAboutForm] = useState(aboutPageContent);
+  useEffect(() => {
+    setAboutForm(aboutPageContent);
+  }, [aboutPageContent]);
+
+  // Email Templates Form State
+  const [emailTemplatesForm, setEmailTemplatesForm] = useState(emailTemplates);
+  const [activeTemplateId, setActiveTemplateId] = useState<string>("submission_admin");
+  useEffect(() => {
+    setEmailTemplatesForm(emailTemplates);
+  }, [emailTemplates]);
 
   const [activeSubMenu, setActiveSubMenu] = useState<string>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -275,6 +521,7 @@ export default function AdminPage() {
   // 1. Article Form State
   const [isEditingArticle, setIsEditingArticle] = useState(false);
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
+  const [articleFilter, setArticleFilter] = useState<"all" | "artikel" | "opini" | "admin" | "submission">("all");
   const [articleForm, setArticleForm] = useState({
     title: "",
     excerpt: "",
@@ -284,6 +531,10 @@ export default function AdminPage() {
     authorBio: "",
     category: categories[0]?.slug || "fiqh-muamalah-kontemporer",
     categoryLabel: categories[0]?.name || "Fiqh Muamalah Kontemporer",
+    type: "artikel" as "artikel" | "opini",
+    source: "admin" as "admin" | "submission",
+    status: "published" as "published" | "draft",
+    featuredImage: "",
     date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
     hijriDate: "1448 H",
     readTime: "5 menit",
@@ -295,10 +546,12 @@ export default function AdminPage() {
   // 2. Category Form State
   const [isEditingCat, setIsEditingCat] = useState(false);
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
+  const [catFilter, setCatFilter] = useState<"all" | "artikel" | "opini">("all");
   const [catForm, setCatForm] = useState({
     name: "",
     description: "",
-    iconName: "book"
+    iconName: "book",
+    type: "artikel" as "artikel" | "opini"
   });
 
   // 3. Thesis Form State
@@ -508,6 +761,10 @@ export default function AdminPage() {
       authorBio: "",
       category: categories[0]?.slug || "fiqh-muamalah-kontemporer",
       categoryLabel: categories[0]?.name || "Fiqh Muamalah Kontemporer",
+      type: "artikel",
+      source: "admin",
+      status: "published",
+      featuredImage: "",
       date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
       hijriDate: "1448 H",
       readTime: "5 menit",
@@ -533,7 +790,7 @@ export default function AdminPage() {
     }
     setIsEditingCat(false);
     setEditingCatId(null);
-    setCatForm({ name: "", description: "", iconName: "book" });
+    setCatForm({ name: "", description: "", iconName: "book", type: "artikel" });
   };
 
   // Thesis Save
@@ -831,21 +1088,30 @@ export default function AdminPage() {
           <nav className="space-y-1 text-xs font-medium max-h-[75vh] overflow-y-auto pr-1">
             {[
               { id: "dashboard", icon: "📊", label: "Dashboard" },
-              { id: "profile", icon: "🏛️", label: "Profil Lembaga" },
+              { id: "submissions", icon: "📥", label: "Submission Naskah", alertBadge: pendingSubmissionsCount },
+              { id: "publications", icon: "📚", label: "Publikasi Fiqh", badge: articles.length + theses.length },
+              { id: "header", icon: "🧭", label: "Header & Navbar" },
+              { id: "hero", icon: "🌟", label: "Hero & Metrik" },
+              { id: "homesections", icon: "📑", label: "Section Beranda" },
+              { id: "aboutpage", icon: "🏛️", label: "Halaman Tentang" },
+              { id: "profile", icon: "📜", label: "Profil Lembaga" },
               { id: "academic", icon: "📖", label: "Akademik" },
-              { id: "content", icon: "🎨", label: "Konten Tampilan" },
-              { id: "publications", icon: "📚", label: "Publikasi", badge: articles.length + theses.length },
+              { id: "content", icon: "🎨", label: "Kalam Hikmah" },
               { id: "bahtsul", icon: "🕌", label: "Bahtsul Masail" },
               { id: "pmb", icon: "🎓", label: "PMB Online" },
               { id: "information", icon: "📰", label: "Warta & Galeri" },
-              { id: "submissions", icon: "📥", label: "Submission", alertBadge: pendingSubmissionsCount },
-              { id: "email", icon: "📧", label: "Email & Notif" },
-              { id: "comingsoon", icon: "🔧", label: "Coming Soon Mgr" },
-              { id: "users", icon: "👥", label: "User & Peran" },
               { id: "media", icon: "🖼️", label: "Media Library" },
+              { id: "comingsoon", icon: "🔧", label: "Coming Soon Mgr" },
               { id: "seo", icon: "🔍", label: "SEO & Meta" },
               { id: "footer", icon: "🦶", label: "Footer Manager" },
-              { id: "settings", icon: "⚙️", label: "Pengaturan" }
+              // Menu Khusus Super Admin
+              ...(isSuperAdmin
+                ? [
+                    { id: "email", icon: "📧", label: "Konfigurasi Email", badge: "Super" },
+                    { id: "users", icon: "👥", label: "User & Peran", badge: "Super" },
+                    { id: "settings", icon: "⚙️", label: "Pengaturan Web", badge: "Super" }
+                  ]
+                : [])
             ].map((menu) => (
               <button
                 key={menu.id}
@@ -894,12 +1160,12 @@ export default function AdminPage() {
           {sidebarOpen && (
             <div className="px-3 py-2 bg-slate-800/80 rounded-xl border border-slate-700/50">
               <p className="font-bold text-white truncate text-[11px]">
-                {userProfile?.nama_lengkap || currentUser?.email || "Super Admin"}
+                {userProfile?.nama_lengkap || currentUser?.email || "Admin"}
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">
-                  {userProfile?.role || "super_admin"}
+                <span className={`w-2 h-2 rounded-full ${isSuperAdmin ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`}></span>
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${isSuperAdmin ? "text-amber-300" : "text-emerald-300"}`}>
+                  {isSuperAdmin ? "👑 Super Admin" : "🟢 Admin / Redaksi"}
                 </span>
               </div>
             </div>
@@ -929,27 +1195,35 @@ export default function AdminPage() {
             </div>
             <h1 className="font-serif font-bold text-xl sm:text-2xl text-slate-900 mt-1 capitalize">
               {activeMenu === "dashboard" && "Pusat Kendali & Statistik Website"}
-              {activeMenu === "profile" && "🏛️ Kelola Halaman Profil (Sejarah, Visi Misi, Dosen, Sarana, Akreditasi)"}
+              {activeMenu === "submissions" && "📥 Manajemen Naskah (Tracking, Review & 1-Click Terbit)"}
+              {activeMenu === "header" && "🧭 Kelola Header, Logo & Menu Navigasi"}
+              {activeMenu === "hero" && "🌟 Kelola Hero Section & Metrik Beranda"}
+              {activeMenu === "homesections" && "📑 Pengaturan Urutan & Visibilitas Section Beranda"}
+              {activeMenu === "aboutpage" && "🏛️ Kelola Konten Halaman Tentang & Sejarah"}
+              {activeMenu === "emailtemplates" && "✉️ Kelola Template Email Notifikasi (Resend)"}
+              {activeMenu === "profile" && "📜 Kelola Halaman Profil (Sejarah, Visi Misi, Dosen, Sarana, Akreditasi)"}
               {activeMenu === "academic" && "📖 Kelola Akademik (Takhassus, Kurikulum 8 Semester, Kalender)"}
-              {activeMenu === "content" && "🎨 Kustomisasi Hero Banner & Kalam Hikmah (Arab RTL)"}
+              {activeMenu === "content" && "🎨 Kustomisasi Kalam Hikmah Anregurutta (Arab RTL)"}
               {activeMenu === "publications" && "📚 Publikasi Fiqh (Artikel, Kategori Tanpa Batas, Skripsi + Drive)"}
               {activeMenu === "bahtsul" && "🕌 Bahtsul Masail (Persiapan Fatwa, Soal Jawab & Subscriber)"}
               {activeMenu === "pmb" && "🎓 Penerimaan Mahasantri Baru (PMB Online, Gelombang & FAQ)"}
               {activeMenu === "information" && "📰 Warta Berita, Agenda & Galeri Foto Dokumentasi"}
-              {activeMenu === "submissions" && "📥 Verifikasi Naskah Santri Masuk + 1-Click Terbitkan"}
-              {activeMenu === "email" && "📧 Konfigurasi Email Redaksi, Template & Log Riwayat"}
+              {activeMenu === "email" && "📧 Konfigurasi Email Redaksi, Log & Subscriber"}
               {activeMenu === "comingsoon" && "🔧 Manajemen Halaman Coming Soon / Placeholder"}
               {activeMenu === "users" && "👥 Manajemen Pengguna & Hak Akses"}
               {activeMenu === "media" && "🖼️ Media Library & Penyimpanan Berkas"}
               {activeMenu === "seo" && "🔍 Pengaturan SEO & Meta Per Halaman"}
+              {activeMenu === "footer" && "🦶 Footer Manager"}
               {activeMenu === "settings" && "⚙️ Identitas Lembaga, Sosial Media & Backup / Restore JSON"}
             </h1>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
-              Super Admin Aktif
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
+              isSuperAdmin ? "bg-amber-100 text-amber-950 border border-amber-300" : "bg-emerald-100 text-emerald-900 border border-emerald-300"
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${isSuperAdmin ? "bg-amber-600 animate-ping" : "bg-emerald-600 animate-ping"}`}></span>
+              {isSuperAdmin ? "👑 Super Admin Aktif" : "🟢 Admin / Redaksi Aktif"}
             </span>
           </div>
         </div>
@@ -982,75 +1256,79 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Quick Chart & Pintasan */}
+            {/* Metrik Database Riil & Status Analitik Trafik */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b gap-2">
+              <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
                   <div>
                     <h3 className="font-serif font-bold text-base text-slate-900 flex items-center gap-2">
-                      <span>📊</span>
-                      <span>Statistik &amp; Peringkat Pembaca Artikel</span>
+                      <span>🗄️</span>
+                      <span>Ringkasan Data Riil Database Sistem</span>
                     </h3>
                     <p className="text-[11px] text-slate-500">
-                      Dihitung secara riil dari akumulasi data tayangan seluruh artikel di database
+                      Akumulasi entitas aktif yang tersimpan di PostgreSQL Supabase &amp; Cloudflare R2
                     </p>
                   </div>
                   <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl self-start sm:self-auto">
-                    👁️ {articles.reduce((acc, a) => acc + (a.views || 0), 0).toLocaleString("id-ID")} Total Pembaca Riil
+                    ✓ 100% Data Riil Terverifikasi
                   </span>
                 </div>
 
-                {/* Top 5 Artikel Terbanyak Dibaca */}
-                <div className="space-y-2">
-                  <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    Top 5 Artikel Fiqh Paling Banyak Dibaca:
-                  </h4>
-                  {articles.length > 0 ? (
-                    <div className="divide-y divide-slate-100">
-                      {[...articles]
-                        .sort((a, b) => (b.views || 0) - (a.views || 0))
-                        .slice(0, 5)
-                        .map((art, idx) => (
-                          <div key={art.id} className="py-2 flex items-center justify-between gap-3 text-xs hover:bg-slate-50/80 px-2 rounded-lg transition">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-[10px] shrink-0">
-                                {idx + 1}
-                              </span>
-                              <div className="min-w-0">
-                                <p className="font-semibold text-slate-900 truncate">
-                                  {art.title}
-                                </p>
-                                <p className="text-[10px] text-slate-500">
-                                  {art.category} • Penulis: {art.author}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="shrink-0 text-right">
-                              <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded text-[11px]">
-                                {(art.views || 0).toLocaleString("id-ID")}x dibaca
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 italic">Belum ada artikel yang diterbitkan.</p>
-                  )}
+                {/* Grid Metrik Database Riil */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block">Kajian Fikih</span>
+                    <p className="font-serif font-bold text-2xl text-emerald-900">
+                      {articles.filter((a) => a.type !== "opini").length}
+                    </p>
+                    <span className="text-[10px] text-emerald-700">Artikel Ilmiah</span>
+                  </div>
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block">Opini &amp; Refleksi</span>
+                    <p className="font-serif font-bold text-2xl text-amber-600">
+                      {articles.filter((a) => a.type === "opini").length}
+                    </p>
+                    <span className="text-[10px] text-amber-700">Gagasan Santri</span>
+                  </div>
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block">Berkas R2</span>
+                    <p className="font-serif font-bold text-2xl text-slate-900">
+                      {media.length}
+                    </p>
+                    <span className="text-[10px] text-slate-500">Foto &amp; PDF</span>
+                  </div>
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block">Pendaftar PMB</span>
+                    <p className="font-serif font-bold text-2xl text-emerald-800">
+                      {subscribers.length}
+                    </p>
+                    <span className="text-[10px] text-emerald-600">Form Masuk</span>
+                  </div>
                 </div>
 
-                {/* Ringkasan Metrik Riil */}
-                <div className="pt-3 border-t border-slate-100 grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <span className="text-[10px] text-slate-500 block">Warta &amp; Berita</span>
-                    <span className="font-bold text-slate-800">{news.length} warta</span>
+                {/* Status Transparan Pelacak Pengunjung */}
+                <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                      <span>⏳</span>
+                      <span>Pelacak Trafik Pengunjung Web (Traffic Analytics)</span>
+                    </h4>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-200/80 text-amber-900">
+                      Menunggu Integrasi API
+                    </span>
                   </div>
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <span className="text-[10px] text-slate-500 block">Berkas Media R2</span>
-                    <span className="font-bold text-slate-800">{media.length} file</span>
-                  </div>
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <span className="text-[10px] text-slate-500 block">Total Pengunjung PMB</span>
-                    <span className="font-bold text-slate-800">{subscribers.length} pendaftar</span>
+                  <p className="text-[11px] text-amber-800 leading-relaxed">
+                    Situs ini telah terhubung ke Google Analytics (<code className="bg-amber-100 px-1 py-0.5 rounded text-[10px] font-mono">G-MAHADALY2026</code>) di sisi browser pengunjung. Untuk mencegah tampilan angka rekayasa/dummy, statistik grafik pembaca baru akan dimunculkan setelah Google Analytics Data API dikonfigurasi.
+                  </p>
+                  <div className="pt-1">
+                    <a
+                      href="https://analytics.google.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 hover:text-amber-950 underline"
+                    >
+                      <span>Buka Konsol Google Analytics Riil &rarr;</span>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -1967,12 +2245,25 @@ export default function AdminPage() {
               {[
                 { id: "articles", label: `📝 Artikel (${articles.length})` },
                 { id: "categories", label: `🏷️ Kategori (${categories.length})` },
-                { id: "theses", label: `🎓 Skripsi (${theses.length})` }
+                { id: "theses", label: `🎓 Skripsi (${theses.length})` },
+                { id: "write", label: `➕ Tulis Artikel Baru` },
+                { id: "submissions", label: `📥 Naskah Masuk (${pendingSubmissionsCount})` },
+                { id: "stats", label: `📊 Statistik Publikasi` }
               ].map((sub) => (
                 <button
                   key={sub.id}
                   type="button"
-                  onClick={() => setActiveSubMenu(sub.id)}
+                  onClick={() => {
+                    if (sub.id === "submissions") {
+                      setActiveMenu("submissions");
+                    } else {
+                      setActiveSubMenu(sub.id);
+                      if (sub.id === "write") {
+                        setIsEditingArticle(false);
+                        setEditingArticleId(null);
+                      }
+                    }
+                  }}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
                     activeSubMenu === sub.id
                       ? "bg-emerald-800 text-white shadow"
@@ -1984,10 +2275,10 @@ export default function AdminPage() {
               ))}
             </div>
 
-            {/* Sub: Artikel */}
-            {(activeSubMenu === "overview" || activeSubMenu === "articles") && (
+            {/* Sub: Artikel & Tulis */}
+            {(activeSubMenu === "overview" || activeSubMenu === "articles" || activeSubMenu === "write") && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-xs">
+                <div className={`${activeSubMenu === "write" ? "lg:col-span-12 max-w-4xl mx-auto" : "lg:col-span-5"} bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-xs`}>
                   <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
                     {isEditingArticle ? "✏️ Edit Artikel" : "➕ Tulis Artikel Baru"}
                   </h3>
@@ -2004,23 +2295,32 @@ export default function AdminPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block font-bold text-slate-700 mb-1">Kategori</label>
+                        <label className="block font-bold text-slate-700 mb-1">Kategori &amp; Jalur *</label>
                         <select
                           value={articleForm.category}
                           onChange={(e) => {
                             const sel = categories.find((c) => c.slug === e.target.value);
+                            const isOp = sel?.type === "opini" || sel?.slug?.startsWith("opini-") || sel?.slug?.startsWith("refleksi-") || sel?.slug?.startsWith("kolom-") || sel?.slug?.startsWith("sosial-");
                             setArticleForm({
                               ...articleForm,
                               category: e.target.value,
                               categoryLabel: sel?.name || e.target.value,
+                              type: isOp ? "opini" : "artikel",
                               isSpecial: e.target.value === "karya-anregurutta"
                             });
                           }}
-                          className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                          className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-medium"
                         >
-                          {categories.map((c) => (
-                            <option key={c.id} value={c.slug}>{c.name}</option>
-                          ))}
+                          <optgroup label="📚 Kajian Fiqh (Artikel Ilmiah)">
+                            {categories.filter((c) => c.type !== "opini").map((c) => (
+                              <option key={c.id} value={c.slug}>{c.name}</option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="✍️ Opini &amp; Refleksi Santri">
+                            {categories.filter((c) => c.type === "opini").map((c) => (
+                              <option key={c.id} value={c.slug}>{c.name}</option>
+                            ))}
+                          </optgroup>
                         </select>
                       </div>
                       <div>
@@ -2034,6 +2334,18 @@ export default function AdminPage() {
                         />
                       </div>
                     </div>
+
+                    {/* Upload Sampul R2 */}
+                    <div>
+                      <ImageUploader
+                        value={articleForm.featuredImage}
+                        onChange={(url) => setArticleForm({ ...articleForm, featuredImage: url })}
+                        folder="artikel"
+                        label="Gambar Sampul Artikel (Cloudflare R2)"
+                        helperText="Opsional. Format JPG, PNG, atau WebP"
+                      />
+                    </div>
+
                     <div>
                       <label className="block font-bold text-slate-700 mb-1">Abstrak Singkat</label>
                       <textarea
@@ -2043,16 +2355,22 @@ export default function AdminPage() {
                         className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
                       />
                     </div>
+
+                    {/* Arabic Text Block with Amiri Font */}
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Kutipan Arab (Opsional)</label>
-                      <input
-                        type="text"
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Kutipan Dalil / Teks Bahasa Arab (Font Amiri RTL)
+                      </label>
+                      <textarea
+                        rows={3}
                         dir="rtl"
                         value={articleForm.arabicSnippet}
                         onChange={(e) => setArticleForm({ ...articleForm, arabicSnippet: e.target.value })}
-                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-serif text-right"
+                        className="w-full p-3 text-base bg-amber-50/40 border border-amber-200 rounded-lg font-serif text-right leading-loose font-arabic text-slate-900"
+                        placeholder="قال رحمه الله تعالى: ..."
                       />
                     </div>
+
                     <div>
                       <label className="block font-bold text-slate-700 mb-1">Isi Lengkap Artikel *</label>
                       <textarea
@@ -2063,6 +2381,32 @@ export default function AdminPage() {
                         className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
                       />
                     </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Sumber Artikel</label>
+                        <select
+                          value={articleForm.source || "admin"}
+                          onChange={(e) => setArticleForm({ ...articleForm, source: e.target.value as any })}
+                          className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-medium"
+                        >
+                          <option value="admin">🟢 Admin / Redaksi</option>
+                          <option value="submission">🔵 Kiriman Penulis</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Status Publikasi</label>
+                        <select
+                          value={articleForm.status || "published"}
+                          onChange={(e) => setArticleForm({ ...articleForm, status: e.target.value as any })}
+                          className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-medium"
+                        >
+                          <option value="published">Diterbitkan Live</option>
+                          <option value="draft">Simpan Draf</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block font-bold text-slate-700 mb-1">Tags (Pisahkan koma)</label>
                       <input
@@ -2079,19 +2423,67 @@ export default function AdminPage() {
                   </form>
                 </div>
 
-                <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                  <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                    Daftar Artikel ({articles.length})
-                  </h3>
-                  <div className="space-y-2.5 max-h-175 overflow-y-auto">
-                    {articles.map((art) => (
-                      <div key={art.id} className="p-3 bg-slate-50 rounded-xl border flex items-start justify-between gap-3 text-xs">
-                        <div>
-                          <span className="font-bold text-emerald-800 uppercase text-[10px]">{art.categoryLabel}</span>
-                          <h4 className="font-bold text-slate-900 mt-0.5">{art.title}</h4>
-                          <p className="text-slate-500 text-[11px]">Penulis: {art.author} &bull; {art.views || 0}x dibaca</p>
-                        </div>
-                        <div className="flex gap-1.5 shrink-0">
+                {activeSubMenu !== "write" && (
+                  <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b">
+                      <h3 className="font-serif font-bold text-lg text-emerald-950">
+                        Daftar Artikel ({articles.length})
+                      </h3>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {[
+                          { id: "all", label: `Semua (${articles.length})` },
+                          { id: "artikel", label: `📚 Fiqh (${articles.filter((a) => a.type !== "opini").length})` },
+                          { id: "opini", label: `✍️ Opini (${articles.filter((a) => a.type === "opini").length})` },
+                          { id: "admin", label: `🟢 Admin (${articles.filter((a) => a.source !== "submission").length})` },
+                          { id: "submission", label: `🔵 Kiriman (${articles.filter((a) => a.source === "submission").length})` }
+                        ].map((tab) => (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => setArticleFilter(tab.id as any)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${
+                              articleFilter === tab.id
+                                ? "bg-emerald-800 text-white shadow-sm"
+                                : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                            }`}
+                          >
+                            {tab.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2.5 max-h-175 overflow-y-auto">
+                      {articles
+                        .filter((art) => {
+                          if (articleFilter === "all") return true;
+                          if (articleFilter === "opini") return art.type === "opini";
+                          if (articleFilter === "artikel") return art.type !== "opini";
+                          if (articleFilter === "admin") return art.source !== "submission";
+                          if (articleFilter === "submission") return art.source === "submission";
+                          return true;
+                        })
+                        .map((art) => (
+                        <div key={art.id} className="p-3 bg-slate-50 rounded-xl border flex items-start justify-between gap-3 text-xs">
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-emerald-800 uppercase text-[10px]">{art.categoryLabel}</span>
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                art.type === "opini" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                              }`}>
+                                {art.type === "opini" ? "✍️ Opini" : "📚 Fiqh"}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                                art.source === "submission"
+                                  ? "bg-blue-100 text-blue-900 border-blue-200"
+                                  : "bg-emerald-50 text-emerald-800 border-emerald-200"
+                              }`}>
+                                {art.source === "submission" ? "🔵 Kiriman" : "🟢 Admin"}
+                              </span>
+                            </div>
+                            <h4 className="font-bold text-slate-900 mt-1">{art.title}</h4>
+                            <p className="text-slate-500 text-[11px]">Penulis: {art.author}</p>
+                          </div>
+                          <div className="flex gap-1.5 shrink-0">
                           <button
                             type="button"
                             onClick={() => {
@@ -2106,6 +2498,10 @@ export default function AdminPage() {
                                 authorBio: art.authorBio || "",
                                 category: art.category,
                                 categoryLabel: art.categoryLabel,
+                                type: art.type || "artikel",
+                                source: (art.source as any) || "admin",
+                                status: (art.status as any) || "published",
+                                featuredImage: art.featuredImage || "",
                                 date: art.date,
                                 hijriDate: art.hijriDate,
                                 readTime: art.readTime,
@@ -2132,8 +2528,9 @@ export default function AdminPage() {
                     ))}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          )}
 
             {/* Sub: Kategori */}
             {activeSubMenu === "categories" && (
@@ -2154,6 +2551,20 @@ export default function AdminPage() {
                       />
                     </div>
                     <div>
+                      <label className="block font-bold text-slate-700 mb-1">Jenis Kategori / Kanal *</label>
+                      <select
+                        value={catForm.type}
+                        onChange={(e) => setCatForm({ ...catForm, type: e.target.value as "artikel" | "opini" })}
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-medium"
+                      >
+                        <option value="artikel">📚 Kajian Fiqh (Artikel Ilmiah)</option>
+                        <option value="opini">✍️ Opini &amp; Refleksi Santri</option>
+                      </select>
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Kategori ini akan otomatis disalurkan ke kanal yang sesuai di website publik dan form submit naskah.
+                      </p>
+                    </div>
+                    <div>
                       <label className="block font-bold text-slate-700 mb-1">Deskripsi</label>
                       <textarea
                         rows={3}
@@ -2169,15 +2580,46 @@ export default function AdminPage() {
                 </div>
 
                 <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                  <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                    Daftar Kategori ({categories.length})
-                  </h3>
+                  <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b">
+                    <h3 className="font-serif font-bold text-lg text-emerald-950">
+                      Daftar Kategori ({categories.length})
+                    </h3>
+                    <div className="flex items-center gap-1.5">
+                      {[
+                        { id: "all", label: `Semua (${categories.length})` },
+                        { id: "artikel", label: `Fiqh (${categories.filter((c) => c.type !== "opini").length})` },
+                        { id: "opini", label: `Opini (${categories.filter((c) => c.type === "opini").length})` }
+                      ].map((tab) => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setCatFilter(tab.id as any)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${
+                            catFilter === tab.id
+                              ? "bg-emerald-800 text-white shadow-sm"
+                              : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="space-y-2.5 max-h-175 overflow-y-auto">
-                    {categories.map((c) => (
+                    {categories
+                      .filter((c) => catFilter === "all" || (catFilter === "opini" ? c.type === "opini" : c.type !== "opini"))
+                      .map((c) => (
                       <div key={c.id} className="p-3 bg-slate-50 rounded-xl border flex items-center justify-between text-xs">
                         <div>
-                          <h4 className="font-bold text-slate-900">{c.name}</h4>
-                          <p className="text-slate-500 text-[11px] line-clamp-1">{c.description}</p>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-slate-900">{c.name}</h4>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              c.type === "opini" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                            }`}>
+                              {c.type === "opini" ? "✍️ Opini" : "📚 Fiqh"}
+                            </span>
+                          </div>
+                          <p className="text-slate-500 text-[11px] line-clamp-1 mt-0.5">{c.description}</p>
                         </div>
                         <div className="flex gap-1.5 shrink-0">
                           <button
@@ -2185,7 +2627,12 @@ export default function AdminPage() {
                             onClick={() => {
                               setIsEditingCat(true);
                               setEditingCatId(c.id);
-                              setCatForm({ name: c.name, description: c.description, iconName: c.iconName });
+                              setCatForm({
+                                name: c.name,
+                                description: c.description,
+                                iconName: c.iconName,
+                                type: c.type || (c.slug?.startsWith("opini-") ? "opini" : "artikel")
+                              });
                             }}
                             className="px-2.5 py-1 bg-amber-500 text-white rounded font-bold"
                           >
@@ -2381,6 +2828,74 @@ export default function AdminPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Sub: Statistik Publikasi */}
+            {activeSubMenu === "stats" && (
+              <div className="space-y-6 text-xs">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                    <span className="text-xs text-slate-400 font-bold uppercase">Artikel Fiqh Ilmiah</span>
+                    <p className="font-serif font-bold text-3xl text-emerald-900">{articles.filter((a) => a.type !== "opini").length}</p>
+                    <p className="text-[11px] text-emerald-700 font-medium">Mimbar Kajian Fiqh Kontemporer</p>
+                  </div>
+                  <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                    <span className="text-xs text-slate-400 font-bold uppercase">Opini &amp; Refleksi</span>
+                    <p className="font-serif font-bold text-3xl text-amber-700">{articles.filter((a) => a.type === "opini").length}</p>
+                    <p className="text-[11px] text-amber-600 font-medium">Gagasan &amp; Renungan Santri</p>
+                  </div>
+                  <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                    <span className="text-xs text-slate-400 font-bold uppercase">Kiriman Penulis Luar</span>
+                    <p className="font-serif font-bold text-3xl text-blue-700">{articles.filter((a) => a.source === "submission").length}</p>
+                    <p className="text-[11px] text-blue-600 font-medium">Terbit via Alur Submission</p>
+                  </div>
+                  <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                    <span className="text-xs text-slate-400 font-bold uppercase">Total Repositori Skripsi</span>
+                    <p className="font-serif font-bold text-3xl text-emerald-950">{theses.length}</p>
+                    <p className="text-[11px] text-slate-500 font-medium">Karya Tulis Ilmiah Mahasantri</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <h4 className="font-serif font-bold text-base text-slate-900">Distribusi Kategori Kajian</h4>
+                    <div className="space-y-2">
+                      {categories.map((cat) => {
+                        const count = articles.filter((a) => a.category === cat.slug || a.categoryLabel === cat.name).length;
+                        return (
+                          <div key={cat.id} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border">
+                            <span className="font-semibold text-slate-800">{cat.name}</span>
+                            <span className="font-bold bg-white px-2.5 py-0.5 rounded-lg border text-emerald-800">{count} Artikel</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <h4 className="font-serif font-bold text-base text-slate-900">Perbandingan Sumber Publikasi</h4>
+                    <div className="space-y-3 pt-2">
+                      <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between">
+                        <div>
+                          <strong className="text-emerald-950 block">🟢 Diterbitkan oleh Admin / Redaksi</strong>
+                          <span className="text-emerald-700 text-[11px]">Artikel resmi asatidz &amp; redaksi Ma&apos;had Aly</span>
+                        </div>
+                        <span className="font-serif font-bold text-2xl text-emerald-900">
+                          {articles.filter((a) => a.source !== "submission").length}
+                        </span>
+                      </div>
+                      <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 flex items-center justify-between">
+                        <div>
+                          <strong className="text-blue-950 block">🔵 Diterbitkan dari Kiriman Penulis</strong>
+                          <span className="text-blue-700 text-[11px]">Hasil seleksi &amp; review naskah mahasantri / akademisi</span>
+                        </div>
+                        <span className="font-serif font-bold text-2xl text-blue-900">
+                          {articles.filter((a) => a.source === "submission").length}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2997,124 +3512,1555 @@ export default function AdminPage() {
             9. SUBMISSION (NASKAH MASUK & 1-CLICK PUBLISH)
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "submissions" && (
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6 text-xs">
-            <div className="flex items-center justify-between pb-3 border-b">
-              <div>
-                <h3 className="font-serif font-bold text-lg text-emerald-950">
-                  📥 Kotak Masuk Naskah Mahasantri &amp; Dosen ({submissions.length})
-                </h3>
-                <p className="text-slate-500 text-xs">
-                  Email tujuan notifikasi aktif: <strong>{settings.emailSubmission}</strong>
-                </p>
+          <div className="space-y-6 text-xs">
+            {/* Revision Modal */}
+            {revisionModalSub && (
+              <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex items-center justify-between pb-3 border-b">
+                    <div>
+                      <h4 className="font-serif font-bold text-base text-slate-900">Permintaan Revisi Naskah</h4>
+                      <p className="text-slate-500 text-xs">Kode: {revisionModalSub.trackingCode || revisionModalSub.id}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setRevisionModalSub(null)}
+                      className="text-slate-400 hover:text-slate-600 font-bold text-lg"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div>
+                    <p className="text-slate-700 font-medium mb-1">
+                      Kirim catatan perbaikan ke penulis (<strong>{revisionModalSub.nama}</strong> &lt;{revisionModalSub.email}&gt;):
+                    </p>
+                    <textarea
+                      rows={5}
+                      value={revisionNote}
+                      onChange={(e) => setRevisionNote(e.target.value)}
+                      placeholder="Tuliskan poin-poin yang perlu diperbaiki (misal: lengkapi referensi kitab turats pada bab 2, perbaiki format sitasi, dll)..."
+                      className="w-full p-3 bg-slate-50 border rounded-xl text-xs leading-relaxed focus:ring-2 focus:ring-purple-600 outline-none"
+                    />
+                  </div>
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setRevisionModalSub(null)}
+                      className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-medium"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!revisionNote.trim()) {
+                          alert("Mohon isi catatan revisi untuk penulis.");
+                          return;
+                        }
+                        const res = await updateSubmissionStatus(revisionModalSub.id, "revision", revisionNote);
+                        if (res?.emailResult?.success) {
+                          alert(`✓ Catatan revisi berhasil disimpan & dikirim ke ${revisionModalSub.email}!`);
+                        } else {
+                          const errInfo = res?.emailResult?.error || "Resend API key belum aktif";
+                          alert(`✓ Status revisi tersimpan di database.\n⚠️ Email notifikasi ke penulis belum terkirim: ${errInfo}`);
+                        }
+                        setRevisionModalSub(null);
+                        setRevisionNote("");
+                      }}
+                      className="px-5 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold shadow"
+                    >
+                      Kirim Permintaan Revisi
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Rejection Modal */}
+            {rejectModalSub && (
+              <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex items-center justify-between pb-3 border-b">
+                    <div>
+                      <h4 className="font-serif font-bold text-base text-red-700">Tolak Naskah</h4>
+                      <p className="text-slate-500 text-xs">Kode: {rejectModalSub.trackingCode || rejectModalSub.id}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setRejectModalSub(null)}
+                      className="text-slate-400 hover:text-slate-600 font-bold text-lg"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div>
+                    <p className="text-slate-700 font-medium mb-1">
+                      Alasan penolakan untuk penulis (<strong>{rejectModalSub.nama}</strong> &lt;{rejectModalSub.email}&gt;):
+                    </p>
+                    <textarea
+                      rows={4}
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      placeholder="Tuliskan alasan naskah belum dapat diterbitkan..."
+                      className="w-full p-3 bg-slate-50 border rounded-xl text-xs leading-relaxed focus:ring-2 focus:ring-red-600 outline-none"
+                    />
+                  </div>
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setRejectModalSub(null)}
+                      className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-medium"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const reason = rejectReason || "Naskah belum memenuhi kriteria publikasi dewan redaksi.";
+                        const res = await updateSubmissionStatus(rejectModalSub.id, "rejected", reason);
+                        if (res?.emailResult?.success) {
+                          alert(`✓ Status penolakan tersimpan & pemberitahuan telah dikirim ke ${rejectModalSub.email}.`);
+                        } else {
+                          const errInfo = res?.emailResult?.error || "Resend API key belum aktif";
+                          alert(`✓ Status penolakan tersimpan di database.\n⚠️ Email penolakan ke penulis belum terkirim: ${errInfo}`);
+                        }
+                        setRejectModalSub(null);
+                        setRejectReason("");
+                      }}
+                      className="px-5 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-white font-bold shadow"
+                    >
+                      Tolak &amp; Simpan Status
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Full Paper Preview Modal */}
+            {previewFullPaperModalSub && (
+              <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex items-center justify-between pb-3 border-b sticky top-0 bg-white z-10">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                        Naskah Lengkap (Tahap 2)
+                      </span>
+                      <h4 className="font-serif font-bold text-lg text-slate-900 mt-1">{previewFullPaperModalSub.judul}</h4>
+                      <p className="text-slate-500 text-xs">Penulis: {previewFullPaperModalSub.nama} ({previewFullPaperModalSub.email}) • Kode: {previewFullPaperModalSub.accessCode || previewFullPaperModalSub.trackingCode}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewFullPaperModalSub(null)}
+                      className="text-slate-400 hover:text-slate-600 font-bold text-lg"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {previewFullPaperModalSub.fullPaper?.sections?.map((sec: any, idx: number) => (
+                    <div key={sec.id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                      <h5 className="font-serif font-bold text-sm text-emerald-950 flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-emerald-800 text-white flex items-center justify-center text-[10px]">{idx + 1}</span>
+                        <span>{sec.title}</span>
+                      </h5>
+                      <p className="text-slate-800 leading-relaxed whitespace-pre-line text-xs font-serif">{sec.content}</p>
+                    </div>
+                  ))}
+
+                  {previewFullPaperModalSub.fullPaper?.footnotes && (
+                    <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200 space-y-1">
+                      <h5 className="font-bold text-xs text-amber-950">Catatan Kaki &amp; Referensi Tambahan:</h5>
+                      <p className="text-slate-700 leading-relaxed whitespace-pre-line text-[11px] font-serif">{previewFullPaperModalSub.fullPaper.footnotes}</p>
+                    </div>
+                  )}
+
+                  {previewFullPaperModalSub.fullPaper?.externalDriveUrl && (
+                    <div className="p-3 bg-slate-50 rounded-xl border flex items-center justify-between text-xs">
+                      <span className="text-slate-600">Google Drive / Berkas Pendukung:</span>
+                      <a href={previewFullPaperModalSub.fullPaper.externalDriveUrl} target="_blank" rel="noreferrer" className="text-emerald-700 font-bold underline">
+                        Buka Tautan Drive &rarr;
+                      </a>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between pt-4 border-t sticky bottom-0 bg-white">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewFullPaperModalSub(null)}
+                      className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-medium"
+                    >
+                      Tutup
+                    </button>
+                    <button
+                      type="button"
+                      disabled={publishingSubId === previewFullPaperModalSub.id}
+                      onClick={async () => {
+                        const isOp = previewFullPaperModalSub.tipeNaskah?.toLowerCase().includes("opini");
+                        const tipeLabel = isOp ? "Opini/Refleksi Santri" : "Artikel Ilmiah";
+                        if (confirm(`Terbitkan naskah lengkap "${previewFullPaperModalSub.judul}" langsung ke publik sebagai ${tipeLabel}?`)) {
+                          setPublishingSubId(previewFullPaperModalSub.id);
+                          const res = await publishSubmissionAsArticle(previewFullPaperModalSub.id);
+                          setPublishingSubId(null);
+                          if (res.success) {
+                            setPreviewFullPaperModalSub(null);
+                            alert(`✓ Naskah berhasil diterbitkan secara live! Penulis telah diberi notifikasi.`);
+                          }
+                        }
+                      }}
+                      className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition"
+                    >
+                      {publishingSubId === previewFullPaperModalSub.id ? "Menerbitkan..." : "✓ Terbitkan Naskah Ini ke Publik"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Header Box */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b">
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
+                    <span>📥 Kotak Masuk Naskah Ilmiah &amp; Opini</span>
+                    <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full text-xs">
+                      {submissions.length} Total
+                    </span>
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Naskah berformat Word (.doc/.docx max 10MB) dikirimkan via email admin (<strong>munzirahmad779@gmail.com</strong>) dan dicatat rapi di database.
+                  </p>
+                </div>
+              </div>
+
+              {/* Status & Type Filter Tabs */}
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 pt-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {[
+                    { id: "all", label: `Semua Status (${submissions.length})` },
+                    { id: "review", label: `Review (${submissions.filter((s) => s.status === "review").length})` },
+                    { id: "revision", label: `Revisi (${submissions.filter((s) => s.status === "revision").length})` },
+                    { id: "accepted", label: `Diterima / Terbit (${submissions.filter((s) => s.status === "accepted" || s.status === "publish").length})` },
+                    { id: "rejected", label: `Ditolak (${submissions.filter((s) => s.status === "rejected").length})` }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setSubmissionFilter(tab.id as any)}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition text-xs ${
+                        submissionFilter === tab.id
+                          ? "bg-emerald-800 text-white shadow-sm"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+                  {[
+                    { id: "all", label: "Semua Tipe" },
+                    { id: "artikel", label: "📚 Artikel Ilmiah" },
+                    { id: "opini", label: "✍️ Opini / Refleksi" }
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setSubTypeFilter(t.id as any)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                        subTypeFilter === t.id
+                          ? "bg-white text-emerald-900 shadow-sm"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {submissions.length === 0 ? (
-              <div className="text-center py-16 text-slate-500 text-sm">
-                Belum ada naskah kiriman baru di kotak masuk.
+            {/* List Naskah */}
+            {submissions
+              .filter((s) => submissionFilter === "all" || s.status === submissionFilter || (submissionFilter === "accepted" && s.status === "publish"))
+              .filter((s) => {
+                if (subTypeFilter === "all") return true;
+                const isOp = s.tipeNaskah?.toLowerCase().includes("opini");
+                return subTypeFilter === "opini" ? isOp : !isOp;
+              }).length === 0 ? (
+              <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 text-slate-500">
+                Tidak ada naskah pada kategori filter ini.
               </div>
             ) : (
               <div className="space-y-4">
-                {submissions.map((sub) => (
-                  <div key={sub.id} className="p-5 bg-slate-50 rounded-xl border space-y-3">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded">
-                        Kategori: {sub.kategori}
-                      </span>
+                {submissions
+                  .filter((s) => submissionFilter === "all" || s.status === submissionFilter || (submissionFilter === "accepted" && s.status === "publish"))
+                  .filter((s) => {
+                    if (subTypeFilter === "all") return true;
+                    const isOp = s.tipeNaskah?.toLowerCase().includes("opini");
+                    return subTypeFilter === "opini" ? isOp : !isOp;
+                  })
+                  .map((sub) => {
+                    const trackingCode = sub.trackingCode || `MAD-2026-${sub.id.slice(-4)}`;
+                    const isOpiniType = sub.tipeNaskah?.toLowerCase().includes("opini");
+                    return (
+                      <div key={sub.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-emerald-700 transition">
+                        {/* Top Meta */}
+                        <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-100">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-lg text-xs">
+                              {trackingCode}
+                            </span>
+                            <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg font-semibold">
+                              {sub.kategori}
+                            </span>
+                            <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                              isOpiniType ? "bg-amber-100 text-amber-900 border border-amber-200" : "bg-emerald-100 text-emerald-900 border border-emerald-200"
+                            }`}>
+                              {isOpiniType ? "✍️ Opini / Refleksi" : "📚 Artikel Ilmiah"}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <span className="text-slate-400 text-xs">{sub.tanggal}</span>
+                            <span
+                              className={`font-bold px-3 py-1 rounded-full uppercase text-[10px] tracking-wider ${
+                                sub.status === "accepted" || sub.status === "publish"
+                                  ? "bg-emerald-600 text-white"
+                                  : sub.status === "revision"
+                                  ? "bg-purple-600 text-white"
+                                  : sub.status === "rejected"
+                                  ? "bg-red-600 text-white"
+                                  : "bg-amber-500 text-slate-950"
+                              }`}
+                            >
+                              {sub.status === "accepted" || sub.status === "publish"
+                                ? "✓ Diterima / Terbit"
+                                : sub.status === "revision"
+                                ? "Perlu Revisi"
+                                : sub.status === "rejected"
+                                ? "Ditolak"
+                                : "Sedang Direview"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Title & Author Info */}
+                        <div>
+                          <h4 className="font-serif font-bold text-lg text-slate-900 leading-snug">{sub.judul}</h4>
+                          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <div>
+                              <span className="text-slate-400 block text-[10px] uppercase font-bold">Penulis</span>
+                              <strong className="text-slate-900">{sub.nama}</strong>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 block text-[10px] uppercase font-bold">Email</span>
+                              <a href={`mailto:${sub.email}`} className="text-emerald-700 underline font-semibold">
+                                {sub.email}
+                              </a>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 block text-[10px] uppercase font-bold">No. HP / WA</span>
+                              <span>{sub.hp || "-"}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 block text-[10px] uppercase font-bold">Afiliasi</span>
+                              <span>{sub.afiliasi || "-"}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Abstract */}
+                        <div className="p-4 bg-slate-50/70 border border-slate-200/80 rounded-xl space-y-1">
+                          <strong className="text-slate-800 text-[11px] uppercase tracking-wider block">Abstrak Naskah:</strong>
+                          <p className="text-slate-700 leading-relaxed whitespace-pre-line">{sub.abstrak}</p>
+                          {(sub.keyword || sub.keywords) && (
+                            <div className="pt-2 flex items-center gap-1.5 flex-wrap">
+                              <span className="text-slate-400 text-[10px] font-bold">Kata Kunci:</span>
+                              {(Array.isArray(sub.keyword)
+                                ? sub.keyword
+                                : typeof sub.keywords === "string"
+                                ? sub.keywords.split(",")
+                                : [String(sub.keyword || "")]
+                              ).map((kw: string, i: number) => (
+                                <span key={i} className="bg-white border text-slate-600 px-2 py-0.5 rounded text-[10px]">
+                                  {kw.trim()}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Word File Attachment info */}
+                        <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">📎</span>
+                            <div>
+                              <span className="font-bold">{sub.fileName || "Naskah.docx"}</span>
+                              <span className="text-slate-500 text-[11px] ml-2">({sub.fileSize || "Word Document"})</span>
+                            </div>
+                          </div>
+                          {sub.adminEmailSent ? (
+                            <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                              ✓ Terkirim ke Email Admin
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-amber-800 font-semibold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200" title="Resend API key belum diaktifkan di server; berkas tersimpan aman di database">
+                              ⚠️ Belum terkirim ke email admin (Key Resend belum diisi)
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Stage 2 Access Code & Full Paper Status */}
+                        {sub.accessCode && (
+                          <div className="flex items-center justify-between flex-wrap gap-2 p-3 bg-emerald-50/80 border border-emerald-200 rounded-xl text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="font-sans font-bold text-[10px] text-emerald-800 uppercase tracking-wider">
+                                Kode Akses Naskah Lengkap (Tahap 2):
+                              </span>
+                              <strong className="font-mono text-emerald-950 bg-white px-2.5 py-1 rounded-lg border border-emerald-300 font-bold">
+                                {sub.accessCode}
+                              </strong>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (sub.accessCode) {
+                                  navigator.clipboard.writeText(sub.accessCode);
+                                  alert(`✓ Kode akses ${sub.accessCode} disalin!`);
+                                }
+                              }}
+                              className="px-2.5 py-1 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-[11px] font-bold transition"
+                            >
+                              📋 Salin Kode
+                            </button>
+                          </div>
+                        )}
+
+                        {sub.fullPaper ? (
+                          <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between flex-wrap gap-3 text-xs">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-xl">📄</span>
+                              <div>
+                                <strong className="text-blue-950 block font-bold">
+                                  Naskah Lengkap (Tahap 2) Telah Dikirim oleh Penulis!
+                                </strong>
+                                <span className="text-blue-700 text-[11px]">
+                                  {sub.fullPaper.sections?.length || 0} Bab lengkap dengan catatan kaki &amp; referensi.
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setPreviewFullPaperModalSub(sub)}
+                              className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow-sm transition flex items-center gap-1.5"
+                            >
+                              <span>👁️ Pratinjau Naskah Lengkap</span>
+                            </button>
+                          </div>
+                        ) : sub.status === "accepted" ? (
+                          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] flex items-center gap-2">
+                            <span>⏳</span>
+                            <span>
+                              Menunggu penulis melengkapi Naskah Lengkap melalui formulir Tahap 2 menggunakan kode akses di atas.
+                            </span>
+                          </div>
+                        ) : null}
+
+                        {/* Feedback / Review Note */}
+                        {(sub.feedback || sub.reviewNote) && (
+                          <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl text-purple-950 space-y-1">
+                            <strong className="text-purple-900 block text-[11px] uppercase tracking-wider">Catatan Redaksi Terakhir:</strong>
+                            <p className="leading-relaxed">{sub.feedback || sub.reviewNote}</p>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center justify-between flex-wrap gap-2 pt-3 border-t">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {sub.status === "review" && (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (confirm(`Setujui abstrak "${sub.judul}" dan kirimkan Kode Akses Tahap 2 ke ${sub.email}?`)) {
+                                    const res = await updateSubmissionStatus(
+                                      sub.id,
+                                      "accepted",
+                                      "Alhamdulillah, abstrak naskah Anda telah disetujui dewan redaksi. Silakan lanjutkan pengisian Naskah Lengkap (Tahap 2) melalui portal penulisan."
+                                    );
+                                    if (res?.emailResult?.success) {
+                                      alert(`✓ Abstrak disetujui! Kode akses Tahap 2 telah dikirimkan ke email ${sub.email}.`);
+                                    } else {
+                                      alert(`✓ Abstrak disetujui! Kode akses Tahap 2 tersimpan di database.\n⚠️ Email: ${res?.emailResult?.error || 'Terkirim via log'}`);
+                                    }
+                                  }
+                                }}
+                                className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold transition flex items-center gap-1.5 shadow"
+                              >
+                                <span>✅ ACC Abstrak (Kirim Kode Tahap 2)</span>
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRevisionModalSub(sub);
+                                setRevisionNote(sub.feedback || "");
+                              }}
+                              className="px-3.5 py-2 bg-purple-100 hover:bg-purple-200 text-purple-900 rounded-xl font-bold transition flex items-center gap-1.5"
+                            >
+                              <span>✏️ Minta Revisi</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRejectModalSub(sub);
+                                setRejectReason("");
+                              }}
+                              className="px-3.5 py-2 bg-red-100 hover:bg-red-200 text-red-900 rounded-xl font-bold transition flex items-center gap-1.5"
+                            >
+                              <span>✕ Tolak Naskah</span>
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              disabled={publishingSubId === sub.id}
+                              onClick={async () => {
+                                const tipeLabel = isOpiniType ? "Opini/Refleksi Santri" : "Artikel Ilmiah";
+                                if (confirm(`Setujui & terbitkan naskah "${sub.judul}" langsung sebagai ${tipeLabel} di portal publik?`)) {
+                                  setPublishingSubId(sub.id);
+                                  const res = await publishSubmissionAsArticle(sub.id);
+                                  setPublishingSubId(null);
+                                  if (res.success) {
+                                    if (res.emailResult?.success) {
+                                      alert(`✓ Naskah berhasil diterbitkan sebagai ${tipeLabel} dan notifikasi email berhasil dikirim ke ${sub.email}!`);
+                                    } else {
+                                      const errInfo = res.emailResult?.error || "Resend API key belum aktif";
+                                      alert(`✓ Naskah berhasil diterbitkan langsung sebagai ${tipeLabel} live!\n⚠️ Email konfirmasi ke penulis belum terkirim: ${errInfo}`);
+                                    }
+                                  }
+                                }
+                              }}
+                              className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 disabled:opacity-50"
+                            >
+                              {publishingSubId === sub.id ? (
+                                <span>Sedang menerbitkan...</span>
+                              ) : (
+                                <span>✓ Setujui &amp; Terbitkan Live</span>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Hapus data naskah "${sub.judul}"?`)) {
+                                  deleteSubmission(sub.id);
+                                }
+                              }}
+                              className="px-3 py-2 text-slate-400 hover:text-red-600 font-bold"
+                              title="Hapus Submission"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            HEADER & NAVBAR MANAGER
+           ══════════════════════════════════════════════════════════════ */}
+        {activeMenu === "header" && (
+          <div className="space-y-6 text-xs">
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b">
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-emerald-950">
+                    🧭 Pengaturan Header &amp; Navigasi Publik
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Atur logo instansi, branding judul/subjudul, tombol aksi utama, dan susunan menu navigasi navbar.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateNavbarSettings(headerForm);
+                    alert("✓ Pengaturan Header & Navbar berhasil disimpan!");
+                  }}
+                  className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition"
+                >
+                  Simpan Perubahan Header
+                </button>
+              </div>
+
+              {/* Logo & Branding Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <ImageUploader
+                    value={headerForm.logoUrl}
+                    onChange={(url) => setHeaderForm({ ...headerForm, logoUrl: url })}
+                    folder="logo"
+                    label="Logo Header / Navbar"
+                    helperText="Disarankan file PNG transparan beresolusi tajam"
+                  />
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Judul Instansi (Brand Title)</label>
+                    <input
+                      type="text"
+                      value={headerForm.brandTitle}
+                      onChange={(e) => setHeaderForm({ ...headerForm, brandTitle: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border rounded-lg"
+                      placeholder="Ma'had Aly"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Subjudul / Slogan Singkat (Brand Subtitle)</label>
+                    <input
+                      type="text"
+                      value={headerForm.brandSubtitle}
+                      onChange={(e) => setHeaderForm({ ...headerForm, brandSubtitle: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border rounded-lg"
+                      placeholder="DDI Mangkoso • Fiqh Mu'asarah"
+                    />
+                  </div>
+
+                  {/* CTA Button Settings */}
+                  <div className="p-4 bg-slate-50 rounded-xl border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900">Tombol Aksi Navbar (CTA Kanan)</span>
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(headerForm.ctaButton?.isActive ?? headerForm.ctaButton?.isVisible ?? true)}
+                          onChange={(e) =>
+                            setHeaderForm({
+                              ...headerForm,
+                              ctaButton: {
+                                ...headerForm.ctaButton,
+                                isActive: e.target.checked,
+                                isVisible: e.target.checked
+                              }
+                            })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                        <span className="ml-2 text-xs font-semibold text-slate-700">Tampilkan</span>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-slate-600 mb-1">Label Tombol</label>
+                        <input
+                          type="text"
+                          value={headerForm.ctaButton?.text || headerForm.ctaButton?.label || "Kirim Tulisan"}
+                          onChange={(e) =>
+                            setHeaderForm({
+                              ...headerForm,
+                              ctaButton: {
+                                ...headerForm.ctaButton,
+                                text: e.target.value,
+                                label: e.target.value
+                              }
+                            })
+                          }
+                          className="w-full p-2 bg-white border rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-600 mb-1">URL Tujuan</label>
+                        <input
+                          type="text"
+                          value={headerForm.ctaButton?.url || "/kirim-tulisan"}
+                          onChange={(e) =>
+                            setHeaderForm({
+                              ...headerForm,
+                              ctaButton: { ...headerForm.ctaButton, url: e.target.value }
+                            })
+                          }
+                          className="w-full p-2 bg-white border rounded-lg text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Navigation Menu Links */}
+              <div className="pt-4 border-t space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-serif font-bold text-base text-slate-900">
+                    Daftar Tautan Menu Navbar ({headerForm.navLinks?.length || 0})
+                  </h4>
+                </div>
+
+                <div className="space-y-2">
+                  {(headerForm.navLinks || []).map((link, idx) => (
+                    <div
+                      key={link.id || idx}
+                      className="p-3 bg-slate-50 border rounded-xl flex items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="flex items-center gap-3 flex-1 flex-wrap">
+                        <span className="font-mono text-slate-400 font-bold w-6">{idx + 1}.</span>
+                        <input
+                          type="text"
+                          value={link.label}
+                          onChange={(e) => {
+                            const updated = [...headerForm.navLinks];
+                            updated[idx] = { ...updated[idx], label: e.target.value };
+                            setHeaderForm({ ...headerForm, navLinks: updated });
+                          }}
+                          className="p-2 bg-white border rounded-lg font-bold text-slate-900 w-36"
+                          placeholder="Label Menu"
+                        />
+                        <select
+                          value={SYSTEM_NAV_PAGES.some((p) => p.url === link.url) ? link.url : "custom"}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const updated = [...headerForm.navLinks];
+                            if (val !== "custom") {
+                              const page = SYSTEM_NAV_PAGES.find((p) => p.url === val);
+                              updated[idx] = {
+                                ...updated[idx],
+                                url: val,
+                                label: updated[idx].label || page?.label.replace(/^[\p{Emoji}\s]+/u, "").trim() || ""
+                              };
+                            }
+                            setHeaderForm({ ...headerForm, navLinks: updated });
+                          }}
+                          className="p-2 bg-white border rounded-lg text-slate-700 text-xs font-medium"
+                        >
+                          <optgroup label="🧭 Pilih Halaman Sistem">
+                            {SYSTEM_NAV_PAGES.filter((p) => p.url !== "custom").map((p) => (
+                              <option key={p.url} value={p.url}>{p.label}</option>
+                            ))}
+                          </optgroup>
+                          <option value="custom">🔗 URL Kustom...</option>
+                        </select>
+                        <input
+                          type="text"
+                          value={link.url}
+                          onChange={(e) => {
+                            const updated = [...headerForm.navLinks];
+                            updated[idx] = { ...updated[idx], url: e.target.value };
+                            setHeaderForm({ ...headerForm, navLinks: updated });
+                          }}
+                          className="p-2 bg-white border rounded-lg font-mono text-slate-600 flex-1 min-w-[120px]"
+                          placeholder="/url-tujuan"
+                        />
+                      </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-slate-400">{sub.tanggal}</span>
-                        <span
-                          className={`font-bold px-2 py-0.5 rounded uppercase text-[10px] ${
-                            sub.status === "publish"
-                              ? "bg-emerald-600 text-white"
-                              : sub.status === "review"
-                              ? "bg-amber-500 text-slate-950"
-                              : "bg-slate-300 text-slate-800"
-                          }`}
+                        <label className="inline-flex items-center cursor-pointer mr-2">
+                          <input
+                            type="checkbox"
+                            checked={link.isActive !== false}
+                            onChange={(e) => {
+                              const updated = [...headerForm.navLinks];
+                              updated[idx] = { ...updated[idx], isActive: e.target.checked };
+                              setHeaderForm({ ...headerForm, navLinks: updated });
+                            }}
+                            className="sr-only peer"
+                          />
+                          <div className="w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => {
+                            const updated = [...headerForm.navLinks];
+                            const temp = updated[idx - 1];
+                            updated[idx - 1] = updated[idx];
+                            updated[idx] = temp;
+                            setHeaderForm({ ...headerForm, navLinks: updated });
+                          }}
+                          className="p-1.5 bg-slate-200 hover:bg-slate-300 rounded disabled:opacity-30"
+                          title="Geser Naik"
                         >
-                          Status: {sub.status}
-                        </span>
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === headerForm.navLinks.length - 1}
+                          onClick={() => {
+                            const updated = [...headerForm.navLinks];
+                            const temp = updated[idx + 1];
+                            updated[idx + 1] = updated[idx];
+                            updated[idx] = temp;
+                            setHeaderForm({ ...headerForm, navLinks: updated });
+                          }}
+                          className="p-1.5 bg-slate-200 hover:bg-slate-300 rounded disabled:opacity-30"
+                          title="Geser Turun"
+                        >
+                          ▼
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = headerForm.navLinks.filter((_, i) => i !== idx);
+                            setHeaderForm({ ...headerForm, navLinks: updated });
+                          }}
+                          className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+                          title="Hapus Menu"
+                        >
+                          🗑️
+                        </button>
                       </div>
                     </div>
+                  ))}
+                </div>
 
+                {/* Form Tambah Menu Baru */}
+                <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <strong className="text-emerald-950 text-xs">➕ Tambah Tautan Navigasi Baru</strong>
+                    <span className="text-[10px] text-slate-500">Pilih dari halaman sistem atau ketik manual</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                      <h4 className="font-serif font-bold text-base text-slate-900">{sub.judul}</h4>
-                      <p className="text-slate-600">
-                        Penulis: <strong>{sub.nama}</strong> ({sub.email}) &bull; Afiliasi: {sub.afiliasi || "Umum"}
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-white border rounded-lg text-slate-700 leading-relaxed">
-                      <strong>Abstrak Naskah:</strong>
-                      <p className="mt-1">{sub.abstrak}</p>
-                    </div>
-
-                    {sub.fileLink && (
-                      <p className="text-emerald-800">
-                        Link Dokumen:{" "}
-                        <a href={sub.fileLink} target="_blank" rel="noopener noreferrer" className="underline font-bold">
-                          {sub.fileLink}
-                        </a>
-                      </p>
-                    )}
-
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t">
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => updateSubmissionStatus(sub.id, "review")}
-                          className="px-2.5 py-1 bg-amber-100 text-amber-900 rounded font-bold"
-                        >
-                          Set: Review
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateSubmissionStatus(sub.id, "revisi")}
-                          className="px-2.5 py-1 bg-purple-100 text-purple-900 rounded font-bold"
-                        >
-                          Set: Butuh Revisi
-                        </button>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            addArticle({
-                              title: sub.judul,
-                              excerpt: sub.abstrak.slice(0, 150) + "...",
-                              content: sub.abstrak,
-                              author: sub.nama,
-                              authorRole: sub.afiliasi || "Mahasantri Marhalah Ula",
-                              category: categories[0]?.slug || "fiqh-muamalah-kontemporer",
-                              categoryLabel: sub.kategori,
-                              date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
-                              hijriDate: "1448 H",
-                              readTime: "5 menit"
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Pilih Cepat Halaman</label>
+                      <select
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "custom") {
+                            setNewHeaderLink({ ...newHeaderLink, url: "/" });
+                          } else if (val) {
+                            const page = SYSTEM_NAV_PAGES.find((p) => p.url === val);
+                            setNewHeaderLink({
+                              ...newHeaderLink,
+                              url: val,
+                              label: page ? page.label.replace(/^[\p{Emoji}\s]+/u, "").trim() : newHeaderLink.label
                             });
-                            updateSubmissionStatus(sub.id, "publish");
-                            sendEmailNotification(sub.email, `Naskah "${sub.judul}" Diterbitkan di Ma'had Aly`);
-                            alert("Naskah berhasil langsung diterbitkan menjadi Artikel Live!");
+                          }
+                        }}
+                        className="w-full p-2 bg-white border rounded-lg text-xs"
+                      >
+                        <option value="">-- Pilih Halaman Sistem --</option>
+                        {SYSTEM_NAV_PAGES.filter((p) => p.url !== "custom").map((p) => (
+                          <option key={p.url} value={p.url}>{p.label}</option>
+                        ))}
+                        <option value="custom">🔗 URL Kustom...</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Label Menu</label>
+                      <input
+                        type="text"
+                        value={newHeaderLink.label}
+                        onChange={(e) => setNewHeaderLink({ ...newHeaderLink, label: e.target.value })}
+                        placeholder="Nama Menu"
+                        className="w-full p-2 bg-white border rounded-lg text-xs font-semibold"
+                      />
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <div className="flex-1">
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">URL Tujuan</label>
+                        <input
+                          type="text"
+                          value={newHeaderLink.url}
+                          onChange={(e) => setNewHeaderLink({ ...newHeaderLink, url: e.target.value })}
+                          placeholder="/url"
+                          className="w-full p-2 bg-white border rounded-lg text-xs font-mono"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!newHeaderLink.label.trim()) {
+                            alert("Label menu wajib diisi!");
+                            return;
+                          }
+                          setHeaderForm({
+                            ...headerForm,
+                            navLinks: [
+                              ...(headerForm.navLinks || []),
+                              {
+                                id: "nav-" + Date.now().toString(),
+                                label: newHeaderLink.label.trim(),
+                                url: newHeaderLink.url.trim() || "/",
+                                order: (headerForm.navLinks?.length || 0) + 1,
+                                isActive: true
+                              }
+                            ]
+                          });
+                          setNewHeaderLink({ label: "", url: "/", order: 1, isActive: true });
+                        }}
+                        className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-lg text-xs shadow shrink-0"
+                      >
+                        Tambah Menu
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            HERO SECTION & METRIK MANAGER
+           ══════════════════════════════════════════════════════════════ */}
+        {activeMenu === "hero" && (
+          <div className="space-y-6 text-xs">
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b">
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-emerald-950">
+                    🌟 Pengaturan Hero Banner &amp; Metrik Beranda
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Ubah teks judul, basmalah, deskripsi pengantar, tombol CTA, dan metrik pilar beranda tanpa batasan tahun.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateHeroSettings(heroForm);
+                    alert("✓ Pengaturan Hero Section berhasil disimpan!");
+                  }}
+                  className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition"
+                >
+                  Simpan Hero Section
+                </button>
+              </div>
+
+              {/* Logo & Teks Utama */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <ImageUploader
+                    value={heroForm.logoUrl}
+                    onChange={(url) => setHeroForm({ ...heroForm, logoUrl: url })}
+                    folder="logo"
+                    label="Logo Hero Utama"
+                    helperText="Logo resolusi tinggi yang tampil di tengah Hero Banner"
+                  />
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Kaligrafi Basmalah (RTL)</label>
+                    <input
+                      type="text"
+                      dir="rtl"
+                      value={heroForm.arabicBismillah || ""}
+                      onChange={(e) => setHeroForm({ ...heroForm, arabicBismillah: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border rounded-lg font-serif text-right text-base text-emerald-900"
+                      placeholder="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Judul Utama</label>
+                      <input
+                        type="text"
+                        value={heroForm.title || ""}
+                        onChange={(e) => setHeroForm({ ...heroForm, title: e.target.value })}
+                        className="w-full p-2.5 bg-slate-50 border rounded-lg font-bold"
+                        placeholder="Pendidikan Tinggi"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Judul Highlight (Gold)</label>
+                      <input
+                        type="text"
+                        value={heroForm.titleHighlight || ""}
+                        onChange={(e) => setHeroForm({ ...heroForm, titleHighlight: e.target.value })}
+                        className="w-full p-2.5 bg-slate-50 border rounded-lg font-bold text-amber-700"
+                        placeholder="Kader Ulama"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Deskripsi Singkat / Subtitle</label>
+                    <textarea
+                      rows={3}
+                      value={heroForm.subtitle || ""}
+                      onChange={(e) => setHeroForm({ ...heroForm, subtitle: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border rounded-lg leading-relaxed"
+                      placeholder="Pusat kaderisasi ulama berwawasan wasathiyyah..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
+                <div className="p-4 bg-slate-50 rounded-xl border space-y-2">
+                  <span className="font-bold text-slate-900 block">Tombol CTA 1 (Utama - Gold)</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={heroForm.cta1Text || ""}
+                      onChange={(e) => setHeroForm({ ...heroForm, cta1Text: e.target.value })}
+                      placeholder="Teks Tombol (Kenali Ma'had)"
+                      className="p-2 bg-white border rounded-lg text-xs"
+                    />
+                    <input
+                      type="text"
+                      value={heroForm.cta1Url || ""}
+                      onChange={(e) => setHeroForm({ ...heroForm, cta1Url: e.target.value })}
+                      placeholder="URL (/tentang)"
+                      className="p-2 bg-white border rounded-lg text-xs font-mono"
+                    />
+                  </div>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-xl border space-y-2">
+                  <span className="font-bold text-slate-900 block">Tombol CTA 2 (Sekunder - Outline)</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={heroForm.cta2Text || ""}
+                      onChange={(e) => setHeroForm({ ...heroForm, cta2Text: e.target.value })}
+                      placeholder="Teks Tombol (Baca Kajian)"
+                      className="p-2 bg-white border rounded-lg text-xs"
+                    />
+                    <input
+                      type="text"
+                      value={heroForm.cta2Url || ""}
+                      onChange={(e) => setHeroForm({ ...heroForm, cta2Url: e.target.value })}
+                      placeholder="URL (#mimbar-kajian)"
+                      className="p-2 bg-white border rounded-lg text-xs font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Repeater 4 Pilar / Metrik Hero */}
+              <div className="pt-4 border-t space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-serif font-bold text-base text-slate-900">
+                      Repeater Metrik Pilar Hero ({heroForm.metrics?.length || 0})
+                    </h4>
+                    <p className="text-slate-500 text-xs mt-0.5">
+                      Bebas diedit nilai &amp; labelnya. Tidak ada tahun hardcoded!
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newMetric = {
+                        id: "m-" + Date.now().toString(),
+                        value: "Baru",
+                        label: "Keterangan Metrik"
+                      };
+                      setHeroForm({ ...heroForm, metrics: [...(heroForm.metrics || []), newMetric] });
+                    }}
+                    className="px-3.5 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold rounded-lg transition"
+                  >
+                    + Tambah Metrik
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {(heroForm.metrics || []).map((m, idx) => (
+                    <div key={m.id || idx} className="p-4 bg-slate-50 border rounded-xl space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-emerald-800 text-[11px]">Pilar #{idx + 1}</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => {
+                              const updated = [...heroForm.metrics];
+                              const temp = updated[idx - 1];
+                              updated[idx - 1] = updated[idx];
+                              updated[idx] = temp;
+                              setHeroForm({ ...heroForm, metrics: updated });
+                            }}
+                            className="p-1 bg-slate-200 hover:bg-slate-300 rounded text-[10px] disabled:opacity-30"
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === heroForm.metrics.length - 1}
+                            onClick={() => {
+                              const updated = [...heroForm.metrics];
+                              const temp = updated[idx + 1];
+                              updated[idx + 1] = updated[idx];
+                              updated[idx] = temp;
+                              setHeroForm({ ...heroForm, metrics: updated });
+                            }}
+                            className="p-1 bg-slate-200 hover:bg-slate-300 rounded text-[10px] disabled:opacity-30"
+                          >
+                            ▼
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = heroForm.metrics.filter((_, i) => i !== idx);
+                              setHeroForm({ ...heroForm, metrics: updated });
+                            }}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded text-[10px]"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-0.5">Nilai / Angka</label>
+                        <input
+                          type="text"
+                          value={m.value}
+                          onChange={(e) => {
+                            const updated = [...heroForm.metrics];
+                            updated[idx] = { ...updated[idx], value: e.target.value };
+                            setHeroForm({ ...heroForm, metrics: updated });
                           }}
-                          className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-lg shadow"
+                          className="w-full p-2 bg-white border rounded-lg font-bold text-amber-700 text-sm"
+                          placeholder="e.g. 4 Tahun / 100%"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-0.5">Label Keterangan</label>
+                        <input
+                          type="text"
+                          value={m.label}
+                          onChange={(e) => {
+                            const updated = [...heroForm.metrics];
+                            updated[idx] = { ...updated[idx], label: e.target.value };
+                            setHeroForm({ ...heroForm, metrics: updated });
+                          }}
+                          className="w-full p-2 bg-white border rounded-lg text-slate-700 text-xs"
+                          placeholder="e.g. Masa Pengkaderan"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            URUTAN & VISIBILITAS SECTION BERANDA
+           ══════════════════════════════════════════════════════════════ */}
+        {activeMenu === "homesections" && (
+          <div className="space-y-6 text-xs">
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b">
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-emerald-950">
+                    📑 Kelola Urutan &amp; Visibilitas Section Beranda
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Aktifkan/nonaktifkan bagian halaman depan dan sesuaikan urutan tampilan sesuai kebutuhan lembaga.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateHomeSections(homeSectionsForm);
+                    alert("✓ Urutan dan visibilitas section beranda berhasil disimpan!");
+                  }}
+                  className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition"
+                >
+                  Simpan Urutan Beranda
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {homeSectionsForm.map((sec, idx) => (
+                  <div
+                    key={sec.id || idx}
+                    className="p-4 bg-slate-50 border rounded-xl flex items-center justify-between gap-4 text-xs hover:bg-white transition"
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <span className="font-mono text-slate-400 font-bold w-6">{idx + 1}.</span>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={sec.label}
+                          onChange={(e) => {
+                            const updated = [...homeSectionsForm];
+                            updated[idx] = { ...updated[idx], label: e.target.value };
+                            setHomeSectionsForm(updated);
+                          }}
+                          className="p-2 bg-white border rounded-lg font-bold text-slate-900 w-full sm:w-80"
+                        />
+                        <span className="text-[11px] text-slate-400 ml-2 font-mono">({sec.name})</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={sec.isActive !== false}
+                          onChange={(e) => {
+                            const updated = [...homeSectionsForm];
+                            updated[idx] = { ...updated[idx], isActive: e.target.checked };
+                            setHomeSectionsForm(updated);
+                          }}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                        <span className="ml-2 text-xs font-semibold text-slate-700">
+                          {sec.isActive !== false ? "Aktif" : "Nonaktif"}
+                        </span>
+                      </label>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => {
+                            const updated = [...homeSectionsForm];
+                            const temp = updated[idx - 1];
+                            updated[idx - 1] = { ...updated[idx], order: idx };
+                            updated[idx] = { ...temp, order: idx + 1 };
+                            setHomeSectionsForm(updated);
+                          }}
+                          className="p-2 bg-slate-200 hover:bg-slate-300 rounded-lg font-bold disabled:opacity-30"
+                          title="Geser Ke Atas"
                         >
-                          ✓ Terbitkan Jadi Artikel Live
+                          ▲
                         </button>
                         <button
                           type="button"
+                          disabled={idx === homeSectionsForm.length - 1}
                           onClick={() => {
-                            if (confirm(`Hapus kiriman: "${sub.judul}"?`)) deleteSubmission(sub.id);
+                            const updated = [...homeSectionsForm];
+                            const temp = updated[idx + 1];
+                            updated[idx + 1] = { ...updated[idx], order: idx + 2 };
+                            updated[idx] = { ...temp, order: idx + 1 };
+                            setHomeSectionsForm(updated);
                           }}
-                          className="px-3 py-1.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700"
+                          className="p-2 bg-slate-200 hover:bg-slate-300 rounded-lg font-bold disabled:opacity-30"
+                          title="Geser Ke Bawah"
                         >
-                          Hapus
+                          ▼
                         </button>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-            )}
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            HALAMAN TENTANG & NARASI PROFIL
+           ══════════════════════════════════════════════════════════════ */}
+        {activeMenu === "aboutpage" && (
+          <div className="space-y-6 text-xs">
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b">
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-emerald-950">
+                    🏛️ Kelola Konten Halaman Tentang (/tentang)
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Edit narasi sejarah lengkap, visi misi, dan pilar pendidikan secara dinamis tanpa tahun hardcoded.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateAboutPageContent(aboutForm);
+                    alert("✓ Konten Halaman Tentang berhasil diperbarui!");
+                  }}
+                  className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition"
+                >
+                  Simpan Halaman Tentang
+                </button>
+              </div>
+
+              {/* Header Box */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Badge Atas</label>
+                  <input
+                    type="text"
+                    value={aboutForm.badge || ""}
+                    onChange={(e) => setAboutForm({ ...aboutForm, badge: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border rounded-lg"
+                    placeholder="Tentang Lembaga"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Judul Utama Halaman</label>
+                  <input
+                    type="text"
+                    value={aboutForm.title || ""}
+                    onChange={(e) => setAboutForm({ ...aboutForm, title: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border rounded-lg font-bold"
+                    placeholder="Profil Ma'had Aly DDI Mangkoso"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Subjudul Halaman</label>
+                  <input
+                    type="text"
+                    value={aboutForm.subtitle || ""}
+                    onChange={(e) => setAboutForm({ ...aboutForm, subtitle: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border rounded-lg"
+                    placeholder="Mencetak Ulama Pewaris Para Nabi..."
+                  />
+                </div>
+              </div>
+
+              {/* Sejarah Lembaga */}
+              <div className="p-5 bg-slate-50 rounded-2xl border space-y-4">
+                <h4 className="font-serif font-bold text-base text-slate-900">📜 Sejarah Pendirian Lembaga</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Judul Bagian Sejarah</label>
+                    <input
+                      type="text"
+                      value={aboutForm.historyTitle || ""}
+                      onChange={(e) => setAboutForm({ ...aboutForm, historyTitle: e.target.value })}
+                      className="w-full p-2.5 bg-white border rounded-lg font-bold"
+                      placeholder="Sejarah Lembaga"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Teks Singkat Bahasa Arab (RTL)</label>
+                    <input
+                      type="text"
+                      dir="rtl"
+                      value={aboutForm.historyArabic || ""}
+                      onChange={(e) => setAboutForm({ ...aboutForm, historyArabic: e.target.value })}
+                      className="w-full p-2.5 bg-white border rounded-lg font-serif text-right text-base text-emerald-950"
+                      placeholder="تَأْسِيْسُ مَعْهَدِ عَالِي..."
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Uraian Narasi Sejarah Lengkap (Bebas Diedit, Tanpa Tahun Hardcoded)
+                  </label>
+                  <textarea
+                    rows={6}
+                    value={aboutForm.historyNarrative || ""}
+                    onChange={(e) => setAboutForm({ ...aboutForm, historyNarrative: e.target.value })}
+                    className="w-full p-3 bg-white border rounded-xl leading-relaxed text-slate-800"
+                    placeholder="Tuliskan uraian sejarah pendirian Ma'had Aly..."
+                  />
+                </div>
+              </div>
+
+              {/* Visi & Misi */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-5 bg-slate-50 rounded-2xl border space-y-2">
+                  <label className="block font-serif font-bold text-sm text-slate-900">Visi Kelembagaan</label>
+                  <textarea
+                    rows={5}
+                    value={aboutForm.visi || ""}
+                    onChange={(e) => setAboutForm({ ...aboutForm, visi: e.target.value })}
+                    className="w-full p-2.5 bg-white border rounded-xl leading-relaxed"
+                    placeholder="Tuliskan visi..."
+                  />
+                </div>
+                <div className="p-5 bg-slate-50 rounded-2xl border space-y-2">
+                  <label className="block font-serif font-bold text-sm text-slate-900">Misi Utama (Satu per baris)</label>
+                  <textarea
+                    rows={5}
+                    value={(aboutForm.misi || []).join("\n")}
+                    onChange={(e) =>
+                      setAboutForm({
+                        ...aboutForm,
+                        misi: e.target.value.split("\n").filter((m) => m.trim().length > 0)
+                      })
+                    }
+                    className="w-full p-2.5 bg-white border rounded-xl leading-relaxed font-sans"
+                    placeholder="Tuliskan misi 1 per baris..."
+                  />
+                </div>
+              </div>
+
+              {/* 3 Kartu Pendidikan & Beasiswa */}
+              <div className="p-5 bg-slate-50 rounded-2xl border space-y-4">
+                <h4 className="font-serif font-bold text-base text-slate-900">🎓 Kartu Sistem Pendidikan &amp; Beasiswa</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-3 bg-white border rounded-xl space-y-2">
+                    <label className="block font-bold text-slate-700">Kartu 1: Judul</label>
+                    <input
+                      type="text"
+                      value={aboutForm.halaqahTitle || ""}
+                      onChange={(e) => setAboutForm({ ...aboutForm, halaqahTitle: e.target.value })}
+                      className="w-full p-2 border rounded-lg text-xs font-bold"
+                    />
+                    <label className="block font-bold text-slate-700 mt-2">Deskripsi</label>
+                    <textarea
+                      rows={3}
+                      value={aboutForm.halaqahDesc || ""}
+                      onChange={(e) => setAboutForm({ ...aboutForm, halaqahDesc: e.target.value })}
+                      className="w-full p-2 border rounded-lg text-xs"
+                    />
+                  </div>
+
+                  <div className="p-3 bg-white border rounded-xl space-y-2">
+                    <label className="block font-bold text-slate-700">Kartu 2: Judul</label>
+                    <input
+                      type="text"
+                      value={aboutForm.beasiswaTitle || ""}
+                      onChange={(e) => setAboutForm({ ...aboutForm, beasiswaTitle: e.target.value })}
+                      className="w-full p-2 border rounded-lg text-xs font-bold"
+                    />
+                    <label className="block font-bold text-slate-700 mt-2">Deskripsi</label>
+                    <textarea
+                      rows={3}
+                      value={aboutForm.beasiswaDesc || ""}
+                      onChange={(e) => setAboutForm({ ...aboutForm, beasiswaDesc: e.target.value })}
+                      className="w-full p-2 border rounded-lg text-xs"
+                    />
+                  </div>
+
+                  <div className="p-3 bg-white border rounded-xl space-y-2">
+                    <label className="block font-bold text-slate-700">Kartu 3: Judul</label>
+                    <input
+                      type="text"
+                      value={aboutForm.kurikulumTitle || ""}
+                      onChange={(e) => setAboutForm({ ...aboutForm, kurikulumTitle: e.target.value })}
+                      className="w-full p-2 border rounded-lg text-xs font-bold"
+                    />
+                    <label className="block font-bold text-slate-700 mt-2">Deskripsi</label>
+                    <textarea
+                      rows={3}
+                      value={aboutForm.kurikulumDesc || ""}
+                      onChange={(e) => setAboutForm({ ...aboutForm, kurikulumDesc: e.target.value })}
+                      className="w-full p-2 border rounded-lg text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            TEMPLATE EMAIL NOTIFIKASI (RESEND)
+           ══════════════════════════════════════════════════════════════ */}
+        {activeMenu === "emailtemplates" && (
+          <div className="space-y-6 text-xs">
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b">
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-emerald-950">
+                    ✉️ Template Email Notifikasi Otomatis (Resend)
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Sesuaikan subjek dan pesan email untuk setiap tahapan naskah dan alur komunikasi.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateEmailTemplates(emailTemplatesForm);
+                    alert("✓ Template email berhasil diperbarui ke database!");
+                  }}
+                  className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition"
+                >
+                  Simpan Semua Template
+                </button>
+              </div>
+
+              {/* Template Pills Selector */}
+              <div className="flex flex-wrap gap-2">
+                {emailTemplatesForm.map((tmpl) => (
+                  <button
+                    key={tmpl.id}
+                    type="button"
+                    onClick={() => setActiveTemplateId(tmpl.id)}
+                    className={`px-3.5 py-2 rounded-xl font-bold transition text-left ${
+                      activeTemplateId === tmpl.id
+                        ? "bg-emerald-800 text-white shadow-sm"
+                        : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                    }`}
+                  >
+                    <span>{tmpl.name}</span>
+                    <span className="text-[10px] block opacity-75 font-normal uppercase">
+                      Penerima: {tmpl.recipientRole}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Variable Pills Helper */}
+              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100 space-y-2">
+                <span className="font-bold text-emerald-900 block text-xs">
+                  💡 Variabel yang dapat Anda gunakan di dalam Subjek maupun Isi Pesan:
+                </span>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {[
+                    { tag: "{nama}", desc: "Nama Penulis" },
+                    { tag: "{judul}", desc: "Judul Naskah" },
+                    { tag: "{kode}", desc: "Kode Pelacakan (MAD-YYYY-XXXX)" },
+                    { tag: "{catatan}", desc: "Catatan Redaksi / Revisi" },
+                    { tag: "{link}", desc: "Tautan Halaman Lacak / Artikel Terbit" }
+                  ].map((v, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 bg-white border border-emerald-200 text-emerald-950 px-2.5 py-1 rounded-lg font-mono text-[11px]"
+                    >
+                      <strong>{v.tag}</strong>
+                      <span className="text-slate-500 font-sans text-[10px]">({v.desc})</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Active Template Editor */}
+              {(() => {
+                const currentTmpl = emailTemplatesForm.find((t) => t.id === activeTemplateId) || emailTemplatesForm[0];
+                if (!currentTmpl) return null;
+                const tmplIdx = emailTemplatesForm.findIndex((t) => t.id === currentTmpl.id);
+
+                return (
+                  <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900 text-sm">{currentTmpl.name}</span>
+                      <span className="bg-slate-200 text-slate-700 px-2.5 py-0.5 rounded text-[11px] font-mono">
+                        ID: {currentTmpl.id}
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Subjek Email</label>
+                      <input
+                        type="text"
+                        value={currentTmpl.subject}
+                        onChange={(e) => {
+                          const updated = [...emailTemplatesForm];
+                          updated[tmplIdx] = { ...updated[tmplIdx], subject: e.target.value };
+                          setEmailTemplatesForm(updated);
+                        }}
+                        className="w-full p-2.5 bg-white border rounded-xl font-bold text-slate-900"
+                        placeholder="Subjek email..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Isi Pesan Email (Format HTML / Teks Kaya)
+                      </label>
+                      <textarea
+                        rows={10}
+                        value={currentTmpl.body}
+                        onChange={(e) => {
+                          const updated = [...emailTemplatesForm];
+                          updated[tmplIdx] = { ...updated[tmplIdx], body: e.target.value };
+                          setEmailTemplatesForm(updated);
+                        }}
+                        className="w-full p-3 bg-white border rounded-xl font-mono text-xs leading-relaxed text-slate-800"
+                        placeholder="<p>Isi template...</p>"
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         )}
 
@@ -3123,68 +5069,486 @@ export default function AdminPage() {
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "email" && (
           <div className="space-y-6 text-xs font-medium">
-            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <h3 className="font-serif font-bold text-lg text-slate-900 pb-2 border-b">
-                📧 Pengaturan Email Tujuan &amp; Notifikasi Redaksi
-              </h3>
-              <form onSubmit={handleSaveSettings} className="space-y-4">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Email Utama Penerima Naskah</label>
-                  <input
-                    type="email"
-                    required
-                    value={settingsForm.emailSubmission}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, emailSubmission: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border rounded-lg"
-                  />
-                  <p className="text-[11px] text-slate-500 mt-1">Default resmi: <strong>munzirahmad779@gmail.com</strong></p>
+            {!isSuperAdmin ? (
+              <div className="bg-red-50 p-8 rounded-2xl border border-red-200 text-center space-y-3">
+                <div className="text-3xl">🔒</div>
+                <h3 className="font-serif font-bold text-lg text-red-950">Akses Terbatas: Khusus Super Admin</h3>
+                <p className="text-red-700 text-xs max-w-md mx-auto">
+                  Menu konfigurasi email, log riwayat pengiriman, dan subscriber newsletter hanya dapat diakses oleh Super Admin.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setActiveMenu("dashboard")}
+                  className="px-5 py-2 bg-red-800 hover:bg-red-900 text-white font-bold rounded-xl text-xs transition"
+                >
+                  Kembali ke Dashboard
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Email Subtabs */}
+                <div className="flex flex-wrap gap-2 pb-2 border-b">
+                  {[
+                    { id: "settings", label: "⚙️ Pengaturan & Test Kirim" },
+                    { id: "templates", label: `✉️ 6 Template Notifikasi (${emailTemplatesForm.length})` },
+                    { id: "logs", label: `📋 Log Riwayat Real (${emailLogs.length})` },
+                    { id: "subscribers", label: `👥 Subscriber Newsletter (${subscribers.length})` }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setEmailSubTab(tab.id as any)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                        emailSubTab === tab.id
+                          ? "bg-emerald-800 text-white shadow"
+                          : "bg-white text-slate-700 hover:bg-slate-200"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Template Notifikasi Naskah Diterbitkan</label>
-                  <textarea
-                    rows={3}
-                    defaultValue="Yth. {{nama}}, Alhamdulillah naskah Anda yang berjudul '{{judul}}' telah disetujui dan diterbitkan di Mimbar Kajian Ma'had Aly DDI Mangkoso."
-                    className="w-full p-2.5 bg-slate-50 border rounded-lg"
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <button type="submit" className="px-6 py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow">
-                    Simpan Pengaturan Email
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sendEmailNotification(settingsForm.emailSubmission, "Test Notifikasi Sistem Ma'had Aly");
-                      alert(`Test notifikasi berhasil dikirimkan ke: ${settingsForm.emailSubmission}`);
-                    }}
-                    className="px-4 py-2.5 bg-slate-800 text-white font-bold rounded-xl"
-                  >
-                    ⚡ Test Kirim Email
-                  </button>
-                </div>
-              </form>
-            </div>
 
-            {/* Riwayat Log Email */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-              <h3 className="font-serif font-bold text-lg text-slate-900 pb-2 border-b">
-                📋 Log Riwayat Notifikasi Email ({emailLogs.length})
-              </h3>
-              <div className="space-y-2">
-                {emailLogs.map((log) => (
-                  <div key={log.id} className="p-3 bg-slate-50 rounded-xl border flex items-center justify-between text-xs">
-                    <div>
-                      <span className="font-bold text-emerald-800">{log.to}</span>
-                      <p className="text-slate-800 font-semibold">{log.subject}</p>
+                {/* TAB 1: Pengaturan & Test Kirim */}
+                {emailSubTab === "settings" && (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Setting Form */}
+                    <div className="lg:col-span-6 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                      <h3 className="font-serif font-bold text-lg text-slate-900 pb-2 border-b">
+                        📧 Email Utama Penerima Notifikasi Redaksi
+                      </h3>
+                      <form onSubmit={handleSaveSettings} className="space-y-4">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            Alamat Email Utama Penerima Naskah *
+                          </label>
+                          <input
+                            type="email"
+                            required
+                            value={settingsForm.emailSubmission}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, emailSubmission: e.target.value })}
+                            className="w-full p-2.5 bg-slate-50 border rounded-lg font-mono text-xs"
+                          />
+                          <p className="text-[11px] text-slate-500 mt-1">
+                            Default resmi: <strong>munzirahmad779@gmail.com</strong>. Seluruh berkas naskah masuk akan dikirimkan ke email ini sebagai lampiran Word.
+                          </p>
+                        </div>
+                        <button
+                          type="submit"
+                          className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition"
+                        >
+                          Simpan Email Utama
+                        </button>
+                      </form>
                     </div>
-                    <div className="text-right">
-                      <span className="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded text-[10px]">{log.status}</span>
-                      <p className="text-slate-400 text-[10px] mt-0.5">{log.timestamp}</p>
+
+                    {/* Test Kirim Email Nyata (Resend API) */}
+                    <div className="lg:col-span-6 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                      <div className="pb-2 border-b">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                          Verifikasi Resend API
+                        </span>
+                        <h3 className="font-serif font-bold text-lg text-slate-900 mt-1">
+                          ⚡ Uji Coba Pengiriman Email Nyata
+                        </h3>
+                        <p className="text-slate-500 text-[11px] mt-0.5">
+                          Kirim email tes nyata langsung ke inbox Anda via Resend API untuk memverifikasi koneksi server.
+                        </p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Email Penerima Uji Coba</label>
+                          <input
+                            type="email"
+                            value={testEmailTo}
+                            onChange={(e) => setTestEmailTo(e.target.value)}
+                            className="w-full p-2 bg-slate-50 border rounded-lg font-mono text-xs"
+                            placeholder="munzirahmad779@gmail.com"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Subjek Pesan (Opsional)</label>
+                          <input
+                            type="text"
+                            value={testEmailSubject}
+                            onChange={(e) => setTestEmailSubject(e.target.value)}
+                            className="w-full p-2 bg-slate-50 border rounded-lg text-xs"
+                            placeholder="[Test Resend] Uji coba notifikasi Ma'had Aly..."
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Isi Pesan Kustom (Opsional)</label>
+                          <textarea
+                            rows={3}
+                            value={testEmailMessage}
+                            onChange={(e) => setTestEmailMessage(e.target.value)}
+                            className="w-full p-2 bg-slate-50 border rounded-lg text-xs"
+                            placeholder="Tulis pesan pengujian kustom jika diinginkan..."
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={testEmailLoading}
+                          onClick={async () => {
+                            if (!testEmailTo) {
+                              alert("Harap masukkan email tujuan!");
+                              return;
+                            }
+                            setTestEmailLoading(true);
+                            setTestEmailResult(null);
+                            try {
+                              const res = await fetch("/api/admin/email/test", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  to: testEmailTo,
+                                  subject: testEmailSubject || undefined,
+                                  message: testEmailMessage || undefined
+                                })
+                              });
+                              const data = await res.json();
+                              if (data.success) {
+                                setTestEmailResult({
+                                  success: true,
+                                  message: data.message || "Email berhasil dikirim!",
+                                  resendId: data.resendId
+                                });
+                              } else {
+                                setTestEmailResult({
+                                  success: false,
+                                  message: data.error || "Gagal mengirim email test."
+                                });
+                              }
+                            } catch (err: any) {
+                              setTestEmailResult({
+                                success: false,
+                                message: err.message || "Terjadi kesalahan jaringan."
+                              });
+                            } finally {
+                              setTestEmailLoading(false);
+                            }
+                          }}
+                          className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                          {testEmailLoading ? (
+                            <>
+                              <span className="animate-spin text-sm">⏳</span>
+                              <span>Menghubungi Resend API...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>⚡</span>
+                              <span>Kirim Test Email Sekarang</span>
+                            </>
+                          )}
+                        </button>
+
+                        {/* Real Status Feedback */}
+                        {testEmailResult && (
+                          <div
+                            className={`p-4 rounded-xl border animate-in fade-in duration-200 ${
+                              testEmailResult.success
+                                ? "bg-emerald-50 border-emerald-300 text-emerald-950"
+                                : "bg-red-50 border-red-300 text-red-950"
+                            }`}
+                          >
+                            <div className="flex items-start gap-2.5">
+                              <span className="text-base">{testEmailResult.success ? "🟢" : "🔴"}</span>
+                              <div className="space-y-1">
+                                <strong className="block font-bold">
+                                  {testEmailResult.success ? "Email Berhasil Terkirim ke Inbox!" : "Pengiriman Gagal"}
+                                </strong>
+                                <p className="text-xs leading-relaxed">{testEmailResult.message}</p>
+                                {testEmailResult.resendId && (
+                                  <p className="text-[11px] font-mono text-emerald-800 bg-white p-1 rounded border border-emerald-200 mt-1 inline-block">
+                                    Resend Message ID: {testEmailResult.resendId}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                ))}
+                )}
+
+                {/* TAB 2: 6 Template Email */}
+                {emailSubTab === "templates" && (
+                  <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <div className="flex items-center justify-between pb-4 border-b">
+                      <div>
+                        <h3 className="font-serif font-bold text-lg text-emerald-950">
+                          ✉️ 6 Template Email Notifikasi Otomatis (Resend)
+                        </h3>
+                        <p className="text-slate-500 text-xs mt-1">
+                          Sesuaikan subjek dan pesan email untuk setiap tahapan naskah dan alur komunikasi.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateEmailTemplates(emailTemplatesForm);
+                          alert("✓ 6 Template email berhasil diperbarui ke database!");
+                        }}
+                        className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition"
+                      >
+                        Simpan Semua Template
+                      </button>
+                    </div>
+
+                    {/* Template Pills Selector */}
+                    <div className="flex flex-wrap gap-2">
+                      {emailTemplatesForm.map((tmpl) => (
+                        <button
+                          key={tmpl.id}
+                          type="button"
+                          onClick={() => setActiveTemplateId(tmpl.id)}
+                          className={`px-3.5 py-2 rounded-xl font-bold transition text-left ${
+                            activeTemplateId === tmpl.id
+                              ? "bg-emerald-800 text-white shadow-sm"
+                              : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          <span>{tmpl.name}</span>
+                          <span className="text-[10px] block opacity-75 font-normal uppercase">
+                            Penerima: {tmpl.recipientRole}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Variable Pills Helper */}
+                    <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100 space-y-2">
+                      <span className="font-bold text-emerald-900 block text-xs">
+                        💡 Variabel yang dapat Anda gunakan di dalam Subjek maupun Isi Pesan:
+                      </span>
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        {[
+                          { tag: "{nama}", desc: "Nama Penulis" },
+                          { tag: "{judul}", desc: "Judul Naskah" },
+                          { tag: "{kode}", desc: "Kode Pelacakan / Akses (MAD-YYYY-XXXX / MAD2-...)" },
+                          { tag: "{catatan}", desc: "Catatan Redaksi / Revisi" },
+                          { tag: "{link}", desc: "Tautan Halaman Lacak / Artikel Terbit" }
+                        ].map((v, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center gap-1.5 bg-white border border-emerald-200 text-emerald-950 px-2.5 py-1 rounded-lg font-mono text-[11px]"
+                          >
+                            <strong>{v.tag}</strong>
+                            <span className="text-slate-500 font-sans text-[10px]">({v.desc})</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Active Template Editor */}
+                    {(() => {
+                      const currentTmpl = emailTemplatesForm.find((t) => t.id === activeTemplateId) || emailTemplatesForm[0];
+                      if (!currentTmpl) return null;
+                      const tmplIdx = emailTemplatesForm.findIndex((t) => t.id === currentTmpl.id);
+
+                      return (
+                        <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-slate-900 text-sm">{currentTmpl.name}</span>
+                            <span className="bg-slate-200 text-slate-700 px-2.5 py-0.5 rounded text-[11px] font-mono">
+                              ID: {currentTmpl.id}
+                            </span>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Subjek Email</label>
+                            <input
+                              type="text"
+                              value={currentTmpl.subject}
+                              onChange={(e) => {
+                                const updated = [...emailTemplatesForm];
+                                updated[tmplIdx] = { ...updated[tmplIdx], subject: e.target.value };
+                                setEmailTemplatesForm(updated);
+                              }}
+                              className="w-full p-2.5 bg-white border rounded-xl font-bold text-slate-900"
+                              placeholder="Subjek email..."
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">
+                              Isi Pesan Email (Format HTML / Teks Kaya)
+                            </label>
+                            <textarea
+                              rows={10}
+                              value={currentTmpl.body}
+                              onChange={(e) => {
+                                const updated = [...emailTemplatesForm];
+                                updated[tmplIdx] = { ...updated[tmplIdx], body: e.target.value };
+                                setEmailTemplatesForm(updated);
+                              }}
+                              className="w-full p-3 bg-white border rounded-xl font-mono text-xs leading-relaxed text-slate-800"
+                              placeholder="<p>Isi template...</p>"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* TAB 3: Log Riwayat Real */}
+                {emailSubTab === "logs" && (
+                  <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b">
+                      <div>
+                        <h3 className="font-serif font-bold text-lg text-slate-900">
+                          📋 Log Riwayat Notifikasi Email Real ({emailLogs.length})
+                        </h3>
+                        <p className="text-slate-500 text-xs">
+                          Mencatat status pengiriman nyata dari Resend API beserta detail error jika gagal.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      {emailLogs.length === 0 ? (
+                        <div className="p-8 text-center text-slate-500 bg-slate-50 rounded-xl border">
+                          Belum ada aktivitas pengiriman email yang tercatat.
+                        </div>
+                      ) : (
+                        emailLogs.map((log) => {
+                          const isSuccess = log.status === "Terkirim";
+                          return (
+                            <div
+                              key={log.id}
+                              className={`p-4 rounded-xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs transition ${
+                                isSuccess ? "bg-slate-50 border-slate-200" : "bg-red-50/50 border-red-200"
+                              }`}
+                            >
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <strong className="text-emerald-950 font-bold font-mono">{log.to}</strong>
+                                  <span
+                                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                      isSuccess ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    {isSuccess ? "🟢 Terkirim" : "🔴 Gagal"}
+                                  </span>
+                                  {log.resendId && (
+                                    <span className="text-[10px] font-mono text-slate-400">ID: {log.resendId}</span>
+                                  )}
+                                </div>
+                                <p className="font-semibold text-slate-800">{log.subject}</p>
+                                {log.errorReason && (
+                                  <p className="text-[11px] text-red-600 bg-red-100/60 p-1.5 rounded-lg border border-red-200 font-mono mt-1">
+                                    Error: {log.errorReason}
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
+                                <span className="text-slate-400 text-[11px]">{log.timestamp}</span>
+                                {!isSuccess && (
+                                  <button
+                                    type="button"
+                                    disabled={retryingLogId === log.id}
+                                    onClick={async () => {
+                                      setRetryingLogId(log.id);
+                                      const res = await retryEmailSend(log.id);
+                                      setRetryingLogId(null);
+                                      if (res.success) {
+                                        alert(`✓ Email berhasil dikirim ulang! Resend ID: ${res.id}`);
+                                      } else {
+                                        alert(`⚠️ Pengiriman ulang gagal: ${res.error}`);
+                                      }
+                                    }}
+                                    className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs shadow-sm disabled:opacity-50 flex items-center gap-1"
+                                  >
+                                    {retryingLogId === log.id ? "Mengirim..." : "🔄 Coba Kirim Ulang"}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 4: Subscriber Newsletter */}
+                {emailSubTab === "subscribers" && (
+                  <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b flex-wrap gap-2">
+                      <div>
+                        <h3 className="font-serif font-bold text-lg text-slate-900">
+                          👥 Pelanggan Newsletter Ma&apos;had Aly ({subscribers.length})
+                        </h3>
+                        <p className="text-slate-500 text-xs">
+                          Daftar pembaca yang berlangganan warta dan mimbar kajian ilmiah melalui formulir footer.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const csvContent =
+                            "data:text/csv;charset=utf-8," +
+                            ["Email,Tanggal Berlangganan"]
+                              .concat(subscribers.map((s) => `${s.email},${s.subscribedAt || ""}`))
+                              .join("\n");
+                          const encodedUri = encodeURI(csvContent);
+                          const link = document.createElement("a");
+                          link.setAttribute("href", encodedUri);
+                          link.setAttribute("download", `subscribers_mahad_aly_${new Date().toISOString().slice(0, 10)}.csv`);
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                        className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow"
+                      >
+                        <span>📥</span>
+                        <span>Ekspor CSV</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {subscribers.length === 0 ? (
+                        <div className="p-8 text-center text-slate-500 bg-slate-50 rounded-xl border">
+                          Belum ada pelanggan newsletter.
+                        </div>
+                      ) : (
+                        subscribers.map((sub, idx) => (
+                          <div
+                            key={sub.id || idx}
+                            className="p-3 bg-slate-50 rounded-xl border flex items-center justify-between gap-3 text-xs"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="font-mono text-slate-400 font-bold">{idx + 1}.</span>
+                              <strong className="text-slate-900 font-mono">{sub.email}</strong>
+                              <span className="text-slate-400 text-[11px]">{sub.subscribedAt || "Terdaftar"}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Hapus subscriber "${sub.email}"?`)) {
+                                  deleteSubscriber(sub.id);
+                                }
+                              }}
+                              className="px-2.5 py-1 text-red-600 hover:bg-red-50 rounded text-xs font-bold"
+                            >
+                              Hapus
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -3250,156 +5614,544 @@ export default function AdminPage() {
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "users" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-xs font-medium">
-            
-            {/* Form Invite User */}
-            <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <div className="border-b pb-2">
-                <span className="inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px] mb-1">
-                  Supabase Auth Invite-Only
-                </span>
-                <h3 className="font-serif font-bold text-lg text-slate-900">
-                  📨 Undang Pengguna Baru
-                </h3>
-                <p className="text-slate-500 text-[11px] mt-0.5">
-                  Undang Editor atau Penulis resmi via email. Penerima akan mendapatkan link untuk membuat password mereka.
+            {!isSuperAdmin ? (
+              <div className="lg:col-span-12 bg-red-50 p-8 rounded-2xl border border-red-200 text-center space-y-3">
+                <div className="text-3xl">🔒</div>
+                <h3 className="font-serif font-bold text-lg text-red-950">Akses Terbatas: Khusus Super Admin</h3>
+                <p className="text-red-700 text-xs max-w-md mx-auto">
+                  Manajemen pengguna dan pengaturan hak akses hanya dapat dikelola oleh Super Admin.
                 </p>
-              </div>
-
-              <form onSubmit={handleInviteUser} className="space-y-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Nama Lengkap Pengguna</label>
-                  <input
-                    type="text"
-                    value={inviteName}
-                    onChange={(e) => setInviteName(e.target.value)}
-                    placeholder="Ust. Ahmad Fauzi, M.Ag."
-                    className="w-full p-2.5 bg-slate-50 border rounded-lg text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Alamat Email Resmi *</label>
-                  <input
-                    type="email"
-                    required
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="editor@ddimangkoso.ac.id"
-                    className="w-full p-2.5 bg-slate-50 border rounded-lg text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Peran Akses (Role)</label>
-                  <select
-                    value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value as any)}
-                    className="w-full p-2.5 bg-slate-50 border rounded-lg text-xs font-semibold"
-                  >
-                    <option value="editor">Editor (Bisa kelola artikel, skripsi, kategori &amp; media)</option>
-                    <option value="penulis">Penulis (Hanya bisa menulis dan mengedit artikel miliknya)</option>
-                  </select>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={inviteLoading}
-                  className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {inviteLoading ? (
-                    <>
-                      <span className="animate-spin text-sm">⏳</span>
-                      <span>Mengirim Undangan...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>✉️</span>
-                      <span>Kirim Undangan Email</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
-
-            {/* List User Terdaftar di Database */}
-            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b pb-2">
-                <div>
-                  <h3 className="font-serif font-bold text-lg text-slate-900">
-                    👥 Pengguna Terdaftar ({dbUsers.length || 1})
-                  </h3>
-                  <p className="text-slate-500 text-[11px]">Data tersinkronisasi langsung dari tabel PostgreSQL `public.users`</p>
-                </div>
                 <button
                   type="button"
-                  onClick={async () => {
-                    const { data } = await supabase.from("users").select("*").order("created_at", { ascending: false });
-                    if (data) setDbUsers(data);
-                  }}
-                  className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold"
-                  title="Segarkan data user"
+                  onClick={() => setActiveMenu("dashboard")}
+                  className="px-5 py-2 bg-red-800 hover:bg-red-900 text-white font-bold rounded-xl text-xs transition"
                 >
-                  🔄 Refresh
+                  Kembali ke Dashboard
                 </button>
               </div>
+            ) : (
+              <div className="lg:col-span-12 space-y-6">
+                {/* Subtabs Header */}
+                <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setUserTab("list")}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                        userTab === "list"
+                          ? "bg-emerald-800 text-white shadow-sm"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                      }`}
+                    >
+                      <span>👥</span>
+                      <span>Daftar &amp; Kredensial Pengguna ({dbUsers.length || 1})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUserTab("create")}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                        userTab === "create"
+                          ? "bg-emerald-800 text-white shadow-sm"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                      }`}
+                    >
+                      <span>➕</span>
+                      <span>Buat Akun Baru (Langsung / Invite)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUserTab("mypassword")}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                        userTab === "mypassword"
+                          ? "bg-emerald-800 text-white shadow-sm"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                      }`}
+                    >
+                      <span>🛡️</span>
+                      <span>Ganti Kata Sandi Saya</span>
+                    </button>
+                  </div>
 
-              <div className="space-y-2.5">
-                {(dbUsers.length > 0 ? dbUsers : [
-                  {
-                    id: "usr-admin",
-                    email: "munzirahmad779@gmail.com",
-                    nama_lengkap: "Ahmad Yusuf Mubarak",
-                    role: "super_admin",
-                    is_active: true,
-                    created_at: new Date().toISOString()
-                  }
-                ]).map((usr) => (
-                  <div key={usr.id} className="p-3.5 bg-slate-50 rounded-xl border flex items-center justify-between gap-3">
-                    <div className="space-y-1 overflow-hidden">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-slate-900 truncate text-xs">{usr.nama_lengkap || usr.email}</h4>
-                        <span
-                          className={`font-bold px-2 py-0.5 rounded text-[9px] uppercase tracking-wider ${
-                            usr.role === "super_admin"
-                              ? "bg-amber-100 text-amber-900 border border-amber-300"
-                              : usr.role === "editor"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {usr.role}
-                        </span>
-                        {usr.is_active ? (
-                          <span className="w-2 h-2 rounded-full bg-emerald-500" title="Akun Aktif"></span>
-                        ) : (
-                          <span className="w-2 h-2 rounded-full bg-red-500" title="Akun Nonaktif"></span>
-                        )}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const { data } = await supabase.from("users").select("*").order("created_at", { ascending: false });
+                      if (data) setDbUsers(data);
+                    }}
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1 transition"
+                  >
+                    <span>🔄</span>
+                    <span>Segarkan Data</span>
+                  </button>
+                </div>
+
+                {/* ══════════════════════════════════════════════════════════
+                    SUBTAB 1: DAFTAR & KREDENSIAL PENGGUNA
+                   ══════════════════════════════════════════════════════════ */}
+                {userTab === "list" && (
+                  <div className="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="border-b pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <h3 className="font-serif font-bold text-lg text-emerald-950">
+                          Katalog Akun &amp; Kredensial Pengguna
+                        </h3>
+                        <p className="text-slate-500 text-[11px] mt-0.5">
+                          Kelola Nama Lengkap (Username), Kata Sandi (Password), Peran Akses, dan Status Keaktifan Akun.
+                        </p>
                       </div>
-                      <p className="text-slate-500 text-[11px] truncate font-mono">{usr.email}</p>
+                      <button
+                        type="button"
+                        onClick={() => setUserTab("create")}
+                        className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1 self-start sm:self-auto"
+                      >
+                        <span>➕ Tambah Pengguna</span>
+                      </button>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {usr.role !== "super_admin" && (
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const newStatus = !usr.is_active;
-                            const { error } = await supabase.from("users").update({ is_active: newStatus }).eq("id", usr.id);
-                            if (!error) {
-                              setDbUsers(dbUsers.map((u) => (u.id === usr.id ? { ...u, is_active: newStatus } : u)));
-                              alert(`Status pengguna ${usr.email} diubah menjadi ${newStatus ? "Aktif" : "Nonaktif"}!`);
-                            }
-                          }}
-                          className={`px-2 py-1 rounded text-[10px] font-bold ${
-                            usr.is_active ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                          }`}
+                    <div className="space-y-3">
+                      {(dbUsers.length > 0 ? dbUsers : [
+                        {
+                          id: "usr-admin",
+                          email: currentUser?.email || "munzirahmad779@gmail.com",
+                          nama_lengkap: userProfile?.nama_lengkap || "Ahmad Yusuf Mubarak",
+                          role: "super_admin",
+                          is_active: true,
+                          created_at: new Date().toISOString()
+                        }
+                      ]).map((usr) => (
+                        <div
+                          key={usr.id}
+                          className="p-4 bg-slate-50 hover:bg-slate-100/70 rounded-2xl border border-slate-200 transition flex flex-col md:flex-row md:items-center justify-between gap-4"
                         >
-                          {usr.is_active ? "Nonaktifkan" : "Aktifkan"}
-                        </button>
-                      )}
+                          <div className="flex items-start gap-3.5">
+                            <div className="w-10 h-10 rounded-full bg-emerald-800 text-mahad-gold flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+                              {(usr.nama_lengkap || usr.email || "U").slice(0, 1).toUpperCase()}
+                            </div>
+                            <div className="space-y-1 overflow-hidden">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="font-bold text-slate-900 text-sm">
+                                  {usr.nama_lengkap || "Belum ada nama"}
+                                </h4>
+                                <span
+                                  className={`font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider ${
+                                    usr.role === "super_admin"
+                                      ? "bg-amber-100 text-amber-900 border border-amber-300"
+                                      : usr.role === "editor" || usr.role === "admin"
+                                      ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                                      : "bg-blue-100 text-blue-800 border border-blue-200"
+                                  }`}
+                                >
+                                  {usr.role === "super_admin" ? "👑 Super Admin" : (usr.role === "editor" || usr.role === "admin") ? "🟢 Admin" : "🔵 Penulis"}
+                                </span>
+                                {usr.is_active ? (
+                                  <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-semibold">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    <span>Aktif</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-[10px] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 font-semibold">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                    <span>Nonaktif</span>
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-slate-500 text-xs font-mono">{usr.email}</p>
+                            </div>
+                          </div>
+
+                          {/* Tombol Aksi Kredensial */}
+                          <div className="flex items-center gap-2 flex-wrap self-end md:self-auto shrink-0">
+                            {/* Tombol Ubah Sandi */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setResetTargetUser(usr);
+                                setNewPasswordInput("");
+                              }}
+                              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center gap-1"
+                              title="Reset kata sandi pengguna ini"
+                            >
+                              <span>🔑</span>
+                              <span>Ganti Sandi</span>
+                            </button>
+
+                            {/* Tombol Edit Nama / Peran */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditTargetUser(usr);
+                                setEditNameInput(usr.nama_lengkap || "");
+                                setEditRoleInput(usr.role || "admin");
+                              }}
+                              className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold transition flex items-center gap-1"
+                              title="Edit nama lengkap atau peran"
+                            >
+                              <span>✏️</span>
+                              <span>Edit Profil</span>
+                            </button>
+
+                            {/* Toggle Aktif/Nonaktif */}
+                            {usr.role !== "super_admin" && (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const newStatus = !usr.is_active;
+                                  const { error } = await supabase.from("users").update({ is_active: newStatus }).eq("id", usr.id);
+                                  if (!error) {
+                                    setDbUsers(dbUsers.map((u) => (u.id === usr.id ? { ...u, is_active: newStatus } : u)));
+                                    alert(`Status pengguna ${usr.email} diubah menjadi ${newStatus ? "Aktif" : "Nonaktif"}!`);
+                                  }
+                                }}
+                                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition ${
+                                  usr.is_active
+                                    ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200"
+                                    : "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200"
+                                }`}
+                              >
+                                {usr.is_active ? "Nonaktifkan" : "Aktifkan"}
+                              </button>
+                            )}
+
+                            {/* Tombol Hapus */}
+                            {usr.role !== "super_admin" && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteUser(usr.id, usr.email)}
+                                className="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center gap-1"
+                                title="Hapus pengguna ini secara permanen"
+                              >
+                                <span>🗑️</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                )}
+
+                {/* ══════════════════════════════════════════════════════════
+                    SUBTAB 2: BUAT AKUN BARU (LANGSUNG / INVITE)
+                   ══════════════════════════════════════════════════════════ */}
+                {userTab === "create" && (
+                  <div className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <div className="border-b pb-4">
+                      <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-900 rounded-full font-bold text-[10px] mb-2 uppercase tracking-wider">
+                        Registrasi Akun Resmi
+                      </span>
+                      <h3 className="font-serif font-bold text-xl text-emerald-950">
+                        Tambah Pengguna Baru &amp; Hak Akses
+                      </h3>
+                      <p className="text-slate-600 text-xs mt-1">
+                        Pilih metode pembuatan akun: buat langsung dengan Kata Sandi atau kirim tautan undangan ke email pengguna.
+                      </p>
+                    </div>
+
+                    {/* Mode Selector */}
+                    <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-100 rounded-2xl">
+                      <button
+                        type="button"
+                        onClick={() => setCreateAccountMode("direct")}
+                        className={`py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
+                          createAccountMode === "direct"
+                            ? "bg-white text-emerald-900 shadow-sm border border-slate-200"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        <span>⚡</span>
+                        <span>Buat Langsung (Sandi Siap Pakai)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCreateAccountMode("invite")}
+                        className={`py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
+                          createAccountMode === "invite"
+                            ? "bg-white text-emerald-900 shadow-sm border border-slate-200"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        <span>✉️</span>
+                        <span>Undang via Email (Invite Link)</span>
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleCreateOrInviteUser} className="space-y-4">
+                      <div>
+                        <label className="block font-bold text-slate-800 mb-1">
+                          Nama Lengkap Pengguna (Username Tampilan) *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={inviteName}
+                          onChange={(e) => setInviteName(e.target.value)}
+                          placeholder="Contoh: Ust. Ahmad Fauzi, M.Ag."
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-slate-800 mb-1">
+                          Alamat Email Login *
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={inviteEmail}
+                          onChange={(e) => setInviteEmail(e.target.value)}
+                          placeholder="contoh: fauzi@ddimangkoso.ac.id"
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                        />
+                      </div>
+
+                      {createAccountMode === "direct" && (
+                        <div>
+                          <label className="block font-bold text-slate-800 mb-1">
+                            Kata Sandi Awal (Password) *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={directPassword}
+                            onChange={(e) => setDirectPassword(e.target.value)}
+                            placeholder="Minimal 6 karakter (contoh: Santri2026!)"
+                            className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                          />
+                          <p className="text-[11px] text-slate-500 mt-1">
+                            Kata sandi ini langsung aktif. Berikan kredensial (Email &amp; Kata Sandi) ini kepada admin/penulis yang bersangkutan.
+                          </p>
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block font-bold text-slate-800 mb-1">
+                          Tingkatan Peran (Role) *
+                        </label>
+                        <select
+                          value={inviteRole}
+                          onChange={(e) => setInviteRole(e.target.value as any)}
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                        >
+                          <option value="admin">🟢 Admin / Redaksi (Kelola artikel, naskah masuk, kategori, skripsi, media)</option>
+                          <option value="penulis">🔵 Penulis (Hanya dashboard penulis &amp; naskah pribadi)</option>
+                          <option value="super_admin">👑 Super Admin (Akses penuh termasuk pengaturan email, user &amp; database)</option>
+                        </select>
+                      </div>
+
+                      <div className="pt-2 flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setUserTab("list")}
+                          className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={userActionLoading}
+                          className="flex-1 py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                          {userActionLoading ? (
+                            <span>Memproses Akun...</span>
+                          ) : createAccountMode === "direct" ? (
+                            <span>✓ Buat Akun &amp; Kredensial Sekarang</span>
+                          ) : (
+                            <span>✉️ Kirim Tautan Undangan Email</span>
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* ══════════════════════════════════════════════════════════
+                    SUBTAB 3: GANTI KATA SANDI SAYA (SUPER ADMIN)
+                   ══════════════════════════════════════════════════════════ */}
+                {userTab === "mypassword" && (
+                  <div className="max-w-md mx-auto bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <div className="border-b pb-4 text-center">
+                      <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl mx-auto mb-2">
+                        🛡️
+                      </div>
+                      <h3 className="font-serif font-bold text-xl text-emerald-950">
+                        Ubah Kata Sandi Saya
+                      </h3>
+                      <p className="text-slate-500 text-xs mt-1">
+                        Perbarui kata sandi akun Super Admin Anda yang sedang aktif ({currentUser?.email || "Super Admin"}).
+                      </p>
+                    </div>
+
+                    <form onSubmit={handleChangeMyOwnPassword} className="space-y-4">
+                      <div>
+                        <label className="block font-bold text-slate-800 mb-1">
+                          Kata Sandi Baru *
+                        </label>
+                        <input
+                          type="password"
+                          required
+                          value={myNewPassword}
+                          onChange={(e) => setMyNewPassword(e.target.value)}
+                          placeholder="Minimal 6 karakter"
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-slate-800 mb-1">
+                          Konfirmasi Kata Sandi Baru *
+                        </label>
+                        <input
+                          type="password"
+                          required
+                          value={myConfirmPassword}
+                          onChange={(e) => setMyConfirmPassword(e.target.value)}
+                          placeholder="Ulangi kata sandi baru"
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={userActionLoading}
+                        className="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {userActionLoading ? "Menyimpan Sandi..." : "🔒 Simpan Kata Sandi Baru"}
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+                {/* ══════════════════════════════════════════════════════════
+                    MODAL: RESET KATA SANDI PENGGUNA (BY SUPER ADMIN)
+                   ══════════════════════════════════════════════════════════ */}
+                {resetTargetUser && (
+                  <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="border-b pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="p-2 bg-amber-100 text-amber-900 rounded-xl text-base">🔑</span>
+                          <div>
+                            <h3 className="font-serif font-bold text-lg text-slate-900">
+                              Ganti Kata Sandi Pengguna
+                            </h3>
+                            <p className="text-slate-500 text-xs">
+                              {resetTargetUser.nama_lengkap || "Pengguna"} &bull; {resetTargetUser.email}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <form onSubmit={handleResetUserPassword} className="space-y-4">
+                        <div>
+                          <label className="block font-bold text-slate-800 mb-1 text-xs">
+                            Masukkan Kata Sandi Baru *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={newPasswordInput}
+                            onChange={(e) => setNewPasswordInput(e.target.value)}
+                            placeholder="Ketik kata sandi baru (min. 6 karakter)"
+                            className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                          />
+                          <p className="text-[11px] text-slate-500 mt-1">
+                            Kata sandi baru akan langsung berlaku untuk login pengguna tersebut.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t">
+                          <button
+                            type="button"
+                            onClick={() => setResetTargetUser(null)}
+                            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition"
+                          >
+                            Batal
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={userActionLoading}
+                            className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs shadow-sm transition disabled:opacity-50"
+                          >
+                            {userActionLoading ? "Menyimpan..." : "✓ Terapkan Sandi Baru"}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* ══════════════════════════════════════════════════════════
+                    MODAL: EDIT PROFIL PENGGUNA (USERNAME & ROLE)
+                   ══════════════════════════════════════════════════════════ */}
+                {editTargetUser && (
+                  <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="border-b pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="p-2 bg-emerald-100 text-emerald-900 rounded-xl text-base">✏️</span>
+                          <div>
+                            <h3 className="font-serif font-bold text-lg text-slate-900">
+                              Edit Profil Pengguna
+                            </h3>
+                            <p className="text-slate-500 text-xs font-mono">
+                              {editTargetUser.email}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <form onSubmit={handleUpdateUserProfile} className="space-y-4">
+                        <div>
+                          <label className="block font-bold text-slate-800 mb-1 text-xs">
+                            Nama Lengkap (Username Tampilan) *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={editNameInput}
+                            onChange={(e) => setEditNameInput(e.target.value)}
+                            className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-800 mb-1 text-xs">
+                            Peran Akses (Role) *
+                          </label>
+                          <select
+                            value={editRoleInput}
+                            onChange={(e) => setEditRoleInput(e.target.value)}
+                            className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                          >
+                            <option value="admin">🟢 Admin (Kelola artikel, naskah masuk &amp; publikasi)</option>
+                            <option value="penulis">🔵 Penulis (Dashboard karya &amp; naskah pribadi)</option>
+                            <option value="super_admin">👑 Super Admin (Akses seluruh sistem)</option>
+                          </select>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t">
+                          <button
+                            type="button"
+                            onClick={() => setEditTargetUser(null)}
+                            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition"
+                          >
+                            Batal
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={userActionLoading}
+                            className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs shadow-sm transition disabled:opacity-50"
+                          >
+                            {userActionLoading ? "Menyimpan..." : "✓ Simpan Perubahan"}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
               </div>
-            </div>
+            )}
           </div>
         )}
 
