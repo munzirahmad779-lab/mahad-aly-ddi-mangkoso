@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:worker": "opennextjs-cloudflare build",
     "start": "next start",
     "lint": "eslint"
   },
@@ -20,6 +21,7 @@
     "resend": "^6.32.0"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.9",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
