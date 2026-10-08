@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Amiri, Cinzel } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import GoogleAnalytics from "@/components/common/GoogleAnalytics";
 import { ArticleProvider } from "@/context/ArticleContext";
 import "./globals.css";
 
@@ -68,10 +69,31 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-EBBP80BZWL";
+
   return (
     <html lang="id" className={`scroll-smooth ${inter.variable} ${amiri.variable} ${cinzel.variable}`}>
+      <head>
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${gaId}', {
+                page_path: typeof window !== 'undefined' ? window.location.pathname : '',
+              });
+            `,
+          }}
+        />
+      </head>
       <body className="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-mahad-gold selection:text-mahad-green-dark flex flex-col min-h-screen">
         <ArticleProvider>
+          <GoogleAnalytics />
           <Navbar />
           <div className="flex-1">{children}</div>
           <Footer />

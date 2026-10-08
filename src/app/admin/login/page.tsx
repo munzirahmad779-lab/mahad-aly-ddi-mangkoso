@@ -36,6 +36,20 @@ export default function AdminLoginPage() {
     setForgotLoading(true);
     setForgotMsg(null);
     try {
+      const normalizedForgot = forgotEmail.trim().toLowerCase();
+      const lockedAccounts = typeof window !== "undefined"
+        ? JSON.parse(localStorage.getItem("mahad_locked_accounts") || "{}")
+        : {};
+
+      if (lockedAccounts[normalizedForgot]) {
+        setForgotMsg({
+          success: false,
+          text: "🚫 AKUN TERBLOKIR: Akun ini terkunci karena 3 kali salah kata sandi. Sesuai protokol keamanan Ma'had Aly, silakan hubungi Super Admin untuk membuka izin reset kata sandi terlebih dahulu."
+        });
+        setForgotLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
         redirectTo: `${window.location.origin}/admin/login`
       });
@@ -59,6 +73,23 @@ export default function AdminLoginPage() {
     setLoading(true);
     setErrorMessage(null);
 
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // 1. Cek apakah akun sedang terkunci akibat 3 kali salah kata sandi
+    try {
+      const lockedAccounts = typeof window !== "undefined"
+        ? JSON.parse(localStorage.getItem("mahad_locked_accounts") || "{}")
+        : {};
+
+      if (lockedAccounts[normalizedEmail]) {
+        setErrorMessage(
+          "🚫 AKUN TERBLOKIR: Akun Anda telah dinonaktifkan sementara karena 3 kali salah memasukkan kata sandi demi keamanan lembaga. Hubungi Super Admin Ma'had Aly untuk membuka blokir dan mengizinkan reset kata sandi."
+        );
+        setLoading(false);
+        return;
+      }
+    } catch (e) {}
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -66,16 +97,72 @@ export default function AdminLoginPage() {
       });
 
       if (error) {
-        setErrorMessage(
-          error.message === "Invalid login credentials"
-            ? "Email atau kata sandi tidak cocok. Periksa kembali akun Anda."
-            : error.message
-        );
-        setLoading(false);
-        return;
+        // Hitung percobaan gagal untuk email ini
+        let attempts = 1;
+        try {
+          const failedMap = typeof window !== "undefined"
+            ? JSON.parse(localStorage.getItem("mahad_failed_attempts") || "{}")
+            : {};
+          attempts = (failedMap[normalizedEmail] || 0) + 1;
+          failedMap[normalizedEmail] = attempts;
+          localStorage.setItem("mahad_failed_attempts", JSON.stringify(failedMap));
+
+          if (attempts >= 3) {
+            // Blokir akun seketika!
+            const lockedAccounts = JSON.parse(localStorage.getItem("mahad_locked_accounts") || "{}");
+            lockedAccounts[normalizedEmail] = {
+              email: normalizedEmail,
+              failedCount: attempts,
+              lockedAt: new Date().toISOString(),
+              reason: "3 kali salah memasukkan kata sandi"
+            };
+            localStorage.setItem("mahad_locked_accounts", JSON.stringify(lockedAccounts));
+
+            // Kirim notifikasi darurat ke admin & catat ke log keamanan
+            fetch("/api/security/alert", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "brute_force",
+                severity: "critical",
+                description: `Akun administrator [${normalizedEmail}] TERBLOKIR otomatis setelah 3 kali gagal memasukkan kata sandi.`,
+                targetUrl: "/admin/login",
+                ip: "Client Portal"
+              })
+            }).catch(() => {});
+
+            setErrorMessage(
+              "🚫 AKUN TERBLOKIR: Anda telah 3 kali salah memasukkan kata sandi! Demi keamanan website, akun Anda terkunci otomatis. Hubungi Super Admin Ma'had Aly untuk membuka blokir dan mengatur ulang kata sandi."
+            );
+            setLoading(false);
+            return;
+          } else {
+            const sisa = 3 - attempts;
+            setErrorMessage(
+              `Kata sandi atau email tidak cocok. Peringatan: Sisa kesempatan ${sisa} kali lagi sebelum akun terblokir otomatis.`
+            );
+            setLoading(false);
+            return;
+          }
+        } catch (storageErr) {
+          setErrorMessage(
+            error.message === "Invalid login credentials"
+              ? "Email atau kata sandi tidak cocok. Periksa kembali akun Anda."
+              : error.message
+          );
+          setLoading(false);
+          return;
+        }
       }
 
       if (data?.session) {
+        // Reset failed attempts saat berhasil login
+        try {
+          const failedMap = JSON.parse(localStorage.getItem("mahad_failed_attempts") || "{}");
+          delete failedMap[normalizedEmail];
+          localStorage.setItem("mahad_failed_attempts", JSON.stringify(failedMap));
+        } catch (e) {}
+
         // Cek status role di tabel public.users
         const { data: userProfile, error: profileError } = await supabase
           .from("users")

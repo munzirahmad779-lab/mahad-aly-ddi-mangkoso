@@ -441,3 +441,95 @@ export async function sendRawEmail({
   }
 }
 
+export async function sendSecurityAlertEmailToAdmins({
+  threatType,
+  severity,
+  ip,
+  endpoint,
+  details,
+  adminEmails
+}: {
+  threatType: string;
+  severity: "critical" | "high" | "medium" | "low" | string;
+  ip: string;
+  endpoint: string;
+  details: string;
+  adminEmails?: string[];
+}) {
+  const recipients = adminEmails && adminEmails.length > 0 ? adminEmails : [ADMIN_EMAIL];
+  const severityBadgeColor = severity === "critical" ? "#dc2626" : severity === "high" ? "#ea580c" : "#eab308";
+  const subject = `🚨 [SECURITY ALERT] Percobaan Serangan Terdeteksi (${threatType.toUpperCase()}) - IP: ${ip}`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; border: 2px solid ${severityBadgeColor}; border-radius: 12px; overflow: hidden;">
+      <div style="background-color: #0f172a; color: #ffffff; padding: 20px; text-align: center; border-bottom: 4px solid ${severityBadgeColor};">
+        <h2 style="margin: 0; font-family: monospace; letter-spacing: 1px; color: #ffffff;">🛡️ SISTEM PERTAHANAN SIBER MA'HAD ALY</h2>
+        <p style="margin: 6px 0 0; font-size: 13px; color: #94a3b8;">Pemberitahuan Darurat: Upaya Intrusi Berhasil Dihadang</p>
+      </div>
+      <div style="padding: 24px;">
+        <div style="background-color: #fef2f2; border-left: 4px solid ${severityBadgeColor}; padding: 14px 18px; margin-bottom: 20px; border-radius: 0 8px 8px 0;">
+          <span style="display: inline-block; background-color: ${severityBadgeColor}; color: #ffffff; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">
+            TINGKAT ANCAMAN: ${severity.toUpperCase()}
+          </span>
+          <p style="margin: 8px 0 0; font-weight: bold; color: #991b1b; font-size: 14px;">
+            Terdeteksi aktivitas mencurigakan yang diblokir otomatis oleh lapisan sensor keamanan website.
+          </p>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 8px 0; color: #64748b; width: 140px;"><strong>Jenis Serangan:</strong></td>
+            <td style="padding: 8px 0; color: #0f172a; font-family: monospace; font-weight: bold;">${threatType}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 8px 0; color: #64748b;"><strong>Alamat IP Pelaku:</strong></td>
+            <td style="padding: 8px 0; color: #dc2626; font-family: monospace; font-weight: bold;">${ip}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 8px 0; color: #64748b;"><strong>Target Endpoint:</strong></td>
+            <td style="padding: 8px 0; color: #0f172a; font-family: monospace;">${endpoint}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 8px 0; color: #64748b;"><strong>Waktu Deteksi:</strong></td>
+            <td style="padding: 8px 0; color: #0f172a;">${new Date().toLocaleString("id-ID", { timeZone: "Asia/Makassar" })} WITA</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #64748b;"><strong>Status Respons:</strong></td>
+            <td style="padding: 8px 0; color: #059669; font-weight: bold;">✓ DIBLOKIR / DINETRALISIR (HTTP 403)</td>
+          </tr>
+        </table>
+
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 24px;">
+          <h4 style="margin: 0 0 6px; font-size: 12px; text-transform: uppercase; color: #475569;">Detail Teknis Telemetri:</h4>
+          <p style="margin: 0; font-family: monospace; font-size: 12px; color: #334155; word-break: break-all;">${details}</p>
+        </div>
+
+        <div style="text-align: center; margin: 25px 0 10px;">
+          <a href="${SITE_URL}/admin" style="background-color: #0f172a; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 13px; display: inline-block;">
+            Buka Pusat Pertahanan di Admin Portal &rarr;
+          </a>
+        </div>
+      </div>
+      <div style="background-color: #f8fafc; padding: 14px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
+        Peringatan Keamanan Otomatis &bull; Ma'had Aly DDI Mangkoso Portal Defense System
+      </div>
+    </div>
+  `;
+
+  const results = [];
+  for (const recipient of recipients) {
+    try {
+      const res = await sendRawEmail({
+        to: recipient,
+        subject,
+        html
+      });
+      results.push({ to: recipient, ...res });
+    } catch (err: any) {
+      results.push({ to: recipient, success: false, error: err.message });
+    }
+  }
+
+  return { success: true, results };
+}
+

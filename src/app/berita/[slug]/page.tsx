@@ -44,10 +44,50 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
         </div>
       </section>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+        {/* Gambar Utama Berita (Opsional) */}
+        {item.imageUrl && (
+          <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-white">
+            <img
+              src={item.imageUrl}
+              alt={item.title}
+              className="w-full max-h-[480px] object-cover"
+            />
+          </div>
+        )}
+
         <article className="bg-white rounded-2xl p-8 sm:p-12 border border-slate-200 shadow-sm space-y-6 text-slate-800 leading-relaxed text-base sm:text-lg whitespace-pre-line">
           {item.content}
         </article>
+
+        {/* Berkas Lampiran / File Unduhan Resmi (Opsional) */}
+        {item.attachmentUrl && (
+          <div className="p-6 bg-emerald-50/70 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-emerald-800 text-white flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
+                📄
+              </div>
+              <div>
+                <h4 className="font-bold text-emerald-950 text-sm sm:text-base">
+                  {item.attachmentName || "Berkas Lampiran Resmi"}
+                </h4>
+                <p className="text-xs text-emerald-700">
+                  {item.attachmentSize ? `Ukuran: ${item.attachmentSize} • ` : ""}Dokumen resmi terbitan Ma&apos;had Aly DDI Mangkoso
+                </p>
+              </div>
+            </div>
+
+            <a
+              href={item.attachmentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              download
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition shrink-0"
+            >
+              <span>📥 Unduh Berkas</span>
+            </a>
+          </div>
+        )}
       </div>
     </main>
   );

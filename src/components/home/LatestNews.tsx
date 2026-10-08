@@ -36,34 +36,53 @@ export default function LatestNews() {
           {news.slice(0, 2).map((item) => (
             <article
               key={item.id}
-              className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 hover:border-emerald-700 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
+              className="bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-emerald-700 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
             >
               <div>
-                <div className="flex items-center justify-between text-xs mb-3">
-                  <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">
-                    {item.category}
-                  </span>
-                  <span className="text-slate-400">{item.date}</span>
+                {item.imageUrl && (
+                  <div className="relative w-full h-48 overflow-hidden bg-slate-100">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    {item.attachmentUrl && (
+                      <span className="absolute top-3 right-3 bg-amber-500 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                        <span>📎 Dokumen Lampiran</span>
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div className="p-6 sm:p-8 pb-0">
+                  <div className="flex items-center justify-between text-xs mb-3">
+                    <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">
+                      {item.category}
+                    </span>
+                    <span className="text-slate-400">{item.date}</span>
+                  </div>
+                  <h3 className="font-serif font-bold text-xl text-slate-900 leading-snug mb-3 group-hover:text-emerald-800 transition">
+                    <Link href={`/berita/${item.slug}`}>{item.title}</Link>
+                  </h3>
+                  <p className="text-slate-600 text-sm leading-relaxed line-clamp-2">
+                    {item.excerpt}
+                  </p>
                 </div>
-                <h3 className="font-serif font-bold text-xl text-slate-900 leading-snug mb-3 hover:text-emerald-800 transition">
-                  <Link href={`/berita/${item.slug}`}>{item.title}</Link>
-                </h3>
-                <p className="text-slate-600 text-sm leading-relaxed line-clamp-2">
-                  {item.excerpt}
-                </p>
               </div>
 
-              <div className="pt-4 mt-6 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-500">Oleh: <strong>{item.author}</strong></span>
-                <Link
-                  href={`/berita/${item.slug}`}
-                  className="font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1"
-                >
-                  <span>Baca Selengkapnya</span>
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
+              <div className="p-6 sm:p-8 pt-0">
+                <div className="pt-4 mt-6 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-slate-500">Oleh: <strong>{item.author}</strong></span>
+                  <Link
+                    href={`/berita/${item.slug}`}
+                    className="font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
+                  >
+                    <span>Baca Selengkapnya</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </div>
               </div>
             </article>
           ))}

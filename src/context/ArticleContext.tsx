@@ -34,7 +34,9 @@ import {
   EmailTemplateItem,
   AboutPageContent,
   SubmissionTimelineEvent,
-  PageTextsSettings
+  PageTextsSettings,
+  DonationProgram,
+  SecurityThreatLog
 } from "@/lib/types";
 import {
   INITIAL_ARTICLES,
@@ -66,7 +68,9 @@ import {
   INITIAL_HOME_SECTIONS,
   INITIAL_EMAIL_TEMPLATES,
   INITIAL_ABOUT_CONTENT,
-  INITIAL_PAGE_TEXTS
+  INITIAL_PAGE_TEXTS,
+  INITIAL_DONATIONS,
+  INITIAL_SECURITY_THREATS
 } from "@/lib/mock-data";
 
 interface DataContextType {
@@ -232,10 +236,45 @@ interface DataContextType {
   settings: SiteSettings;
   updateSettings: (newSettings: Partial<SiteSettings>) => void;
 
-  // Backup & Reset
+  // Backup & Modular Reset
   exportBackupJson: () => string;
   importBackupJson: (jsonString: string) => boolean;
   resetAllData: () => void;
+  resetNavbarToDefault: (user?: string) => void;
+  resetHeroToDefault: (user?: string) => void;
+  resetHomeSectionsToDefault: (user?: string) => void;
+  resetAboutContentToDefault: (user?: string) => void;
+  resetEmailTemplatesToDefault: (user?: string) => void;
+  resetProfileToDefault: (user?: string) => void;
+  resetAcademicToDefault: (user?: string) => void;
+  resetLecturersToDefault: (user?: string) => void;
+  resetFacilitiesToDefault: (user?: string) => void;
+  resetAccreditationsToDefault: (user?: string) => void;
+  resetPublicationsToDefault: (user?: string) => void;
+  resetQuoteToDefault: (user?: string) => void;
+  resetBahtsulToDefault: (user?: string) => void;
+  resetPMBToDefault: (user?: string) => void;
+  resetNewsAndGalleryToDefault: (user?: string) => void;
+  resetComingSoonToDefault: (user?: string) => void;
+  resetSeoToDefault: (user?: string) => void;
+  resetPageTextsToDefault: (user?: string) => void;
+  resetSettingsToDefault: (user?: string) => void;
+  clearActivityLogs: (user?: string) => void;
+
+  // Program Donasi, Wakaf & Infaq
+  donations: DonationProgram[];
+  addDonation: (item: Omit<DonationProgram, "id" | "createdAt">, user?: string) => void;
+  updateDonation: (id: string, updatedData: Partial<DonationProgram>, user?: string) => void;
+  deleteDonation: (id: string, user?: string) => void;
+  resetDonationsToDefault: (user?: string) => void;
+
+  // Pertahanan Keamanan & Log Ancaman
+  securityThreats: SecurityThreatLog[];
+  addSecurityThreat: (threat: Omit<SecurityThreatLog, "id" | "timestamp">) => void;
+  clearSecurityThreats: (user?: string) => void;
+
+  // Hak Akses Khusus Donasi
+  grantDonationPermission: (userId: string, granted: boolean, adminName?: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -272,6 +311,8 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplateItem[]>(INITIAL_EMAIL_TEMPLATES);
   const [aboutPageContent, setAboutPageContent] = useState<AboutPageContent>(INITIAL_ABOUT_CONTENT);
   const [pageTexts, setPageTexts] = useState<PageTextsSettings>(INITIAL_PAGE_TEXTS);
+  const [donations, setDonations] = useState<DonationProgram[]>(INITIAL_DONATIONS);
+  const [securityThreats, setSecurityThreats] = useState<SecurityThreatLog[]>(INITIAL_SECURITY_THREATS);
 
   // Load from Supabase + LocalStorage fallback
   useEffect(() => {
@@ -290,13 +331,53 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       if (savedFooterSettings) setFooterSettings(JSON.parse(savedFooterSettings));
 
       const savedNavbar = localStorage.getItem("mahad_navbar_settings");
-      if (savedNavbar) setNavbarSettings(JSON.parse(savedNavbar));
+      if (savedNavbar) {
+        try {
+          const parsedNav = JSON.parse(savedNavbar);
+          if (parsedNav && Array.isArray(parsedNav.navLinks)) {
+            if (!parsedNav.navLinks.some((l: any) => l.url === "/donasi")) {
+              parsedNav.navLinks.push({
+                id: "nav-donasi",
+                label: "Infaq & Donasi",
+                url: "/donasi",
+                order: parsedNav.navLinks.length + 1,
+                isActive: true
+              });
+            }
+          }
+          setNavbarSettings(parsedNav);
+        } catch (e) {
+          setNavbarSettings(INITIAL_NAVBAR_SETTINGS);
+        }
+      }
 
       const savedHero = localStorage.getItem("mahad_hero_settings");
       if (savedHero) setHeroSettings(JSON.parse(savedHero));
 
       const savedHomeSections = localStorage.getItem("mahad_home_sections");
-      if (savedHomeSections) setHomeSections(JSON.parse(savedHomeSections));
+      if (savedHomeSections) {
+        try {
+          const parsedSections = JSON.parse(savedHomeSections);
+          if (Array.isArray(parsedSections)) {
+            if (!parsedSections.some((s: any) => s.name === "donasi")) {
+              parsedSections.push({
+                id: "sec-donations",
+                name: "donasi",
+                label: "Infaq & Program Donasi Pilihan",
+                isActive: true,
+                order: parsedSections.length + 1,
+                maxItems: 3,
+                badge: "Amal Jariyah & Infaq",
+                title: "Dukung Kaderisasi Ulama Fiqh",
+                subtitle: "Salurkan infaq terbaik Anda untuk riset mahasantri, orang tua asuh, dan sarana Ma'had Aly."
+              });
+            }
+            setHomeSections(parsedSections);
+          }
+        } catch (e) {
+          setHomeSections(INITIAL_HOME_SECTIONS);
+        }
+      }
 
       const savedEmailTemplates = localStorage.getItem("mahad_email_templates");
       if (savedEmailTemplates) setEmailTemplates(JSON.parse(savedEmailTemplates));
@@ -309,6 +390,12 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
       const savedSubmissions = localStorage.getItem("mahad_submissions");
       if (savedSubmissions) setSubmissions(JSON.parse(savedSubmissions));
+
+      const savedDonations = localStorage.getItem("mahad_donations");
+      if (savedDonations) setDonations(JSON.parse(savedDonations));
+
+      const savedThreats = localStorage.getItem("mahad_security_threats");
+      if (savedThreats) setSecurityThreats(JSON.parse(savedThreats));
     } catch (e) {
       console.warn("LocalStorage read skipped:", e);
     }
@@ -721,16 +808,32 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setFooterFocus(data);
     localStorage.setItem("mahad_footer_focus", JSON.stringify(data));
   };
+  const saveDonations = (data: DonationProgram[]) => {
+    setDonations(data);
+    localStorage.setItem("mahad_donations", JSON.stringify(data));
+  };
+  const saveSecurityThreats = (data: SecurityThreatLog[]) => {
+    setSecurityThreats(data);
+    localStorage.setItem("mahad_security_threats", JSON.stringify(data));
+  };
 
   const addLog = (action: string, target: string, user: string = "Super Admin") => {
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+    const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
     const newLog: ActivityLog = {
       id: "log-" + Date.now().toString(),
       user,
       action,
       target,
-      timestamp: "Baru saja"
+      timestamp: `${formattedDate}, ${formattedTime}`
     };
-    saveLogs([newLog, ...logs.slice(0, 19)]);
+    saveLogs([newLog, ...logs.slice(0, 249)]);
+  };
+
+  const clearActivityLogs = (user: string = "Super Admin") => {
+    saveLogs([]);
+    addLog("Membersihkan Arsip Log Aktivitas", "Audit Trail", user);
   };
 
   // Article Actions
@@ -1994,6 +2097,151 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setAboutPageContent(INITIAL_ABOUT_CONTENT);
   };
 
+  // ══════════════════════════════════════════════════════════════
+  // MODULAR RESET TO DEFAULT PER PANEL (PENCEGAH KETELEDORAN ADMIN)
+  // ══════════════════════════════════════════════════════════════
+  const resetNavbarToDefault = (user?: string) => {
+    setNavbarSettings(INITIAL_NAVBAR_SETTINGS);
+    localStorage.setItem("mahad_navbar_settings", JSON.stringify(INITIAL_NAVBAR_SETTINGS));
+    addLog("Reset Header & Navbar ke Standar", "Header & Navbar", user);
+    try { supabase.from("site_content").upsert({ key: "header", value: INITIAL_NAVBAR_SETTINGS }, { onConflict: "key" }).then(); } catch (e) {}
+  };
+
+  const resetHeroToDefault = (user?: string) => {
+    setHeroSettings(INITIAL_HERO_SETTINGS);
+    localStorage.setItem("mahad_hero_settings", JSON.stringify(INITIAL_HERO_SETTINGS));
+    addLog("Reset Hero & Metrik ke Standar", "Hero Section", user);
+    try { supabase.from("site_content").upsert({ key: "home.hero", value: INITIAL_HERO_SETTINGS }, { onConflict: "key" }).then(); } catch (e) {}
+  };
+
+  const resetHomeSectionsToDefault = (user?: string) => {
+    setHomeSections(INITIAL_HOME_SECTIONS);
+    localStorage.setItem("mahad_home_sections", JSON.stringify(INITIAL_HOME_SECTIONS));
+    addLog("Reset Section Beranda ke Standar", "Layout Homepage", user);
+    try { supabase.from("site_content").upsert({ key: "home_sections", value: INITIAL_HOME_SECTIONS }, { onConflict: "key" }).then(); } catch (e) {}
+  };
+
+  const resetAboutContentToDefault = (user?: string) => {
+    setAboutPageContent(INITIAL_ABOUT_CONTENT);
+    localStorage.setItem("mahad_about_content", JSON.stringify(INITIAL_ABOUT_CONTENT));
+    addLog("Reset Halaman Tentang ke Standar", "Profil & Sejarah", user);
+    try { supabase.from("site_content").upsert({ key: "about", value: INITIAL_ABOUT_CONTENT }, { onConflict: "key" }).then(); } catch (e) {}
+  };
+
+  const resetEmailTemplatesToDefault = (user?: string) => {
+    setEmailTemplates(INITIAL_EMAIL_TEMPLATES);
+    localStorage.setItem("mahad_email_templates", JSON.stringify(INITIAL_EMAIL_TEMPLATES));
+    addLog("Reset Template Email ke Standar", "Template Notifikasi", user);
+    try { supabase.from("site_content").upsert({ key: "email_templates", value: INITIAL_EMAIL_TEMPLATES }, { onConflict: "key" }).then(); } catch (e) {}
+  };
+
+  const resetProfileToDefault = (user?: string) => {
+    const nextSettings: SiteSettings = {
+      ...settings,
+      institutionName: INITIAL_SETTINGS.institutionName,
+      takhassus: INITIAL_SETTINGS.takhassus,
+      focusField: INITIAL_SETTINGS.focusField,
+      mudirName: INITIAL_SETTINGS.mudirName,
+      establishedDate: INITIAL_SETTINGS.establishedDate,
+      location: INITIAL_SETTINGS.location,
+      address: INITIAL_SETTINGS.address,
+      phone: INITIAL_SETTINGS.phone,
+      visi: INITIAL_SETTINGS.visi,
+      misi: INITIAL_SETTINGS.misi,
+      historyContent: INITIAL_SETTINGS.historyContent,
+      historyArabic: INITIAL_SETTINGS.historyArabic,
+      gradingSystemRules: INITIAL_SETTINGS.gradingSystemRules,
+      academicGuideBookUrl: INITIAL_SETTINGS.academicGuideBookUrl,
+      academicGuideBookSize: INITIAL_SETTINGS.academicGuideBookSize,
+      academicGuideBookYear: INITIAL_SETTINGS.academicGuideBookYear,
+    };
+    setSettings(nextSettings);
+    localStorage.setItem("mahad_settings", JSON.stringify(nextSettings));
+    addLog("Reset Profil Lembaga ke Standar", "Profil & Visi Misi", user);
+    try { supabase.from("site_settings").upsert({ id: "main", ...nextSettings }, { onConflict: "id" }).then(); } catch (e) {}
+  };
+
+  const resetAcademicToDefault = (user?: string) => {
+    saveCourses(INITIAL_COURSES);
+    saveCalendarEvents(INITIAL_CALENDAR);
+    addLog("Reset Akademik & Kurikulum ke Standar", "Kurikulum & Kalender", user);
+  };
+
+  const resetLecturersToDefault = (user?: string) => {
+    saveLecturers(INITIAL_LECTURERS);
+    addLog("Reset Daftar Masyayikh/Dosen ke Standar", "Dewan Pengampu", user);
+  };
+
+  const resetFacilitiesToDefault = (user?: string) => {
+    saveFacilities(INITIAL_FACILITIES);
+    addLog("Reset Sarana & Prasarana ke Standar", "Fasilitas Kampus", user);
+  };
+
+  const resetAccreditationsToDefault = (user?: string) => {
+    saveAccreditations(INITIAL_ACCREDITATIONS);
+    addLog("Reset Data Akreditasi ke Standar", "Sertifikasi", user);
+  };
+
+  const resetPublicationsToDefault = (user?: string) => {
+    saveArticles(INITIAL_ARTICLES);
+    saveCategories(INITIAL_CATEGORIES);
+    saveTheses(INITIAL_THESES);
+    addLog("Reset Publikasi Fiqh & Skripsi ke Standar", "Artikel, Kategori, & Skripsi", user);
+  };
+
+  const resetQuoteToDefault = (user?: string) => {
+    const next = { ...settings, quote: INITIAL_SETTINGS.quote };
+    setSettings(next);
+    localStorage.setItem("mahad_settings", JSON.stringify(next));
+    addLog("Reset Kalam Hikmah ke Standar", "Kata Mutiara Anregurutta", user);
+    try { supabase.from("site_settings").upsert({ id: "main", ...next }, { onConflict: "id" }).then(); } catch (e) {}
+  };
+
+  const resetBahtsulToDefault = (user?: string) => {
+    saveBahtsulQA(INITIAL_BAHTSUL_QA);
+    addLog("Reset Bahtsul Masail ke Standar", "Risalah Fatwa & QA", user);
+  };
+
+  const resetPMBToDefault = (user?: string) => {
+    savePmbWaves(INITIAL_PMB_WAVES);
+    savePmbFAQs(INITIAL_PMB_FAQS);
+    addLog("Reset PMB Online ke Standar", "Gelombang & FAQ PMB", user);
+  };
+
+  const resetNewsAndGalleryToDefault = (user?: string) => {
+    saveNews(INITIAL_NEWS);
+    saveGalleryAlbums(INITIAL_GALLERY_ALBUMS);
+    addLog("Reset Warta & Galeri ke Standar", "Berita & Dokumentasi", user);
+  };
+
+  const resetComingSoonToDefault = (user?: string) => {
+    saveComingSoonPages(INITIAL_COMING_SOON_PAGES);
+    addLog("Reset Coming Soon ke Standar", "Placeholder Manager", user);
+  };
+
+  const resetSeoToDefault = (user?: string) => {
+    savePageSeoList(INITIAL_PAGE_SEO);
+    const next = { ...settings, seo: INITIAL_SETTINGS.seo };
+    setSettings(next);
+    localStorage.setItem("mahad_settings", JSON.stringify(next));
+    addLog("Reset Pengaturan SEO ke Standar", "SEO & Meta Tags", user);
+    try { supabase.from("site_settings").upsert({ id: "main", ...next }, { onConflict: "id" }).then(); } catch (e) {}
+  };
+
+  const resetPageTextsToDefault = (user?: string) => {
+    setPageTexts(INITIAL_PAGE_TEXTS);
+    localStorage.setItem("mahad_page_texts", JSON.stringify(INITIAL_PAGE_TEXTS));
+    addLog("Reset Teks Halaman ke Standar", "CMS Teks Publik", user);
+    try { supabase.from("site_content").upsert({ key: "page_texts", value: INITIAL_PAGE_TEXTS }, { onConflict: "key" }).then(); } catch (e) {}
+  };
+
+  const resetSettingsToDefault = (user?: string) => {
+    setSettings(INITIAL_SETTINGS);
+    localStorage.setItem("mahad_settings", JSON.stringify(INITIAL_SETTINGS));
+    addLog("Reset Seluruh Pengaturan Web ke Standar", "Konfigurasi Global", user);
+    try { supabase.from("site_settings").upsert({ id: "main", ...INITIAL_SETTINGS }, { onConflict: "id" }).then(); } catch (e) {}
+  };
+
   const updateNavbarSettings = (updated: Partial<NavbarSettings>) => {
     const next = { ...navbarSettings, ...updated };
     setNavbarSettings(next);
@@ -2067,6 +2315,98 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn("DB notice:", e);
     }
+  };
+
+  // ── Donasi, Wakaf & Infaq Actions ──
+  const addDonation = (item: Omit<DonationProgram, "id" | "createdAt">, user: string = "Super Admin") => {
+    const slugBase = item.title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-");
+    const newDonation: DonationProgram = {
+      ...item,
+      id: "don-" + Date.now().toString(),
+      slug: `${slugBase}-${Date.now().toString().slice(-4)}`,
+      createdAt: new Date().toISOString().slice(0, 10)
+    };
+    const updated = [newDonation, ...donations];
+    saveDonations(updated);
+    addLog("Menambah Program Donasi Baru", item.title, user);
+    try {
+      supabase.from("site_content").upsert({ key: "donations", value: updated }, { onConflict: "key" }).then();
+    } catch (e) {}
+  };
+
+  const updateDonation = (id: string, updatedData: Partial<DonationProgram>, user: string = "Super Admin") => {
+    const updated = donations.map((d) => (d.id === id ? { ...d, ...updatedData } : d));
+    saveDonations(updated);
+    const target = updated.find((d) => d.id === id);
+    addLog("Memperbarui Program Donasi", target?.title || id, user);
+    try {
+      supabase.from("site_content").upsert({ key: "donations", value: updated }, { onConflict: "key" }).then();
+    } catch (e) {}
+  };
+
+  const deleteDonation = (id: string, user: string = "Super Admin") => {
+    const target = donations.find((d) => d.id === id);
+    const updated = donations.filter((d) => d.id !== id);
+    saveDonations(updated);
+    addLog("Menghapus Program Donasi", target?.title || id, user);
+    try {
+      supabase.from("site_content").upsert({ key: "donations", value: updated }, { onConflict: "key" }).then();
+    } catch (e) {}
+  };
+
+  const resetDonationsToDefault = (user?: string) => {
+    saveDonations(INITIAL_DONATIONS);
+    addLog("Reset Program Donasi ke Standar", "Modul Donasi & Rekening", user);
+    try {
+      supabase.from("site_content").upsert({ key: "donations", value: INITIAL_DONATIONS }, { onConflict: "key" }).then();
+    } catch (e) {}
+  };
+
+  // ── Pertahanan Keamanan & Deteksi Ancaman ──
+  const addSecurityThreat = (threat: Omit<SecurityThreatLog, "id" | "timestamp">) => {
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+    const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
+    const newThreat: SecurityThreatLog = {
+      ...threat,
+      id: "threat-" + Date.now().toString(),
+      timestamp: `${formattedDate}, ${formattedTime}`
+    };
+    const updated = [newThreat, ...securityThreats.slice(0, 99)];
+    saveSecurityThreats(updated);
+    addLog(`🚨 Ancaman Keamanan (${threat.threatType})`, `${threat.endpoint} [IP: ${threat.ip}]`, "Sistem Pertahanan Web");
+  };
+
+  const clearSecurityThreats = (user?: string) => {
+    saveSecurityThreats([]);
+    addLog("Membersihkan Log Ancaman Keamanan", "Pusat Keamanan", user);
+  };
+
+  // ── Izin Khusus Kelola Donasi ──
+  const grantDonationPermission = (userId: string, granted: boolean, adminName: string = "Super Admin") => {
+    const updatedUsers = users.map((u) => {
+      if (u.id === userId) {
+        return {
+          ...u,
+          permissions: {
+            ...u.permissions,
+            canManageDonations: granted
+          }
+        };
+      }
+      return u;
+    });
+    saveUsers(updatedUsers);
+    const targetUser = users.find((u) => u.id === userId);
+    addLog(
+      granted ? "Memberikan Izin Akses Donasi" : "Mencabut Izin Akses Donasi",
+      targetUser?.name || targetUser?.email || userId,
+      adminName
+    );
   };
 
   return (
@@ -2179,7 +2519,36 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         updateSettings,
         exportBackupJson,
         importBackupJson,
-        resetAllData
+        resetAllData,
+        resetNavbarToDefault,
+        resetHeroToDefault,
+        resetHomeSectionsToDefault,
+        resetAboutContentToDefault,
+        resetEmailTemplatesToDefault,
+        resetProfileToDefault,
+        resetAcademicToDefault,
+        resetLecturersToDefault,
+        resetFacilitiesToDefault,
+        resetAccreditationsToDefault,
+        resetPublicationsToDefault,
+        resetQuoteToDefault,
+        resetBahtsulToDefault,
+        resetPMBToDefault,
+        resetNewsAndGalleryToDefault,
+        resetComingSoonToDefault,
+        resetSeoToDefault,
+        resetPageTextsToDefault,
+        resetSettingsToDefault,
+        clearActivityLogs,
+        donations,
+        addDonation,
+        updateDonation,
+        deleteDonation,
+        resetDonationsToDefault,
+        securityThreats,
+        addSecurityThreat,
+        clearSecurityThreats,
+        grantDonationPermission
       }}
     >
       {children}

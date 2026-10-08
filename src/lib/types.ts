@@ -124,6 +124,9 @@ export interface NewsItem {
   category: "Berita" | "Pengumuman" | "Agenda";
   author: string;
   imageUrl?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  attachmentSize?: string;
 }
 
 export type AdminUserRole = "super_admin" | "admin" | "penulis" | "Super Admin" | "Admin" | "Editor" | "Penulis";
@@ -135,6 +138,10 @@ export interface AdminUser {
   role: AdminUserRole;
   status: "Aktif" | "Nonaktif";
   lastLogin: string;
+  permissions?: {
+    canManageDonations?: boolean;
+    canPublishDirect?: boolean;
+  };
 }
 
 export interface ActivityLog {
@@ -215,6 +222,9 @@ export interface BahtsulMasailQA {
   date: string;
   status: "draft" | "published";
   arabicReferences?: string;
+  imageUrl?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
 }
 
 export interface PMBWave {
@@ -226,6 +236,9 @@ export interface PMBWave {
   scholarshipInfo: string;
   requirements: string[];
   procedure: string[];
+  imageUrl?: string;
+  registrationLink?: string;
+  brochureUrl?: string;
 }
 
 export interface PMBFAQ {
@@ -355,6 +368,8 @@ export interface QuoteSectionData {
   source: string;
   translation: string;
   context: string;
+  imageUrl?: string;
+  showImage?: boolean;
 }
 
 export interface SeoSettings {
@@ -378,6 +393,7 @@ export interface SiteSettings {
   phone: string;
   emailSubmission: string;
   targetSubmissionEmails?: string[];
+  googleAnalyticsId?: string;
   visi: string;
   misi: string[];
   historyContent?: string;
@@ -454,6 +470,11 @@ export interface HomeSectionConfigItem {
   subtitle?: string;
   badge?: string;
   maxItems?: number;
+  imageUrl?: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  content?: string;
+  bgColor?: string;
 }
 
 export interface EmailTemplateItem {
@@ -570,4 +591,73 @@ export interface CustomPageElement {
   icon?: string;
   link?: string;
   order?: number;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 10. PROGRAM DONASI, WAKAF & INFAQ
+// ══════════════════════════════════════════════════════════════
+export interface BankAccount {
+  id: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  branch?: string;
+  qrisUrl?: string;
+}
+
+export type DonationCategoryKey =
+  | "short_course_mesir"
+  | "web_dev"
+  | "orang_tua_asuh"
+  | "operasional_umum"
+  | "lainnya";
+
+export interface DonationProgram {
+  id: string;
+  slug: string;
+  title: string;
+  category: DonationCategoryKey;
+  categoryLabel: string;
+  shortDesc: string;
+  story: string;
+  targetAmount?: number; // Target dana dalam Rupiah (0 jika tanpa target nominal)
+  collectedAmount?: number; // Realisasi donasi terkumpul
+  donorCount?: number;
+  deadline?: string; // Batas tanggal atau "Terbuka Berkelanjutan"
+  imageUrl?: string;
+  proposalUrl?: string; // Tautan unduh proposal / dokumen PDF
+  proposalName?: string;
+  proposalSize?: string;
+  bankAccounts: BankAccount[];
+  contactPerson?: {
+    name: string;
+    phone: string; // WhatsApp untuk konfirmasi
+  };
+  isActive: boolean;
+  isFeatured?: boolean;
+  createdAt: string;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 11. SISTEM PERTAHANAN KEAMANAN & LOG DETEKSI ANCAMAN
+// ══════════════════════════════════════════════════════════════
+export type ThreatType =
+  | "brute_force"
+  | "honeypot_trap"
+  | "sqli_attempt"
+  | "xss_attempt"
+  | "unauthorized_admin_access"
+  | "suspicious_scanner";
+
+export interface SecurityThreatLog {
+  id: string;
+  timestamp: string;
+  ip: string;
+  threatType: ThreatType;
+  severity: "critical" | "high" | "medium" | "low";
+  endpoint: string;
+  details: string;
+  userAgent?: string;
+  status: "blocked" | "flagged" | "mitigated";
+  alertSent: boolean;
 }

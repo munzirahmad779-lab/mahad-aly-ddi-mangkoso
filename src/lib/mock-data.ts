@@ -34,7 +34,9 @@ import {
   HomeSectionConfigItem,
   EmailTemplateItem,
   AboutPageContent,
-  PageTextsSettings
+  PageTextsSettings,
+  DonationProgram,
+  SecurityThreatLog
 } from "./types";
 
 export const INITIAL_HERO: HeroSectionData = {
@@ -52,7 +54,9 @@ export const INITIAL_QUOTE: QuoteSectionData = {
   arabicQuote: "مَنْ يُرِدِ اللَّهُ بِهِ خَيْرًا يُفَقِّهْهُ فِي الدِّينِ",
   source: "HR. Al-Bukhari no. 71 & Muslim no. 1037",
   translation: "Barangsiapa yang Allah kehendaki kebaikan baginya, niscaya Allah akan pahamkan dia secara mendalam dalam urusan agama.",
-  context: "Landasan Visi Pendidikan Kader Ulama Ma'had Aly DDI Mangkoso"
+  context: "Landasan Visi Pendidikan Kader Ulama Ma'had Aly DDI Mangkoso",
+  imageUrl: "",
+  showImage: false
 };
 
 export const INITIAL_SEO: SeoSettings = {
@@ -60,7 +64,7 @@ export const INITIAL_SEO: SeoSettings = {
   metaDescription: "Portal resmi Ma'had Aly Pendidikan Tinggi Kader Ulama DDI Abdurrahman Ambo Dalle Mangkoso, Barru. Pusat kajian Fiqh Mu'asarah, turats, dan riset hukum Islam.",
   keywords: "mahad aly ddi mangkoso, fiqh muasarah, fiqh kontemporer, ushul fikih, anregurutta ambo dalle, barru sulawesi selatan",
   ogImage: "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=1200&q=80",
-  googleAnalyticsId: "G-MAHADALY2026",
+  googleAnalyticsId: "G-EBBP80BZWL",
   searchConsoleCode: "google-site-verification-mangkoso-example",
   enableSitemap: true
 };
@@ -102,8 +106,9 @@ export const INITIAL_FOOTER_NAV: FooterNavLink[] = [
   { id: "fnav-1", label: "Beranda", url: "/", position: 1, isActive: true },
   { id: "fnav-2", label: "Profil & Sejarah", url: "/profil", position: 2, isActive: true },
   { id: "fnav-3", label: "Mimbar Kajian", url: "/artikel", position: 3, isActive: true },
-  { id: "fnav-4", label: "Karya Anregurutta", url: "/kategori/karya-anregurutta", position: 4, isActive: true },
-  { id: "fnav-5", label: "Kirim Karya Tulisan", url: "/kirim-tulisan", position: 5, isActive: true }
+  { id: "fnav-4", label: "Infaq & Donasi Program", url: "/donasi", position: 4, isActive: true },
+  { id: "fnav-5", label: "Karya Anregurutta", url: "/kategori/karya-anregurutta", position: 5, isActive: true },
+  { id: "fnav-6", label: "Kirim Karya Tulisan", url: "/kirim-tulisan", position: 6, isActive: true }
 ];
 
 export const INITIAL_FOOTER_FOCUS: FooterFocusItem[] = [
@@ -141,6 +146,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
   hero: INITIAL_HERO,
   quote: INITIAL_QUOTE,
   seo: INITIAL_SEO,
+  googleAnalyticsId: "G-EBBP80BZWL",
   socialMedia: INITIAL_SOCIAL_MEDIA,
   footer: INITIAL_FOOTER_SETTINGS,
   maintenanceMode: false
@@ -381,7 +387,10 @@ export const INITIAL_BAHTSUL_QA: BahtsulMasailQA[] = [
     author: "Lembaga Bahtsul Masail DDI Mangkoso",
     date: "02 Oktober 2026",
     status: "published",
-    arabicReferences: "الأَصْلُ فِي الْمُعَامَلَاتِ الإِبَاحَةُ حَتَّى يَدُلَّ الدَّلِيْلُ عَلَى التَّحْرِيْمِ"
+    arabicReferences: "الأَصْلُ فِي الْمُعَامَلَاتِ الإِبَاحَةُ حَتَّى يَدُلَّ الدَّلِيْلُ عَلَى التَّحْرِيْمِ",
+    imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+    attachmentUrl: "/docs/risalah-fatwa-ai-2026.pdf",
+    attachmentName: "Risalah_Fatwa_AI_LBM_Mangkoso.pdf"
   },
   {
     id: "bm-2",
@@ -391,7 +400,9 @@ export const INITIAL_BAHTSUL_QA: BahtsulMasailQA[] = [
     theme: "Fiqh Muamalah Kontemporer",
     author: "Lembaga Bahtsul Masail DDI Mangkoso",
     date: "28 September 2026",
-    status: "published"
+    status: "published",
+    imageUrl: "",
+    attachmentUrl: ""
   }
 ];
 
@@ -415,7 +426,10 @@ export const INITIAL_PMB_WAVES: PMBWave[] = [
       "Mengunggah berkas ijazah, KTP, dan surat rekomendasi",
       "Mengikuti seleksi tes baca kitab kuning dan hafalan",
       "Pengumuman hasil kelulusan dan penandatanganan pakta integritas"
-    ]
+    ],
+    imageUrl: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80",
+    registrationLink: "https://bit.ly/pmb-mahadaly-mangkoso",
+    brochureUrl: "/docs/brosur-pmb-2027.pdf"
   },
   {
     id: "pmb-2",
@@ -434,7 +448,10 @@ export const INITIAL_PMB_WAVES: PMBWave[] = [
       "Verifikasi berkas administratif",
       "Tes seleksi luring / daring",
       "Daftar ulang dan orientasi mahasantri baru"
-    ]
+    ],
+    imageUrl: "",
+    registrationLink: "https://bit.ly/pmb-mahadaly-mangkoso",
+    brochureUrl: "/docs/brosur-pmb-2027.pdf"
   }
 ];
 
@@ -1052,7 +1069,8 @@ export const INITIAL_NEWS: NewsItem[] = [
 
 Acara dibuka langsung oleh Mudir Ma'had Aly, AGH. Prof. Dr. M. Faried Wadjedy, MA, dan dihadiri oleh ratusan mahasantri serta delegasi Ma'had Aly se-Indonesia. Hasil rumusan forum ini akan diterbitkan dalam bentuk buku rekomendasi fatwa digital.`,
     category: "Berita",
-    author: "Humas Ma'had Aly"
+    author: "Humas Ma'had Aly",
+    imageUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "news-2",
@@ -1064,7 +1082,11 @@ Acara dibuka langsung oleh Mudir Ma'had Aly, AGH. Prof. Dr. M. Faried Wadjedy, M
 
 Setiap peserta wajib mengunggah naskah lengkap skripsi berformat PDF yang telah disetujui Pembimbing 1 dan 2 ke link repository Google Drive resmi Ma'had Aly.`,
     category: "Pengumuman",
-    author: "Biro Akademik"
+    author: "Biro Akademik",
+    imageUrl: "",
+    attachmentUrl: "/docs/panduan-munaqasyah-2026.pdf",
+    attachmentName: "Panduan_Munaqasyah_Skripsi_2026.pdf",
+    attachmentSize: "1.8 MB"
   }
 ];
 
@@ -1113,7 +1135,8 @@ export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
     { id: "nav-4", label: "Mimbar Fiqh", url: "/artikel", order: 4, isActive: true },
     { id: "nav-5", label: "Skripsi", url: "/skripsi", order: 5, isActive: true },
     { id: "nav-6", label: "Warta", url: "/berita", order: 6, isActive: true },
-    { id: "nav-7", label: "Kirim Tulisan", url: "/kirim-tulisan", order: 7, isActive: true }
+    { id: "nav-7", label: "Infaq & Donasi", url: "/donasi", order: 7, isActive: true },
+    { id: "nav-8", label: "Kirim Tulisan", url: "/kirim-tulisan", order: 8, isActive: true }
   ]
 };
 
@@ -1136,14 +1159,17 @@ export const INITIAL_HERO_SETTINGS: HeroSectionSettings = {
 };
 
 export const INITIAL_HOME_SECTIONS: HomeSectionConfigItem[] = [
-  { id: "sec-hero", name: "hero", label: "Hero Section", isActive: true, order: 1 },
-  { id: "sec-quote", name: "quote", label: "Kalam Hikmah (Quote)", isActive: true, order: 2 },
-  { id: "sec-about", name: "about", label: "Pilar Pendidikan (About Preview)", isActive: true, order: 3 },
-  { id: "sec-categories", name: "categories", label: "Kategori Kajian Mimbar", isActive: true, order: 4 },
+  { id: "sec-hero", name: "hero", label: "Hero Banner & Metrik", isActive: true, order: 1 },
+  { id: "sec-quote", name: "quote", label: "Kalam Hikmah (Quote Salaf)", isActive: true, order: 2 },
+  { id: "sec-about", name: "about", label: "Pilar Pendidikan (Tentang Kami)", isActive: true, order: 3 },
+  { id: "sec-categories", name: "categories", label: "Kategori Kajian Fiqh", isActive: true, order: 4 },
   { id: "sec-articles", name: "articles", label: "Artikel Fiqh Terbaru", isActive: true, order: 5, maxItems: 6 },
   { id: "sec-theses", name: "theses", label: "Repositori Skripsi Mahasantri", isActive: true, order: 6, maxItems: 4 },
-  { id: "sec-news", name: "news", label: "Warta & Berita Terkini", isActive: true, order: 7, maxItems: 3 },
-  { id: "sec-submission", name: "submission", label: "CTA Kirim Tulisan Mahasantri", isActive: true, order: 8 }
+  { id: "sec-donations", name: "donasi", label: "Infaq & Program Donasi Pilihan", isActive: true, order: 7, maxItems: 3, badge: "Amal Jariyah & Infaq", title: "Dukung Kaderisasi Ulama Fiqh", subtitle: "Salurkan infaq terbaik Anda untuk riset mahasantri, orang tua asuh, dan sarana Ma'had Aly." },
+  { id: "sec-bahtsul", name: "bahtsul", label: "Bahtsul Masail Fiqh Mu'asarah", isActive: true, order: 8, maxItems: 3, badge: "Kajian Fatwa Fiqh", title: "Bahtsul Masail & Tanya Jawab Fiqh", subtitle: "Hasil musyawarah fatwa mahasantri dan dewan masyaikh berlandaskan kitab turats muktabarah." },
+  { id: "sec-pmb", name: "pmb", label: "Informasi PMB Online (Pendaftaran)", isActive: true, order: 9, badge: "Penerimaan Mahasantri Baru", title: "Jadilah Generasi Ulama Fiqh Masa Depan", subtitle: "Pendaftaran jenjang Marhalah Ula (M.1) Takhassus Fiqh wa Usuluhu Ma'had Aly DDI Mangkoso." },
+  { id: "sec-news", name: "news", label: "Warta & Berita Terkini", isActive: true, order: 10, maxItems: 3 },
+  { id: "sec-submission", name: "submission", label: "CTA Kirim Tulisan Santri", isActive: true, order: 11, badge: "Mimbar Penulis", title: "Punya Risalah Ilmiah atau Opini Fiqh?", subtitle: "Kirimkan karya tulis Anda untuk ditinjau oleh Dewan Redaksi Ma'had Aly DDI Mangkoso." }
 ];
 
 export const INITIAL_EMAIL_TEMPLATES: EmailTemplateItem[] = [
@@ -1327,3 +1353,198 @@ export const INITIAL_PAGE_TEXTS: PageTextsSettings = {
   // Elemen Kustom Tambahan
   customElements: []
 };
+
+// ══════════════════════════════════════════════════════════════
+// 10. PROGRAM DONASI, INFAQ & WAKAF RESMI MA'HAD ALY
+// ══════════════════════════════════════════════════════════════
+export const INITIAL_DONATIONS: DonationProgram[] = [
+  {
+    id: "don-1",
+    slug: "short-course-risalah-ilmiah-mesir",
+    title: "Donasi Risalah Ilmiah & Short Course Dosen / Mahasantri di Al-Azhar Kairo, Mesir",
+    category: "short_course_mesir",
+    categoryLabel: "Short Course & Risalah Mesir",
+    shortDesc: "Dukungan keberangkatan delegasi masyaikh dan mahasantri berprestasi Ma'had Aly DDI Mangkoso dalam program penguatan tahqiq turats dan fatwa kontemporer di Universitas Al-Azhar, Kairo, Mesir.",
+    story: "Program pengiriman delegasi peneliti Ma'had Aly DDI Mangkoso ke Universitas Al-Azhar Kairo bertujuan untuk memperdalam metodologi istinbath hukum kontemporer langsung bersama kibar ulama Al-Azhar, memperluas akses naskah manuskrip makhtutat klasik, serta mematangkan risalah ilmiah fikih mu'asarah berstandar internasional. Dana donasi dialokasikan untuk biaya akomodasi halaqah, tiket, visa riset, pengadaan kitab rujukan langka, dan munaqasyah ilmiah di Kairo.",
+    targetAmount: 150000000,
+    collectedAmount: 64500000,
+    donorCount: 42,
+    deadline: "31 Desember 2026",
+    imageUrl: "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80",
+    proposalUrl: "https://drive.google.com/file/d/1ShortCourseMesirMahadAly/view?usp=sharing",
+    proposalName: "Proposal_Short_Course_AlAzhar_Mesir_2026.pdf",
+    proposalSize: "2.4 MB",
+    bankAccounts: [
+      {
+        id: "bank-1-1",
+        bankName: "Bank Syariah Indonesia (BSI)",
+        accountNumber: "7198889912",
+        accountHolder: "Ma'had Aly DDI Mangkoso - Program Mesir",
+        branch: "KC Barru / Parepare"
+      },
+      {
+        id: "bank-1-2",
+        bankName: "Bank Central Asia (BCA)",
+        accountNumber: "7925182901",
+        accountHolder: "Ma'had Aly DDI Mangkoso"
+      }
+    ],
+    contactPerson: {
+      name: "Ust. Ahmad Yusuf Mubarak, M.H.",
+      phone: "6281234567890"
+    },
+    isActive: true,
+    isFeatured: true,
+    createdAt: "2026-01-15"
+  },
+  {
+    id: "don-2",
+    slug: "pengembangan-ekosistem-web-digital",
+    title: "Donasi Pengembangan Website & Ekosistem Digital Portal Ma'had Aly",
+    category: "web_dev",
+    categoryLabel: "Pengembangan Web & IT",
+    shortDesc: "Wakaf teknologi dan infaq operasional server Cloudflare, repositori skripsi digital, sistem jurnal ilmiah OJS, dan kecerdasan buatan penelusuran fatwa turats.",
+    story: "Dalam rangka menyebarluaskan fatwa fiqh mu'asarah dan risalah ilmiah mahasantri ke seluruh penjuru dunia Islam, Ma'had Aly DDI Mangkoso membangun ekosistem digital mandiri yang tangguh, aman, dan tanpa iklan. Donasi ini digunakan untuk sewa infrastruktur Cloudflare Workers/R2 storage, pemeliharaan keamanan website anti-serangan siber, digitalisasi ribuan manuskrip kitab kuning, serta pengembangan aplikasi mobile dakwah digital santri.",
+    targetAmount: 35000000,
+    collectedAmount: 18200000,
+    donorCount: 29,
+    deadline: "Terbuka Berkelanjutan",
+    imageUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
+    proposalUrl: "https://drive.google.com/file/d/1WebDevMahadAlyDDI/view?usp=sharing",
+    proposalName: "Roadmap_Digitalisasi_Portal_MahadAly_2026.pdf",
+    proposalSize: "1.8 MB",
+    bankAccounts: [
+      {
+        id: "bank-2-1",
+        bankName: "Bank Syariah Indonesia (BSI)",
+        accountNumber: "7198889920",
+        accountHolder: "Ma'had Aly DDI Mangkoso - Digital & IT"
+      }
+    ],
+    contactPerson: {
+      name: "Admin IT Portal Ma'had Aly",
+      phone: "6281234567890"
+    },
+    isActive: true,
+    isFeatured: true,
+    createdAt: "2026-02-01"
+  },
+  {
+    id: "don-3",
+    slug: "orang-tua-angkat-mahasantri",
+    title: "Program Orang Tua Angkat Mahasantri (Beasiswa Takhassus Fiqh Mu'asarah)",
+    category: "orang_tua_asuh",
+    categoryLabel: "Orang Tua Angkat",
+    shortDesc: "Jadilah orang tua asuh bagi mahasantri pilihan dari pelosok Nusantara untuk membiayai kitab turats, asrama, dan konsumsi selama 4 tahun studi hingga munaqasyah.",
+    story: "Banyak mutakharrijin pesantren yang memiliki kecerdasan dan komitmen tinggi untuk menjadi fuqaha kontemporer namun terkendala kemampuan ekonomi keluarga. Melalui Program Orang Tua Angkat, para muhsinin dapat mengasuh satu atau beberapa mahasantri secara langsung. Setiap orang tua angkat akan menerima laporan perkembangan hafalan matan, nilai halaqah semester, dan risalah skripsi anak asuhnya secara berkala.",
+    targetAmount: 120000000,
+    collectedAmount: 78000000,
+    donorCount: 36,
+    deadline: "Terbuka Berkelanjutan",
+    imageUrl: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+    proposalUrl: "https://drive.google.com/file/d/1OrangTuaAngkatMahadAly/view?usp=sharing",
+    proposalName: "Buku_Panduan_Orang_Tua_Angkat_Mahasantri.pdf",
+    proposalSize: "3.1 MB",
+    bankAccounts: [
+      {
+        id: "bank-3-1",
+        bankName: "Bank Syariah Indonesia (BSI)",
+        accountNumber: "7198889938",
+        accountHolder: "Ma'had Aly DDI Mangkoso - Beasiswa Santri"
+      },
+      {
+        id: "bank-3-2",
+        bankName: "Bank Muamalat",
+        accountNumber: "8010091822",
+        accountHolder: "Ma'had Aly DDI Mangkoso"
+      }
+    ],
+    contactPerson: {
+      name: "Lajnah Beasiswa & Kesejahteraan Santri",
+      phone: "6281234567890"
+    },
+    isActive: true,
+    isFeatured: true,
+    createdAt: "2026-02-10"
+  },
+  {
+    id: "don-4",
+    slug: "donasi-operasional-sarana-mahad-aly",
+    title: "Infaq & Wakaf Sarana Prasarana Serta Operasional Ma'had Aly DDI Mangkoso",
+    category: "operasional_umum",
+    categoryLabel: "Infaq & Sarana Ma'had",
+    shortDesc: "Dukungan pengadaan kitab turats maktabah, sarana halaqah bahtsul masail, renovasi asrama mahasantri, dan operasional pengajaran masyaikh.",
+    story: "Ma'had Aly DDI Mangkoso menyelenggarakan pendidikan kader ulama dengan fasilitas asrama mukim penuh dan perpustakaan ribuan jilid kitab kuning. Partisipasi infaq jariyah kaum muslimin menjadi pondasi kokoh keberlangsungan transmisi keilmuan Islam yang moderat dan berkemajuan.",
+    targetAmount: 200000000,
+    collectedAmount: 115000000,
+    donorCount: 88,
+    deadline: "Terbuka Berkelanjutan",
+    imageUrl: "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=1200&q=80",
+    proposalUrl: "https://drive.google.com/file/d/1SaranaMahadAlyDDI/view?usp=sharing",
+    proposalName: "Profil_Sarana_Wakaf_MahadAly_2026.pdf",
+    proposalSize: "4.5 MB",
+    bankAccounts: [
+      {
+        id: "bank-4-1",
+        bankName: "Bank Syariah Indonesia (BSI)",
+        accountNumber: "7198889904",
+        accountHolder: "Ma'had Aly DDI Mangkoso - Infaq Sarana"
+      },
+      {
+        id: "bank-4-2",
+        bankName: "Bank Central Asia (BCA)",
+        accountNumber: "7925182901",
+        accountHolder: "Ma'had Aly DDI Mangkoso"
+      }
+    ],
+    contactPerson: {
+      name: "Bendahara Umum Ma'had Aly",
+      phone: "6281234567890"
+    },
+    isActive: true,
+    isFeatured: true,
+    createdAt: "2026-01-01"
+  }
+];
+
+// ══════════════════════════════════════════════════════════════
+// 11. LOG ANCAMAN KEAMANAN AWAL (SECURITY DEFENSE CENTER)
+// ══════════════════════════════════════════════════════════════
+export const INITIAL_SECURITY_THREATS: SecurityThreatLog[] = [
+  {
+    id: "threat-1",
+    timestamp: "8 Okt 2026, 21:15 WITA",
+    ip: "185.220.101.5",
+    threatType: "honeypot_trap",
+    severity: "high",
+    endpoint: "/wp-login.php",
+    details: "Automated vulnerability scanner probing for non-existent WordPress admin path.",
+    userAgent: "Mozilla/5.0 (compatible; NetcraftSurveyAgent/1.0)",
+    status: "blocked",
+    alertSent: true
+  },
+  {
+    id: "threat-2",
+    timestamp: "8 Okt 2026, 18:42 WITA",
+    ip: "45.154.255.88",
+    threatType: "brute_force",
+    severity: "critical",
+    endpoint: "/admin/login",
+    details: "Multiple failed authentication attempts (8 failures in 60s) blocked by rate-limit shield.",
+    userAgent: "python-requests/2.31.0",
+    status: "blocked",
+    alertSent: true
+  },
+  {
+    id: "threat-3",
+    timestamp: "7 Okt 2026, 23:10 WITA",
+    ip: "194.26.29.112",
+    threatType: "suspicious_scanner",
+    severity: "medium",
+    endpoint: "/.env",
+    details: "Unauthorized probe attempting to access environment configuration file.",
+    userAgent: "Go-http-client/1.1",
+    status: "blocked",
+    alertSent: true
+  }
+];

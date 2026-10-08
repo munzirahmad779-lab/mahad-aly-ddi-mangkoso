@@ -284,14 +284,26 @@ export default function ImageUploader({
         <div className="relative flex items-center gap-3 p-2.5 bg-stone-50 border border-stone-200 rounded-xl group">
           {/* Thumbnail Preview */}
           <div className="w-14 h-14 rounded-lg bg-stone-200 border border-stone-300 overflow-hidden flex-shrink-0 flex items-center justify-center relative">
-            <img
-              src={value}
-              alt="Preview"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = "none";
-              }}
-            />
+            {value.toLowerCase().includes(".pdf") ? (
+              <div className="w-full h-full bg-rose-50 text-rose-700 flex flex-col items-center justify-center font-bold text-xs">
+                <span className="text-base">📄</span>
+                <span className="text-[9px] font-mono font-bold">PDF</span>
+              </div>
+            ) : value.toLowerCase().match(/\.(doc|docx)$/i) ? (
+              <div className="w-full h-full bg-blue-50 text-blue-700 flex flex-col items-center justify-center font-bold text-xs">
+                <span className="text-base">📝</span>
+                <span className="text-[9px] font-mono font-bold">DOC</span>
+              </div>
+            ) : (
+              <img
+                src={value}
+                alt="Preview"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = "none";
+                }}
+              />
+            )}
             <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <a
                 href={value}

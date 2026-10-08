@@ -14,5 +14,8 @@
     "crons": [
       "0 0 */3 * *"
     ]
+  },
+  "vars": {
+    "NEXT_PUBLIC_GA_ID": "G-EBBP80BZWL"
   }
 }
