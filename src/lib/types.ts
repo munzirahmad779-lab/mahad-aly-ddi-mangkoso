@@ -420,6 +420,23 @@ export interface NavbarLink {
   children?: NavbarLink[];
 }
 
+export interface NavbarTopBarSettings {
+  isActive?: boolean;
+  hijriDateText?: string;
+  phone?: string;
+  email?: string;
+  announcementText?: string;
+  quickLinkText?: string;
+  quickLinkUrl?: string;
+}
+
+export interface NavbarTickerSettings {
+  isActive?: boolean;
+  badgeLabel?: string;
+  tickerItems?: { id: string; label: string; url: string }[];
+  showSearch?: boolean;
+}
+
 export interface NavbarSettings {
   logoUrl: string;
   brandTitle: string;
@@ -436,6 +453,8 @@ export interface NavbarSettings {
     isVisible?: boolean;
   };
   navLinks: NavbarLink[];
+  topBar?: NavbarTopBarSettings;
+  tickerBar?: NavbarTickerSettings;
 }
 
 export interface HeroMetricItem {

@@ -1137,7 +1137,27 @@ export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
     { id: "nav-6", label: "Warta", url: "/berita", order: 6, isActive: true },
     { id: "nav-7", label: "Infaq & Donasi", url: "/donasi", order: 7, isActive: true },
     { id: "nav-8", label: "Kirim Tulisan", url: "/kirim-tulisan", order: 8, isActive: true }
-  ]
+  ],
+  topBar: {
+    isActive: true,
+    hijriDateText: "Jum'at, 27 Rabi'ul Awwal 1448 H / 9 Oktober 2026",
+    phone: "(0421) 510-123 • WA: 0812-4234-xxxx",
+    email: "redaksi@mahadaly-ddimangkoso.my.id",
+    announcementText: "Penerimaan Mahasantri Baru (PMB) Marhalah Ula (M.1) Dibuka",
+    quickLinkText: "E-Library Turats",
+    quickLinkUrl: "/elibrary"
+  },
+  tickerBar: {
+    isActive: true,
+    badgeLabel: "Kajian Hangat",
+    showSearch: true,
+    tickerItems: [
+      { id: "t-1", label: "Tinjauan Fiqh Mu'asarah terhadap Transaksi Digital & AI", url: "/kategori/fiqh-muamalah" },
+      { id: "t-2", label: "Hukum Wakaf Uang Produktif dalam Mazhab Syafi'i", url: "/kategori/ushul-fiqh" },
+      { id: "t-3", label: "Halaqah Bahtsul Masail: Fiqh Lingkungan Hidup", url: "/bahtsul-masail" },
+      { id: "t-4", label: "Pendaftaran Beasiswa Penuh Kader Ulama Marhalah Ula", url: "/pmb" }
+    ]
+  }
 };
 
 export const INITIAL_HERO_SETTINGS: HeroSectionSettings = {

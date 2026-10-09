@@ -2104,14 +2104,14 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setNavbarSettings(INITIAL_NAVBAR_SETTINGS);
     localStorage.setItem("mahad_navbar_settings", JSON.stringify(INITIAL_NAVBAR_SETTINGS));
     addLog("Reset Header & Navbar ke Standar", "Header & Navbar", user);
-    try { supabase.from("site_content").upsert({ key: "header", value: INITIAL_NAVBAR_SETTINGS }, { onConflict: "key" }).then(); } catch (e) {}
+    syncContentToBackend("header", "layout", "Header & Navbar Settings", INITIAL_NAVBAR_SETTINGS);
   };
 
   const resetHeroToDefault = (user?: string) => {
     setHeroSettings(INITIAL_HERO_SETTINGS);
     localStorage.setItem("mahad_hero_settings", JSON.stringify(INITIAL_HERO_SETTINGS));
     addLog("Reset Hero & Metrik ke Standar", "Hero Section", user);
-    try { supabase.from("site_content").upsert({ key: "home.hero", value: INITIAL_HERO_SETTINGS }, { onConflict: "key" }).then(); } catch (e) {}
+    syncContentToBackend("home.hero", "home", "Hero Section Beranda", INITIAL_HERO_SETTINGS);
   };
 
   const resetHomeSectionsToDefault = (user?: string) => {
@@ -2242,16 +2242,24 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     try { supabase.from("site_settings").upsert({ id: "main", ...INITIAL_SETTINGS }, { onConflict: "id" }).then(); } catch (e) {}
   };
 
+  const syncContentToBackend = (key: string, group: string, label: string, value: any) => {
+    try {
+      fetch("/api/admin/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, group_name: group, label, value })
+      }).catch((err) => console.warn("Backend sync notice:", err));
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
+  };
+
   const updateNavbarSettings = (updated: Partial<NavbarSettings>) => {
     const next = { ...navbarSettings, ...updated };
     setNavbarSettings(next);
     localStorage.setItem("mahad_navbar_settings", JSON.stringify(next));
     addLog("Memperbarui Header & Navbar", "Pengaturan Header");
-    try {
-      supabase.from("site_content").upsert({ key: "header", value: next }, { onConflict: "key" }).then();
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    syncContentToBackend("header", "layout", "Header & Navbar Settings", next);
   };
 
   const updateHeroSettings = (updated: Partial<HeroSectionSettings>) => {
@@ -2259,33 +2267,21 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setHeroSettings(next);
     localStorage.setItem("mahad_hero_settings", JSON.stringify(next));
     addLog("Memperbarui Hero Section", "Banner Utama");
-    try {
-      supabase.from("site_content").upsert({ key: "home.hero", value: next }, { onConflict: "key" }).then();
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    syncContentToBackend("home.hero", "home", "Hero Section Beranda", next);
   };
 
   const updateHomeSections = (updated: HomeSectionConfigItem[]) => {
     setHomeSections(updated);
     localStorage.setItem("mahad_home_sections", JSON.stringify(updated));
     addLog("Memperbarui Urutan & Visibilitas Beranda", "Section Homepage");
-    try {
-      supabase.from("site_content").upsert({ key: "home_sections", value: updated }, { onConflict: "key" }).then();
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    syncContentToBackend("home_sections", "home", "Pengaturan Urutan Section Beranda", updated);
   };
 
   const updateEmailTemplates = (updated: EmailTemplateItem[]) => {
     setEmailTemplates(updated);
     localStorage.setItem("mahad_email_templates", JSON.stringify(updated));
     addLog("Memperbarui Template Email", "Notifikasi Resend");
-    try {
-      supabase.from("site_content").upsert({ key: "email_templates", value: updated }, { onConflict: "key" }).then();
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    syncContentToBackend("email_templates", "notifications", "Template Email Resend", updated);
   };
 
   const updateAboutPageContent = (updated: Partial<AboutPageContent>) => {
@@ -2293,11 +2289,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setAboutPageContent(next);
     localStorage.setItem("mahad_about_page_content", JSON.stringify(next));
     addLog("Memperbarui Narasi Halaman Tentang", "Profil & Sejarah");
-    try {
-      supabase.from("site_content").upsert({ key: "about_page", value: next }, { onConflict: "key" }).then();
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    syncContentToBackend("about_page", "profile", "Konten Halaman Tentang & Pendidikan", next);
   };
 
   const updatePageTexts = (updated: Partial<PageTextsSettings>) => {
@@ -2305,16 +2297,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setPageTexts(next);
     localStorage.setItem("mahad_page_texts", JSON.stringify(next));
     addLog("Memperbarui Narasi Teks Halaman Publik", "CMS Halaman");
-    try {
-      supabase.from("site_content").upsert({
-        key: "page_texts",
-        group_name: "content",
-        label: "Page Texts CMS",
-        value: next
-      }, { onConflict: "key" }).then();
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    syncContentToBackend("page_texts", "content", "Page Texts CMS", next);
   };
 
   // ── Donasi, Wakaf & Infaq Actions ──

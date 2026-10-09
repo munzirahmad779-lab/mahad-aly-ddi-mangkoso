@@ -6053,6 +6053,177 @@ export default function AdminPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Top Utility Bar Settings */}
+                  <div className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200/60 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-slate-900">📅 Bilah Atas (Top Utility Bar)</span>
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">Tier 1</span>
+                      </div>
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(headerForm.topBar?.isActive ?? true)}
+                          onChange={(e) =>
+                            setHeaderForm({
+                              ...headerForm,
+                              topBar: {
+                                ...headerForm.topBar,
+                                isActive: e.target.checked
+                              }
+                            })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                        <span className="ml-2 text-xs font-semibold text-slate-700">Tampilkan</span>
+                      </label>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-slate-600 mb-1 text-xs">Teks Kalender Hijriah &amp; Masehi</label>
+                        <input
+                          type="text"
+                          value={headerForm.topBar?.hijriDateText || ""}
+                          onChange={(e) =>
+                            setHeaderForm({
+                              ...headerForm,
+                              topBar: { ...headerForm.topBar, hijriDateText: e.target.value }
+                            })
+                          }
+                          placeholder="Jum'at, 27 Rabi'ul Awwal 1448 H / 9 Oktober 2026"
+                          className="w-full p-2 bg-white border rounded-lg text-xs"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-slate-600 mb-1 text-xs">Nomor Telepon / WhatsApp</label>
+                          <input
+                            type="text"
+                            value={headerForm.topBar?.phone || ""}
+                            onChange={(e) =>
+                              setHeaderForm({
+                                ...headerForm,
+                                topBar: { ...headerForm.topBar, phone: e.target.value }
+                              })
+                            }
+                            placeholder="(0421) 510-123 • WA: 0812-4234-xxxx"
+                            className="w-full p-2 bg-white border rounded-lg text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-600 mb-1 text-xs">Email Resmi Sekretariat</label>
+                          <input
+                            type="text"
+                            value={headerForm.topBar?.email || ""}
+                            onChange={(e) =>
+                              setHeaderForm({
+                                ...headerForm,
+                                topBar: { ...headerForm.topBar, email: e.target.value }
+                              })
+                            }
+                            placeholder="redaksi@mahadaly-ddimangkoso.my.id"
+                            className="w-full p-2 bg-white border rounded-lg text-xs font-mono"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-slate-600 mb-1 text-xs">Label Link Cepat</label>
+                          <input
+                            type="text"
+                            value={headerForm.topBar?.quickLinkText || ""}
+                            onChange={(e) =>
+                              setHeaderForm({
+                                ...headerForm,
+                                topBar: { ...headerForm.topBar, quickLinkText: e.target.value }
+                              })
+                            }
+                            placeholder="E-Library Turats"
+                            className="w-full p-2 bg-white border rounded-lg text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-600 mb-1 text-xs">URL Link Cepat</label>
+                          <input
+                            type="text"
+                            value={headerForm.topBar?.quickLinkUrl || ""}
+                            onChange={(e) =>
+                              setHeaderForm({
+                                ...headerForm,
+                                topBar: { ...headerForm.topBar, quickLinkUrl: e.target.value }
+                              })
+                            }
+                            placeholder="/elibrary"
+                            className="w-full p-2 bg-white border rounded-lg text-xs font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sub-Ticker & Live Search Settings */}
+                  <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200/60 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-slate-900">⚡ Bilah Ticker &amp; Live Search</span>
+                        <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Tier 3</span>
+                      </div>
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(headerForm.tickerBar?.isActive ?? true)}
+                          onChange={(e) =>
+                            setHeaderForm({
+                              ...headerForm,
+                              tickerBar: {
+                                ...headerForm.tickerBar,
+                                isActive: e.target.checked
+                              }
+                            })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                        <span className="ml-2 text-xs font-semibold text-slate-700">Tampilkan</span>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-slate-600 mb-1 text-xs">Label Badge Ticker</label>
+                        <input
+                          type="text"
+                          value={headerForm.tickerBar?.badgeLabel || ""}
+                          onChange={(e) =>
+                            setHeaderForm({
+                              ...headerForm,
+                              tickerBar: { ...headerForm.tickerBar, badgeLabel: e.target.value }
+                            })
+                          }
+                          placeholder="Kajian Hangat"
+                          className="w-full p-2 bg-white border rounded-lg text-xs"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between pt-5">
+                        <span className="text-xs text-slate-700 font-semibold">Tampilkan Kolom Pencarian</span>
+                        <label className="inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(headerForm.tickerBar?.showSearch ?? true)}
+                            onChange={(e) =>
+                              setHeaderForm({
+                                ...headerForm,
+                                tickerBar: { ...headerForm.tickerBar, showSearch: e.target.checked }
+                              })
+                            }
+                            className="sr-only peer"
+                          />
+                          <div className="w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
