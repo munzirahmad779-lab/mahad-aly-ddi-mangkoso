@@ -1556,7 +1556,7 @@ export default function AdminPage() {
 
   // 2. Full Admin Dashboard
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row pt-36 sm:pt-40 lg:pt-44">
+    <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row pt-24 md:pt-[134px]">
       
       {/* 📐 SIDEBAR NAVIGATION */}
       <aside

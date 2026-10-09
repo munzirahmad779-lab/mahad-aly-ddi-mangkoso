@@ -193,18 +193,18 @@ export default function Navbar() {
       <nav className="bg-mahad-green-dark/98 backdrop-blur-md text-white border-b border-emerald-900 transition-shadow relative z-40">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-4 overflow-visible">
           
-          {/* BRAND & LOGO (Strictly Immune to Overlap) */}
+          {/* BRAND & LOGO (Prominent Official Emblem) */}
           <Link
             href="/"
             onClick={closeMenu}
-            className="flex items-center gap-2.5 sm:gap-3 group shrink-0 select-none z-20 relative mr-2 lg:mr-4 max-w-[220px] sm:max-w-xs xl:max-w-sm"
+            className="flex items-center gap-2.5 sm:gap-3.5 group shrink-0 min-w-fit select-none z-20 relative mr-2 lg:mr-4"
           >
-            <div className="w-10 h-10 sm:w-11 sm:h-11 relative shrink-0 drop-shadow-md group-hover:scale-105 transition-transform duration-200">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 xl:w-13 xl:h-13 relative shrink-0 drop-shadow-md group-hover:scale-105 transition-transform duration-200">
               <Image
                 src={logoUrl}
                 alt="Logo Ma'had Aly DDI Mangkoso"
-                width={44}
-                height={44}
+                width={52}
+                height={52}
                 className="w-full h-full object-contain"
                 priority
               />
@@ -213,7 +213,7 @@ export default function Navbar() {
               <span className="block font-serif font-bold text-base sm:text-lg xl:text-xl text-white group-hover:text-mahad-gold transition-colors whitespace-nowrap tracking-tight">
                 {brandTitle}
               </span>
-              <span className="block text-[10px] sm:text-[11px] font-semibold text-mahad-gold tracking-wider uppercase whitespace-nowrap">
+              <span className="block text-[10px] sm:text-xs font-semibold text-mahad-gold tracking-wider uppercase whitespace-nowrap">
                 {brandSubtitle}
               </span>
             </div>
