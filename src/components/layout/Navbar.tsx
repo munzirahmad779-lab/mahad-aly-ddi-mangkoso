@@ -781,7 +781,7 @@ export default function Navbar() {
           {/* Mobile Contact Footer */}
           <div className="pt-4 border-t border-emerald-800/80 text-xs text-emerald-300/80 space-y-1">
             <p className="flex items-center gap-1.5 text-mahad-gold font-medium">
-              <span>📅</span> {hijriDate}
+              <span>📅</span> {autoHijriDate}
             </p>
             {hotlinePhone && (
               <p className="flex items-center gap-1.5">
