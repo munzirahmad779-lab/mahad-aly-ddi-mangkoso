@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
 import { INITIAL_NAVBAR_SETTINGS } from "@/lib/mock-data";
 import { NavbarLink } from "@/lib/types";
+import { getRealtimeHijriDate } from "@/lib/hijri-calendar";
 
 export default function Navbar() {
   const { categories, navbarSettings } = useArticles();
@@ -68,6 +69,16 @@ export default function Navbar() {
     }
   }, [isSearchExpanded]);
 
+  // Automatic Real-Time Hijri Date (NU & Kemenag RI MABIMS Hisab/Rukyat)
+  const [autoHijriDate, setAutoHijriDate] = useState<string>(() => {
+    return getRealtimeHijriDate(new Date()).fullFormatted;
+  });
+
+  useEffect(() => {
+    const res = getRealtimeHijriDate(new Date());
+    setAutoHijriDate(res.fullFormatted);
+  }, []);
+
   // Branding & Configuration from Context / Admin
   const logoUrl = navbarSettings?.logoUrl || "/image_067524.png";
   const brandTitle = navbarSettings?.brandTitle || "Ma'had Aly";
@@ -76,7 +87,6 @@ export default function Navbar() {
   // Tier 1: Top Bar Config
   const topBarConfig = navbarSettings?.topBar ?? INITIAL_NAVBAR_SETTINGS.topBar;
   const isTopBarActive = topBarConfig?.isActive !== false;
-  const hijriDate = topBarConfig?.hijriDateText || "Jum'at, 27 Rabi'ul Awwal 1448 H / 9 Oktober 2026";
   const hotlinePhone = topBarConfig?.phone || "(0421) 510-123 • WA: 0812-4234-xxxx";
   const hotlineEmail = topBarConfig?.email || "redaksi@mahadaly-ddimangkoso.my.id";
   const quickLinkText = topBarConfig?.quickLinkText || "E-Library Turats";
@@ -131,7 +141,7 @@ export default function Navbar() {
               <span className="inline-flex items-center gap-1.5 text-mahad-gold font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-mahad-gold animate-pulse"></span>
                 <span>📅</span>
-                <span>{hijriDate}</span>
+                <span>{autoHijriDate}</span>
               </span>
               {topBarConfig?.announcementText && (
                 <span className="hidden md:inline text-emerald-300/80 border-l border-emerald-800/80 pl-2 truncate max-w-md">
