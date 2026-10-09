@@ -265,7 +265,7 @@ export default function KirimTulisanPage() {
   };
 
   return (
-    <main className="pt-28 pb-20 bg-slate-50 min-h-screen">
+    <main className="pt-36 md:pt-40 pb-20 bg-slate-50 min-h-screen">
       {/* Header Halaman */}
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center space-y-3">

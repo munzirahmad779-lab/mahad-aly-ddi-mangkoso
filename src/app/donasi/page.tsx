@@ -39,7 +39,7 @@ export default function DonasiPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       {/* Header Banner */}
-      <section className="relative bg-gradient-to-br from-emerald-950 via-emerald-900 to-slate-900 text-white pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-emerald-950 via-emerald-900 to-slate-900 text-white pt-36 md:pt-40 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] opacity-15"></div>
         
         <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">

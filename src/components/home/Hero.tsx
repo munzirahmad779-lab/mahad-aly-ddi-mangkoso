@@ -21,7 +21,7 @@ export default function Hero() {
   const metrics = heroSettings?.metrics || [];
 
   return (
-    <header className="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-mahad-green-dark text-white overflow-hidden flex items-center min-h-[90vh]">
+    <header className="relative pt-44 pb-20 md:pt-52 md:pb-28 bg-mahad-green-dark text-white overflow-hidden flex items-center min-h-[90vh]">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-islamic-pattern opacity-60 pointer-events-none"></div>
 

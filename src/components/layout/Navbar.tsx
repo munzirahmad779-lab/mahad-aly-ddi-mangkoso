@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useEffect, useRef, FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -17,6 +17,9 @@ export default function Navbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [desktopDropdown, setDesktopDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const safeCategories = Array.isArray(categories) ? categories : [];
   const fiqhCategories = safeCategories.filter((c) => c.type !== "opini");
@@ -27,6 +30,7 @@ export default function Navbar() {
     setIsOpen(false);
     setActiveDropdown(null);
     setDesktopDropdown(null);
+    setIsSearchExpanded(false);
   };
 
   const toggleDropdown = (id: string) => {
@@ -37,6 +41,18 @@ export default function Navbar() {
     setDesktopDropdown((prev) => (prev === id ? null : id));
   };
 
+  // Close desktop dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+        setDesktopDropdown(null);
+        setIsSearchExpanded(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -44,6 +60,13 @@ export default function Navbar() {
       closeMenu();
     }
   };
+
+  // Focus search input when expanded on lg screens
+  useEffect(() => {
+    if (isSearchExpanded && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchExpanded]);
 
   // Branding & Configuration from Context / Admin
   const logoUrl = navbarSettings?.logoUrl || "/image_067524.png";
@@ -63,9 +86,10 @@ export default function Navbar() {
   const tickerConfig = navbarSettings?.tickerBar ?? INITIAL_NAVBAR_SETTINGS.tickerBar;
   const isTickerActive = tickerConfig?.isActive !== false;
   const tickerBadge = tickerConfig?.badgeLabel || "Kajian Hangat";
-  const tickerItems = tickerConfig?.tickerItems && tickerConfig.tickerItems.length > 0
-    ? tickerConfig.tickerItems
-    : INITIAL_NAVBAR_SETTINGS.tickerBar?.tickerItems || [];
+  const tickerItems =
+    tickerConfig?.tickerItems && tickerConfig.tickerItems.length > 0
+      ? tickerConfig.tickerItems
+      : INITIAL_NAVBAR_SETTINGS.tickerBar?.tickerItems || [];
   const showSearch = tickerConfig?.showSearch !== false;
 
   // Use dynamic navLinks from context, fallback to INITIAL_NAVBAR_SETTINGS if empty
@@ -74,7 +98,8 @@ export default function Navbar() {
       ? navbarSettings.navLinks
       : INITIAL_NAVBAR_SETTINGS.navLinks;
 
-  // Filter ONLY active links (if admin deactivated a link, it's immediately removed!)
+  // Filter ONLY active links (excludes any link with isActive === false)
+  // Also clean out redundant Kirim Tulisan if ctaButton is also Kirim Tulisan
   const navLinks = rawNavLinks
     .filter((link) => link.isActive !== false)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -84,24 +109,25 @@ export default function Navbar() {
     return pathname.startsWith(url.split("#")[0]);
   };
 
-  // Smart Desktop Overflow Logic:
-  // If links <= 7, all render directly as standalone primary items (e.g. Infaq & Donasi becomes primary).
-  // Overflow "Lainnya" ONLY appears if active links exceed 7!
-  const MAX_DESKTOP_PRIMARY = navLinks.length <= 7 ? 7 : 6;
+  // Smart Desktop Standalone Logic:
+  // All active links up to 8 items will ALWAYS render as primary standalone buttons!
+  // This guarantees "Infaq & Donasi" (and any added 8th link) is ALWAYS visible in the main header bar.
+  // "Lainnya" will ONLY appear if the admin adds 9 or more active links!
+  const MAX_DESKTOP_PRIMARY = 8;
   const primaryLinks = navLinks.slice(0, MAX_DESKTOP_PRIMARY);
   const overflowLinks = navLinks.slice(MAX_DESKTOP_PRIMARY);
   const hasOverflow = overflowLinks.length > 0;
-  const isAnyOverflowActive = overflowLinks.some((l) =>
-    isLinkActive(l.url) || l.children?.some((c) => isLinkActive(c.url))
+  const isAnyOverflowActive = overflowLinks.some(
+    (l) => isLinkActive(l.url) || l.children?.some((c) => isLinkActive(c.url))
   );
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 transition-all duration-200 shadow-md">
+    <header ref={headerRef} className="fixed top-0 inset-x-0 z-50 transition-all duration-200 shadow-md">
       {/* ══════════════════════════════════════════════════════════════
           TIER 1: TOP UTILITY BAR (Kalender Hijriah & Hotline Kontak)
          ══════════════════════════════════════════════════════════════ */}
       {isTopBarActive && (
-        <div className="bg-[#032e22] text-emerald-200 border-b border-emerald-900/60 text-[11px] py-1.5 px-3 sm:px-6 lg:px-8 select-none">
+        <div className="bg-[#032e22] text-emerald-200 border-b border-emerald-900/60 text-[11px] py-1 px-3 sm:px-6 lg:px-8 select-none relative z-30">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             {/* Kiri: Tanggal Hijriah & Masehi */}
             <div className="flex items-center gap-2 truncate">
@@ -157,21 +183,21 @@ export default function Navbar() {
       {/* ══════════════════════════════════════════════════════════════
           TIER 2: MAIN EMERALD NAVBAR
          ══════════════════════════════════════════════════════════════ */}
-      <nav className="bg-mahad-green-dark/98 backdrop-blur-md text-white border-b border-emerald-900 transition-shadow">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2 sm:gap-4">
+      <nav className="bg-mahad-green-dark/98 backdrop-blur-md text-white border-b border-emerald-900 transition-shadow relative z-40">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-4">
           
           {/* BRAND & LOGO (Immune to shrinking or wrapping) */}
           <Link
             href="/"
             onClick={closeMenu}
-            className="flex items-center gap-2.5 sm:gap-3.5 group shrink-0 min-w-fit select-none"
+            className="flex items-center gap-2.5 sm:gap-3 group shrink-0 min-w-fit select-none"
           >
-            <div className="w-10 h-10 sm:w-12 sm:h-12 relative shrink-0 drop-shadow-md group-hover:scale-105 transition-transform duration-200">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 relative shrink-0 drop-shadow-md group-hover:scale-105 transition-transform duration-200">
               <Image
                 src={logoUrl}
                 alt="Logo Ma'had Aly DDI Mangkoso"
-                width={48}
-                height={48}
+                width={44}
+                height={44}
                 className="w-full h-full object-contain"
                 priority
               />
@@ -186,8 +212,8 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* DESKTOP NAVIGATION (Responsive Spacing + Smart "Lainnya ▾" Overflow) */}
-          <div className="hidden lg:flex items-center justify-end gap-1.5 xl:gap-3 2xl:gap-4 text-xs xl:text-[13px] font-medium flex-1 min-w-0">
+          {/* DESKTOP NAVIGATION (Primary standalone links) */}
+          <div className="hidden lg:flex items-center justify-end gap-1 xl:gap-2.5 2xl:gap-3 text-xs xl:text-[13px] font-medium flex-1 min-w-0">
             {primaryLinks.map((link) => {
               const hasChildren = link.children && link.children.length > 0;
               const isKajianMenu =
@@ -206,31 +232,46 @@ export default function Navbar() {
                         toggleDesktopDropdown(link.id);
                       }}
                       className={`flex items-center gap-1 px-2 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-                        isLinkActive(link.url) || link.children?.some((c) => isLinkActive(c.url)) || isDropdownOpen
+                        isLinkActive(link.url) ||
+                        link.children?.some((c) => isLinkActive(c.url)) ||
+                        isDropdownOpen
                           ? "text-mahad-gold font-bold bg-white/10"
                           : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
                       }`}
                     >
                       <span>{link.label}</span>
-                      <svg className={`w-3.5 h-3.5 transition-transform ${isDropdownOpen ? "rotate-180" : "group-hover:rotate-180"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className={`w-3.5 h-3.5 transition-transform ${
+                          isDropdownOpen ? "rotate-180" : "group-hover:rotate-180"
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
-                    <div className={`absolute left-0 top-full ${isDropdownOpen ? "block" : "hidden group-hover:block"} w-60 bg-mahad-green-dark border border-emerald-800 rounded-xl shadow-2xl py-2 z-50 animate-fadeIn`}>
-                      {link.children?.filter((c) => c.isActive !== false).map((child) => (
-                        <Link
-                          key={child.id}
-                          href={child.url}
-                          onClick={closeMenu}
-                          className={`block px-4 py-2 text-xs transition ${
-                            isLinkActive(child.url)
-                              ? "bg-white/10 text-mahad-gold font-bold"
-                              : "hover:bg-white/10 hover:text-mahad-gold text-emerald-100"
-                          }`}
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
+                    <div
+                      className={`absolute left-0 top-full mt-1.5 ${
+                        isDropdownOpen ? "block" : "hidden group-hover:block"
+                      } w-60 bg-[#064e3b] border border-emerald-700/80 rounded-xl shadow-2xl py-2 z-[70] backdrop-blur-md animate-fadeIn`}
+                    >
+                      {link.children
+                        ?.filter((c) => c.isActive !== false)
+                        .map((child) => (
+                          <Link
+                            key={child.id}
+                            href={child.url}
+                            onClick={closeMenu}
+                            className={`block px-4 py-2 text-xs transition ${
+                              isLinkActive(child.url)
+                                ? "bg-white/10 text-mahad-gold font-bold"
+                                : "hover:bg-white/10 hover:text-mahad-gold text-emerald-100"
+                            }`}
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
                     </div>
                   </div>
                 );
@@ -254,15 +295,30 @@ export default function Navbar() {
                       }`}
                     >
                       <span>{link.label}</span>
-                      <svg className={`w-3.5 h-3.5 transition-transform ${isKajianOpen ? "rotate-180" : "group-hover:rotate-180"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className={`w-3.5 h-3.5 transition-transform ${
+                          isKajianOpen ? "rotate-180" : "group-hover:rotate-180"
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
-                    <div className={`absolute left-0 top-full ${isKajianOpen ? "block" : "hidden group-hover:block"} w-72 bg-mahad-green-dark border border-emerald-800 rounded-xl shadow-2xl py-2 z-50 max-h-96 overflow-y-auto divide-y divide-emerald-800/60 animate-fadeIn`}>
+                    <div
+                      className={`absolute left-0 top-full mt-1.5 ${
+                        isKajianOpen ? "block" : "hidden group-hover:block"
+                      } w-72 bg-[#064e3b] border border-emerald-700/80 rounded-xl shadow-2xl py-2 z-[70] max-h-96 overflow-y-auto divide-y divide-emerald-800/60 backdrop-blur-md animate-fadeIn`}
+                    >
                       <div className="py-1">
                         <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold flex items-center justify-between">
                           <span>🏛️ Kajian Fiqh Mu&apos;asarah</span>
-                          <Link href="/kategori" onClick={closeMenu} className="text-[10px] text-emerald-200 hover:text-white underline">
+                          <Link
+                            href="/kategori"
+                            onClick={closeMenu}
+                            className="text-[10px] text-emerald-200 hover:text-white underline"
+                          >
                             Semua →
                           </Link>
                         </div>
@@ -281,7 +337,11 @@ export default function Navbar() {
                         <div className="py-1">
                           <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold flex items-center justify-between">
                             <span>✍️ Opini &amp; Refleksi Santri</span>
-                            <Link href="/kategori" onClick={closeMenu} className="text-[10px] text-emerald-200 hover:text-white underline">
+                            <Link
+                              href="/kategori"
+                              onClick={closeMenu}
+                              className="text-[10px] text-emerald-200 hover:text-white underline"
+                            >
                               Semua →
                             </Link>
                           </div>
@@ -302,7 +362,7 @@ export default function Navbar() {
                 );
               }
 
-              // 3. Regular Top-Level Navigation Link
+              // 3. Regular Top-Level Navigation Link (including Infaq & Donasi!)
               return (
                 <Link
                   key={link.id}
@@ -319,7 +379,7 @@ export default function Navbar() {
               );
             })}
 
-            {/* 4. Sleek "Lainnya ▾" Dropdown (Only appears if active links exceed threshold!) */}
+            {/* 4. Sleek "Lainnya ▾" Dropdown (Only appears if active links exceed 8!) */}
             {hasOverflow && (
               <div className="relative group shrink-0">
                 <button
@@ -338,12 +398,23 @@ export default function Navbar() {
                   <span className="text-[10px] bg-mahad-gold/20 text-mahad-gold px-1.5 py-0.2 rounded-full font-bold ml-0.5">
                     +{overflowLinks.length}
                   </span>
-                  <svg className={`w-3.5 h-3.5 transition-transform ${desktopDropdown === "overflow" ? "rotate-180" : "group-hover:rotate-180"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className={`w-3.5 h-3.5 transition-transform ${
+                      desktopDropdown === "overflow" ? "rotate-180" : "group-hover:rotate-180"
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
-                <div className={`absolute right-0 top-full ${desktopDropdown === "overflow" ? "block" : "hidden group-hover:block"} w-64 bg-mahad-green-dark border border-emerald-800 rounded-2xl shadow-2xl py-2 z-50 animate-fadeIn`}>
+                <div
+                  className={`absolute right-0 top-full mt-1.5 ${
+                    desktopDropdown === "overflow" ? "block" : "hidden group-hover:block"
+                  } w-64 bg-[#064e3b] border border-emerald-700/80 rounded-2xl shadow-2xl py-2 z-[70] backdrop-blur-md animate-fadeIn`}
+                >
                   <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold border-b border-emerald-800/80 mb-1">
                     Menu Tambahan
                   </div>
@@ -365,20 +436,22 @@ export default function Navbar() {
                       </Link>
                       {link.children && link.children.length > 0 && (
                         <div className="pl-4 pr-1 py-1 space-y-0.5 bg-black/20 rounded-lg my-1">
-                          {link.children.filter((c) => c.isActive !== false).map((child) => (
-                            <Link
-                              key={child.id}
-                              href={child.url}
-                              onClick={closeMenu}
-                              className={`block px-3 py-1.5 rounded-lg text-[11px] transition ${
-                                isLinkActive(child.url)
-                                  ? "text-mahad-gold font-bold"
-                                  : "text-emerald-200 hover:text-mahad-gold"
-                              }`}
-                            >
-                              {child.label}
-                            </Link>
-                          ))}
+                          {link.children
+                            .filter((c) => c.isActive !== false)
+                            .map((child) => (
+                              <Link
+                                key={child.id}
+                                href={child.url}
+                                onClick={closeMenu}
+                                className={`block px-3 py-1.5 rounded-lg text-[11px] transition ${
+                                  isLinkActive(child.url)
+                                    ? "text-mahad-gold font-bold"
+                                    : "text-emerald-200 hover:text-mahad-gold"
+                                }`}
+                              >
+                                {child.label}
+                              </Link>
+                            ))}
                         </div>
                       )}
                     </div>
@@ -388,17 +461,79 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* ACTION BUTTON & MOBILE HAMBURGER */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* ACTION BUTTON & SEARCH (Relocated cleanly to prevent any overlap!) */}
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            {/* Desktop Live Search Pill / Icon */}
+            {showSearch && (
+              <div className="hidden lg:flex items-center">
+                {/* Compact Search Form for XL screens */}
+                <form onSubmit={handleSearchSubmit} className="relative hidden xl:block w-36 2xl:w-48">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Cari kajian..."
+                    className="w-full bg-[#032e22]/90 border border-emerald-700/60 rounded-full py-1.5 pl-3 pr-8 text-xs text-white placeholder-emerald-300/60 focus:outline-none focus:border-mahad-gold focus:ring-1 focus:ring-mahad-gold transition"
+                  />
+                  <button
+                    type="submit"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-emerald-300 hover:text-mahad-gold transition"
+                    title="Cari"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
+                </form>
+
+                {/* Search Toggle Icon for LG screens */}
+                <div className="xl:hidden relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-emerald-200 hover:text-mahad-gold transition"
+                    title="Cari Kajian & Artikel"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
+                  {isSearchExpanded && (
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-[#064e3b] border border-emerald-700/80 rounded-2xl shadow-2xl p-2 z-[70] animate-fadeIn">
+                      <form onSubmit={handleSearchSubmit} className="relative">
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Cari kajian, fatwa, artikel..."
+                          className="w-full bg-[#032e22] border border-emerald-600/70 rounded-xl py-2 pl-3 pr-8 text-xs text-white placeholder-emerald-300/60 focus:outline-none focus:border-mahad-gold"
+                        />
+                        <button
+                          type="submit"
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mahad-gold"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                        </button>
+                      </form>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* High-Contrast Action Button (Kirim Tulisan / PMB Online) */}
             {navbarSettings?.ctaButton?.isActive !== false && navbarSettings?.ctaButton?.isVisible !== false && (
               <Link
-                href={navbarSettings?.ctaButton?.url || "/pmb"}
+                href={navbarSettings?.ctaButton?.url || "/kirim-tulisan"}
                 className="hidden lg:inline-flex items-center gap-1.5 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-xs px-3.5 xl:px-4 py-2 xl:py-2.5 rounded-full shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 whitespace-nowrap shrink-0"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
-                <span>{navbarSettings?.ctaButton?.text || navbarSettings?.ctaButton?.label || "PMB Online"}</span>
+                <span>{navbarSettings?.ctaButton?.text || navbarSettings?.ctaButton?.label || "Kirim Tulisan"}</span>
               </Link>
             )}
 
@@ -425,18 +560,18 @@ export default function Navbar() {
       </nav>
 
       {/* ══════════════════════════════════════════════════════════════
-          TIER 3: SUB-TICKER & LIVE SEARCH BAR (Desktop & Tablet)
+          TIER 3: KAJIAN & WARTA TICKER BAR (Full-width, zero overlap risk!)
          ══════════════════════════════════════════════════════════════ */}
       {isTickerActive && (
-        <div className="bg-[#043d2e] text-emerald-100 border-b border-emerald-800/80 text-xs py-1.5 px-3 sm:px-6 lg:px-8 shadow-inner hidden md:block">
+        <div className="bg-[#043d2e] text-emerald-100 border-b border-emerald-800/80 text-xs py-1.5 px-3 sm:px-6 lg:px-8 shadow-inner hidden md:block select-none relative z-20">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            {/* Kiri: Ticker Kajian Hangat */}
+            {/* Ticker Kajian Hangat */}
             <div className="flex items-center gap-2.5 flex-1 min-w-0 overflow-hidden">
               <span className="bg-mahad-gold text-mahad-green-dark text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-sm">
                 <span>⚡</span>
                 <span>{tickerBadge}</span>
               </span>
-              <div className="flex items-center gap-4 text-xs truncate">
+              <div className="flex items-center gap-5 text-xs truncate">
                 {tickerItems.map((item, idx) => (
                   <Link
                     key={item.id || idx}
@@ -450,27 +585,14 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Kanan: Instant Live Search Bar */}
-            {showSearch && (
-              <form onSubmit={handleSearchSubmit} className="relative shrink-0 w-52 lg:w-64">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari kajian, fatwa, artikel..."
-                  className="w-full bg-emerald-950/80 border border-emerald-700/60 rounded-full py-1 pl-3 pr-8 text-[11px] text-white placeholder-emerald-300/60 focus:outline-none focus:border-mahad-gold focus:ring-1 focus:ring-mahad-gold transition"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-emerald-300 hover:text-mahad-gold transition"
-                  title="Cari"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </button>
-              </form>
-            )}
+            {/* Kanan: Link Cepat ke Indeks Artikel */}
+            <Link
+              href="/artikel"
+              className="text-[11px] text-emerald-300 hover:text-mahad-gold font-medium shrink-0 hidden lg:inline-flex items-center gap-1 transition"
+            >
+              <span>Indeks Kajian</span>
+              <span>→</span>
+            </Link>
           </div>
         </div>
       )}
@@ -521,22 +643,31 @@ export default function Navbar() {
                     className="w-full flex items-center justify-between py-2 px-3 rounded-lg text-emerald-100 hover:bg-white/5 hover:text-mahad-gold"
                   >
                     <span>{link.label}</span>
-                    <svg className={`w-4 h-4 transform transition-transform ${isExpanded ? "rotate-180 text-mahad-gold" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className={`w-4 h-4 transform transition-transform ${
+                        isExpanded ? "rotate-180 text-mahad-gold" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
                   {isExpanded && (
                     <div className="pl-6 py-1 space-y-1 bg-black/20 rounded-lg text-xs">
-                      {link.children?.filter((c) => c.isActive !== false).map((child) => (
-                        <Link
-                          key={child.id}
-                          href={child.url}
-                          onClick={closeMenu}
-                          className="block py-1.5 text-emerald-200 hover:text-mahad-gold"
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
+                      {link.children
+                        ?.filter((c) => c.isActive !== false)
+                        .map((child) => (
+                          <Link
+                            key={child.id}
+                            href={child.url}
+                            onClick={closeMenu}
+                            className="block py-1.5 text-emerald-200 hover:text-mahad-gold"
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
                     </div>
                   )}
                 </div>
@@ -554,7 +685,14 @@ export default function Navbar() {
                     className="w-full flex items-center justify-between py-2 px-3 rounded-lg text-emerald-100 hover:bg-white/5 hover:text-mahad-gold"
                   >
                     <span>{link.label}</span>
-                    <svg className={`w-4 h-4 transform transition-transform ${isExpanded ? "rotate-180 text-mahad-gold" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className={`w-4 h-4 transform transition-transform ${
+                        isExpanded ? "rotate-180 text-mahad-gold" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
@@ -619,11 +757,11 @@ export default function Navbar() {
           {navbarSettings?.ctaButton?.isActive !== false && navbarSettings?.ctaButton?.isVisible !== false && (
             <div className="pt-3">
               <Link
-                href={navbarSettings?.ctaButton?.url || "/pmb"}
+                href={navbarSettings?.ctaButton?.url || "/kirim-tulisan"}
                 onClick={closeMenu}
                 className="w-full py-3 bg-mahad-gold text-mahad-green-dark font-bold rounded-xl shadow flex items-center justify-center gap-2 text-center"
               >
-                <span>{navbarSettings?.ctaButton?.text || navbarSettings?.ctaButton?.label || "PMB Online"}</span>
+                <span>{navbarSettings?.ctaButton?.text || navbarSettings?.ctaButton?.label || "Kirim Tulisan"}</span>
               </Link>
             </div>
           )}

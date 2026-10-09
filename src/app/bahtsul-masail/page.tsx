@@ -47,7 +47,7 @@ export default function BahtsulMasailPage() {
   };
 
   return (
-    <main className="pt-24 pb-20 bg-slate-50 min-h-screen">
+    <main className="pt-32 md:pt-36 pb-20 bg-slate-50 min-h-screen">
       {/* Hero Section */}
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">

@@ -335,6 +335,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         try {
           const parsedNav = JSON.parse(savedNavbar);
           if (parsedNav && Array.isArray(parsedNav.navLinks)) {
+            parsedNav.navLinks = parsedNav.navLinks.filter(
+              (l: any) => !(l.url === "/kirim-tulisan" && l.label?.toLowerCase().includes("kirim tulisan"))
+            );
             if (!parsedNav.navLinks.some((l: any) => l.url === "/donasi")) {
               parsedNav.navLinks.push({
                 id: "nav-donasi",
@@ -647,7 +650,24 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           .eq("key", "header")
           .single();
         if (headerData?.value) {
-          setNavbarSettings((prev) => ({ ...prev, ...headerData.value }));
+          setNavbarSettings((prev) => {
+            const next = { ...prev, ...headerData.value };
+            if (Array.isArray(next.navLinks)) {
+              next.navLinks = next.navLinks.filter(
+                (l: any) => !(l.url === "/kirim-tulisan" && l.label?.toLowerCase().includes("kirim tulisan"))
+              );
+              if (!next.navLinks.some((l: any) => l.url === "/donasi")) {
+                next.navLinks.push({
+                  id: "nav-donasi",
+                  label: "Infaq & Donasi",
+                  url: "/donasi",
+                  order: next.navLinks.length + 1,
+                  isActive: true
+                });
+              }
+            }
+            return next;
+          });
         }
 
         // Fetch Hero from site_content

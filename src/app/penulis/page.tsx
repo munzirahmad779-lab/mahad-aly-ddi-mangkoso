@@ -110,7 +110,7 @@ export default function PenulisDashboardPage() {
   };
 
   return (
-    <main className="pt-28 pb-20 bg-slate-50 min-h-screen">
+    <main className="pt-36 md:pt-40 pb-20 bg-slate-50 min-h-screen">
       {/* Header Bar */}
       <section className="bg-mahad-green-dark text-white py-12 bg-islamic-pattern">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">

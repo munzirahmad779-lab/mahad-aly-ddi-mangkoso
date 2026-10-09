@@ -36,7 +36,7 @@ export default function SkripsiListPage() {
   });
 
   return (
-    <main className="pt-24 pb-20 bg-slate-50 min-h-screen">
+    <main className="pt-32 md:pt-36 pb-20 bg-slate-50 min-h-screen">
       {/* Header Repository */}
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

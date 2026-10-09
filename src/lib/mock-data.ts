@@ -1099,8 +1099,8 @@ export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
   isSticky: true,
   isTransparent: false,
   ctaButton: {
-    text: "PMB Online",
-    url: "/pmb",
+    text: "Kirim Tulisan",
+    url: "/kirim-tulisan",
     isActive: true
   },
   navLinks: [
@@ -1135,8 +1135,7 @@ export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
     { id: "nav-4", label: "Mimbar Fiqh", url: "/artikel", order: 4, isActive: true },
     { id: "nav-5", label: "Skripsi", url: "/skripsi", order: 5, isActive: true },
     { id: "nav-6", label: "Warta", url: "/berita", order: 6, isActive: true },
-    { id: "nav-7", label: "Infaq & Donasi", url: "/donasi", order: 7, isActive: true },
-    { id: "nav-8", label: "Kirim Tulisan", url: "/kirim-tulisan", order: 8, isActive: true }
+    { id: "nav-7", label: "Infaq & Donasi", url: "/donasi", order: 7, isActive: true }
   ],
   topBar: {
     isActive: true,
