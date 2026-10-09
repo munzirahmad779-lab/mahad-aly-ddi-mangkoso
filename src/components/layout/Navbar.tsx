@@ -71,7 +71,7 @@ export default function Navbar() {
   // Branding & Configuration from Context / Admin
   const logoUrl = navbarSettings?.logoUrl || "/image_067524.png";
   const brandTitle = navbarSettings?.brandTitle || "Ma'had Aly";
-  const brandSubtitle = navbarSettings?.brandSubtitle || "DDI Mangkoso • Fiqh Mu'asarah";
+  const brandSubtitle = navbarSettings?.brandSubtitle || "DDI Mangkoso";
 
   // Tier 1: Top Bar Config
   const topBarConfig = navbarSettings?.topBar ?? INITIAL_NAVBAR_SETTINGS.topBar;

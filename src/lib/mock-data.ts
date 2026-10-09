@@ -1093,7 +1093,7 @@ Setiap peserta wajib mengunggah naskah lengkap skripsi berformat PDF yang telah 
 export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
   logoUrl: "/image_067524.png",
   brandTitle: "Ma'had Aly",
-  brandSubtitle: "DDI Mangkoso • Fiqh Mu'asarah",
+  brandSubtitle: "DDI Mangkoso",
   bgColor: "#064e3b",
   textColor: "#ffffff",
   isSticky: true,

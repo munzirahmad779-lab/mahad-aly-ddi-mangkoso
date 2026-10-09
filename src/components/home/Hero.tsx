@@ -26,7 +26,6 @@ export default function Hero() {
   // Fallback single slide if slides list is completely empty
   const defaultSlide: HeroSlideItem = {
     id: "default-slide",
-    badge: heroSettings?.badge || "Pusat Kaderisasi Fuqaha Kontemporer",
     title: heroSettings?.title || "Pendidikan Tinggi Kader Ulama",
     titleHighlight: heroSettings?.titleHighlight || "",
     subtitle:
@@ -42,34 +41,25 @@ export default function Hero() {
   const activeSlides = slides.length > 0 ? slides : [defaultSlide];
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
 
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
   }, [activeSlides.length]);
 
-  const prevSlide = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
-  }, [activeSlides.length]);
-
-  // Auto-play interval timer
+  // Auto-play interval timer for smooth background text transitions (if > 1 slide)
   useEffect(() => {
-    if (isPaused || activeSlides.length <= 1) return;
+    if (activeSlides.length <= 1) return;
     const intervalTime = heroSettings?.autoPlayInterval || 6000;
     const timer = setInterval(() => {
       nextSlide();
     }, intervalTime);
     return () => clearInterval(timer);
-  }, [isPaused, activeSlides.length, heroSettings?.autoPlayInterval, nextSlide]);
+  }, [activeSlides.length, heroSettings?.autoPlayInterval, nextSlide]);
 
   const currentSlide = activeSlides[currentIndex] || defaultSlide;
 
   return (
-    <section
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      className="relative pt-40 pb-20 md:pt-48 md:pb-28 bg-mahad-green-dark text-white overflow-hidden flex items-center min-h-[92vh] select-none"
-    >
+    <section className="relative pt-40 pb-20 md:pt-48 md:pb-28 bg-mahad-green-dark text-white overflow-hidden flex items-center min-h-[90vh] select-none">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-islamic-pattern opacity-60 pointer-events-none"></div>
 
@@ -86,38 +76,31 @@ export default function Hero() {
       )}
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 w-full">
-        {/* Logo Ma'had Aly */}
-        <div className="inline-block relative mb-5">
-          <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto relative drop-shadow-2xl hover:scale-105 transition-transform">
+        {/* Logo Ma'had Aly DDI Mangkoso (Clean Original View) */}
+        <div className="inline-block relative mb-6">
+          <div className="w-28 h-28 sm:w-36 sm:h-36 mx-auto relative drop-shadow-2xl hover:scale-105 transition-transform">
             <Image
               src={logoSrc}
               alt="Logo Ma'had Aly DDI Mangkoso"
-              width={128}
-              height={128}
+              width={144}
+              height={144}
               className="w-full h-full object-contain"
               priority
             />
           </div>
         </div>
 
-        {/* Slide Counter & Badge */}
-        <div className="flex items-center justify-center gap-2 mb-4">
-          {currentSlide.badge && (
-            <span className="inline-flex items-center gap-1.5 bg-white/10 border border-emerald-500/40 text-mahad-gold text-xs font-semibold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-mahad-gold animate-ping"></span>
-              <span>{currentSlide.badge}</span>
-            </span>
-          )}
-        </div>
-
         {/* Kaligrafi Basmalah / Motto */}
         {currentSlide.arabicBismillah && (
-          <div className="font-serif text-mahad-gold text-2xl sm:text-3xl mb-4 tracking-wide transition-all duration-500" dir="rtl">
+          <div
+            className="font-serif text-mahad-gold text-2xl sm:text-3xl mb-5 tracking-wide transition-all duration-500"
+            dir="rtl"
+          >
             {currentSlide.arabicBismillah}
           </div>
         )}
 
-        {/* Judul Slide Utama (Animated Key Transition) */}
+        {/* Judul Slide Utama & Subtitle */}
         <div key={currentSlide.id} className="animate-fadeIn">
           <h1 className="font-serif font-bold text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight sm:leading-snug max-w-4xl mx-auto">
             {currentSlide.title}{" "}
@@ -134,7 +117,7 @@ export default function Hero() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="mt-9 flex flex-col sm:flex-row gap-4 justify-center items-center">
             {currentSlide.cta1Text && (
               <Link
                 href={currentSlide.cta1Url || "/artikel"}
@@ -157,55 +140,13 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Slide Carousel Controls (Only show if activeSlides > 1) */}
-        {activeSlides.length > 1 && (
-          <div className="mt-8 flex items-center justify-center gap-4">
-            {/* Prev Arrow */}
-            <button
-              type="button"
-              onClick={prevSlide}
-              className="w-9 h-9 rounded-full bg-white/10 hover:bg-mahad-gold hover:text-mahad-green-dark flex items-center justify-center transition border border-white/20"
-              title="Slide Sebelumnya"
-            >
-              ‹
-            </button>
-
-            {/* Pagination Dots */}
-            <div className="flex items-center gap-2">
-              {activeSlides.map((s, idx) => (
-                <button
-                  key={s.id || idx}
-                  type="button"
-                  onClick={() => setCurrentIndex(idx)}
-                  className={`transition-all duration-300 rounded-full ${
-                    currentIndex === idx
-                      ? "w-8 h-2.5 bg-mahad-gold"
-                      : "w-2.5 h-2.5 bg-white/30 hover:bg-white/60"
-                  }`}
-                  title={`Ke Slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-
-            {/* Next Arrow */}
-            <button
-              type="button"
-              onClick={nextSlide}
-              className="w-9 h-9 rounded-full bg-white/10 hover:bg-mahad-gold hover:text-mahad-green-dark flex items-center justify-center transition border border-white/20"
-              title="Slide Selanjutnya"
-            >
-              ›
-            </button>
-          </div>
-        )}
-
-        {/* Dynamic Metrics Repeater */}
+        {/* Dynamic Metrics Grid */}
         {metrics && metrics.length > 0 && (
-          <div className="mt-12 pt-6 border-t border-emerald-800/80 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="mt-14 pt-8 border-t border-emerald-800/80 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             {metrics.map((m) => (
-              <div key={m.id} className="p-2.5">
+              <div key={m.id} className="p-3">
                 <div className="font-serif font-bold text-2xl sm:text-3xl text-mahad-gold">{m.value}</div>
-                <div className="text-[11px] text-emerald-200/80 mt-1 uppercase tracking-wider font-medium">
+                <div className="text-xs text-emerald-200/80 mt-1 uppercase tracking-wider font-medium">
                   {m.label}
                 </div>
               </div>

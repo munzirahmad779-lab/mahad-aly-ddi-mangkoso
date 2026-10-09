@@ -5990,7 +5990,7 @@ export default function AdminPage() {
                       value={headerForm.brandSubtitle}
                       onChange={(e) => setHeaderForm({ ...headerForm, brandSubtitle: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border rounded-lg"
-                      placeholder="DDI Mangkoso • Fiqh Mu'asarah"
+                      placeholder="DDI Mangkoso"
                     />
                   </div>
 
