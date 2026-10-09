@@ -18,3 +18,19 @@
   background-image: radial-gradient(rgba(212, 175, 55, 0.15) 1.5px, transparent 1.5px);
   background-size: 24px 24px;
 }
+
+/* Ticker Animated Marquee */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}

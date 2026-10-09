@@ -6223,6 +6223,86 @@ export default function AdminPage() {
                         </label>
                       </div>
                     </div>
+
+                    {/* Repeater Ticker Items Manager */}
+                    <div className="pt-3 border-t border-amber-200/80 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-800">
+                          ⚡ Daftar Headline Ticker Bergerak ({(headerForm.tickerBar?.tickerItems || []).length})
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newItem = {
+                              id: "t-" + Date.now().toString(),
+                              label: "Headline Kajian Baru...",
+                              url: "/artikel"
+                            };
+                            const currentItems = headerForm.tickerBar?.tickerItems || [];
+                            setHeaderForm({
+                              ...headerForm,
+                              tickerBar: {
+                                ...headerForm.tickerBar,
+                                tickerItems: [...currentItems, newItem]
+                              }
+                            });
+                          }}
+                          className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] rounded-lg transition"
+                        >
+                          + Tambah Item Ticker
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {(headerForm.tickerBar?.tickerItems || []).map((tItem, tIdx) => (
+                          <div key={tItem.id || tIdx} className="p-2 bg-white border rounded-lg flex items-center gap-2 text-xs">
+                            <span className="font-mono text-amber-700 font-bold w-5">{tIdx + 1}.</span>
+                            <input
+                              type="text"
+                              value={tItem.label}
+                              onChange={(e) => {
+                                const current = [...(headerForm.tickerBar?.tickerItems || [])];
+                                current[tIdx] = { ...current[tIdx], label: e.target.value };
+                                setHeaderForm({
+                                  ...headerForm,
+                                  tickerBar: { ...headerForm.tickerBar, tickerItems: current }
+                                });
+                              }}
+                              placeholder="Judul Ticker (misal: Tinjauan Fiqh Mu'asarah...)"
+                              className="p-1.5 bg-slate-50 border rounded font-medium flex-1 text-slate-900 text-xs"
+                            />
+                            <input
+                              type="text"
+                              value={tItem.url}
+                              onChange={(e) => {
+                                const current = [...(headerForm.tickerBar?.tickerItems || [])];
+                                current[tIdx] = { ...current[tIdx], url: e.target.value };
+                                setHeaderForm({
+                                  ...headerForm,
+                                  tickerBar: { ...headerForm.tickerBar, tickerItems: current }
+                                });
+                              }}
+                              placeholder="URL (/kategori/fiqh-muamalah)"
+                              className="p-1.5 bg-slate-50 border rounded font-mono text-slate-600 text-xs w-48"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const current = (headerForm.tickerBar?.tickerItems || []).filter((_, i) => i !== tIdx);
+                                setHeaderForm({
+                                  ...headerForm,
+                                  tickerBar: { ...headerForm.tickerBar, tickerItems: current }
+                                });
+                              }}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              title="Hapus Item"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -6561,6 +6641,243 @@ export default function AdminPage() {
                       className="p-2 bg-white border rounded-lg text-xs font-mono"
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Repeater Carousel Slide Hero Banner */}
+              <div className="pt-6 border-t space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-serif font-bold text-base text-slate-900 flex items-center gap-2">
+                      <span>🎠 Kelola Slide Carousel Hero Beranda ({(heroForm.slides || []).length})</span>
+                    </h4>
+                    <p className="text-slate-500 text-xs mt-0.5">
+                      Tambah, edit, hapus, dan atur urutan slide banner bergerak yang tayang otomatis di bagian paling atas beranda.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newSlide = {
+                        id: "slide-" + Date.now().toString(),
+                        badge: "Badge Slide Baru",
+                        title: "Judul Slide Utama",
+                        titleHighlight: "",
+                        subtitle: "Deskripsi pengantar slide baru...",
+                        arabicBismillah: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                        cta1Text: "Tautan Utama",
+                        cta1Url: "/artikel",
+                        cta2Text: "Tautan Sekunder",
+                        cta2Url: "/skripsi",
+                        order: ((heroForm.slides || []).length) + 1,
+                        isActive: true
+                      };
+                      setHeroForm({
+                        ...heroForm,
+                        slides: [...(heroForm.slides || []), newSlide]
+                      });
+                    }}
+                    className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs rounded-xl shadow transition"
+                  >
+                    + Tambah Slide Carousel
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {(heroForm.slides || []).map((slide, sIdx) => (
+                    <div
+                      key={slide.id || sIdx}
+                      className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between pb-2 border-b">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-emerald-800 text-white font-mono font-bold text-xs flex items-center justify-center">
+                            {sIdx + 1}
+                          </span>
+                          <span className="font-serif font-bold text-slate-900 text-sm">
+                            {slide.title || "Slide Tanpa Judul"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="inline-flex items-center cursor-pointer mr-2">
+                            <input
+                              type="checkbox"
+                              checked={slide.isActive !== false}
+                              onChange={(e) => {
+                                const updated = [...(heroForm.slides || [])];
+                                updated[sIdx] = { ...updated[sIdx], isActive: e.target.checked };
+                                setHeroForm({ ...heroForm, slides: updated });
+                              }}
+                              className="sr-only peer"
+                            />
+                            <div className="w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
+                            <span className="ml-1.5 text-[11px] font-semibold text-slate-600">Aktif</span>
+                          </label>
+                          <button
+                            type="button"
+                            disabled={sIdx === 0}
+                            onClick={() => {
+                              const updated = [...(heroForm.slides || [])];
+                              const temp = updated[sIdx - 1];
+                              updated[sIdx - 1] = updated[sIdx];
+                              updated[sIdx] = temp;
+                              setHeroForm({ ...heroForm, slides: updated });
+                            }}
+                            className="p-1.5 bg-slate-200 hover:bg-slate-300 rounded disabled:opacity-30 text-xs"
+                            title="Geser Naik"
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            disabled={sIdx === (heroForm.slides || []).length - 1}
+                            onClick={() => {
+                              const updated = [...(heroForm.slides || [])];
+                              const temp = updated[sIdx + 1];
+                              updated[sIdx + 1] = updated[sIdx];
+                              updated[sIdx] = temp;
+                              setHeroForm({ ...heroForm, slides: updated });
+                            }}
+                            className="p-1.5 bg-slate-200 hover:bg-slate-300 rounded disabled:opacity-30 text-xs"
+                            title="Geser Turun"
+                          >
+                            ▼
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = (heroForm.slides || []).filter((_, i) => i !== sIdx);
+                              setHeroForm({ ...heroForm, slides: updated });
+                            }}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded text-xs"
+                            title="Hapus Slide"
+                          >
+                            🗑️ Hapus
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <label className="block text-slate-600 font-bold mb-1">Badge Slide</label>
+                          <input
+                            type="text"
+                            value={slide.badge || ""}
+                            onChange={(e) => {
+                              const updated = [...(heroForm.slides || [])];
+                              updated[sIdx] = { ...updated[sIdx], badge: e.target.value };
+                              setHeroForm({ ...heroForm, slides: updated });
+                            }}
+                            className="w-full p-2 bg-white border rounded-lg"
+                            placeholder="Pusat Kaderisasi Fuqaha..."
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-600 font-bold mb-1">Basmalah / Motto RTL</label>
+                          <input
+                            type="text"
+                            dir="rtl"
+                            value={slide.arabicBismillah || ""}
+                            onChange={(e) => {
+                              const updated = [...(heroForm.slides || [])];
+                              updated[sIdx] = { ...updated[sIdx], arabicBismillah: e.target.value };
+                              setHeroForm({ ...heroForm, slides: updated });
+                            }}
+                            className="w-full p-2 bg-white border rounded-lg font-serif text-right text-emerald-900"
+                            placeholder="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-slate-600 font-bold mb-1 text-xs">Judul Slide Utama</label>
+                        <input
+                          type="text"
+                          value={slide.title || ""}
+                          onChange={(e) => {
+                            const updated = [...(heroForm.slides || [])];
+                            updated[sIdx] = { ...updated[sIdx], title: e.target.value };
+                            setHeroForm({ ...heroForm, slides: updated });
+                          }}
+                          className="w-full p-2 bg-white border rounded-lg font-bold text-slate-900 text-xs"
+                          placeholder="Meneguhkan Khazanah Turats..."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-slate-600 font-bold mb-1 text-xs">Subtitle / Deskripsi</label>
+                        <textarea
+                          rows={2}
+                          value={slide.subtitle || ""}
+                          onChange={(e) => {
+                            const updated = [...(heroForm.slides || [])];
+                            updated[sIdx] = { ...updated[sIdx], subtitle: e.target.value };
+                            setHeroForm({ ...heroForm, slides: updated });
+                          }}
+                          className="w-full p-2 bg-white border rounded-lg text-xs leading-relaxed"
+                          placeholder="Pendidikan Tinggi Kader Ulama Takhassus Fiqh..."
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div className="p-2.5 bg-white border rounded-lg space-y-1.5">
+                          <span className="font-bold text-slate-700 block text-[11px]">Tombol CTA 1 (Utama)</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              value={slide.cta1Text || ""}
+                              onChange={(e) => {
+                                const updated = [...(heroForm.slides || [])];
+                                updated[sIdx] = { ...updated[sIdx], cta1Text: e.target.value };
+                                setHeroForm({ ...heroForm, slides: updated });
+                              }}
+                              placeholder="Label (Jelajahi)"
+                              className="p-1.5 bg-slate-50 border rounded text-xs"
+                            />
+                            <input
+                              type="text"
+                              value={slide.cta1Url || ""}
+                              onChange={(e) => {
+                                const updated = [...(heroForm.slides || [])];
+                                updated[sIdx] = { ...updated[sIdx], cta1Url: e.target.value };
+                                setHeroForm({ ...heroForm, slides: updated });
+                              }}
+                              placeholder="URL (/artikel)"
+                              className="p-1.5 bg-slate-50 border rounded font-mono text-xs"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 bg-white border rounded-lg space-y-1.5">
+                          <span className="font-bold text-slate-700 block text-[11px]">Tombol CTA 2 (Sekunder)</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              value={slide.cta2Text || ""}
+                              onChange={(e) => {
+                                const updated = [...(heroForm.slides || [])];
+                                updated[sIdx] = { ...updated[sIdx], cta2Text: e.target.value };
+                                setHeroForm({ ...heroForm, slides: updated });
+                              }}
+                              placeholder="Label (Skripsi)"
+                              className="p-1.5 bg-slate-50 border rounded text-xs"
+                            />
+                            <input
+                              type="text"
+                              value={slide.cta2Url || ""}
+                              onChange={(e) => {
+                                const updated = [...(heroForm.slides || [])];
+                                updated[sIdx] = { ...updated[sIdx], cta2Url: e.target.value };
+                                setHeroForm({ ...heroForm, slides: updated });
+                              }}
+                              placeholder="URL (/skripsi)"
+                              className="p-1.5 bg-slate-50 border rounded font-mono text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

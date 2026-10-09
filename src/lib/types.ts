@@ -463,8 +463,25 @@ export interface HeroMetricItem {
   label: string;
 }
 
+export interface HeroSlideItem {
+  id: string;
+  badge?: string;
+  title: string;
+  titleHighlight?: string;
+  subtitle: string;
+  arabicBismillah?: string;
+  cta1Text?: string;
+  cta1Url?: string;
+  cta2Text?: string;
+  cta2Url?: string;
+  bgImageUrl?: string;
+  order?: number;
+  isActive?: boolean;
+}
+
 export interface HeroSectionSettings {
   logoUrl: string;
+  badge?: string;
   arabicBismillah: string;
   title: string;
   titleHighlight: string;
@@ -477,6 +494,8 @@ export interface HeroSectionSettings {
   bgType?: "color" | "image";
   bgImageUrl?: string;
   bgColor?: string;
+  slides?: HeroSlideItem[];
+  autoPlayInterval?: number;
 }
 
 export interface HomeSectionConfigItem {

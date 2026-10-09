@@ -1169,6 +1169,51 @@ export const INITIAL_HERO_SETTINGS: HeroSectionSettings = {
   cta1Url: "/tentang",
   cta2Text: "Baca Mimbar Kajian",
   cta2Url: "#mimbar-kajian",
+  autoPlayInterval: 6000,
+  slides: [
+    {
+      id: "slide-1",
+      badge: "Pusat Kaderisasi Fuqaha Kontemporer",
+      title: "Meneguhkan Khazanah Turats, Menjawab Dinamika Fiqh Kontemporer",
+      titleHighlight: "",
+      subtitle: "Pendidikan Tinggi Kader Ulama Takhassus Fiqh wa Usuluhu — Berakar kuat pada sanad keilmuan klasik Anregurutta, progresif merespons tantangan zaman.",
+      arabicBismillah: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+      cta1Text: "Jelajahi Kajian Fiqh",
+      cta1Url: "/artikel",
+      cta2Text: "Repositori Skripsi",
+      cta2Url: "/skripsi",
+      order: 1,
+      isActive: true
+    },
+    {
+      id: "slide-2",
+      badge: "Marhalah Ula (M.1) Takhassus Fiqh wa Usuluhu",
+      title: "Talaqqi Sanad Keilmuan Gurutta, Melahirkan Fuqaha Wasathiyyah",
+      titleHighlight: "",
+      subtitle: "Mengkaji kitab-kitab induk turats muktabarah dengan metode halaqah, ikhtibar matan, dan bimbingan langsung masyaikh DDI Mangkoso.",
+      arabicBismillah: "تَفَقُّهٌ فِي الدِّيْنِ · بَصِيْرَةٌ فِي الزَّمَانِ · خِدْمَةٌ لِلْأُمَّةِ",
+      cta1Text: "Profil & Sejarah",
+      cta1Url: "/profil",
+      cta2Text: "Pendaftaran PMB",
+      cta2Url: "/pmb",
+      order: 2,
+      isActive: true
+    },
+    {
+      id: "slide-3",
+      badge: "Lembaga Bahtsul Masail & Riset Hukum",
+      title: "Fatwa Hukum Islam Moderat & Bahtsul Masail Kontemporer",
+      titleHighlight: "",
+      subtitle: "Merumuskan solusi keagamaan berbasis qawa'id fiqhiyyah untuk problematika sains, ekonomi digital, dan bioetika modern.",
+      arabicBismillah: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+      cta1Text: "Hasil Bahtsul Masail",
+      cta1Url: "/bahtsul-masail",
+      cta2Text: "Infaq & Donasi",
+      cta2Url: "/donasi",
+      order: 3,
+      isActive: true
+    }
+  ],
   metrics: [
     { id: "m-1", value: "M.1", label: "Jenjang Marhalah Ula" },
     { id: "m-2", value: "4 Tahun", label: "Masa Pengkaderan" },

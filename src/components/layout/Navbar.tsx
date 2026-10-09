@@ -99,7 +99,6 @@ export default function Navbar() {
       : INITIAL_NAVBAR_SETTINGS.navLinks;
 
   // Filter ONLY active links (excludes any link with isActive === false)
-  // Also clean out redundant Kirim Tulisan if ctaButton is also Kirim Tulisan
   const navLinks = rawNavLinks
     .filter((link) => link.isActive !== false)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -110,9 +109,7 @@ export default function Navbar() {
   };
 
   // Smart Desktop Standalone Logic:
-  // All active links up to 8 items will ALWAYS render as primary standalone buttons!
-  // This guarantees "Infaq & Donasi" (and any added 8th link) is ALWAYS visible in the main header bar.
-  // "Lainnya" will ONLY appear if the admin adds 9 or more active links!
+  // All active links up to 8 items will ALWAYS render as primary standalone buttons on xl screens!
   const MAX_DESKTOP_PRIMARY = 8;
   const primaryLinks = navLinks.slice(0, MAX_DESKTOP_PRIMARY);
   const overflowLinks = navLinks.slice(MAX_DESKTOP_PRIMARY);
@@ -184,13 +181,13 @@ export default function Navbar() {
           TIER 2: MAIN EMERALD NAVBAR
          ══════════════════════════════════════════════════════════════ */}
       <nav className="bg-mahad-green-dark/98 backdrop-blur-md text-white border-b border-emerald-900 transition-shadow relative z-40">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-4 overflow-visible">
           
-          {/* BRAND & LOGO (Immune to shrinking or wrapping) */}
+          {/* BRAND & LOGO (Strictly Immune to Overlap) */}
           <Link
             href="/"
             onClick={closeMenu}
-            className="flex items-center gap-2.5 sm:gap-3 group shrink-0 min-w-fit select-none"
+            className="flex items-center gap-2.5 sm:gap-3 group shrink-0 select-none z-20 relative mr-2 lg:mr-4 max-w-[220px] sm:max-w-xs xl:max-w-sm"
           >
             <div className="w-10 h-10 sm:w-11 sm:h-11 relative shrink-0 drop-shadow-md group-hover:scale-105 transition-transform duration-200">
               <Image
@@ -235,7 +232,7 @@ export default function Navbar() {
                         isLinkActive(link.url) ||
                         link.children?.some((c) => isLinkActive(c.url)) ||
                         isDropdownOpen
-                          ? "text-mahad-gold font-bold bg-white/10"
+                          ? "text-mahad-gold font-bold bg-white/10 border border-mahad-gold/40"
                           : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
                       }`}
                     >
@@ -290,7 +287,7 @@ export default function Navbar() {
                       }}
                       className={`flex items-center gap-1 px-2 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
                         isLinkActive("/kategori") || isKajianOpen
-                          ? "text-mahad-gold font-bold bg-white/10"
+                          ? "text-mahad-gold font-bold bg-white/10 border border-mahad-gold/40"
                           : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
                       }`}
                     >
@@ -370,7 +367,7 @@ export default function Navbar() {
                   onClick={closeMenu}
                   className={`px-2 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                     isLinkActive(link.url)
-                      ? "text-mahad-gold font-bold bg-white/10 border-b-2 border-mahad-gold"
+                      ? "text-mahad-gold font-bold bg-white/10 border border-mahad-gold/40"
                       : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
                   }`}
                 >
@@ -390,7 +387,7 @@ export default function Navbar() {
                   }}
                   className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
                     isAnyOverflowActive || desktopDropdown === "overflow"
-                      ? "text-mahad-gold font-bold bg-white/10 border-b-2 border-mahad-gold"
+                      ? "text-mahad-gold font-bold bg-white/10 border border-mahad-gold/40"
                       : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
                   }`}
                 >
@@ -461,13 +458,13 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* ACTION BUTTON & SEARCH (Relocated cleanly to prevent any overlap!) */}
+          {/* ACTION BUTTON & SEARCH */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {/* Desktop Live Search Pill / Icon */}
             {showSearch && (
               <div className="hidden lg:flex items-center">
-                {/* Compact Search Form for XL screens */}
-                <form onSubmit={handleSearchSubmit} className="relative hidden xl:block w-36 2xl:w-48">
+                {/* Compact Search Form for 2XL screens */}
+                <form onSubmit={handleSearchSubmit} className="relative hidden 2xl:block w-40">
                   <input
                     type="text"
                     value={searchQuery}
@@ -486,11 +483,14 @@ export default function Navbar() {
                   </button>
                 </form>
 
-                {/* Search Toggle Icon for LG screens */}
-                <div className="xl:hidden relative">
+                {/* Search Toggle Icon for LG/XL screens */}
+                <div className="2xl:hidden relative">
                   <button
                     type="button"
-                    onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsSearchExpanded(!isSearchExpanded);
+                    }}
                     className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-emerald-200 hover:text-mahad-gold transition"
                     title="Cari Kajian & Artikel"
                   >
@@ -499,7 +499,7 @@ export default function Navbar() {
                     </svg>
                   </button>
                   {isSearchExpanded && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-[#064e3b] border border-emerald-700/80 rounded-2xl shadow-2xl p-2 z-[70] animate-fadeIn">
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-[#064e3b] border border-emerald-700/80 rounded-2xl shadow-2xl p-2.5 z-[70] animate-fadeIn">
                       <form onSubmit={handleSearchSubmit} className="relative">
                         <input
                           ref={searchInputRef}
@@ -560,26 +560,28 @@ export default function Navbar() {
       </nav>
 
       {/* ══════════════════════════════════════════════════════════════
-          TIER 3: KAJIAN & WARTA TICKER BAR (Full-width, zero overlap risk!)
+          TIER 3: KAJIAN & WARTA TICKER BAR (Infinite Moving Marquee!)
          ══════════════════════════════════════════════════════════════ */}
       {isTickerActive && (
-        <div className="bg-[#043d2e] text-emerald-100 border-b border-emerald-800/80 text-xs py-1.5 px-3 sm:px-6 lg:px-8 shadow-inner hidden md:block select-none relative z-20">
+        <div className="bg-[#043d2e] text-emerald-100 border-b border-emerald-800/80 text-xs py-1.5 px-3 sm:px-6 lg:px-8 shadow-inner hidden md:block select-none relative z-20 overflow-hidden">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            {/* Ticker Kajian Hangat */}
-            <div className="flex items-center gap-2.5 flex-1 min-w-0 overflow-hidden">
-              <span className="bg-mahad-gold text-mahad-green-dark text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-sm">
-                <span>⚡</span>
-                <span>{tickerBadge}</span>
-              </span>
-              <div className="flex items-center gap-5 text-xs truncate">
-                {tickerItems.map((item, idx) => (
+            {/* Ticker Badge */}
+            <span className="bg-mahad-gold text-mahad-green-dark text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-sm z-10">
+              <span>⚡</span>
+              <span>{tickerBadge}</span>
+            </span>
+
+            {/* Infinite Auto-Moving Marquee Track */}
+            <div className="flex-1 min-w-0 overflow-hidden relative">
+              <div className="animate-marquee flex items-center gap-8 text-xs whitespace-nowrap">
+                {[...tickerItems, ...tickerItems].map((item, idx) => (
                   <Link
-                    key={item.id || idx}
+                    key={`${item.id || idx}-${idx}`}
                     href={item.url}
-                    className="hover:text-mahad-gold transition truncate flex items-center gap-1.5 text-emerald-200"
+                    className="hover:text-mahad-gold transition flex items-center gap-2 text-emerald-200 group"
                   >
-                    <span className="text-emerald-400/80">•</span>
-                    <span>{item.label}</span>
+                    <span className="text-mahad-gold font-bold">•</span>
+                    <span className="group-hover:underline underline-offset-2">{item.label}</span>
                   </Link>
                 ))}
               </div>
@@ -588,7 +590,7 @@ export default function Navbar() {
             {/* Kanan: Link Cepat ke Indeks Artikel */}
             <Link
               href="/artikel"
-              className="text-[11px] text-emerald-300 hover:text-mahad-gold font-medium shrink-0 hidden lg:inline-flex items-center gap-1 transition"
+              className="text-[11px] text-emerald-300 hover:text-mahad-gold font-medium shrink-0 hidden lg:inline-flex items-center gap-1 transition z-10"
             >
               <span>Indeks Kajian</span>
               <span>→</span>
