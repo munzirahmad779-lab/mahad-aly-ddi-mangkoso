@@ -13,6 +13,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [desktopDropdown, setDesktopDropdown] = useState<string | null>(null);
 
   const safeCategories = Array.isArray(categories) ? categories : [];
   const fiqhCategories = safeCategories.filter((c) => c.type !== "opini");
@@ -22,10 +23,15 @@ export default function Navbar() {
   const closeMenu = () => {
     setIsOpen(false);
     setActiveDropdown(null);
+    setDesktopDropdown(null);
   };
 
   const toggleDropdown = (id: string) => {
     setActiveDropdown(activeDropdown === id ? null : id);
+  };
+
+  const toggleDesktopDropdown = (id: string) => {
+    setDesktopDropdown((prev) => (prev === id ? null : id));
   };
 
   const logoUrl = navbarSettings?.logoUrl || "/image_067524.png";
@@ -102,26 +108,32 @@ export default function Navbar() {
 
             // 1. Dropdown with custom children from Admin
             if (hasChildren) {
+              const isDropdownOpen = desktopDropdown === link.id;
               return (
                 <div key={link.id} className="relative group shrink-0">
                   <button
                     type="button"
-                    className={`flex items-center gap-1 px-2 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
-                      isLinkActive(link.url) || link.children?.some(c => isLinkActive(c.url))
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDesktopDropdown(link.id);
+                    }}
+                    className={`flex items-center gap-1 px-2 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
+                      isLinkActive(link.url) || link.children?.some(c => isLinkActive(c.url)) || isDropdownOpen
                         ? "text-mahad-gold font-bold bg-white/10"
                         : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
                     }`}
                   >
                     <span>{link.label}</span>
-                    <svg className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-3.5 h-3.5 transition-transform ${isDropdownOpen ? "rotate-180" : "group-hover:rotate-180"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-                  <div className="absolute left-0 top-full hidden group-hover:block w-60 bg-mahad-green-dark border border-emerald-800 rounded-xl shadow-2xl py-2 z-50 animate-fadeIn">
+                  <div className={`absolute left-0 top-full ${isDropdownOpen ? "block" : "hidden group-hover:block"} w-60 bg-mahad-green-dark border border-emerald-800 rounded-xl shadow-2xl py-2 z-50 animate-fadeIn`}>
                     {link.children?.filter(c => c.isActive !== false).map((child) => (
                       <Link
                         key={child.id}
                         href={child.url}
+                        onClick={closeMenu}
                         className={`block px-4 py-2 text-xs transition ${
                           isLinkActive(child.url)
                             ? "bg-white/10 text-mahad-gold font-bold"
@@ -138,30 +150,39 @@ export default function Navbar() {
 
             // 2. Special Dynamic Kajian Menu with Categories
             if (isKajianMenu) {
+              const isKajianOpen = desktopDropdown === "kajian";
               return (
                 <div key={link.id} className="relative group shrink-0">
                   <button
                     type="button"
-                    className={`flex items-center gap-1 px-2 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
-                      isLinkActive("/kategori")
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDesktopDropdown("kajian");
+                    }}
+                    className={`flex items-center gap-1 px-2 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
+                      isLinkActive("/kategori") || isKajianOpen
                         ? "text-mahad-gold font-bold bg-white/10"
                         : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
                     }`}
                   >
                     <span>{link.label}</span>
-                    <svg className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-3.5 h-3.5 transition-transform ${isKajianOpen ? "rotate-180" : "group-hover:rotate-180"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-                  <div className="absolute left-0 top-full hidden group-hover:block w-72 bg-mahad-green-dark border border-emerald-800 rounded-xl shadow-2xl py-2 z-50 max-h-96 overflow-y-auto divide-y divide-emerald-800/60 animate-fadeIn">
+                  <div className={`absolute left-0 top-full ${isKajianOpen ? "block" : "hidden group-hover:block"} w-72 bg-mahad-green-dark border border-emerald-800 rounded-xl shadow-2xl py-2 z-50 max-h-96 overflow-y-auto divide-y divide-emerald-800/60 animate-fadeIn`}>
                     <div className="py-1">
-                      <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold">
-                        🏛️ Kajian Fiqh Mu&apos;asarah
+                      <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold flex items-center justify-between">
+                        <span>🏛️ Kajian Fiqh Mu&apos;asarah</span>
+                        <Link href="/kategori" onClick={closeMenu} className="text-[10px] text-emerald-200 hover:text-white underline">
+                          Semua →
+                        </Link>
                       </div>
                       {fiqhCategories.map((cat) => (
                         <Link
                           key={cat.id}
                           href={`/kategori/${cat.slug}`}
+                          onClick={closeMenu}
                           className="block px-4 py-1.5 text-xs hover:bg-white/10 hover:text-mahad-gold transition"
                         >
                           {cat.name}
@@ -170,13 +191,17 @@ export default function Navbar() {
                     </div>
                     {opiniCategories.length > 0 && (
                       <div className="py-1">
-                        <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold">
-                          ✍️ Opini &amp; Refleksi Santri
+                        <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold flex items-center justify-between">
+                          <span>✍️ Opini &amp; Refleksi Santri</span>
+                          <Link href="/kategori" onClick={closeMenu} className="text-[10px] text-emerald-200 hover:text-white underline">
+                            Semua →
+                          </Link>
                         </div>
                         {opiniCategories.map((cat) => (
                           <Link
                             key={cat.id}
                             href={`/kategori/${cat.slug}`}
+                            onClick={closeMenu}
                             className="block px-4 py-1.5 text-xs hover:bg-white/10 hover:text-mahad-gold transition"
                           >
                             {cat.name}
@@ -194,6 +219,7 @@ export default function Navbar() {
               <Link
                 key={link.id}
                 href={link.url}
+                onClick={closeMenu}
                 className={`px-2 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                   isLinkActive(link.url)
                     ? "text-mahad-gold font-bold bg-white/10 border-b-2 border-mahad-gold"
@@ -210,8 +236,12 @@ export default function Navbar() {
             <div className="relative group shrink-0">
               <button
                 type="button"
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
-                  isAnyOverflowActive
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleDesktopDropdown("overflow");
+                }}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
+                  isAnyOverflowActive || desktopDropdown === "overflow"
                     ? "text-mahad-gold font-bold bg-white/10 border-b-2 border-mahad-gold"
                     : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
                 }`}
@@ -220,12 +250,12 @@ export default function Navbar() {
                 <span className="text-[10px] bg-mahad-gold/20 text-mahad-gold px-1.5 py-0.2 rounded-full font-bold ml-0.5">
                   +{overflowLinks.length}
                 </span>
-                <svg className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-3.5 h-3.5 transition-transform ${desktopDropdown === "overflow" ? "rotate-180" : "group-hover:rotate-180"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
 
-              <div className="absolute right-0 top-full hidden group-hover:block w-64 bg-mahad-green-dark border border-emerald-800 rounded-2xl shadow-2xl py-2 z-50 animate-fadeIn">
+              <div className={`absolute right-0 top-full ${desktopDropdown === "overflow" ? "block" : "hidden group-hover:block"} w-64 bg-mahad-green-dark border border-emerald-800 rounded-2xl shadow-2xl py-2 z-50 animate-fadeIn`}>
                 <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold border-b border-emerald-800/80 mb-1">
                   Menu Tambahan
                 </div>
@@ -233,6 +263,7 @@ export default function Navbar() {
                   <div key={link.id} className="px-1">
                     <Link
                       href={link.url}
+                      onClick={closeMenu}
                       className={`block px-3.5 py-2 rounded-xl text-xs transition flex items-center justify-between ${
                         isLinkActive(link.url)
                           ? "bg-white/10 text-mahad-gold font-bold"
@@ -250,10 +281,11 @@ export default function Navbar() {
                           <Link
                             key={child.id}
                             href={child.url}
-                            className={`block px-2.5 py-1 rounded-md text-[11px] ${
+                            onClick={closeMenu}
+                            className={`block px-3 py-1.5 rounded-lg text-[11px] transition ${
                               isLinkActive(child.url)
                                 ? "text-mahad-gold font-bold"
-                                : "text-emerald-200/80 hover:text-mahad-gold"
+                                : "text-emerald-200 hover:text-mahad-gold"
                             }`}
                           >
                             {child.label}

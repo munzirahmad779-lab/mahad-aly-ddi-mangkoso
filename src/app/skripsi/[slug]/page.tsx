@@ -14,10 +14,39 @@ export default function ThesisDetailPage({ params }: ThesisDetailPageProps) {
   const { slug } = use(params);
   const { theses } = useArticles();
 
-  const thesis = theses.find((t) => t.slug === slug);
+  const cleanSlug = decodeURIComponent(slug || "").toLowerCase().trim();
+  const thesis = (theses || []).find(
+    (t) => t.slug?.toLowerCase() === cleanSlug || t.id === slug
+  );
 
   if (!thesis) {
-    notFound();
+    return (
+      <main className="pt-28 pb-20 bg-slate-50 min-h-screen">
+        <div className="max-w-2xl mx-auto px-4 text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
+          <div className="text-5xl mb-4">🎓</div>
+          <h1 className="font-serif font-bold text-2xl text-slate-800">
+            Naskah Skripsi Tidak Ditemukan
+          </h1>
+          <p className="text-slate-500 text-sm mt-2 max-w-md mx-auto">
+            Naskah risalah skripsi mahasantri yang Anda cari mungkin belum diarsipkan secara digital atau telah diperbarui.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/skripsi"
+              className="px-5 py-2.5 bg-mahad-gold text-mahad-green-dark font-bold text-xs rounded-full shadow hover:bg-yellow-400 transition"
+            >
+              Jelajahi Repositori Skripsi
+            </Link>
+            <Link
+              href="/"
+              className="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold text-xs rounded-full hover:bg-slate-200 transition"
+            >
+              Kembali ke Beranda
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
   }
 
   const relatedTheses = theses
