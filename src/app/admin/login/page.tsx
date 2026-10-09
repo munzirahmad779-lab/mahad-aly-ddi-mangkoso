@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -21,7 +21,7 @@ export default function AdminLoginPage() {
   const [forgotMsg, setForgotMsg] = useState<{ success: boolean; text: string } | null>(null);
 
   // Restore remembered email on mount
-  useState(() => {
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const savedEmail = localStorage.getItem("mahad_remember_email");
       if (savedEmail) {
@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
         setRememberMe(true);
       }
     }
-  });
+  }, []);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
