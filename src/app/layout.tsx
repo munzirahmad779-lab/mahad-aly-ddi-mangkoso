@@ -27,7 +27,7 @@ const cinzel = Cinzel({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://mahadalymangkoso.ac.id"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://mahadaly-ddimangkoso.my.id"),
   title: {
     default: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
     template: "%s | Ma'had Aly DDI Mangkoso"
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "id_ID",
-    url: "https://mahadalymangkoso.ac.id",
+    url: "https://mahadaly-ddimangkoso.my.id",
     siteName: "Ma'had Aly DDI Mangkoso",
     title: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
     description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso. Membina kader ulama berakar pada sanad kitab klasik dan berwawasan wasathiyyah.",
@@ -57,6 +57,16 @@ export const metadata: Metadata = {
     title: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
     description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso.",
     images: ["/image_067524.png"],
+  },
+  icons: {
+    icon: [
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+      { url: "/image_067524.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: ["/icon.png"],
+    apple: [
+      { url: "/apple-icon.png", sizes: "512x512", type: "image/png" },
+    ],
   },
   robots: {
     index: true,
