@@ -32,7 +32,7 @@ import {
   SecurityThreatLog,
   HomeSectionConfigItem
 } from "@/lib/types";
-import { INITIAL_PAGE_TEXTS } from "@/lib/mock-data";
+import { INITIAL_PAGE_TEXTS, INITIAL_NAVBAR_SETTINGS } from "@/lib/mock-data";
 
 const SYSTEM_NAV_PAGES = [
   { label: "🏠 Beranda", url: "/" },
@@ -276,6 +276,78 @@ export default function AdminPage() {
   const [donationTab, setDonationTab] = useState<"list" | "form" | "permissions">("list");
   const [editingDonationId, setEditingDonationId] = useState<string | null>(null);
   const [donationFilterCategory, setDonationFilterCategory] = useState<"all" | DonationCategoryKey>("all");
+
+  // ── Dynamic Profil Sub-Menu Sync State & Handlers ──
+  const [newProfilSubLabel, setNewProfilSubLabel] = useState("");
+  const [newProfilSubUrl, setNewProfilSubUrl] = useState("");
+
+  const handleAddProfilSubItem = () => {
+    if (!newProfilSubLabel.trim()) {
+      alert("Silakan masukkan judul sub-menu profil.");
+      return;
+    }
+    const cleanUrl = newProfilSubUrl.trim()
+      ? newProfilSubUrl.trim()
+      : `/profil#${newProfilSubLabel.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+
+    const currentNavLinks = navbarSettings?.navLinks && navbarSettings.navLinks.length > 0
+      ? navbarSettings.navLinks
+      : INITIAL_NAVBAR_SETTINGS.navLinks;
+
+    const profilLink = currentNavLinks.find(
+      (l: any) => l.url === "/profil" || l.id === "nav-2" || l.label.toLowerCase() === "profil"
+    );
+    const existingChildren = profilLink?.children || [
+      { id: "nav-2-1", label: "Sejarah Lembaga", url: "/profil#sejarah", order: 1, isActive: true },
+      { id: "nav-2-2", label: "Visi & Misi", url: "/profil#visi-misi", order: 2, isActive: true },
+      { id: "nav-2-3", label: "Masyayikh & Dewan Dosen", url: "/profil#masyayikh", order: 3, isActive: true },
+      { id: "nav-2-4", label: "Struktur Organisasi", url: "/profil#struktur", order: 4, isActive: true },
+      { id: "nav-2-5", label: "Sarana & Prasarana", url: "/profil#sarana", order: 5, isActive: true },
+      { id: "nav-2-6", label: "Sertifikat Akreditasi", url: "/profil#akreditasi", order: 6, isActive: true }
+    ];
+
+    const newChild = {
+      id: `nav-2-${Date.now()}`,
+      label: newProfilSubLabel.trim(),
+      url: cleanUrl,
+      order: existingChildren.length + 1,
+      isActive: true
+    };
+
+    const updatedChildren = [...existingChildren, newChild];
+    const updatedNavLinks = currentNavLinks.map((link: any) => {
+      if (link.url === "/profil" || link.id === "nav-2" || link.label.toLowerCase() === "profil") {
+        return { ...link, children: updatedChildren };
+      }
+      return link;
+    });
+
+    updateNavbarSettings({ navLinks: updatedNavLinks });
+    setNewProfilSubLabel("");
+    setNewProfilSubUrl("");
+    alert(`✓ Sub-Menu Profil "${newProfilSubLabel.trim()}" berhasil ditambahkan & tersinkron ke Header Navbar!`);
+  };
+
+  const handleDeleteProfilSubItem = (childId: string) => {
+    const currentNavLinks = navbarSettings?.navLinks && navbarSettings.navLinks.length > 0
+      ? navbarSettings.navLinks
+      : INITIAL_NAVBAR_SETTINGS.navLinks;
+
+    const profilLink = currentNavLinks.find(
+      (l: any) => l.url === "/profil" || l.id === "nav-2" || l.label.toLowerCase() === "profil"
+    );
+    const existingChildren = profilLink?.children || [];
+    const updatedChildren = existingChildren.filter((c: any) => c.id !== childId);
+
+    const updatedNavLinks = currentNavLinks.map((link: any) => {
+      if (link.url === "/profil" || link.id === "nav-2" || link.label.toLowerCase() === "profil") {
+        return { ...link, children: updatedChildren };
+      }
+      return link;
+    });
+
+    updateNavbarSettings({ navLinks: updatedNavLinks });
+  };
 
   const [donationForm, setDonationForm] = useState<{
     title: string;
@@ -1467,9 +1539,24 @@ export default function AdminPage() {
     );
   }
 
+  const currentNavLinks = navbarSettings?.navLinks && navbarSettings.navLinks.length > 0
+    ? navbarSettings.navLinks
+    : INITIAL_NAVBAR_SETTINGS.navLinks;
+  const profilNavLink = currentNavLinks.find(
+    (l: any) => l.url === "/profil" || l.id === "nav-2" || l.label.toLowerCase() === "profil"
+  );
+  const profilChildren = profilNavLink?.children || [
+    { id: "nav-2-1", label: "Sejarah Lembaga", url: "/profil#sejarah", order: 1, isActive: true },
+    { id: "nav-2-2", label: "Visi & Misi", url: "/profil#visi-misi", order: 2, isActive: true },
+    { id: "nav-2-3", label: "Masyayikh & Dewan Dosen", url: "/profil#masyayikh", order: 3, isActive: true },
+    { id: "nav-2-4", label: "Struktur Organisasi", url: "/profil#struktur", order: 4, isActive: true },
+    { id: "nav-2-5", label: "Sarana & Prasarana", url: "/profil#sarana", order: 5, isActive: true },
+    { id: "nav-2-6", label: "Sertifikat Akreditasi", url: "/profil#akreditasi", order: 6, isActive: true }
+  ];
+
   // 2. Full Admin Dashboard
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row pt-20">
+    <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row pt-36 sm:pt-40 lg:pt-44">
       
       {/* 📐 SIDEBAR NAVIGATION */}
       <aside
@@ -2041,28 +2128,98 @@ export default function AdminPage() {
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "profile" && (
           <div className="space-y-6">
-            <div className="flex flex-wrap gap-2 pb-2 border-b">
-              {[
-                { id: "sejarah", label: "📜 Sejarah & Deskripsi" },
-                { id: "visimisi", label: "🎯 Visi & Misi" },
-                { id: "dosen", label: `👳 Masyayikh & Dosen (${lecturers.length})` },
-                { id: "sarana", label: `🏛️ Sarana & Prasarana (${facilities.length})` },
-                { id: "akreditasi", label: `📜 Sertifikat Akreditasi (${accreditations.length})` }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveSubMenu(tab.id)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-                    activeSubMenu === tab.id
-                      ? "bg-emerald-800 text-white shadow"
-                      : "bg-white text-slate-700 hover:bg-slate-200"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+            {/* Box Pengelolaan Sub-Menu Profil (Header Navbar Sync) */}
+              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-emerald-200 shadow-sm space-y-4 text-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
+                  <div>
+                    <h3 className="font-serif font-bold text-base text-emerald-950 flex items-center gap-2">
+                      <span>🔗</span>
+                      <span>Kelola Sub-Menu Navigasi Profil (Otomatis Sync ke Header Navbar)</span>
+                    </h3>
+                    <p className="text-slate-500 text-[11px] mt-0.5">
+                      Tambah atau kurangi sub-menu halaman profil di bawah ini. Semua perubahan akan <strong>langsung bertambah/berkurang di Header Navbar</strong> publik.
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full self-start sm:self-auto border border-emerald-300">
+                    ⚡ Live Header Dropdown Sync
+                  </span>
+                </div>
+
+                {/* List Sub-Menu Profil Saat Ini */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {profilChildren.map((item: any, idx: number) => (
+                    <div key={item.id || idx} className="p-3 bg-slate-50 border rounded-xl flex items-center justify-between gap-2 hover:border-emerald-500 transition">
+                      <div className="truncate">
+                        <p className="font-bold text-slate-800 truncate">{item.label}</p>
+                        <p className="text-[10px] text-emerald-700 font-mono truncate">{item.url}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteProfilSubItem(item.id)}
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg text-xs shrink-0 font-bold"
+                        title="Hapus Sub-Menu Ini"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Form Tambah Sub-Menu Baru */}
+                <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-end gap-3">
+                  <div className="flex-1 min-w-0 w-full sm:w-auto">
+                    <label className="block text-slate-700 font-bold mb-1">Judul / Sub-Halaman Profil Baru</label>
+                    <input
+                      type="text"
+                      value={newProfilSubLabel}
+                      onChange={(e) => setNewProfilSubLabel(e.target.value)}
+                      placeholder="Misal: Struktur Organisasi, Kerjasama Lembaga, Dll."
+                      className="w-full p-2.5 bg-slate-50 border rounded-lg text-xs"
+                    />
+                  </div>
+                  <div className="w-full sm:w-64">
+                    <label className="block text-slate-700 font-bold mb-1">URL / Tautan Hashtag</label>
+                    <input
+                      type="text"
+                      value={newProfilSubUrl}
+                      onChange={(e) => setNewProfilSubUrl(e.target.value)}
+                      placeholder="/profil#struktur"
+                      className="w-full p-2.5 bg-slate-50 border rounded-lg text-xs font-mono"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddProfilSubItem}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-lg shadow text-xs shrink-0"
+                  >
+                    ➕ Tambah Sub-Menu ke Header
+                  </button>
+                </div>
+              </div>
+
+              {/* Tabs Pengelolaan Konten Profil */}
+              <div className="flex flex-wrap gap-2 pb-2 border-b">
+                {[
+                  { id: "sejarah", label: "📜 Sejarah & Deskripsi" },
+                  { id: "visimisi", label: "🎯 Visi & Misi" },
+                  { id: "dosen", label: `👳 Masyayikh & Dosen (${lecturers.length})` },
+                  { id: "sarana", label: `🏛️ Sarana & Prasarana (${facilities.length})` },
+                  { id: "akreditasi", label: `📜 Sertifikat Akreditasi (${accreditations.length})` }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveSubMenu(tab.id)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                      activeSubMenu === tab.id
+                        ? "bg-emerald-800 text-white shadow"
+                        : "bg-white text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
 
             {/* Sub: Sejarah */}
             {(activeSubMenu === "overview" || activeSubMenu === "sejarah") && (
