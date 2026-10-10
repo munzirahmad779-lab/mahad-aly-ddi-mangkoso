@@ -16,6 +16,7 @@
     ]
   },
   "vars": {
-    "NEXT_PUBLIC_GA_ID": "G-EBBP80BZWL"
+    "NEXT_PUBLIC_GA_ID": "G-EBBP80BZWL",
+    "NEXT_PUBLIC_SITE_URL": "https://mahadaly-ddimangkoso.my.id"
   }
 }

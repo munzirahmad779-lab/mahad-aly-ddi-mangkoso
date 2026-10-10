@@ -3,7 +3,7 @@ import { INITIAL_ARTICLES, INITIAL_NEWS } from "@/lib/mock-data";
 import { supabase } from "@/lib/supabase/client";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mahadaly-ddimangkoso.my.id";
+  const baseUrl = "https://mahadaly-ddimangkoso.my.id";
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${baseUrl}`, lastModified: new Date(), changeFrequency: "daily", priority: 1.0 },
