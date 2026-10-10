@@ -72,6 +72,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  alternates: {
+    canonical: "https://mahadaly-ddimangkoso.my.id",
+  },
 };
 
 export default function RootLayout({
