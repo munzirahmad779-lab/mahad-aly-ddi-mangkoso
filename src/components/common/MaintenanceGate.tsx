@@ -19,7 +19,6 @@ export default function MaintenanceGate({ children }: { children: React.ReactNod
     if (typeof window !== "undefined") {
       const isPreview =
         localStorage.getItem("mahad_admin_preview") === "true" ||
-        localStorage.getItem("mahad_session_remember") === "true" ||
         window.location.search.includes("preview=true");
 
       if (window.location.search.includes("preview=true")) {

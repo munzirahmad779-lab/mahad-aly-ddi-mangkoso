@@ -323,8 +323,24 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       if (savedSettings) {
         try {
           const parsed = JSON.parse(savedSettings);
-          setSettings((prev) => ({ ...prev, ...parsed }));
+          setSettings((prev) => ({
+            ...prev,
+            ...parsed,
+            maintenanceMode: typeof parsed.maintenanceMode === "boolean" ? parsed.maintenanceMode : true
+          }));
         } catch (e) {}
+      }
+
+      // Live fetch site_settings immediately to ensure maintenance mode is authoritative from DB
+      if (typeof window !== "undefined") {
+        fetch("/api/admin/content?key=site_settings")
+          .then((r) => r.json())
+          .then((d) => {
+            if (d?.data) {
+              setSettings((prev) => ({ ...prev, ...d.data }));
+            }
+          })
+          .catch(() => {});
       }
 
       const savedArticles = localStorage.getItem("mahad_articles");
