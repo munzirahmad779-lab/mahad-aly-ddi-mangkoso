@@ -36,9 +36,20 @@ export default function MaintenanceGate({ children }: { children: React.ReactNod
     }
   };
 
-  // 1. Rute Admin & API SELALU bebas diakses kapan saja
-  if (pathname.startsWith("/admin") || pathname.startsWith("/api")) {
+  // 1. Rute API
+  if (pathname.startsWith("/api")) {
     return <>{children}</>;
+  }
+
+  // 2. Rute Admin: Tetap tampilkan Header Navbar & Footer resmi secara penuh
+  if (pathname.startsWith("/admin")) {
+    return (
+      <>
+        <Navbar />
+        <div className="flex-1">{children}</div>
+        <Footer />
+      </>
+    );
   }
 
   // 2. Jika Mode Pemeliharaan / Coming Soon AKTIF
