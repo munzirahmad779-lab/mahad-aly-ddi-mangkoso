@@ -30,9 +30,11 @@ import {
   DonationCategoryKey,
   BankAccount,
   SecurityThreatLog,
-  HomeSectionConfigItem
+  HomeSectionConfigItem,
+  MaintenanceConfig,
+  MaintenancePillar
 } from "@/lib/types";
-import { INITIAL_PAGE_TEXTS, INITIAL_NAVBAR_SETTINGS } from "@/lib/mock-data";
+import { INITIAL_PAGE_TEXTS, INITIAL_NAVBAR_SETTINGS, INITIAL_MAINTENANCE_CONFIG } from "@/lib/mock-data";
 
 const SYSTEM_NAV_PAGES = [
   { label: "🏠 Beranda", url: "/" },
@@ -1189,6 +1191,101 @@ export default function AdminPage() {
     }
   }, [settings]);
 
+  // Maintenance / Coming Soon Config State
+  const [maintenanceForm, setMaintenanceForm] = useState<MaintenanceConfig>(
+    settings.maintenanceConfig || INITIAL_MAINTENANCE_CONFIG
+  );
+
+  useEffect(() => {
+    if (settings.maintenanceConfig) {
+      setMaintenanceForm(settings.maintenanceConfig);
+    }
+  }, [settings.maintenanceConfig]);
+
+  const applyMaintenancePreset = (preset: "comingsoon" | "maintenance" | "update") => {
+    if (preset === "comingsoon") {
+      setMaintenanceForm({
+        badge: "Tahap Finalisasi Data & Khazanah Digital",
+        title: "Meneguhkan Khazanah Turats, Menjawab Dinamika Zaman",
+        subtitle: "Pendidikan Tinggi Kader Ulama Takhassus Fiqh wa Usuluhu — Berakar kuat pada sanad keilmuan klasik Anregurutta, progresif merespons tantangan kontemporer.",
+        arabicHeading: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+        noticeTitle: "Maklumat Redaksi & Pengelola Portal",
+        noticeGreeting: "Assalamu'alaikum Warahmatullahi Wabarakatuh.",
+        noticeContent: "Saat ini dewan masyaikh dan tim redaksi sedang menyempurnakan basis data kurikulum kitab turats klasik, repositori risalah ilmiah mahasantri, direktori fatwa bahtsul masail, dan sistem penerimaan mahasantri baru (PMB).",
+        noticeNote: "Insya Allah, portal resmi ini akan segera diluncurkan secara penuh untuk masyarakat luas. Bagi mahasantri, alumni, dan calon pendaftar yang membutuhkan informasi resmi, silakan menghubungi narahubung sekretariat di bawah ini.",
+        whatsappNumber: maintenanceForm.whatsappNumber || "+62 812-4234-xxxx",
+        whatsappLabel: "Hubungi WhatsApp Sekretariat",
+        email: maintenanceForm.email || "redaksi@mahadaly-ddimangkoso.my.id",
+        address: maintenanceForm.address || "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
+        pillars: [
+          { value: "M.1", label: "Jenjang Marhalah Ula" },
+          { value: "4 Tahun", label: "Masa Pengkaderan" },
+          { value: "Turats", label: "Sanad Kitab Salaf" },
+          { value: "100%", label: "Beasiswa Penuh" }
+        ]
+      });
+    } else if (preset === "maintenance") {
+      setMaintenanceForm({
+        badge: "Pemeliharaan Sistem & Perbaikan Teknis",
+        title: "Sistem Sedang Dalam Pemeliharaan Berkala",
+        subtitle: "Kami sedang melakukan pemeliharaan infrastruktur server dan peningkatan keamanan untuk menjamin stabilitas akses layanan akademik.",
+        arabicHeading: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+        noticeTitle: "Pemberitahuan Tim IT & Pengelola Sistem",
+        noticeGreeting: "Assalamu'alaikum Warahmatullahi Wabarakatuh.",
+        noticeContent: "Mohon maaf atas ketidaknyamanan Anda. Saat ini tim teknis sedang melakukan optimalisasi basis data dan peningkatan sistem keamanan portal secara menyeluruh.",
+        noticeNote: "Layanan website akan segera kembali normal setelah proses pemeliharaan selesai. Untuk keperluan mendesak atau konfirmasi akademik, silakan hubungi kontak sekretariat.",
+        whatsappNumber: maintenanceForm.whatsappNumber || "+62 812-4234-xxxx",
+        whatsappLabel: "Hubungi Hotline Sekretariat",
+        email: maintenanceForm.email || "redaksi@mahadaly-ddimangkoso.my.id",
+        address: maintenanceForm.address || "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
+        pillars: [
+          { value: "Server", label: "Optimalisasi Sistem" },
+          { value: "Data", label: "Keamanan Terjaga" },
+          { value: "24/7", label: "Dukungan Tim Teknis" },
+          { value: "Segera", label: "Normal Kembali" }
+        ]
+      });
+    } else if (preset === "update") {
+      setMaintenanceForm({
+        badge: "Pembaruan Basis Data Kurikulum & PMB",
+        title: "Pembaruan Data & Risalah Ilmiah Sedang Berlangsung",
+        subtitle: "Pengkinian silabus mata kuliah, ijazah sanad, karya ilmiah skripsi, dan alur pendaftaran mahasantri baru angkatan terbaru.",
+        arabicHeading: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+        noticeTitle: "Maklumat Biro Akademik & Kemahasantrian",
+        noticeGreeting: "Assalamu'alaikum Warahmatullahi Wabarakatuh.",
+        noticeContent: "Kami sedang memperbarui direktori kurikulum turats, daftar dewan masyayikh, serta verifikasi kuota beasiswa PMB agar informasi yang disajikan akurat dan mutakhir.",
+        noticeNote: "Seluruh fitur akan dapat diakses kembali dalam waktu dekat. Terima kasih atas pengertian dan kesabaran Anda.",
+        whatsappNumber: maintenanceForm.whatsappNumber || "+62 812-4234-xxxx",
+        whatsappLabel: "Tanya PMB via WhatsApp",
+        email: maintenanceForm.email || "redaksi@mahadaly-ddimangkoso.my.id",
+        address: maintenanceForm.address || "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
+        pillars: [
+          { value: "PMB", label: "Beasiswa 100%" },
+          { value: "Turats", label: "Sanad Mu'tabar" },
+          { value: "8 Smt", label: "Program Sarjana" },
+          { value: "Kemenag", label: "Izin Resmi RI" }
+        ]
+      });
+    }
+  };
+
+  const handleSaveMaintenanceConfig = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateSettings({
+      maintenanceConfig: maintenanceForm
+    });
+    alert("Konfigurasi Coming Soon & Pemeliharaan berhasil disimpan dan langsung aktif di website!");
+  };
+
+  const updatePillar = (index: number, field: "value" | "label", val: string) => {
+    const currentPillars =
+      maintenanceForm.pillars && maintenanceForm.pillars.length === 4
+        ? [...maintenanceForm.pillars]
+        : [...INITIAL_MAINTENANCE_CONFIG.pillars];
+    currentPillars[index] = { ...currentPillars[index], [field]: val };
+    setMaintenanceForm({ ...maintenanceForm, pillars: currentPillars });
+  };
+
   // Traffic Stats & GA Guide State
   const [showGaGuide, setShowGaGuide] = useState(false);
   const [trafficStats, setTrafficStats] = useState<{ totalViews: number; pages: Record<string, number>; lastVisit?: string }>({
@@ -1634,7 +1731,7 @@ export default function AdminPage() {
                   { id: "profile", icon: "📜", label: "Profil Lembaga" },
                   { id: "academic", icon: "📖", label: "Akademik & Kurikulum" },
                   { id: "aboutpage", icon: "🏛️", label: "Halaman Tentang" },
-                  { id: "comingsoon", icon: "🔧", label: "Coming Soon Mgr" }
+                  { id: "comingsoon", icon: "⏳", label: "Coming Soon & Pemeliharaan" }
                 ]
               },
               {
@@ -1770,7 +1867,7 @@ export default function AdminPage() {
               {activeMenu === "pmb" && "🎓 Penerimaan Mahasantri Baru (PMB Online, Gelombang & FAQ)"}
               {activeMenu === "information" && "📰 Warta Berita, Agenda & Galeri Foto Dokumentasi"}
               {activeMenu === "email" && "📧 Konfigurasi Email Redaksi, Log & Subscriber"}
-              {activeMenu === "comingsoon" && "🔧 Manajemen Halaman Coming Soon / Placeholder"}
+              {activeMenu === "comingsoon" && "⏳ Manajemen Mode Coming Soon, Pemeliharaan & Kontak Darurat"}
               {activeMenu === "donations" && "💰 Kelola Program Donasi, Wakaf & Rekening Resmi Lembaga"}
               {activeMenu === "auditlogs" && "🔒 Riwayat Perubahan & Audit Trail Aktivitas Admin (Khusus Super Admin)"}
               {activeMenu === "security" && "🛡️ Pusat Pertahanan Siber & Deteksi Ancaman (Anti-Hack)"}
@@ -1826,7 +1923,11 @@ export default function AdminPage() {
                       confirmAndReset("Warta & Galeri", resetNewsAndGalleryToDefault);
                       break;
                     case "comingsoon":
-                      confirmAndReset("Coming Soon Manager", resetComingSoonToDefault);
+                      confirmAndReset("Coming Soon & Pemeliharaan", (user) => {
+                        updateSettings({ maintenanceConfig: INITIAL_MAINTENANCE_CONFIG });
+                        setMaintenanceForm(INITIAL_MAINTENANCE_CONFIG);
+                        resetComingSoonToDefault(user);
+                      });
                       break;
                     case "seo":
                       confirmAndReset("SEO & Meta Tags", resetSeoToDefault);
@@ -8470,58 +8571,497 @@ export default function AdminPage() {
         )}
 
         {/* ══════════════════════════════════════════════════════════════
-            11. MANAJEMEN COMING SOON
+            11. MANAJEMEN COMING SOON & PEMELIHARAAN SISTEM
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "comingsoon" && (
-          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-xs">
-            <div className="pb-2 border-b">
-              <h3 className="font-serif font-bold text-lg text-slate-900">
-                🔧 Manajemen Halaman Placeholder &amp; Jadwal Rilis
-              </h3>
-              <p className="text-slate-500 text-xs mt-0.5">
-                Aktifkan atau jadwalkan rilis halaman fitur khusus berikut ini:
-              </p>
+          <div className="space-y-6 text-xs">
+            {/* Kartu Status Utama & Saklar Master */}
+            <div
+              className={`p-6 sm:p-8 rounded-2xl border shadow-sm transition-all space-y-4 ${
+                settings.maintenanceMode !== false
+                  ? "bg-amber-50/90 border-amber-300"
+                  : "bg-emerald-50/90 border-emerald-300"
+              }`}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">
+                      {settings.maintenanceMode !== false ? "🔒" : "🟢"}
+                    </span>
+                    <h3 className="font-serif font-bold text-lg text-slate-900">
+                      {settings.maintenanceMode !== false
+                        ? "Portal Berada dalam Mode Coming Soon / Pemeliharaan"
+                        : "Portal Aktif & Terbuka untuk Publik (Mode Live)"}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
+                    {settings.maintenanceMode !== false
+                      ? "Pengunjung publik hanya dapat melihat halaman Coming Soon resmi dengan kontak sekretariat. Anda sebagai admin tetap bisa mengakses seluruh panel admin dan melihat preview web secara utuh."
+                      : "Semua pengunjung dari Google dan internet dapat mengakses seluruh halaman profil, artikel, fatwa, skripsi, dan informasi akademik secara normal."}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextState = !(settings.maintenanceMode !== false);
+                      toggleMaintenanceMode(nextState, currentUser?.nama_lengkap || "Super Admin");
+                    }}
+                    className={`px-4 py-2.5 rounded-xl font-bold text-xs shadow-md transition cursor-pointer flex items-center gap-2 ${
+                      settings.maintenanceMode !== false
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        : "bg-amber-600 hover:bg-amber-700 text-white"
+                    }`}
+                  >
+                    <span>
+                      {settings.maintenanceMode !== false
+                        ? "🚀 Buka Web untuk Publik"
+                        : "🔒 Kunci / Aktifkan Pemeliharaan"}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        localStorage.setItem("mahad_admin_preview", "true");
+                        window.open("/?preview=true", "_blank");
+                      }
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl font-bold text-xs bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+                    title="Buka pratinjau website utuh dalam tab baru"
+                  >
+                    <span>👁️</span>
+                    <span>Pratinjau Web Utuh</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.open("/", "_blank");
+                      }
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl font-bold text-xs bg-emerald-950 hover:bg-black text-emerald-300 border border-emerald-800 shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+                    title="Buka tampilan persis seperti yang dilihat pengunjung biasa"
+                  >
+                    <span>📱</span>
+                    <span>Tampilan Layar Publik</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-3">
-              {comingSoonPages.map((page) => (
-                <div key={page.id} className="p-4 bg-slate-50 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-slate-900 text-base">{page.title}</h4>
-                      <span className="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded text-[10px]">
-                        Target: {page.releaseDate}
-                      </span>
+            {/* Template Preset Cepat */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div>
+                <span className="font-bold text-slate-800 text-xs block">
+                  ⚡ Template Cepat Sekali Klik:
+                </span>
+                <span className="text-slate-500 text-[11px]">
+                  Pilih salah satu template di samping untuk mengisi teks secara otomatis bila ada perbaikan mendesak:
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => applyMaintenancePreset("comingsoon")}
+                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg font-bold text-[11px] transition cursor-pointer"
+                >
+                  🚀 Mode Peluncuran
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyMaintenancePreset("maintenance")}
+                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg font-bold text-[11px] transition cursor-pointer"
+                >
+                  🛠️ Perbaikan Sistem / Gangguan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyMaintenancePreset("update")}
+                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 rounded-lg font-bold text-[11px] transition cursor-pointer"
+                >
+                  📚 Pembaruan Kurikulum &amp; PMB
+                </button>
+              </div>
+            </div>
+
+            {/* Form Editor Lengkap CMS Coming Soon & Pemeliharaan */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+              <div className="pb-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-slate-900">
+                    ✍️ Edit Konten Halaman Coming Soon / Pemeliharaan
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-0.5">
+                    Seluruh teks, alasan pemeliharaan, nomor WhatsApp narahubung, dan kartu pilar dapat diubah di sini secara dinamis.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full">
+                    Tersimpan di Cloud Database
+                  </span>
+                </div>
+              </div>
+
+              <form onSubmit={handleSaveMaintenanceConfig} className="space-y-6">
+                {/* 1. Bagian Header & Teks Utama */}
+                <div className="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-4">
+                  <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-2">
+                    <span>1️⃣</span>
+                    <span>Judul Utama &amp; Kaligrafi Arab</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Teks Badge Status (Pill Atas)
+                      </label>
+                      <input
+                        type="text"
+                        value={maintenanceForm.badge}
+                        onChange={(e) =>
+                          setMaintenanceForm({ ...maintenanceForm, badge: e.target.value })
+                        }
+                        placeholder="Contoh: Tahap Finalisasi Data & Khazanah Digital"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-medium"
+                        required
+                      />
                     </div>
-                    <p className="text-slate-600 text-xs mt-1">{page.description}</p>
-                    <p className="text-emerald-800 font-semibold text-[11px] mt-1">
-                      👥 {page.subscriberCount} Calon Pembaca Menunggu Notifikasi
-                    </p>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Kaligrafi Arab (Opsional)
+                      </label>
+                      <input
+                        type="text"
+                        dir="rtl"
+                        value={maintenanceForm.arabicHeading || ""}
+                        onChange={(e) =>
+                          setMaintenanceForm({ ...maintenanceForm, arabicHeading: e.target.value })
+                        }
+                        placeholder="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm font-serif text-right"
+                      />
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Link
-                      href={`/${page.slug}`}
-                      target="_blank"
-                      className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg"
-                    >
-                      Pratinjau &rarr;
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toggleComingSoonPage(page.id, !page.isEnabled);
-                        alert(`Status halaman ${page.title} diperbarui!`);
-                      }}
-                      className={`px-3 py-1.5 rounded-lg font-bold text-white shadow ${
-                        page.isEnabled ? "bg-emerald-800 hover:bg-emerald-900" : "bg-slate-500"
-                      }`}
-                    >
-                      {page.isEnabled ? "Status: Placeholder Aktif" : "Nonaktifkan"}
-                    </button>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Judul Utama Halaman
+                    </label>
+                    <input
+                      type="text"
+                      value={maintenanceForm.title}
+                      onChange={(e) =>
+                        setMaintenanceForm({ ...maintenanceForm, title: e.target.value })
+                      }
+                      placeholder="Meneguhkan Khazanah Turats, Menjawab Dinamika Zaman"
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-900"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Subjudul / Tagline Penjelas
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={maintenanceForm.subtitle}
+                      onChange={(e) =>
+                        setMaintenanceForm({ ...maintenanceForm, subtitle: e.target.value })
+                      }
+                      placeholder="Pendidikan Tinggi Kader Ulama Takhassus Fiqh wa Usuluhu..."
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs leading-relaxed"
+                      required
+                    />
                   </div>
                 </div>
-              ))}
+
+                {/* 2. Kotak Maklumat & Alasan Pemeliharaan */}
+                <div className="p-5 bg-emerald-50/50 rounded-2xl border border-emerald-200/80 space-y-4">
+                  <h4 className="font-bold text-emerald-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                    <span>2️⃣</span>
+                    <span>Kotak Maklumat &amp; Alasan Pemeliharaan</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Judul Header Box Maklumat
+                      </label>
+                      <input
+                        type="text"
+                        value={maintenanceForm.noticeTitle}
+                        onChange={(e) =>
+                          setMaintenanceForm({ ...maintenanceForm, noticeTitle: e.target.value })
+                        }
+                        placeholder="Maklumat Redaksi & Pengelola Portal"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Salam Pembuka
+                      </label>
+                      <input
+                        type="text"
+                        value={maintenanceForm.noticeGreeting}
+                        onChange={(e) =>
+                          setMaintenanceForm({ ...maintenanceForm, noticeGreeting: e.target.value })
+                        }
+                        placeholder="Assalamu'alaikum Warahmatullahi Wabarakatuh."
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Isi Maklumat / Alasan Pemeliharaan / Status Data yang Sedang Diperbaiki
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={maintenanceForm.noticeContent}
+                      onChange={(e) =>
+                        setMaintenanceForm({ ...maintenanceForm, noticeContent: e.target.value })
+                      }
+                      placeholder="Jelaskan alasan mengapa portal sedang ditutup sementara atau apa yang sedang disiapkan..."
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs leading-relaxed"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Catatan Penutup / Arahan Mahasantri &amp; Tamu
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={maintenanceForm.noticeNote || ""}
+                      onChange={(e) =>
+                        setMaintenanceForm({ ...maintenanceForm, noticeNote: e.target.value })
+                      }
+                      placeholder="Insya Allah, portal resmi ini akan segera diluncurkan secara penuh..."
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs leading-relaxed"
+                    />
+                  </div>
+                </div>
+
+                {/* 3. Kontak Sekretariat & Narahubung Darurat */}
+                <div className="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-4">
+                  <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-2">
+                    <span>3️⃣</span>
+                    <span>Narahubung &amp; Kontak Resmi Sekretariat</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Nomor WhatsApp Narahubung (Bisa Diganti Kapan Saja)
+                      </label>
+                      <input
+                        type="text"
+                        value={maintenanceForm.whatsappNumber}
+                        onChange={(e) =>
+                          setMaintenanceForm({ ...maintenanceForm, whatsappNumber: e.target.value })
+                        }
+                        placeholder="Contoh: 081242345678 atau +62 812-4234-xxxx"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold text-emerald-800"
+                        required
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Nomor ini akan otomatis menjadi link klik-ke-chat WhatsApp resmi di layar pengunjung.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Label Tombol WhatsApp
+                      </label>
+                      <input
+                        type="text"
+                        value={maintenanceForm.whatsappLabel || ""}
+                        onChange={(e) =>
+                          setMaintenanceForm({ ...maintenanceForm, whatsappLabel: e.target.value })
+                        }
+                        placeholder="Hubungi WhatsApp Sekretariat"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Email Resmi Sekretariat
+                      </label>
+                      <input
+                        type="email"
+                        value={maintenanceForm.email}
+                        onChange={(e) =>
+                          setMaintenanceForm({ ...maintenanceForm, email: e.target.value })
+                        }
+                        placeholder="redaksi@mahadaly-ddimangkoso.my.id"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-mono"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Alamat Kampus / Sekretariat
+                      </label>
+                      <input
+                        type="text"
+                        value={maintenanceForm.address}
+                        onChange={(e) =>
+                          setMaintenanceForm({ ...maintenanceForm, address: e.target.value })
+                        }
+                        placeholder="Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. 4 Pilar / Kartu Sorotan Informasi */}
+                <div className="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-4">
+                  <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-2">
+                    <span>4️⃣</span>
+                    <span>4 Kartu Sorotan Informasi (Pillars)</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    {[0, 1, 2, 3].map((idx) => {
+                      const pillar =
+                        maintenanceForm.pillars && maintenanceForm.pillars[idx]
+                          ? maintenanceForm.pillars[idx]
+                          : INITIAL_MAINTENANCE_CONFIG.pillars[idx] || { value: "-", label: "-" };
+                      return (
+                        <div key={idx} className="p-3 bg-white rounded-xl border border-slate-200 space-y-2">
+                          <span className="text-[10px] font-bold text-slate-400 block uppercase">
+                            Kartu {idx + 1}
+                          </span>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-600 mb-0.5">
+                              Angka / Teks Ringkas
+                            </label>
+                            <input
+                              type="text"
+                              value={pillar.value}
+                              onChange={(e) => updatePillar(idx, "value", e.target.value)}
+                              placeholder="Contoh: M.1 / 100%"
+                              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-xs text-amber-900"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-600 mb-0.5">
+                              Label Keterangan
+                            </label>
+                            <input
+                              type="text"
+                              value={pillar.label}
+                              onChange={(e) => updatePillar(idx, "label", e.target.value)}
+                              placeholder="Contoh: Beasiswa Penuh"
+                              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                              required
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Tombol Simpan */}
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>💾</span>
+                    <span>Simpan Perubahan Mode Coming Soon / Pemeliharaan</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm("Reset seluruh teks Coming Soon ke pengaturan default Ma'had Aly?")) {
+                        applyMaintenancePreset("comingsoon");
+                      }
+                    }}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition cursor-pointer"
+                  >
+                    <span>↩️ Reset ke Bawaan</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Jadwal Rilis Sub-Halaman Spesifik */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+              <div className="pb-2 border-b">
+                <h3 className="font-serif font-bold text-base text-slate-900">
+                  📅 Manajemen Placeholder Sub-Halaman Spesifik
+                </h3>
+                <p className="text-slate-500 text-xs mt-0.5">
+                  Pengaturan jadwal rilis dan target pembaca untuk modul khusus yang belum dirilis penuh:
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {comingSoonPages.map((page) => (
+                  <div
+                    key={page.id}
+                    className="p-4 bg-slate-50 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-slate-900 text-base">{page.title}</h4>
+                        <span className="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded text-[10px]">
+                          Target: {page.releaseDate}
+                        </span>
+                      </div>
+                      <p className="text-slate-600 text-xs mt-1">{page.description}</p>
+                      <p className="text-emerald-800 font-semibold text-[11px] mt-1">
+                        👥 {page.subscriberCount} Calon Pembaca Menunggu Notifikasi
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Link
+                        href={`/${page.slug}`}
+                        target="_blank"
+                        className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg"
+                      >
+                        Pratinjau &rarr;
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          toggleComingSoonPage(page.id, !page.isEnabled);
+                          alert(`Status halaman ${page.title} diperbarui!`);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-white shadow ${
+                          page.isEnabled ? "bg-emerald-800 hover:bg-emerald-900" : "bg-slate-500"
+                        }`}
+                      >
+                        {page.isEnabled ? "Status: Placeholder Aktif" : "Nonaktifkan"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

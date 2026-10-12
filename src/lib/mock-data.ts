@@ -36,7 +36,8 @@ import {
   AboutPageContent,
   PageTextsSettings,
   DonationProgram,
-  SecurityThreatLog
+  SecurityThreatLog,
+  MaintenanceConfig
 } from "./types";
 
 export const INITIAL_HERO: HeroSectionData = {
@@ -119,6 +120,27 @@ export const INITIAL_FOOTER_FOCUS: FooterFocusItem[] = [
   { id: "ffoc-5", name: "Manuskrip Gurutta Ambo Dalle", icon: "👑", position: 5, isActive: true }
 ];
 
+export const INITIAL_MAINTENANCE_CONFIG: MaintenanceConfig = {
+  badge: "Tahap Finalisasi Data & Khazanah Digital",
+  title: "Meneguhkan Khazanah Turats, Menjawab Dinamika Zaman",
+  subtitle: "Pendidikan Tinggi Kader Ulama Takhassus Fiqh wa Usuluhu — Berakar kuat pada sanad keilmuan klasik Anregurutta, progresif merespons tantangan kontemporer.",
+  arabicHeading: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+  noticeTitle: "Maklumat Redaksi & Pengelola Portal",
+  noticeGreeting: "Assalamu'alaikum Warahmatullahi Wabarakatuh.",
+  noticeContent: "Saat ini dewan masyaikh dan tim redaksi sedang menyempurnakan basis data kurikulum kitab turats klasik, repositori risalah ilmiah mahasantri, direktori fatwa bahtsul masail, dan sistem penerimaan mahasantri baru (PMB).",
+  noticeNote: "Insya Allah, portal resmi ini akan segera diluncurkan secara penuh untuk masyarakat luas. Bagi mahasantri, alumni, dan calon pendaftar yang membutuhkan informasi resmi, silakan menghubungi narahubung sekretariat di bawah ini.",
+  whatsappNumber: "+62 812-4234-xxxx",
+  whatsappLabel: "Hubungi WhatsApp Sekretariat",
+  email: "redaksi@mahadaly-ddimangkoso.my.id",
+  address: "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
+  pillars: [
+    { value: "M.1", label: "Jenjang Marhalah Ula" },
+    { value: "4 Tahun", label: "Masa Pengkaderan" },
+    { value: "Turats", label: "Sanad Kitab Salaf" },
+    { value: "100%", label: "Beasiswa Penuh" }
+  ]
+};
+
 export const INITIAL_SETTINGS: SiteSettings = {
   institutionName: "Ma'had Aly Pendidikan Tinggi Kader Ulama DDI Abdurrahman Ambo Dalle, Mangkoso",
   takhassus: "Fiqh wa Usuluhu (Fiqh dan Ushul Fikih)",
@@ -149,7 +171,8 @@ export const INITIAL_SETTINGS: SiteSettings = {
   googleAnalyticsId: "G-EBBP80BZWL",
   socialMedia: INITIAL_SOCIAL_MEDIA,
   footer: INITIAL_FOOTER_SETTINGS,
-  maintenanceMode: true
+  maintenanceMode: true,
+  maintenanceConfig: INITIAL_MAINTENANCE_CONFIG
 };
 
 export const INITIAL_LECTURERS: Lecturer[] = [

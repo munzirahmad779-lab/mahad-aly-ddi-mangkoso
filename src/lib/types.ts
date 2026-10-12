@@ -409,6 +409,28 @@ export interface SiteSettings {
   socialMedia?: SocialMediaSettings;
   footer?: FooterSettings;
   maintenanceMode?: boolean;
+  maintenanceConfig?: MaintenanceConfig;
+}
+
+export interface MaintenancePillar {
+  value: string;
+  label: string;
+}
+
+export interface MaintenanceConfig {
+  badge: string;
+  title: string;
+  subtitle: string;
+  arabicHeading?: string;
+  noticeTitle: string;
+  noticeGreeting: string;
+  noticeContent: string;
+  noticeNote?: string;
+  whatsappNumber: string;
+  whatsappLabel?: string;
+  email: string;
+  address: string;
+  pillars: MaintenancePillar[];
 }
 
 export interface NavbarLink {
