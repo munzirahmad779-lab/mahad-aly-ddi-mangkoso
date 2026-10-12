@@ -17,6 +17,17 @@ const HONEYPOT_PATHS = [
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const proto = request.headers.get("x-forwarded-proto");
+  const host = request.headers.get("host") || "";
+
+  // 0. Paksa redirect HTTP ke HTTPS permanen (301) untuk optimasi SEO & keamanan
+  if (proto === "http" && !host.includes("localhost") && !host.includes("127.0.0.1")) {
+    const httpsUrl = request.nextUrl.clone();
+    httpsUrl.protocol = "https:";
+    httpsUrl.host = host;
+    return NextResponse.redirect(httpsUrl, 301);
+  }
+
   const clientIp =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("cf-connecting-ip") ||
