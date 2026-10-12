@@ -31,8 +31,19 @@ export const metadata: Metadata = {
     default: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
     template: "%s | Ma'had Aly DDI Mangkoso"
   },
-  description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso. Membina kader ulama berakar pada sanad kitab klasik dan berwawasan wasathiyyah.",
-  keywords: ["Ma'had Aly", "DDI Mangkoso", "Pendidikan Kader Ulama", "Turats", "Fiqh Mu'asarah", "Usul Fikih", "Barru", "Sulawesi Selatan"],
+  description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso (Mahad Aly Mangkoso). Membina kader ulama berakar pada sanad kitab klasik dan berwawasan wasathiyyah di Barru, Sulawesi Selatan.",
+  keywords: [
+    "mahad aly mangkoso",
+    "Mahad Aly Mangkoso",
+    "Ma'had Aly DDI Mangkoso",
+    "mahad aly ddi mangkoso",
+    "Pendidikan Kader Ulama",
+    "Turats",
+    "Fiqh Mu'asarah",
+    "Usul Fikih",
+    "Barru",
+    "Sulawesi Selatan"
+  ],
   authors: [{ name: "Ma'had Aly DDI Mangkoso" }],
   creator: "Ma'had Aly DDI Mangkoso",
   openGraph: {
@@ -41,7 +52,7 @@ export const metadata: Metadata = {
     url: "https://mahadaly-ddimangkoso.my.id",
     siteName: "Ma'had Aly DDI Mangkoso",
     title: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
-    description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso. Membina kader ulama berakar pada sanad kitab klasik dan berwawasan wasathiyyah.",
+    description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso (Mahad Aly Mangkoso). Membina kader ulama berakar pada sanad kitab klasik dan berwawasan wasathiyyah.",
     images: [
       {
         url: "/image_067524.png",
@@ -83,9 +94,54 @@ export default function RootLayout({
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-EBBP80BZWL";
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "EducationalOrganization",
+        "@id": "https://mahadaly-ddimangkoso.my.id/#organization",
+        "name": "Ma'had Aly DDI Mangkoso",
+        "alternateName": [
+          "Mahad Aly Mangkoso",
+          "Mahad Aly DDI Mangkoso",
+          "Ma'had Aly Pendidikan Kader Ulama DDI Mangkoso",
+          "Pondok Pesantren DDI Mangkoso Mahad Aly"
+        ],
+        "url": "https://mahadaly-ddimangkoso.my.id",
+        "logo": "https://mahadaly-ddimangkoso.my.id/image_067524.png",
+        "sameAs": [
+          "https://www.instagram.com/mahadalyddimangkoso"
+        ],
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Kompleks Pondok Pesantren DDI Mangkoso, Kel. Mangkoso, Kec. Soppeng Riaja",
+          "addressLocality": "Barru",
+          "addressRegion": "Sulawesi Selatan",
+          "postalCode": "90752",
+          "addressCountry": "ID"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://mahadaly-ddimangkoso.my.id/#website",
+        "url": "https://mahadaly-ddimangkoso.my.id",
+        "name": "Ma'had Aly DDI Mangkoso",
+        "alternateName": "Mahad Aly Mangkoso",
+        "publisher": {
+          "@id": "https://mahadaly-ddimangkoso.my.id/#organization"
+        },
+        "inLanguage": "id-ID"
+      }
+    ]
+  };
+
   return (
     <html lang="id" className={`scroll-smooth ${inter.variable} ${amiri.variable} ${cinzel.variable}`}>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <script
           async
           src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}

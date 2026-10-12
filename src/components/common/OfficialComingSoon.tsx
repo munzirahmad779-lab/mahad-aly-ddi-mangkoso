@@ -167,9 +167,18 @@ export default function OfficialComingSoon() {
           <span>📍 {cfg.address || settings.address || "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752"}</span>
           <span>•</span>
           <span>✉️ {cfg.email || settings.emailSubmission || "redaksi@mahadaly-ddimangkoso.my.id"}</span>
+          <span>•</span>
+          <a
+            href="https://www.instagram.com/mahadalyddimangkoso"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-mahad-gold transition inline-flex items-center gap-1 text-emerald-300 underline underline-offset-2"
+          >
+            <span>📸 @mahadalyddimangkoso</span>
+          </a>
         </p>
         <p className="text-[11px] text-emerald-400/60">
-          © 2026 Ma&apos;had Aly DDI Mangkoso. Hak Cipta Dilindungi • Mewarisi Khazanah Turats, Menjaga Sanad Ulama Nusantara.
+          © 2026 Ma&apos;had Aly DDI Mangkoso (Mahad Aly Mangkoso). Hak Cipta Dilindungi • Mewarisi Khazanah Turats, Menjaga Sanad Ulama Nusantara.
         </p>
       </footer>
     </div>
