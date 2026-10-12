@@ -195,6 +195,7 @@ export default function AdminPage() {
     publishSubmissionAsThesis,
     settings,
     updateSettings,
+    toggleMaintenanceMode,
     exportBackupJson,
     importBackupJson,
     resetAllData,
@@ -1860,6 +1861,21 @@ export default function AdminPage() {
                 <span className="hidden sm:inline">Reset Panel ke Standar</span>
               </button>
             )}
+
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("mahad_admin_preview", "true");
+                  window.open("/?preview=true", "_blank");
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white transition shadow-sm cursor-pointer"
+              title="Buka pratinjau website utuh dalam mode admin (melewati layar Coming Soon)"
+            >
+              <span>👁️</span>
+              <span className="hidden sm:inline">Pratinjau Web Utuh</span>
+            </button>
 
             <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
               isSuperAdmin ? "bg-amber-100 text-amber-950 border border-amber-300" : "bg-emerald-100 text-emerald-900 border border-emerald-300"
@@ -11738,6 +11754,63 @@ export default function AdminPage() {
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "settings" && (
           <div className="space-y-6 text-xs font-medium">
+            {/* Kartu Status Publikasi & Mode Coming Soon */}
+            <div className={`p-6 sm:p-8 rounded-2xl border shadow-sm space-y-4 transition-all ${
+              settings.maintenanceMode !== false
+                ? "bg-amber-50/90 border-amber-300"
+                : "bg-emerald-50/90 border-emerald-300"
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">
+                      {settings.maintenanceMode !== false ? "🔒" : "🟢"}
+                    </span>
+                    <h3 className="font-serif font-bold text-lg text-slate-900">
+                      Status Peluncuran Website (Mode Coming Soon / Live)
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
+                    {settings.maintenanceMode !== false
+                      ? "Website saat ini berada dalam MODE COMING SOON. Pengunjung umum hanya dapat melihat layar resmi perkenalan lembaga & kontak darurat sekretariat. Seluruh data kajian & skripsi aman dari publik selagi Anda merapikannya."
+                      : "Website saat ini AKTIF DAN TERBUKA UNTUK PUBLIK. Seluruh pengunjung internet dapat mengakses seluruh halaman artikel, warta, skripsi, dan profil secara penuh."}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextState = !(settings.maintenanceMode !== false);
+                      toggleMaintenanceMode(nextState, currentUser?.nama_lengkap || "Super Admin");
+                    }}
+                    className={`px-4 py-2.5 rounded-xl font-bold text-xs shadow-md transition cursor-pointer flex items-center gap-2 ${
+                      settings.maintenanceMode !== false
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        : "bg-amber-600 hover:bg-amber-700 text-white"
+                    }`}
+                  >
+                    <span>{settings.maintenanceMode !== false ? "🚀 Buka Web untuk Publik" : "🔒 Aktifkan Mode Coming Soon"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        localStorage.setItem("mahad_admin_preview", "true");
+                        window.open("/?preview=true", "_blank");
+                      }
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl font-bold text-xs bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+                    title="Buka pratinjau website utuh dalam tab baru"
+                  >
+                    <span>👁️</span>
+                    <span>Pratinjau Web Utuh</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               <h3 className="font-serif font-bold text-lg text-slate-900 pb-2 border-b">
                 Identitas Lembaga &amp; Kontak Resmi

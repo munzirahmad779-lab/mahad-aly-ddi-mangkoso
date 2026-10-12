@@ -149,7 +149,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
   googleAnalyticsId: "G-EBBP80BZWL",
   socialMedia: INITIAL_SOCIAL_MEDIA,
   footer: INITIAL_FOOTER_SETTINGS,
-  maintenanceMode: false
+  maintenanceMode: true
 };
 
 export const INITIAL_LECTURERS: Lecturer[] = [

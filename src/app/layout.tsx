@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Amiri, Cinzel } from "next/font/google";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import MaintenanceGate from "@/components/common/MaintenanceGate";
 import GoogleAnalytics from "@/components/common/GoogleAnalytics";
 import { ArticleProvider } from "@/context/ArticleContext";
 import "./globals.css";
@@ -107,9 +106,7 @@ export default function RootLayout({
       <body className="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-mahad-gold selection:text-mahad-green-dark flex flex-col min-h-screen">
         <ArticleProvider>
           <GoogleAnalytics />
-          <Navbar />
-          <div className="flex-1">{children}</div>
-          <Footer />
+          <MaintenanceGate>{children}</MaintenanceGate>
         </ArticleProvider>
       </body>
     </html>

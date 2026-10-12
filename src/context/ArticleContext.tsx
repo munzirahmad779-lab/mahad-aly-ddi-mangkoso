@@ -235,6 +235,7 @@ interface DataContextType {
   // Site Settings
   settings: SiteSettings;
   updateSettings: (newSettings: Partial<SiteSettings>) => void;
+  toggleMaintenanceMode: (enabled: boolean, user?: string) => void;
 
   // Backup & Modular Reset
   exportBackupJson: () => string;
@@ -318,6 +319,14 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // 1. Initial hydration from local cache
     try {
+      const savedSettings = localStorage.getItem("mahad_settings");
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          setSettings((prev) => ({ ...prev, ...parsed }));
+        } catch (e) {}
+      }
+
       const savedArticles = localStorage.getItem("mahad_articles");
       if (savedArticles) setArticles(JSON.parse(savedArticles));
 
@@ -718,6 +727,16 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           .single();
         if (pageTextsData?.value) {
           setPageTexts((prev) => ({ ...prev, ...pageTextsData.value }));
+        }
+
+        // Fetch Site Settings from site_content
+        const { data: siteSettingsData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "site_settings")
+          .single();
+        if (siteSettingsData?.value) {
+          setSettings((prev) => ({ ...prev, ...siteSettingsData.value }));
         }
       } catch (err) {
         console.warn("Supabase live fetch notice:", err);
@@ -2015,6 +2034,31 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Maintenance / Coming Soon Toggle
+  const toggleMaintenanceMode = (enabled: boolean, user?: string) => {
+    const updated = { ...settings, maintenanceMode: enabled };
+    setSettings(updated);
+    saveSettings(updated);
+    addLog(
+      enabled ? "Mengaktifkan Mode Coming Soon (Portal Ditutup Sementara)" : "Membuka Website untuk Publik (Mode Live)",
+      "Konfigurasi Peluncuran",
+      user
+    );
+    try {
+      supabase.from("site_content").upsert({
+        key: "site_settings",
+        group_name: "settings",
+        label: "Site Settings",
+        value: updated,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "key" }).then(({ error }) => {
+        if (error) console.warn("Supabase maintenanceMode save notice:", error.message);
+      });
+    } catch (e) {
+      console.warn("DB notice:", e);
+    }
+  };
+
   // Export / Import Backup
   const exportBackupJson = () => {
     const fullBackup = {
@@ -2542,6 +2586,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         resetSeoToDefault,
         resetPageTextsToDefault,
         resetSettingsToDefault,
+        toggleMaintenanceMode,
         clearActivityLogs,
         donations,
         addDonation,
