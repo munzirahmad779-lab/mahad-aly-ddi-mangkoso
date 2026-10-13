@@ -575,6 +575,17 @@ export default function AdminPage() {
     router.push("/admin/login");
   };
 
+  const getAdminApiHeaders = async (): Promise<Record<string, string>> => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session?.access_token) {
+      throw new Error("Sesi admin tidak ditemukan. Silakan keluar dan masuk kembali.");
+    }
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`
+    };
+  };
+
   const handleCreateOrInviteUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail) return;
@@ -587,7 +598,7 @@ export default function AdminPage() {
         }
         const res = await fetch("/api/admin/users", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: await getAdminApiHeaders(),
           body: JSON.stringify({
             action: "create_user",
             email: inviteEmail,
@@ -606,7 +617,7 @@ export default function AdminPage() {
       } else {
         const res = await fetch("/api/admin/invite", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: await getAdminApiHeaders(),
           body: JSON.stringify({
             email: inviteEmail,
             role: inviteRole,
@@ -643,7 +654,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await getAdminApiHeaders(),
         body: JSON.stringify({
           action: "reset_password",
           userId: resetTargetUser.id,
@@ -670,7 +681,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await getAdminApiHeaders(),
         body: JSON.stringify({
           action: "update_profile",
           userId: editTargetUser.id,
@@ -698,7 +709,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await getAdminApiHeaders(),
         body: JSON.stringify({
           action: "delete_user",
           userId
@@ -10815,7 +10826,7 @@ export default function AdminPage() {
                                       </button>
                                       <button
                                         type="button"
-                                        onClick={() => {
+                                        onClick={async () => {
                                           const newPass = prompt(`Masukkan kata sandi baru untuk ${acc.email} (minimal 6 karakter):`);
                                           if (!newPass || newPass.length < 6) {
                                             if (newPass) alert("Kata sandi minimal 6 karakter!");
@@ -10825,7 +10836,7 @@ export default function AdminPage() {
                                           if (userObj?.id) {
                                             fetch("/api/admin/users", {
                                               method: "POST",
-                                              headers: { "Content-Type": "application/json" },
+                                              headers: await getAdminApiHeaders(),
                                               body: JSON.stringify({
                                                 action: "reset_password",
                                                 userId: userObj.id,
@@ -10838,6 +10849,8 @@ export default function AdminPage() {
                                               } else {
                                                 alert("Gagal reset kata sandi: " + res.error);
                                               }
+                                            }).catch((err: unknown) => {
+                                              alert("Gagal reset kata sandi: " + (err instanceof Error ? err.message : "Kesalahan tidak diketahui."));
                                             });
                                           } else {
                                             handleUnlockAccount(acc.email);

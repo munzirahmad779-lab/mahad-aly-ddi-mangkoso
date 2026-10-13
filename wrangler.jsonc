@@ -6,6 +6,9 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "build": {
+    "command": "npm run build:worker"
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
@@ -18,5 +21,17 @@
   "vars": {
     "NEXT_PUBLIC_GA_ID": "G-EBBP80BZWL",
     "NEXT_PUBLIC_SITE_URL": "https://mahadaly-ddimangkoso.my.id"
+  },
+  "previews": {
+    "vars": {
+      "ADMIN_NOTIFICATION_EMAIL": "munzirahmad779@gmail.com",
+      "NEXT_PUBLIC_SITE_URL": "https://mahad-aly-ddi-mangkoso.munzirahmad779.workers.dev",
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_8Y6NE0t_5z4Jo2u3G50bbQ_e1qTTOB-",
+      "NEXT_PUBLIC_SUPABASE_URL": "https://ymxijorgoucpsxgcvtgu.supabase.co",
+      "R2_BUCKET_NAME": "media-mahad-aly",
+      "R2_ENDPOINT": "https://474b78ad5134b8db8bc1f025d36f68f7.r2.cloudflarestorage.com",
+      "R2_PUBLIC_URL": "https://pub-03993bc561244e92aa680c268c4d4b9d.r2.dev",
+      "RESEND_FROM_EMAIL": "onboarding@resend.dev"
+    }
   }
 }
