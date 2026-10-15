@@ -3331,8 +3331,8 @@ export default function AdminPage() {
                           value={editingMember.photoUrl || ""}
                           onChange={(url) => setEditingMember({ ...editingMember, photoUrl: url })}
                           folder="dema"
-                          label="Foto Formal / Almamater Pengurus (Opsional)"
-                          helperText="Unggah foto almamater/formal pengurus (Maksimal 2 MB, rasio 1:1 atau 3:4 disarankan). Kosongkan jika ingin menampilkan inisial nama."
+                          label="Foto Formal / Almamater Pengurus (Ukuran Pas Foto 3x4)"
+                          helperText="Unggah pas foto almamater / formal pengurus berukuran rasio 3:4 (Maksimal 2 MB). Kosongkan jika ingin menampilkan inisial nama."
                           maxSizeMB={2}
                         />
                       </div>

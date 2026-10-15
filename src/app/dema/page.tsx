@@ -177,10 +177,10 @@ export default function DemaPage() {
                       )}
                     </div>
 
-                    {/* Avatar & Info */}
+                    {/* Avatar & Info (Rasio Pas Foto 3:4) */}
                     <div className="flex items-center gap-3.5 mb-3">
                       <div
-                        className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 font-bold text-lg overflow-hidden border-2 shadow-inner transition-transform group-hover:scale-105 ${
+                        className={`w-14 aspect-[3/4] rounded-xl flex items-center justify-center shrink-0 font-bold text-lg overflow-hidden border-2 shadow-sm transition-transform group-hover:scale-105 ${
                           isGreenCard
                             ? "bg-[#064e3b] text-mahad-gold border-mahad-gold/60"
                             : "bg-emerald-100 text-emerald-900 border-emerald-300"
@@ -428,9 +428,9 @@ export default function DemaPage() {
                         )}
                       </div>
 
-                      {/* Avatar Image / Placeholder */}
+                      {/* Avatar Image / Placeholder (Rasio Pas Foto 3:4) */}
                       <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-base shrink-0 overflow-hidden shadow-inner border ${
+                        <div className={`w-12 aspect-[3/4] rounded-xl flex items-center justify-center font-bold text-base shrink-0 overflow-hidden shadow-sm border ${
                           isGreenCard
                             ? "bg-[#064e3b] text-mahad-gold border-mahad-gold/60"
                             : "bg-gradient-to-tr from-emerald-800 to-emerald-600 text-white border-emerald-300"
@@ -520,7 +520,7 @@ export default function DemaPage() {
 
             {/* Profile Header (Avatar and Title placed cleanly on top with white text on dark banner) */}
             <div className="relative pt-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6 z-10">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white shadow-xl border-4 border-white flex items-center justify-center font-bold text-2xl text-emerald-900 overflow-hidden shrink-0 mt-2">
+              <div className="w-20 sm:w-24 aspect-[3/4] rounded-2xl bg-white shadow-xl border-4 border-white flex items-center justify-center font-bold text-2xl text-emerald-900 overflow-hidden shrink-0 mt-2">
                 {selectedMemberModal.photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
