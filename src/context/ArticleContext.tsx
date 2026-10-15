@@ -36,7 +36,10 @@ import {
   SubmissionTimelineEvent,
   PageTextsSettings,
   DonationProgram,
-  SecurityThreatLog
+  SecurityThreatLog,
+  DemaSettings,
+  DemaDivision,
+  DemaMember
 } from "@/lib/types";
 import {
   INITIAL_ARTICLES,
@@ -70,7 +73,8 @@ import {
   INITIAL_ABOUT_CONTENT,
   INITIAL_PAGE_TEXTS,
   INITIAL_DONATIONS,
-  INITIAL_SECURITY_THREATS
+  INITIAL_SECURITY_THREATS,
+  INITIAL_DEMA_SETTINGS
 } from "@/lib/mock-data";
 
 interface DataContextType {
@@ -277,6 +281,11 @@ interface DataContextType {
 
   // Hak Akses Khusus Donasi
   grantDonationPermission: (userId: string, granted: boolean, adminName?: string) => void;
+
+  // Dewan Mahasantri (DeMa)
+  demaSettings: DemaSettings;
+  updateDemaSettings: (updated: Partial<DemaSettings>, user?: string) => void;
+  resetDemaToDefault: (user?: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -315,6 +324,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const [pageTexts, setPageTexts] = useState<PageTextsSettings>(INITIAL_PAGE_TEXTS);
   const [donations, setDonations] = useState<DonationProgram[]>(INITIAL_DONATIONS);
   const [securityThreats, setSecurityThreats] = useState<SecurityThreatLog[]>(INITIAL_SECURITY_THREATS);
+  const [demaSettings, setDemaSettings] = useState<DemaSettings>(INITIAL_DEMA_SETTINGS);
   const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(false);
 
   // Load from Supabase + LocalStorage fallback
@@ -433,6 +443,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
       const savedThreats = localStorage.getItem("mahad_security_threats");
       if (savedThreats) setSecurityThreats(JSON.parse(savedThreats));
+
+      const savedDema = localStorage.getItem("mahad_dema_settings");
+      if (savedDema) setDemaSettings(JSON.parse(savedDema));
     } catch (e) {
       console.warn("LocalStorage read skipped:", e);
     }
@@ -762,6 +775,16 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           .single();
         if (siteSettingsData?.value) {
           setSettings((prev) => ({ ...prev, ...siteSettingsData.value }));
+        }
+
+        // Fetch DeMa Settings from site_content
+        const { data: demaData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "dema_settings")
+          .single();
+        if (demaData?.value) {
+          setDemaSettings((prev) => ({ ...prev, ...demaData.value }));
         }
       } catch (err) {
         console.warn("Supabase live fetch notice:", err);
@@ -2481,6 +2504,26 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  // ── Dewan Mahasantri (DeMa) Handlers ──
+  const updateDemaSettings = (updated: Partial<DemaSettings>, user?: string) => {
+    const nextSettings = { ...demaSettings, ...updated };
+    setDemaSettings(nextSettings);
+    try {
+      localStorage.setItem("mahad_dema_settings", JSON.stringify(nextSettings));
+      supabase.from("site_content").upsert({ key: "dema_settings", value: nextSettings }, { onConflict: "key" }).then();
+    } catch (e) {}
+    addLog("Memperbarui Struktur DeMa", nextSettings.periodTitle || "Dewan Mahasantri", user);
+  };
+
+  const resetDemaToDefault = (user?: string) => {
+    setDemaSettings(INITIAL_DEMA_SETTINGS);
+    try {
+      localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS));
+      supabase.from("site_content").upsert({ key: "dema_settings", value: INITIAL_DEMA_SETTINGS }, { onConflict: "key" }).then();
+    } catch (e) {}
+    addLog("Reset Struktur DeMa ke Standar", "Dewan Mahasantri (DeMa)", user);
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -2622,7 +2665,10 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         securityThreats,
         addSecurityThreat,
         clearSecurityThreats,
-        grantDonationPermission
+        grantDonationPermission,
+        demaSettings,
+        updateDemaSettings,
+        resetDemaToDefault
       }}
     >
       {children}

@@ -219,8 +219,8 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* DESKTOP NAVIGATION (Primary standalone links) */}
-          <div className="hidden lg:flex items-center justify-end gap-1 xl:gap-2.5 2xl:gap-3 text-xs xl:text-[13px] font-medium flex-1 min-w-0">
+          {/* DESKTOP NAVIGATION (Primary standalone links: Beranda -> ... -> DeMa) */}
+          <div className="hidden lg:flex items-center justify-end gap-0.5 xl:gap-2 2xl:gap-2.5 text-[11px] xl:text-[12.5px] 2xl:text-[13px] font-medium flex-1 min-w-0">
             {primaryLinks.map((link) => {
               const hasChildren = link.children && link.children.length > 0;
               const isKajianMenu =
@@ -235,7 +235,7 @@ export default function Navbar() {
                     <Link
                       href={link.url}
                       onClick={closeMenu}
-                      className={`px-2 xl:px-2.5 py-1.5 rounded-l-lg transition-colors whitespace-nowrap ${
+                      className={`px-1.5 xl:px-2.5 py-1.5 rounded-l-lg transition-colors whitespace-nowrap ${
                         isLinkActive(link.url) || link.children?.some((c) => isLinkActive(c.url))
                           ? "text-mahad-gold font-bold bg-white/10 border-y border-l border-mahad-gold/40"
                           : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
@@ -391,13 +391,13 @@ export default function Navbar() {
                 );
               }
 
-              // 3. Regular Top-Level Navigation Link (including Infaq & Donasi!)
+              // 3. Regular Top-Level Navigation Link (including Infaq & Donasi and DeMa!)
               return (
                 <Link
                   key={link.id}
                   href={link.url}
                   onClick={closeMenu}
-                  className={`px-2 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${
+                  className={`px-1.5 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                     isLinkActive(link.url)
                       ? "text-mahad-gold font-bold bg-white/10 border border-mahad-gold/40"
                       : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"

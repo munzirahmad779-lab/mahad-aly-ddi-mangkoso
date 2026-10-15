@@ -32,7 +32,10 @@ import {
   SecurityThreatLog,
   HomeSectionConfigItem,
   MaintenanceConfig,
-  MaintenancePillar
+  MaintenancePillar,
+  DemaDivision,
+  DemaMember,
+  DemaSettings
 } from "@/lib/types";
 import { INITIAL_PAGE_TEXTS, INITIAL_NAVBAR_SETTINGS, INITIAL_MAINTENANCE_CONFIG } from "@/lib/mock-data";
 
@@ -54,6 +57,7 @@ const SYSTEM_NAV_PAGES = [
   { label: "📅 Akademik: Kalender Pendidikan", url: "/akademik#kalender" },
   { label: "📰 Warta Berita & Agenda", url: "/berita" },
   { label: "🤲 Infaq & Donasi Program", url: "/donasi" },
+  { label: "👑 Dewan Mahasantri (DeMa)", url: "/dema" },
   { label: "📝 Kirim Naskah", url: "/kirim-tulisan" },
   { label: "🔍 Lacak Status Naskah", url: "/submission/track" },
   { label: "✍️ Dashboard Penulis", url: "/penulis" },
@@ -230,7 +234,10 @@ export default function AdminPage() {
     securityThreats,
     addSecurityThreat,
     clearSecurityThreats,
-    grantDonationPermission
+    grantDonationPermission,
+    demaSettings,
+    updateDemaSettings,
+    resetDemaToDefault
   } = useArticles();
 
   // Audit Logs & Super Admin Tracking State
@@ -756,6 +763,7 @@ export default function AdminPage() {
     | "dashboard"
     | "profile"
     | "academic"
+    | "dema"
     | "content"
     | "publications"
     | "bahtsul"
@@ -953,6 +961,20 @@ export default function AdminPage() {
   useEffect(() => {
     setAboutForm(aboutPageContent);
   }, [aboutPageContent]);
+
+  // Dewan Mahasantri (DeMa) Form State
+  const [demaForm, setDemaForm] = useState(demaSettings);
+  const [activeDemaTab, setActiveDemaTab] = useState<"info" | "divisions" | "members">("divisions");
+  const [editingDivision, setEditingDivision] = useState<Partial<DemaDivision> | null>(null);
+  const [editingMember, setEditingMember] = useState<Partial<DemaMember> | null>(null);
+
+  const deemaFormFirstDivId = (form: DemaSettings) => {
+    return form.divisions && form.divisions.length > 0 ? form.divisions[0].id : "div-bph";
+  };
+
+  useEffect(() => {
+    setDemaForm(demaSettings);
+  }, [demaSettings]);
 
   // Email Templates Form State
   const [emailTemplatesForm, setEmailTemplatesForm] = useState(emailTemplates);
@@ -1741,6 +1763,7 @@ export default function AdminPage() {
                   { id: "pmb", icon: "🎓", label: "PMB Online" },
                   { id: "profile", icon: "📜", label: "Profil Lembaga" },
                   { id: "academic", icon: "📖", label: "Akademik & Kurikulum" },
+                  { id: "dema", icon: "👑", label: "Dewan Mahasantri (DeMa)", badge: "Baru" },
                   { id: "aboutpage", icon: "🏛️", label: "Halaman Tentang" },
                   { id: "comingsoon", icon: "⏳", label: "Coming Soon & Pemeliharaan" }
                 ]
@@ -1871,6 +1894,7 @@ export default function AdminPage() {
               {activeMenu === "emailtemplates" && "✉️ Kelola Template Email Notifikasi (Resend)"}
               {activeMenu === "profile" && "📜 Kelola Halaman Profil (Sejarah, Visi Misi, Dosen, Sarana, Akreditasi)"}
               {activeMenu === "academic" && "📖 Kelola Akademik (Takhassus, Kurikulum 8 Semester, Kalender)"}
+              {activeMenu === "dema" && "👑 Kelola Dewan Mahasantri (DeMa) - Divisi, Pengurus & Kabinet"}
               {activeMenu === "content" && "🎨 Kustomisasi Kalam Hikmah Anregurutta (Arab RTL)"}
               {activeMenu === "publications" && "📚 Publikasi Fiqh (Artikel, Kategori Tanpa Batas, Skripsi + Drive)"}
               {activeMenu === "pagetexts" && "✍️ Edit Teks & Narasi Halaman Publik (CMS Tanpa Ngoding)"}
@@ -1914,6 +1938,9 @@ export default function AdminPage() {
                       break;
                     case "academic":
                       confirmAndReset("Data Akademik", resetAcademicToDefault);
+                      break;
+                    case "dema":
+                      confirmAndReset("Dewan Mahasantri (DeMa)", resetDemaToDefault);
                       break;
                     case "content":
                       confirmAndReset("Kalam Hikmah & Quote", resetQuoteToDefault);
@@ -2156,10 +2183,17 @@ export default function AdminPage() {
 
                           <button
                             type="button"
-                            onClick={() => setActiveMenu("settings")}
-                            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg transition text-[11px]"
+                            onClick={() => {
+                              if (confirm("Reset seluruh data hitungan pelacak trafik pengunjung (total views & halaman) menjadi 0?")) {
+                                localStorage.removeItem("mahad_traffic_stats");
+                                setTrafficStats({ totalViews: 0, pages: {} });
+                                alert("✓ Hitungan pelacak trafik berhasil direset menjadi 0!");
+                              }
+                            }}
+                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-lg transition text-[11px] cursor-pointer"
+                            title="Reset data pelacak trafik browser ke 0"
                           >
-                            ⚙️ Masukkan ID di Pengaturan
+                            🔄 Reset Trafik ke 0
                           </button>
                         </div>
 
@@ -2749,6 +2783,849 @@ export default function AdminPage() {
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            DEWAN MAHASANTRI (DEMA) MANAGEMENT SECTION
+           ══════════════════════════════════════════════════════════════ */}
+        {activeMenu === "dema" && (
+          <div className="space-y-6">
+            {/* Top Bar with Info and Actions */}
+            <div className="bg-gradient-to-r from-emerald-900 to-[#032e22] text-white p-5 rounded-2xl shadow-lg border border-emerald-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-mahad-gold text-slate-950">
+                    Organisasi Naungan
+                  </span>
+                  <span className="text-xs text-emerald-200">
+                    Dewan Mahasantri (DeMa) Ma&apos;had Aly DDI Mangkoso
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-serif font-bold text-white">
+                  {demaForm.periodTitle || "Kabinet Dewan Mahasantri"}
+                </h2>
+                <p className="text-xs sm:text-sm text-emerald-200/90 mt-1 max-w-2xl">
+                  {demaForm.tagline}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href="/dema"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+                >
+                  <span>👁️</span>
+                  <span>Lihat Halaman Publik</span>
+                  <span>↗</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateDemaSettings(demaForm, currentUserName);
+                    alert("✓ Data Dewan Mahasantri (DeMa) berhasil disimpan & tersinkron!");
+                  }}
+                  className="px-4 py-2 bg-mahad-gold hover:bg-yellow-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition"
+                >
+                  <span>💾</span>
+                  <span>Simpan Semua Perubahan</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Sub-tab Navigation */}
+            <div className="flex flex-wrap gap-2 pb-2 border-b border-slate-200">
+              <button
+                type="button"
+                onClick={() => setActiveDemaTab("divisions")}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                  activeDemaTab === "divisions"
+                    ? "bg-emerald-800 text-white shadow"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                <span>🏛️</span>
+                <span>Kelola Divisi ({demaForm.divisions?.length || 0})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDemaTab("members")}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                  activeDemaTab === "members"
+                    ? "bg-emerald-800 text-white shadow"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                <span>👥</span>
+                <span>Pengurus & Anggota ({demaForm.members?.length || 0})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDemaTab("info")}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                  activeDemaTab === "info"
+                    ? "bg-emerald-800 text-white shadow"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                <span>📜</span>
+                <span>Info Kabinet & Motto</span>
+              </button>
+            </div>
+
+            {/* TAB 1: KELOLA DIVISI */}
+            {activeDemaTab === "divisions" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-base">Daftar Divisi DeMa</h3>
+                    <p className="text-xs text-slate-500">
+                      Semua divisi ini akan otomatis menjadi tombol filter pill interaktif di halaman publik DeMa.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingDivision({
+                        id: `div-${Date.now()}`,
+                        name: "",
+                        code: "",
+                        description: "",
+                        responsibilities: [""],
+                        order: (demaForm.divisions?.length || 0) + 1,
+                        isActive: true,
+                        icon: "📌"
+                      });
+                    }}
+                    className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition"
+                  >
+                    <span>+</span>
+                    <span>Tambah Divisi Baru</span>
+                  </button>
+                </div>
+
+                {/* Division Modal/Inline Form */}
+                {editingDivision && (
+                  <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between border-b border-emerald-200/80 pb-3">
+                      <div className="font-bold text-emerald-950 text-sm flex items-center gap-2">
+                        <span>{editingDivision.id?.includes("new") ? "✨ Tambah Divisi Baru" : "✏️ Edit Divisi"}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setEditingDivision(null)}
+                        className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded-lg"
+                      >
+                        Batal
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Nama Divisi <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={editingDivision.name || ""}
+                          onChange={(e) => setEditingDivision({ ...editingDivision, name: e.target.value })}
+                          placeholder="misal: Divisi Keagamaan & Bahtsul Masail"
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Ikon Emoji / Lambang
+                        </label>
+                        <input
+                          type="text"
+                          value={editingDivision.icon || ""}
+                          onChange={(e) => setEditingDivision({ ...editingDivision, icon: e.target.value })}
+                          placeholder="misal: 🕌 atau 💻 atau ⚖️"
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Kode Unik (Slug / Identitas)
+                        </label>
+                        <input
+                          type="text"
+                          value={editingDivision.code || ""}
+                          onChange={(e) => setEditingDivision({ ...editingDivision, code: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "") })}
+                          placeholder="misal: keagamaan atau kominfo"
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Urutan Tampilan (Order)
+                        </label>
+                        <input
+                          type="number"
+                          value={editingDivision.order || 1}
+                          onChange={(e) => setEditingDivision({ ...editingDivision, order: parseInt(e.target.value) || 1 })}
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-6">
+                        <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={editingDivision.isActive !== false}
+                            onChange={(e) => setEditingDivision({ ...editingDivision, isActive: e.target.checked })}
+                            className="rounded text-emerald-600 focus:ring-emerald-500"
+                          />
+                          <span>Aktif (Tampilkan di Web)</span>
+                        </label>
+                      </div>
+
+                      <div className="md:col-span-3">
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Deskripsi / Tugas Pokok Divisi
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={editingDivision.description || ""}
+                          onChange={(e) => setEditingDivision({ ...editingDivision, description: e.target.value })}
+                          placeholder="Jelaskan peran dan ruang lingkup divisi ini..."
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div className="md:col-span-3">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="block text-xs font-bold text-slate-700">
+                            Daftar Tugas / Program Kerja Unggulan Divisi
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const list = editingDivision.responsibilities || [];
+                              setEditingDivision({ ...editingDivision, responsibilities: [...list, ""] });
+                            }}
+                            className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900"
+                          >
+                            + Tambah Tugas / Proker
+                          </button>
+                        </div>
+                        <div className="space-y-2">
+                          {(editingDivision.responsibilities || [""]).map((resp: string, idx: number) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <span className="text-xs text-slate-400 font-bold w-5">{idx + 1}.</span>
+                              <input
+                                type="text"
+                                value={resp}
+                                onChange={(e) => {
+                                  const list = [...(editingDivision.responsibilities || [])];
+                                  list[idx] = e.target.value;
+                                  setEditingDivision({ ...editingDivision, responsibilities: list });
+                                }}
+                                placeholder="misal: Menyelenggarakan Bahtsul Masail mingguan..."
+                                className="flex-1 text-xs p-2 rounded-lg border border-slate-300 focus:border-emerald-600 bg-white"
+                              />
+                              {(editingDivision.responsibilities || []).length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const list = (editingDivision.responsibilities || []).filter((_: string, i: number) => i !== idx);
+                                    setEditingDivision({ ...editingDivision, responsibilities: list });
+                                  }}
+                                  className="text-red-500 hover:text-red-700 text-xs px-2 py-1"
+                                >
+                                  ✕
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-emerald-200">
+                      <button
+                        type="button"
+                        onClick={() => setEditingDivision(null)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-200"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!editingDivision.name?.trim()) {
+                            alert("Silakan masukkan nama divisi!");
+                            return;
+                          }
+                          const cleanId = editingDivision.id || `div-${Date.now()}`;
+                          const cleanCode = editingDivision.code?.trim() || cleanId.replace("div-", "");
+                          const savedDiv: DemaDivision = {
+                            id: cleanId,
+                            name: editingDivision.name.trim(),
+                            code: cleanCode,
+                            description: editingDivision.description || "",
+                            responsibilities: (editingDivision.responsibilities || []).filter((r: string) => r.trim() !== ""),
+                            order: Number(editingDivision.order) || 1,
+                            isActive: editingDivision.isActive !== false,
+                            icon: editingDivision.icon || "📌"
+                          };
+
+                          const existing = demaForm.divisions || [];
+                          const idx = existing.findIndex((d) => d.id === savedDiv.id);
+                          let nextDivs = [...existing];
+                          if (idx >= 0) {
+                            nextDivs[idx] = savedDiv;
+                          } else {
+                            nextDivs.push(savedDiv);
+                          }
+                          nextDivs.sort((a, b) => a.order - b.order);
+
+                          const updatedForm = { ...demaForm, divisions: nextDivs };
+                          setDemaForm(updatedForm);
+                          updateDemaSettings(updatedForm, currentUserName);
+                          setEditingDivision(null);
+                        }}
+                        className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-bold shadow"
+                      >
+                        Simpan Divisi
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Division Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {(demaForm.divisions || [])
+                    .sort((a, b) => a.order - b.order)
+                    .map((div) => {
+                      const memberCount = (demaForm.members || []).filter((m) => m.divisionId === div.id).length;
+                      return (
+                        <div
+                          key={div.id}
+                          className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow transition flex flex-col justify-between"
+                        >
+                          <div>
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl p-2 bg-emerald-50 rounded-xl border border-emerald-100">
+                                  {div.icon || "📌"}
+                                </span>
+                                <div>
+                                  <h4 className="font-bold text-slate-900 text-sm leading-tight">{div.name}</h4>
+                                  <span className="text-[10px] text-slate-400 font-mono">Kode: #{div.code}</span>
+                                </div>
+                              </div>
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                  div.isActive !== false
+                                    ? "bg-emerald-100 text-emerald-800"
+                                    : "bg-slate-100 text-slate-500"
+                                }`}
+                              >
+                                {div.isActive !== false ? "Aktif" : "Non-Aktif"}
+                              </span>
+                            </div>
+
+                            <p className="text-xs text-slate-600 line-clamp-2 mb-3">
+                              {div.description || "Belum ada deskripsi tugas."}
+                            </p>
+
+                            <div className="bg-slate-50 rounded-xl p-2.5 mb-3 border border-slate-100">
+                              <span className="text-[11px] font-bold text-slate-700 block mb-1">
+                                Program Kerja / Tugas ({div.responsibilities?.length || 0}):
+                              </span>
+                              <ul className="text-[11px] text-slate-600 space-y-1 list-disc list-inside">
+                                {(div.responsibilities || []).slice(0, 2).map((r, i) => (
+                                  <li key={i} className="truncate">{r}</li>
+                                ))}
+                                {(div.responsibilities || []).length > 2 && (
+                                  <li className="text-slate-400 font-medium">
+                                    +{div.responsibilities.length - 2} program lainnya
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
+                            <span className="text-slate-500 font-semibold">
+                              👥 {memberCount} Anggota
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setEditingDivision(div)}
+                                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold"
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm(`Hapus divisi "${div.name}"? Anggota di divisi ini tidak akan terhapus namun perlu dipindah.`)) {
+                                    const nextDivs = (demaForm.divisions || []).filter((d) => d.id !== div.id);
+                                    const updatedForm = { ...demaForm, divisions: nextDivs };
+                                    setDemaForm(updatedForm);
+                                    updateDemaSettings(updatedForm, currentUserName);
+                                  }
+                                }}
+                                className="px-2 py-1 text-red-600 hover:bg-red-50 rounded-lg"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: KELOLA PENGURUS & ANGGOTA */}
+            {activeDemaTab === "members" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-base">Daftar Pengurus & Anggota DeMa</h3>
+                    <p className="text-xs text-slate-500">
+                      Kelola susunan pimpinan presidium BPH dan fungsionaris per divisi.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingMember({
+                        id: `mem-${Date.now()}`,
+                        name: "",
+                        role: "",
+                        divisionId: deemaFormFirstDivId(demaForm),
+                        nim: "",
+                        marhalah: "Marhalah Ula (M.1) Semester IV",
+                        bio: "",
+                        quote: "",
+                        photoUrl: "",
+                        instagram: "",
+                        phone: "",
+                        order: (demaForm.members?.length || 0) + 1,
+                        isActive: true
+                      });
+                    }}
+                    className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition"
+                  >
+                    <span>+</span>
+                    <span>Tambah Pengurus Baru</span>
+                  </button>
+                </div>
+
+                {/* Member Form Modal / Inline */}
+                {editingMember && (
+                  <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between border-b border-emerald-200/80 pb-3">
+                      <div className="font-bold text-emerald-950 text-sm">
+                        {editingMember.id?.includes("new") ? "✨ Tambah Pengurus Baru" : "✏️ Edit Biodata Pengurus"}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setEditingMember(null)}
+                        className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded-lg"
+                      >
+                        Batal
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Nama Lengkap <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.name || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, name: e.target.value })}
+                          placeholder="misal: Ahmad Yusuf Mubarak"
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Jabatan Organisasi <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.role || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, role: e.target.value })}
+                          placeholder="misal: Ketua Umum DeMa / Ketua Divisi / Anggota"
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Divisi Naungan <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={editingMember.divisionId || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, divisionId: e.target.value })}
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white font-medium"
+                        >
+                          <option value="div-bph">👑 BPH / Presidium Utama</option>
+                          {(demaForm.divisions || []).map((div) => (
+                            <option key={div.id} value={div.id}>
+                              {div.icon || "📌"} {div.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          NIM / Nomor Pokok Santri (Opsional)
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.nim || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, nim: e.target.value })}
+                          placeholder="misal: 13.01.0042"
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Tingkat / Marhalah Studi
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.marhalah || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, marhalah: e.target.value })}
+                          placeholder="misal: Marhalah Ula (M.1) Semester VI"
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Urutan (Order)
+                        </label>
+                        <input
+                          type="number"
+                          value={editingMember.order || 1}
+                          onChange={(e) => setEditingMember({ ...editingMember, order: parseInt(e.target.value) || 1 })}
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          URL Foto Formal / Almamater (Opsional)
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.photoUrl || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, photoUrl: e.target.value })}
+                          placeholder="misal: https://... atau /images/... (kosongkan untuk inisial nama)"
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Instagram / Kontak
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.instagram || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, instagram: e.target.value })}
+                          placeholder="misal: @username atau https://instagram.com/..."
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div className="md:col-span-3">
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Biodata Singkat / Fokus Keilmuan
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={editingMember.bio || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, bio: e.target.value })}
+                          placeholder="Tuliskan fokus riset, keaktifan, atau latar belakang singkat..."
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                        />
+                      </div>
+
+                      <div className="md:col-span-3">
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Kutipan / Motto Santri
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.quote || ""}
+                          onChange={(e) => setEditingMember({ ...editingMember, quote: e.target.value })}
+                          placeholder="misal: Kepemimpinan di Ma'had Aly adalah khidmah..."
+                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white italic"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={editingMember.isActive !== false}
+                            onChange={(e) => setEditingMember({ ...editingMember, isActive: e.target.checked })}
+                            className="rounded text-emerald-600 focus:ring-emerald-500"
+                          />
+                          <span>Aktif (Tampilkan di Profil)</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-emerald-200">
+                      <button
+                        type="button"
+                        onClick={() => setEditingMember(null)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-200"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!editingMember.name?.trim() || !editingMember.role?.trim()) {
+                            alert("Silakan lengkapi Nama dan Jabatan Pengurus!");
+                            return;
+                          }
+                          const cleanId = editingMember.id || `mem-${Date.now()}`;
+                          const savedMem: DemaMember = {
+                            id: cleanId,
+                            name: editingMember.name.trim(),
+                            role: editingMember.role.trim(),
+                            divisionId: editingMember.divisionId || "div-bph",
+                            nim: editingMember.nim?.trim() || "",
+                            marhalah: editingMember.marhalah?.trim() || "",
+                            bio: editingMember.bio?.trim() || "",
+                            quote: editingMember.quote?.trim() || "",
+                            photoUrl: editingMember.photoUrl?.trim() || "",
+                            instagram: editingMember.instagram?.trim() || "",
+                            phone: editingMember.phone?.trim() || "",
+                            order: Number(editingMember.order) || 1,
+                            isActive: editingMember.isActive !== false
+                          };
+
+                          const existing = demaForm.members || [];
+                          const idx = existing.findIndex((m) => m.id === savedMem.id);
+                          let nextMems = [...existing];
+                          if (idx >= 0) {
+                            nextMems[idx] = savedMem;
+                          } else {
+                            nextMems.push(savedMem);
+                          }
+                          nextMems.sort((a, b) => a.order - b.order);
+
+                          const updatedForm = { ...demaForm, members: nextMems };
+                          setDemaForm(updatedForm);
+                          updateDemaSettings(updatedForm, currentUserName);
+                          setEditingMember(null);
+                        }}
+                        className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-bold shadow"
+                      >
+                        Simpan Pengurus
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Member Table Listing */}
+                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-bold tracking-wider">
+                        <tr>
+                          <th className="py-3 px-4">Urutan</th>
+                          <th className="py-3 px-4">Nama & Foto</th>
+                          <th className="py-3 px-4">Jabatan</th>
+                          <th className="py-3 px-4">Divisi</th>
+                          <th className="py-3 px-4">Marhalah / NIM</th>
+                          <th className="py-3 px-4 text-center">Status</th>
+                          <th className="py-3 px-4 text-right">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {(demaForm.members || [])
+                          .sort((a, b) => a.order - b.order)
+                          .map((m) => {
+                            const div = (demaForm.divisions || []).find((d) => d.id === m.divisionId);
+                            const divName = m.divisionId === "div-bph" ? "👑 Presidium BPH" : div?.name || m.divisionId;
+                            return (
+                              <tr key={m.id} className="hover:bg-slate-50/70 transition">
+                                <td className="py-3 px-4 font-mono font-bold text-slate-400">
+                                  #{m.order}
+                                </td>
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 border border-emerald-300 overflow-hidden text-[11px]">
+                                      {m.photoUrl ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img src={m.photoUrl} alt={m.name} className="w-full h-full object-cover" />
+                                      ) : (
+                                        m.name.charAt(0)
+                                      )}
+                                    </div>
+                                    <div>
+                                      <span className="font-bold text-slate-900 block leading-tight">{m.name}</span>
+                                      {m.quote && (
+                                        <span className="text-[10px] text-slate-400 italic line-clamp-1">
+                                          &ldquo;{m.quote}&rdquo;
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4 font-semibold text-emerald-900">
+                                  {m.role}
+                                </td>
+                                <td className="py-3 px-4">
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                                    {divName}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-slate-500">
+                                  <div>{m.marhalah || "-"}</div>
+                                  {m.nim && <div className="font-mono text-[10px] text-slate-400">{m.nim}</div>}
+                                </td>
+                                <td className="py-3 px-4 text-center">
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                      m.isActive !== false
+                                        ? "bg-emerald-100 text-emerald-800"
+                                        : "bg-slate-100 text-slate-500"
+                                    }`}
+                                  >
+                                    {m.isActive !== false ? "Aktif" : "Non-Aktif"}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-right">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingMember(m)}
+                                      className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold"
+                                    >
+                                      ✏️
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (confirm(`Hapus pengurus "${m.name}"?`)) {
+                                          const nextMems = (demaForm.members || []).filter((mem) => mem.id !== m.id);
+                                          const updatedForm = { ...demaForm, members: nextMems };
+                                          setDemaForm(updatedForm);
+                                          updateDemaSettings(updatedForm, currentUserName);
+                                        }
+                                      }}
+                                      className="px-2 py-1 text-red-600 hover:bg-red-50 rounded-lg"
+                                    >
+                                      🗑️
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: INFO KABINET & MOTTO */}
+            {activeDemaTab === "info" && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base">Identitas & Motto Kabinet DeMa</h3>
+                  <p className="text-xs text-slate-500">
+                    Kustomisasi nama masa khidmah, slogan perjuangan mahasantri, dan kalam mutiara berbahasa Arab.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Nama Periode / Judul Kabinet <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={demaForm.periodTitle || ""}
+                      onChange={(e) => setDemaForm({ ...demaForm, periodTitle: e.target.value })}
+                      placeholder="misal: Kabinet Khidmah & Intelektual 1447–1448 H / 2026–2027 M"
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Tagline / Slogan Organisasi
+                    </label>
+                    <input
+                      type="text"
+                      value={demaForm.tagline || ""}
+                      onChange={(e) => setDemaForm({ ...demaForm, tagline: e.target.value })}
+                      placeholder="misal: Mengakar pada Turats Klasik, Menjulang dalam Gagasan Fiqh Kontemporer"
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Kalam Arab / Motto Santri (RTL)
+                    </label>
+                    <input
+                      type="text"
+                      dir="rtl"
+                      value={demaForm.leadQuoteArabic || ""}
+                      onChange={(e) => setDemaForm({ ...demaForm, leadQuoteArabic: e.target.value })}
+                      placeholder="خِدْمَةُ الْعِلْمِ وَأَهْلِهِ شَرَفٌ لَا يَبْلَى"
+                      className="w-full text-sm font-serif p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white text-right"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Terjemahan / Narasi Khidmah Dewan Mahasantri
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={demaForm.leadQuote || ""}
+                      onChange={(e) => setDemaForm({ ...demaForm, leadQuote: e.target.value })}
+                      placeholder="Jelaskan tekad dan semangat pengabdian kabinet ini..."
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-200 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateDemaSettings(demaForm, currentUserName);
+                      alert("✓ Info Kabinet DeMa berhasil diperbarui!");
+                    }}
+                    className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow"
+                  >
+                    Simpan Identitas Kabinet
+                  </button>
                 </div>
               </div>
             )}
@@ -10771,14 +11648,31 @@ export default function AdminPage() {
                           Akun yang terblokir otomatis demi melindungi sistem dari serangan tebak sandi (brute-force). Hanya Super Admin yang berwenang membuka kunci dan mengizinkan reset password.
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={loadLockedAccounts}
-                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1 transition self-start sm:self-auto"
-                      >
-                        <span>🔄</span>
-                        <span>Segarkan Daftar</span>
-                      </button>
+                      <div className="flex items-center gap-2 self-start sm:self-auto">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm("Buka semua kunci akun yang terblokir dan bersihkan daftar akun terblokir ke 0?")) {
+                              localStorage.removeItem("mahad_locked_accounts");
+                              setLockedAccountsList([]);
+                              alert("✓ Seluruh pemblokiran akun berhasil dibuka dan direset menjadi 0!");
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1 transition cursor-pointer"
+                          title="Buka seluruh akun yang terkunci ke 0"
+                        >
+                          <span>🔓</span>
+                          <span>Buka Semua Blokir (Reset ke 0)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={loadLockedAccounts}
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1 transition"
+                        >
+                          <span>🔄</span>
+                          <span>Segarkan Daftar</span>
+                        </button>
+                      </div>
                     </div>
 
                     {lockedAccountsList.length === 0 ? (

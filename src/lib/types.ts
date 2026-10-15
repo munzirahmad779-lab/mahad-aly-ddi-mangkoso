@@ -721,3 +721,42 @@ export interface SecurityThreatLog {
   status: "blocked" | "flagged" | "mitigated";
   alertSent: boolean;
 }
+
+// ══════════════════════════════════════════════════════════════
+// 12. STRUKTUR DEWAN MAHASANTRI (DEMA) & DIVISI KEPENGURUSAN
+// ══════════════════════════════════════════════════════════════
+export interface DemaMember {
+  id: string;
+  name: string;
+  role: string; // misal: "Ketua Divisi", "Sekretaris Divisi", "Anggota"
+  divisionId: string; // id divisi terkait (atau 'bph' untuk pimpinan inti)
+  photoUrl?: string;
+  nim?: string;
+  marhalah?: string; // misal: "Marhalah Ula (M.1) Semester VI"
+  bio?: string;
+  quote?: string;
+  order: number;
+  isActive: boolean;
+  instagram?: string;
+  phone?: string;
+}
+
+export interface DemaDivision {
+  id: string;
+  name: string; // misal: "Divisi Keagamaan & Bahtsul Masail"
+  code: string; // misal: "keagamaan"
+  description: string;
+  responsibilities: string[]; // tugas-tugas divisi
+  order: number;
+  isActive: boolean;
+  icon?: string;
+}
+
+export interface DemaSettings {
+  periodTitle: string; // misal: "Kabinet Khidmah & Intelektual 1447–1448 H / 2026–2027 M"
+  tagline: string;
+  leadQuote: string;
+  leadQuoteArabic?: string;
+  divisions: DemaDivision[];
+  members: DemaMember[];
+}

@@ -37,7 +37,10 @@ import {
   PageTextsSettings,
   DonationProgram,
   SecurityThreatLog,
-  MaintenanceConfig
+  MaintenanceConfig,
+  DemaSettings,
+  DemaDivision,
+  DemaMember
 } from "./types";
 
 export const INITIAL_HERO: HeroSectionData = {
@@ -715,32 +718,11 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
 
 export const INITIAL_ACTIVITY_LOGS: ActivityLog[] = [
   {
-    id: "log-1",
+    id: "log-init-1",
     user: "Super Admin",
-    action: "Menerbitkan Artikel",
-    target: "Tinjauan Fiqh Mu'asarah atas Smart Contract dan Aset Kripto",
-    timestamp: "10 menit lalu"
-  },
-  {
-    id: "log-2",
-    user: "Super Admin",
-    action: "Menambahkan Skripsi",
-    target: "Rekonstruksi Ijtihad Jama'i dalam Fatwa Fintech",
-    timestamp: "1 jam lalu"
-  },
-  {
-    id: "log-3",
-    user: "Editor",
-    action: "Menyetujui Naskah",
-    target: "Kajian Fiqh Medis Bayi Tabung",
-    timestamp: "5 jam lalu"
-  },
-  {
-    id: "log-4",
-    user: "Super Admin",
-    action: "Memperbarui Pengaturan",
-    target: "Visi Misi & Kontak Lembaga",
-    timestamp: "Kemarin"
+    action: "Inisialisasi Sistem",
+    target: "Konfigurasi Portal Resmi Ma'had Aly DDI Mangkoso",
+    timestamp: "Baru saja"
   }
 ];
 
@@ -1158,7 +1140,8 @@ export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
     { id: "nav-4", label: "Mimbar Fiqh", url: "/artikel", order: 4, isActive: true },
     { id: "nav-5", label: "Skripsi", url: "/skripsi", order: 5, isActive: true },
     { id: "nav-6", label: "Warta", url: "/berita", order: 6, isActive: true },
-    { id: "nav-7", label: "Infaq & Donasi", url: "/donasi", order: 7, isActive: true }
+    { id: "nav-7", label: "Infaq & Donasi", url: "/donasi", order: 7, isActive: true },
+    { id: "nav-8", label: "DeMa", url: "/dema", order: 8, isActive: true }
   ],
   topBar: {
     isActive: true,
@@ -1597,41 +1580,208 @@ export const INITIAL_DONATIONS: DonationProgram[] = [
 // ══════════════════════════════════════════════════════════════
 // 11. LOG ANCAMAN KEAMANAN AWAL (SECURITY DEFENSE CENTER)
 // ══════════════════════════════════════════════════════════════
-export const INITIAL_SECURITY_THREATS: SecurityThreatLog[] = [
-  {
-    id: "threat-1",
-    timestamp: "8 Okt 2026, 21:15 WITA",
-    ip: "185.220.101.5",
-    threatType: "honeypot_trap",
-    severity: "high",
-    endpoint: "/wp-login.php",
-    details: "Automated vulnerability scanner probing for non-existent WordPress admin path.",
-    userAgent: "Mozilla/5.0 (compatible; NetcraftSurveyAgent/1.0)",
-    status: "blocked",
-    alertSent: true
-  },
-  {
-    id: "threat-2",
-    timestamp: "8 Okt 2026, 18:42 WITA",
-    ip: "45.154.255.88",
-    threatType: "brute_force",
-    severity: "critical",
-    endpoint: "/admin/login",
-    details: "Multiple failed authentication attempts (8 failures in 60s) blocked by rate-limit shield.",
-    userAgent: "python-requests/2.31.0",
-    status: "blocked",
-    alertSent: true
-  },
-  {
-    id: "threat-3",
-    timestamp: "7 Okt 2026, 23:10 WITA",
-    ip: "194.26.29.112",
-    threatType: "suspicious_scanner",
-    severity: "medium",
-    endpoint: "/.env",
-    details: "Unauthorized probe attempting to access environment configuration file.",
-    userAgent: "Go-http-client/1.1",
-    status: "blocked",
-    alertSent: true
-  }
-];
+export const INITIAL_SECURITY_THREATS: SecurityThreatLog[] = [];
+
+export const INITIAL_DEMA_SETTINGS: DemaSettings = {
+  periodTitle: "Kabinet Khidmah & Intelektual 1447–1448 H / 2026–2027 M",
+  tagline: "Dewan Mahasantri Ma'had Aly DDI Mangkoso",
+  leadQuote: "Menghidupkan Khazanah Turats, Menggerakkan Nalar Kontemporer, Mengabdi untuk Kemaslahatan Ummat.",
+  leadQuoteArabic: "العِلْمُ بِلَا عَمَلٍ كَالشَّجَرِ بِلَا ثَمَرٍ",
+  divisions: [
+    {
+      id: "div-bph",
+      name: "Badan Pengurus Harian (BPH)",
+      code: "bph",
+      description: "Pucuk pimpinan eksekutif presidium Dewan Mahasantri yang mengarahkan kebijakan strategis, koordinasi internal, dan tata kelola organisasi.",
+      responsibilities: [
+        "Memimpin rapat koordinasi mingguan dan pleno pengurus DeMa",
+        "Menjadi representasi resmi suara mahasantri di hadapan pimpinan lembaga Ma'had Aly",
+        "Mengelola tata kelola kesekretariatan dan transparansi anggaran organisasi"
+      ],
+      order: 1,
+      isActive: true,
+      icon: "👑"
+    },
+    {
+      id: "div-keagamaan",
+      name: "Divisi Keagamaan & Bahtsul Masail",
+      code: "keagamaan",
+      description: "Pusat penggerak kajian musyawarah kitab kuning, halaqah fiqh kontemporer, dan pelaksanaan Bahtsul Masail mahasantri.",
+      responsibilities: [
+        "Menyelenggarakan halaqah Bahtsul Masail rutin antar-marhalah",
+        "Menyusun rumusan as-ilah dan jawabul masail berbasis maraji' turats mu'tabarah",
+        "Mengawal ketertiban ibadah harian, ikhtibar hafalan, dan amaliah kepesantrenan"
+      ],
+      order: 2,
+      isActive: true,
+      icon: "🕌"
+    },
+    {
+      id: "div-kominfo",
+      name: "Divisi Media, Syiar Digital & IT",
+      code: "kominfo",
+      description: "Garda terdepan publikasi multimedia, pengelolaan portal resmi, siaran podcast santri, dan literasi dakwah digital.",
+      responsibilities: [
+        "Mengelola kanal media sosial resmi DeMa (@dema.mahadalymangkoso)",
+        "Membuat infografis fatwa fiqh mu'asarah dan dokumentasi audio-visual kegiatan",
+        "Mengembangkan inovasi teknologi informasi dan portal literasi digital mahasantri"
+      ],
+      order: 3,
+      isActive: true,
+      icon: "📡"
+    },
+    {
+      id: "div-penalaran",
+      name: "Divisi Riset, Ilmiah & Penalaran",
+      code: "penalaran",
+      description: "Wadah pengembangan tradisi akademik, penulisan risalah skripsi, bedah buku turats, dan penerbitan buletin berkala.",
+      responsibilities: [
+        "Mendampingi kelompok belajar penulisan karya tulis ilmiah dan jurnal santri",
+        "Menyelenggarakan forum bedah naskah dan telaah fatwa kontemporer",
+        "Mempersiapkan mahasantri dalam kompetisi karya tulis ilmiah nasional"
+      ],
+      order: 4,
+      isActive: true,
+      icon: "📚"
+    },
+    {
+      id: "div-humas",
+      name: "Divisi Humas & Pengabdian Masyarakat",
+      code: "humas",
+      description: "Jembatan komunikasi antara mahasantri dengan masyarakat Barru, jaringan alumni DDI Mangkoso, dan ormawa lintas kampus.",
+      responsibilities: [
+        "Menginisiasi program pengabdian santri di pelosok desa dan masjid sekitar",
+        "Menjalin silaturahmi berkala dengan ikatan alumni Ma'had Aly se-Indonesia",
+        "Mengelola penerimaan aspirasi masyarakat dan tanggap bencana dakwah"
+      ],
+      order: 5,
+      isActive: true,
+      icon: "🤝"
+    },
+    {
+      id: "div-bakat",
+      name: "Divisi Minat, Seni Kaligrafi & Olahraga",
+      code: "bakat",
+      description: "Pengembangan talenta santri di bidang khath/kaligrafi Arab, retorika muhadharah, bahasa asing, dan kebugaran fisik.",
+      responsibilities: [
+        "Menyelenggarakan sanggar seni kaligrafi dan pameran karya khath",
+        "Mengadakan latihan debat bahasa Arab & Inggris secara rutin",
+        "Mengatur jadwal keolahragaan dan turnamen persahabatan mahasantri"
+      ],
+      order: 6,
+      isActive: true,
+      icon: "🎨"
+    }
+  ],
+  members: [
+    {
+      id: "mem-1",
+      name: "Ahmad Yusuf Mubarak",
+      role: "Ketua Umum DeMa",
+      divisionId: "div-bph",
+      nim: "13.01.0042",
+      marhalah: "Marhalah Ula (M.1) Semester VI",
+      bio: "Mahasantri peminat Takhassus Fiqh Mu'asarah, aktif dalam riset keuangan digital syariah dan Bahtsul Masail.",
+      quote: "Kepemimpinan di Ma'had Aly adalah khidmah; melayani dengan tawaduk, memimpin dengan keteladanan sanad keilmuan.",
+      order: 1,
+      isActive: true,
+      instagram: "https://instagram.com/mahadalyddimangkoso"
+    },
+    {
+      id: "mem-2",
+      name: "Muhammad Fauzan Al-Mangkosiy",
+      role: "Wakil Ketua Umum DeMa",
+      divisionId: "div-bph",
+      nim: "13.01.0038",
+      marhalah: "Marhalah Ula (M.1) Semester VI",
+      bio: "Fokus pada pendampingan kaderisasi organisasi dan sinkronisasi agenda akademik kelembagaan.",
+      quote: "Kekuatan organisasi santri bertumpu pada kesatuan barisan dan ketulusan niat.",
+      order: 2,
+      isActive: true
+    },
+    {
+      id: "mem-3",
+      name: "Muh. Raihan Mubarak",
+      role: "Sekretaris Jenderal",
+      divisionId: "div-bph",
+      nim: "13.01.0055",
+      marhalah: "Marhalah Ula (M.1) Semester IV",
+      bio: "Bertanggung jawab atas administrasi tertib arsip kesekretariatan dan dokumentasi musyawarah.",
+      quote: "Ketertiban administrasi adalah cermin integritas seorang penuntut ilmu.",
+      order: 3,
+      isActive: true
+    },
+    {
+      id: "mem-4",
+      name: "Ahmad Fadhil",
+      role: "Bendahara Umum",
+      divisionId: "div-bph",
+      nim: "13.01.0049",
+      marhalah: "Marhalah Ula (M.1) Semester IV",
+      bio: "Mengelola transparansi sirkulasi dana kegiatan dan pelaporan kas organisasi secara akuntabel.",
+      quote: "Amanah finansial organisasi dijalankan dengan prinsip kehati-hatian syariah.",
+      order: 4,
+      isActive: true
+    },
+    {
+      id: "mem-5",
+      name: "Fathurrahman",
+      role: "Ketua Divisi Keagamaan",
+      divisionId: "div-keagamaan",
+      nim: "13.01.0060",
+      marhalah: "Marhalah Ula (M.1) Semester VI",
+      bio: "Koordinator penyelenggaraan Bahtsul Masail mingguan dan verifikasi dalil maraji'.",
+      quote: "Menghidupkan nalar fiqh klasik untuk menjawab dinamika realitas modern.",
+      order: 5,
+      isActive: true
+    },
+    {
+      id: "mem-6",
+      name: "Nurul Izzah Amalia",
+      role: "Ketua Divisi Media & IT",
+      divisionId: "div-kominfo",
+      nim: "13.01.0051",
+      marhalah: "Marhalah Ula (M.1) Semester VI",
+      bio: "Penggiat konten edukasi keagamaan dan penataan portal digital Ma'had Aly.",
+      quote: "Jadikan teknologi digital sebagai mimbar dakwah yang bermartabat dan mencerahkan.",
+      order: 6,
+      isActive: true
+    },
+    {
+      id: "mem-7",
+      name: "Hafizh Al-Farisi",
+      role: "Ketua Divisi Riset & Penalaran",
+      divisionId: "div-penalaran",
+      nim: "13.01.0064",
+      marhalah: "Marhalah Ula (M.1) Semester IV",
+      bio: "Mengkoordinir pendampingan penulisan karya ilmiah santri dan bedah literatur turats.",
+      quote: "Tradisi santri adalah membaca, menelaah, mengkritisi, dan menulis risalah.",
+      order: 7,
+      isActive: true
+    },
+    {
+      id: "mem-8",
+      name: "Zulkifli Al-Bari",
+      role: "Ketua Divisi Humas",
+      divisionId: "div-humas",
+      nim: "13.01.0070",
+      marhalah: "Marhalah Ula (M.1) Semester IV",
+      bio: "Penghubung komunikasi kemasyarakatan dan program pengabdian santri di Barru.",
+      quote: "Khidmah untuk ummat adalah buah dari pohon keilmuan yang kita pelajari.",
+      order: 8,
+      isActive: true
+    },
+    {
+      id: "mem-9",
+      name: "M. Thoriq Al-Khatthath",
+      role: "Ketua Divisi Minat & Seni",
+      divisionId: "div-bakat",
+      nim: "13.01.0072",
+      marhalah: "Marhalah Ula (M.1) Semester IV",
+      bio: "Penggiat seni khath Diwani dan Naskhi, pembina halaqah kaligrafi mahasantri.",
+      quote: "Keindahan seni tulisan Arab adalah ekspresi kecintaan terhadap kalam Ilahi.",
+      order: 9,
+      isActive: true
+    }
+  ]
+};
