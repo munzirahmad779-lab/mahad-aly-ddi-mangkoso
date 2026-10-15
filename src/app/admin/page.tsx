@@ -6234,16 +6234,31 @@ export default function AdminPage() {
                     Atur logo instansi, branding judul/subjudul, tombol aksi utama, dan susunan menu navigasi navbar.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    updateNavbarSettings(headerForm);
-                    alert("✓ Pengaturan Header & Navbar berhasil disimpan!");
-                  }}
-                  className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition"
-                >
-                  Simpan Perubahan Header
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm("Kembalikan menu Header & Navbar ke susunan standar awal resmi?")) {
+                        resetNavbarToDefault(currentUserName);
+                        setHeaderForm(INITIAL_NAVBAR_SETTINGS);
+                        alert("✓ Header & Navbar berhasil dikembalikan ke standar awal!");
+                      }
+                    }}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border text-xs cursor-pointer"
+                  >
+                    ↺ Reset ke Standar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateNavbarSettings(headerForm);
+                      alert("✓ Pengaturan Header & Navbar berhasil disimpan!");
+                    }}
+                    className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition text-xs cursor-pointer"
+                  >
+                    Simpan Perubahan Header
+                  </button>
+                </div>
               </div>
 
               {/* Logo & Branding Grid */}

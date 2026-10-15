@@ -227,28 +227,37 @@ export default function Navbar() {
                 !hasChildren &&
                 (link.url === "/kategori" || link.label.toLowerCase().includes("kajian"));
 
-              // 1. Dropdown with custom children from Admin
+              // 1. Dropdown with custom children from Admin (e.g. Akademik, Profil)
               if (hasChildren) {
                 const isDropdownOpen = desktopDropdown === link.id;
                 return (
-                  <div key={link.id} className="relative group shrink-0">
+                  <div key={link.id} className="relative group shrink-0 flex items-center">
+                    <Link
+                      href={link.url}
+                      onClick={closeMenu}
+                      className={`px-2 xl:px-2.5 py-1.5 rounded-l-lg transition-colors whitespace-nowrap ${
+                        isLinkActive(link.url) || link.children?.some((c) => isLinkActive(c.url))
+                          ? "text-mahad-gold font-bold bg-white/10 border-y border-l border-mahad-gold/40"
+                          : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
                     <button
                       type="button"
+                      aria-label={`Buka submenu ${link.label}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleDesktopDropdown(link.id);
                       }}
-                      className={`flex items-center gap-1 px-2 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-                        isLinkActive(link.url) ||
-                        link.children?.some((c) => isLinkActive(c.url)) ||
-                        isDropdownOpen
-                          ? "text-mahad-gold font-bold bg-white/10 border border-mahad-gold/40"
-                          : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
+                      className={`p-1.5 rounded-r-lg transition-colors cursor-pointer ${
+                        isLinkActive(link.url) || link.children?.some((c) => isLinkActive(c.url)) || isDropdownOpen
+                          ? "text-mahad-gold bg-white/10 border-y border-r border-mahad-gold/40"
+                          : "text-emerald-200 hover:text-mahad-gold hover:bg-white/5"
                       }`}
                     >
-                      <span>{link.label}</span>
                       <svg
-                        className={`w-3.5 h-3.5 transition-transform ${
+                        className={`w-3.5 h-3.5 transition-transform duration-200 ${
                           isDropdownOpen ? "rotate-180" : "group-hover:rotate-180"
                         }`}
                         fill="none"
@@ -263,6 +272,19 @@ export default function Navbar() {
                         isDropdownOpen ? "block" : "hidden group-hover:block"
                       } w-60 bg-[#064e3b] border border-emerald-700/80 rounded-xl shadow-2xl py-2 z-[70] backdrop-blur-md animate-fadeIn`}
                     >
+                      {/* Parent Link Direct Shortcut inside Dropdown */}
+                      <Link
+                        href={link.url}
+                        onClick={closeMenu}
+                        className={`block px-4 py-2 text-xs border-b border-emerald-800/80 font-bold transition flex items-center justify-between ${
+                          pathname === link.url
+                            ? "bg-white/10 text-mahad-gold"
+                            : "hover:bg-white/10 text-emerald-100 hover:text-mahad-gold"
+                        }`}
+                      >
+                        <span>Halaman Utama {link.label}</span>
+                        <span className="text-[10px] text-mahad-gold">→</span>
+                      </Link>
                       {link.children
                         ?.filter((c) => c.isActive !== false)
                         .map((child) => (
@@ -573,22 +595,22 @@ export default function Navbar() {
           TIER 3: KAJIAN & WARTA TICKER BAR (Infinite Moving Marquee!)
          ══════════════════════════════════════════════════════════════ */}
       {isTickerActive && (
-        <div className="bg-[#043d2e] text-emerald-100 border-b border-emerald-800/80 text-xs py-1.5 px-3 sm:px-6 lg:px-8 shadow-inner hidden md:block select-none relative z-20 overflow-hidden">
+        <div className="bg-[#043d2e] text-emerald-100 border-b border-emerald-800/80 text-xs py-1.5 px-3 sm:px-6 lg:px-8 shadow-inner hidden md:block relative z-30 overflow-hidden">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             {/* Ticker Badge */}
-            <span className="bg-mahad-gold text-mahad-green-dark text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-sm z-10">
+            <span className="bg-mahad-gold text-mahad-green-dark text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-sm z-20">
               <span>⚡</span>
               <span>{tickerBadge}</span>
             </span>
 
             {/* Infinite Auto-Moving Marquee Track */}
-            <div className="flex-1 min-w-0 overflow-hidden relative">
+            <div className="flex-1 min-w-0 overflow-hidden relative z-10">
               <div className="animate-marquee flex items-center gap-8 text-xs whitespace-nowrap">
                 {[...tickerItems, ...tickerItems].map((item, idx) => (
                   <Link
                     key={`${item.id || idx}-${idx}`}
                     href={item.url}
-                    className="hover:text-mahad-gold transition flex items-center gap-2 text-emerald-200 group"
+                    className="hover:text-mahad-gold transition flex items-center gap-2 text-emerald-200 group cursor-pointer py-0.5"
                   >
                     <span className="text-mahad-gold font-bold">•</span>
                     <span className="group-hover:underline underline-offset-2">{item.label}</span>
@@ -600,7 +622,7 @@ export default function Navbar() {
             {/* Kanan: Link Cepat ke Indeks Artikel */}
             <Link
               href="/artikel"
-              className="text-[11px] text-emerald-300 hover:text-mahad-gold font-medium shrink-0 hidden lg:inline-flex items-center gap-1 transition z-10"
+              className="text-[11px] text-emerald-300 hover:text-mahad-gold font-medium shrink-0 hidden lg:inline-flex items-center gap-1 transition z-20 cursor-pointer"
             >
               <span>Indeks Kajian</span>
               <span>→</span>
@@ -648,26 +670,47 @@ export default function Navbar() {
             if (hasChildren) {
               const isExpanded = activeDropdown === link.id;
               return (
-                <div key={link.id}>
-                  <button
-                    type="button"
-                    onClick={() => toggleDropdown(link.id)}
-                    className="w-full flex items-center justify-between py-2 px-3 rounded-lg text-emerald-100 hover:bg-white/5 hover:text-mahad-gold"
-                  >
-                    <span>{link.label}</span>
-                    <svg
-                      className={`w-4 h-4 transform transition-transform ${
-                        isExpanded ? "rotate-180 text-mahad-gold" : ""
+                <div key={link.id} className="rounded-lg overflow-hidden bg-white/5 border border-emerald-900/60">
+                  <div className="flex items-center justify-between">
+                    <Link
+                      href={link.url}
+                      onClick={closeMenu}
+                      className={`flex-1 py-2.5 px-3 font-semibold transition ${
+                        isLinkActive(link.url)
+                          ? "text-mahad-gold font-bold"
+                          : "text-emerald-100 hover:text-mahad-gold"
                       }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
+                      {link.label}
+                    </Link>
+                    <button
+                      type="button"
+                      aria-label={`Buka submenu ${link.label}`}
+                      onClick={() => toggleDropdown(link.id)}
+                      className="p-2.5 text-emerald-300 hover:text-mahad-gold transition"
+                    >
+                      <svg
+                        className={`w-4 h-4 transform transition-transform duration-200 ${
+                          isExpanded ? "rotate-180 text-mahad-gold" : ""
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
                   {isExpanded && (
-                    <div className="pl-6 py-1 space-y-1 bg-black/20 rounded-lg text-xs">
+                    <div className="pl-6 pr-3 py-2 space-y-1 bg-black/30 border-t border-emerald-900/80 text-xs">
+                      <Link
+                        href={link.url}
+                        onClick={closeMenu}
+                        className="block py-1.5 font-bold text-mahad-gold flex items-center justify-between"
+                      >
+                        <span>Halaman Utama {link.label}</span>
+                        <span>→</span>
+                      </Link>
                       {link.children
                         ?.filter((c) => c.isActive !== false)
                         .map((child) => (
@@ -675,7 +718,7 @@ export default function Navbar() {
                             key={child.id}
                             href={child.url}
                             onClick={closeMenu}
-                            className="block py-1.5 text-emerald-200 hover:text-mahad-gold"
+                            className="block py-1.5 text-emerald-200 hover:text-white"
                           >
                             {child.label}
                           </Link>

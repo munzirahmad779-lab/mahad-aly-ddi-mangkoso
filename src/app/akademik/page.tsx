@@ -150,7 +150,7 @@ export default function AkademikPage() {
           </div>
 
           {/* Buku Pedoman & Sistem Penilaian */}
-          <div className="lg:col-span-5 space-y-6">
+          <div id="pedoman" className="lg:col-span-5 space-y-6 scroll-mt-24">
             <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
               <h3 className="font-serif font-bold text-lg text-slate-900 flex items-center gap-2">
                 <span>📘</span>

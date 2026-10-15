@@ -34,3 +34,8 @@
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+.animate-marquee a {
+  cursor: pointer;
+  pointer-events: auto;
+}
