@@ -737,6 +737,7 @@ export interface DemaMember {
   quote?: string;
   order: number;
   isActive: boolean;
+  isHighlighted?: boolean; // Tampilan kartu hijau mewah (dapat diaktifkan/dinonaktifkan per pengurus)
   instagram?: string;
   phone?: string;
 }

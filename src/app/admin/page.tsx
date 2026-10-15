@@ -3378,7 +3378,7 @@ export default function AdminPage() {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-4 md:col-span-3 pt-2">
                         <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
                           <input
                             type="checkbox"
@@ -3387,6 +3387,16 @@ export default function AdminPage() {
                             className="rounded text-emerald-600 focus:ring-emerald-500"
                           />
                           <span>Aktif (Tampilkan di Profil)</span>
+                        </label>
+
+                        <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-bold text-emerald-800 bg-emerald-100/70 px-3 py-1.5 rounded-xl border border-emerald-300">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(editingMember.isHighlighted)}
+                            onChange={(e) => setEditingMember({ ...editingMember, isHighlighted: e.target.checked })}
+                            className="rounded text-emerald-700 focus:ring-emerald-600"
+                          />
+                          <span>🌟 Tampilan Kartu Hijau Mewah (Sorot Pengurus / Ketua)</span>
                         </label>
                       </div>
                     </div>
@@ -3420,7 +3430,8 @@ export default function AdminPage() {
                             instagram: editingMember.instagram?.trim() || "",
                             phone: editingMember.phone?.trim() || "",
                             order: Number(editingMember.order) || 1,
-                            isActive: editingMember.isActive !== false
+                            isActive: editingMember.isActive !== false,
+                            isHighlighted: Boolean(editingMember.isHighlighted)
                           };
 
                           const existing = demaForm.members || [];
@@ -3505,15 +3516,22 @@ export default function AdminPage() {
                                   {m.nim && <div className="font-mono text-[10px] text-slate-400">{m.nim}</div>}
                                 </td>
                                 <td className="py-3 px-4 text-center">
-                                  <span
-                                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                      m.isActive !== false
-                                        ? "bg-emerald-100 text-emerald-800"
-                                        : "bg-slate-100 text-slate-500"
-                                    }`}
-                                  >
-                                    {m.isActive !== false ? "Aktif" : "Non-Aktif"}
-                                  </span>
+                                  <div className="flex flex-col items-center gap-1">
+                                    <span
+                                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                        m.isActive !== false
+                                          ? "bg-emerald-100 text-emerald-800"
+                                          : "bg-slate-100 text-slate-500"
+                                      }`}
+                                    >
+                                      {m.isActive !== false ? "Aktif" : "Non-Aktif"}
+                                    </span>
+                                    {m.isHighlighted && (
+                                      <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-[#043d2e] text-mahad-gold border border-emerald-600">
+                                        🌟 Kartu Hijau
+                                      </span>
+                                    )}
+                                  </div>
                                 </td>
                                 <td className="py-3 px-4 text-right">
                                   <div className="flex items-center justify-end gap-1.5">

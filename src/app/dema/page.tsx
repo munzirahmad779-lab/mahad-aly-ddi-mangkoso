@@ -13,7 +13,9 @@ export default function DemaPage() {
   const [selectedMemberModal, setSelectedMemberModal] = useState<DemaMember | null>(null);
 
   const divisions = useMemo(() => {
-    return (demaSettings?.divisions || []).filter((d) => d.isActive !== false).sort((a, b) => a.order - b.order);
+    return (demaSettings?.divisions || [])
+      .filter((d) => d.isActive !== false && d.id !== "div-bph" && d.code !== "bph")
+      .sort((a, b) => a.order - b.order);
   }, [demaSettings]);
 
   const members = useMemo(() => {
@@ -141,31 +143,35 @@ export default function DemaPage() {
           {/* Org-Chart Hierarchy Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {bphMembers.map((leader, idx) => {
-              const isKetua = idx === 0 || leader.role.toLowerCase().includes("ketua umum");
+              // Custom green styling: checked via leader.isHighlighted OR defaults to first 2 leaders (Ketua & Wakil) if not explicitly set
+              const isGreenCard = leader.isHighlighted !== undefined
+                ? leader.isHighlighted
+                : idx < 2 || leader.role.toLowerCase().includes("ketua");
+
               return (
                 <div
                   key={leader.id}
                   onClick={() => setSelectedMemberModal(leader)}
                   className={`group relative rounded-2xl p-5 cursor-pointer transition-all duration-300 flex flex-col justify-between border ${
-                    isKetua
-                      ? "bg-gradient-to-b from-[#043d2e] to-[#02241b] text-white border-emerald-700 shadow-lg hover:shadow-2xl hover:-translate-y-1 sm:col-span-2 lg:col-span-1"
-                      : "bg-gradient-to-b from-white to-slate-50 hover:bg-white text-slate-800 border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                    isGreenCard
+                      ? "bg-gradient-to-b from-[#043d2e] to-[#02241b] text-white border-emerald-600/80 shadow-lg hover:shadow-2xl hover:-translate-y-1 ring-1 ring-emerald-500/30"
+                      : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5"
                   }`}
                 >
                   <div>
                     {/* Top Role Badge */}
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <span
-                        className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-                          isKetua
-                            ? "bg-mahad-gold text-slate-950 font-extrabold"
-                            : "bg-emerald-100 text-emerald-800"
+                        className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap ${
+                          isGreenCard
+                            ? "bg-mahad-gold text-slate-950 font-extrabold shadow-sm"
+                            : "bg-emerald-100 text-emerald-900 border border-emerald-200"
                         }`}
                       >
                         {leader.role}
                       </span>
                       {leader.nim && (
-                        <span className={`text-[10px] font-mono ${isKetua ? "text-emerald-300" : "text-slate-400"}`}>
+                        <span className={`text-[10px] font-mono shrink-0 ${isGreenCard ? "text-emerald-300" : "text-slate-400"}`}>
                           #{leader.nim}
                         </span>
                       )}
@@ -175,8 +181,8 @@ export default function DemaPage() {
                     <div className="flex items-center gap-3.5 mb-3">
                       <div
                         className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 font-bold text-lg overflow-hidden border-2 shadow-inner transition-transform group-hover:scale-105 ${
-                          isKetua
-                            ? "bg-emerald-800 text-mahad-gold border-mahad-gold/60"
+                          isGreenCard
+                            ? "bg-[#064e3b] text-mahad-gold border-mahad-gold/60"
                             : "bg-emerald-100 text-emerald-900 border-emerald-300"
                         }`}
                       >
@@ -193,24 +199,24 @@ export default function DemaPage() {
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <h3 className={`font-serif font-bold text-sm sm:text-base leading-snug truncate ${isKetua ? "text-white" : "text-slate-900"}`}>
+                        <h3 className={`font-serif font-bold text-sm sm:text-base leading-snug line-clamp-2 ${isGreenCard ? "text-white" : "text-slate-900"}`}>
                           {leader.name}
                         </h3>
-                        <p className={`text-[11px] truncate mt-0.5 ${isKetua ? "text-emerald-200" : "text-slate-500"}`}>
+                        <p className={`text-[11px] truncate mt-0.5 ${isGreenCard ? "text-emerald-200" : "text-slate-500"}`}>
                           {leader.marhalah || "Mahasantri Marhalah Ula"}
                         </p>
                       </div>
                     </div>
 
                     {/* Bio Snippet */}
-                    <p className={`text-xs line-clamp-2 leading-relaxed ${isKetua ? "text-emerald-100/80" : "text-slate-600"}`}>
+                    <p className={`text-xs line-clamp-2 leading-relaxed ${isGreenCard ? "text-emerald-100/80" : "text-slate-600"}`}>
                       {leader.bio || "Fokus pada pendampingan tata kelola ormawa dan riset keilmuan santri."}
                     </p>
                   </div>
 
                   {/* Bottom Action Footer */}
                   <div className={`mt-4 pt-3 border-t flex items-center justify-between text-[11px] font-semibold ${
-                    isKetua ? "border-emerald-800/80 text-emerald-300" : "border-slate-100 text-emerald-700"
+                    isGreenCard ? "border-emerald-800/80 text-emerald-300" : "border-slate-100 text-emerald-700"
                   }`}>
                     <span>Detail Profil & Amanah</span>
                     <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -391,33 +397,44 @@ export default function DemaPage() {
               {filteredMembers.map((member) => {
                 const memberDiv = divisions.find((d) => d.id === member.divisionId);
                 const isBph = member.divisionId === "div-bph" || member.divisionId === "bph";
+                const isGreenCard = Boolean(member.isHighlighted);
 
                 return (
                   <div
                     key={member.id}
                     onClick={() => setSelectedMemberModal(member)}
-                    className="group bg-white rounded-2xl p-5 border border-slate-200 hover:border-emerald-500 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer hover:-translate-y-1"
+                    className={`group rounded-2xl p-5 border transition-all duration-300 flex flex-col justify-between cursor-pointer hover:-translate-y-1 ${
+                      isGreenCard
+                        ? "bg-gradient-to-b from-[#043d2e] to-[#02241b] text-white border-emerald-600/80 shadow-lg hover:shadow-2xl ring-1 ring-emerald-500/30"
+                        : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-500"
+                    }`}
                   >
                     <div>
                       {/* Top Header Badge */}
                       <div className="flex items-center justify-between gap-2 mb-3">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          isBph
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${
+                          isGreenCard
+                            ? "bg-mahad-gold text-slate-950 font-extrabold shadow-sm"
+                            : isBph
                             ? "bg-amber-100 text-amber-900 border border-amber-200"
                             : "bg-emerald-50 text-emerald-800 border border-emerald-100"
                         }`}>
                           {isBph ? "👑 Presidium" : memberDiv?.name || "Divisi DeMa"}
                         </span>
                         {member.nim && (
-                          <span className="text-[10px] font-mono text-slate-400">
-                            {member.nim}
+                          <span className={`text-[10px] font-mono shrink-0 ${isGreenCard ? "text-emerald-300" : "text-slate-400"}`}>
+                            #{member.nim}
                           </span>
                         )}
                       </div>
 
                       {/* Avatar Image / Placeholder */}
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-800 to-emerald-600 text-white flex items-center justify-center font-bold text-base shrink-0 overflow-hidden shadow-inner border border-emerald-300">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-base shrink-0 overflow-hidden shadow-inner border ${
+                          isGreenCard
+                            ? "bg-[#064e3b] text-mahad-gold border-mahad-gold/60"
+                            : "bg-gradient-to-tr from-emerald-800 to-emerald-600 text-white border-emerald-300"
+                        }`}>
                           {member.photoUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -431,35 +448,41 @@ export default function DemaPage() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-serif font-bold text-sm text-slate-900 group-hover:text-emerald-800 transition truncate">
+                          <h4 className={`font-serif font-bold text-sm leading-snug line-clamp-2 ${isGreenCard ? "text-white" : "text-slate-900 group-hover:text-emerald-800 transition"}`}>
                             {member.name}
                           </h4>
-                          <span className="text-[11px] font-semibold text-emerald-700 block truncate">
+                          <span className={`text-[11px] font-semibold block truncate mt-0.5 ${isGreenCard ? "text-emerald-200" : "text-emerald-700"}`}>
                             {member.role}
                           </span>
                         </div>
                       </div>
 
                       {/* Marhalah */}
-                      <div className="text-[11px] text-slate-500 mb-2.5 flex items-center gap-1.5">
+                      <div className={`text-[11px] mb-2.5 flex items-center gap-1.5 ${isGreenCard ? "text-emerald-200/90" : "text-slate-500"}`}>
                         <span>🎓</span>
                         <span className="truncate">{member.marhalah || "Mahasantri Marhalah Ula"}</span>
                       </div>
 
                       {/* Bio / Quote Snippet */}
                       {member.quote ? (
-                        <p className="text-xs text-slate-600 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100 line-clamp-2">
+                        <p className={`text-xs italic p-2.5 rounded-xl border line-clamp-2 ${
+                          isGreenCard
+                            ? "bg-black/20 text-emerald-100 border-white/10"
+                            : "bg-slate-50 text-slate-600 border-slate-100"
+                        }`}>
                           &ldquo;{member.quote}&rdquo;
                         </p>
                       ) : (
-                        <p className="text-xs text-slate-600 line-clamp-2">
+                        <p className={`text-xs line-clamp-2 ${isGreenCard ? "text-emerald-100/80" : "text-slate-600"}`}>
                           {member.bio || "Fungsionaris aktif yang berkhidmah dalam Dewan Mahasantri."}
                         </p>
                       )}
                     </div>
 
                     {/* Bottom CTA */}
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-emerald-800 group-hover:text-emerald-900">
+                    <div className={`mt-4 pt-3 border-t flex items-center justify-between text-[11px] font-semibold ${
+                      isGreenCard ? "border-emerald-800/80 text-emerald-300" : "border-slate-100 text-emerald-800 group-hover:text-emerald-900"
+                    }`}>
                       <span>Buka Profil Lengkap</span>
                       <span className="group-hover:translate-x-1 transition-transform">→</span>
                     </div>
@@ -483,21 +506,21 @@ export default function DemaPage() {
             className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative overflow-hidden animate-scaleUp"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Background accent */}
-            <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-r from-emerald-900 to-[#032e22]" />
+            {/* Background accent banner */}
+            <div className="absolute top-0 inset-x-0 h-36 bg-gradient-to-r from-emerald-950 via-[#043d2e] to-emerald-900 border-b border-emerald-700/50" />
 
             {/* Close Button */}
             <button
               type="button"
               onClick={() => setSelectedMemberModal(null)}
-              className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center text-sm font-bold transition"
+              className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center text-sm font-bold transition border border-white/20"
             >
               ✕
             </button>
 
-            {/* Profile Header */}
-            <div className="relative pt-6 flex flex-col sm:flex-row items-center sm:items-end gap-4 mb-5">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white shadow-xl border-4 border-white flex items-center justify-center font-bold text-2xl text-emerald-900 overflow-hidden shrink-0">
+            {/* Profile Header (Avatar and Title placed cleanly on top with white text on dark banner) */}
+            <div className="relative pt-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6 z-10">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white shadow-xl border-4 border-white flex items-center justify-center font-bold text-2xl text-emerald-900 overflow-hidden shrink-0 mt-2">
                 {selectedMemberModal.photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -510,14 +533,14 @@ export default function DemaPage() {
                 )}
               </div>
 
-              <div className="text-center sm:text-left min-w-0">
-                <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 mb-1">
+              <div className="text-center sm:text-left min-w-0 flex-1 pt-1 sm:pt-2">
+                <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-mahad-gold text-slate-950 shadow-sm mb-1.5">
                   {selectedMemberModal.role}
                 </span>
-                <h3 className="font-serif font-bold text-xl sm:text-2xl text-slate-900 leading-tight">
+                <h3 className="font-serif font-bold text-lg sm:text-2xl text-white leading-tight drop-shadow-sm">
                   {selectedMemberModal.name}
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-emerald-200 mt-1 font-medium">
                   {selectedMemberModal.marhalah || "Mahasantri Marhalah Ula"}
                 </p>
               </div>
@@ -602,14 +625,16 @@ export default function DemaPage() {
          ══════════════════════════════════════════════════════════════ */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 sm:mt-20">
         <div className="bg-gradient-to-r from-emerald-900 via-[#032e22] to-emerald-950 rounded-3xl p-8 sm:p-10 text-white shadow-xl border border-emerald-700/60 text-center relative overflow-hidden">
-          <div className="relative z-10 max-w-2xl mx-auto space-y-4">
-            <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-3.5 py-1.5 rounded-full border border-mahad-gold/30">
-              Aspirasi Mahasantri
-            </span>
-            <h2 className="font-serif font-bold text-2xl sm:text-3xl text-white">
+          <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
+            <div className="mb-4">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-4 py-1.5 rounded-full border border-mahad-gold/30">
+                Aspirasi Mahasantri
+              </span>
+            </div>
+            <h2 className="font-serif font-bold text-2xl sm:text-3xl text-white mt-1 mb-3">
               Sampaikan Gagasan & Kolaborasi Bersama DeMa
             </h2>
-            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-light">
+            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-light mb-6 max-w-xl">
               Dewan Mahasantri Ma&apos;had Aly DDI Mangkoso senantiasa membuka ruang komunikasi bagi civitas akademika, alumni, dan masyarakat luas untuk kemajuan pendidikan kader ulama.
             </p>
             <div className="pt-2 flex flex-wrap items-center justify-center gap-3">

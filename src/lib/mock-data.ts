@@ -1685,6 +1685,7 @@ export const INITIAL_DEMA_SETTINGS: DemaSettings = {
       quote: "Kepemimpinan di Ma'had Aly adalah khidmah; melayani dengan tawaduk, memimpin dengan keteladanan sanad keilmuan.",
       order: 1,
       isActive: true,
+      isHighlighted: true,
       instagram: "https://instagram.com/mahadalyddimangkoso"
     },
     {
@@ -1697,7 +1698,8 @@ export const INITIAL_DEMA_SETTINGS: DemaSettings = {
       bio: "Fokus pada pendampingan kaderisasi organisasi dan sinkronisasi agenda akademik kelembagaan.",
       quote: "Kekuatan organisasi santri bertumpu pada kesatuan barisan dan ketulusan niat.",
       order: 2,
-      isActive: true
+      isActive: true,
+      isHighlighted: true
     },
     {
       id: "mem-3",
@@ -1709,7 +1711,8 @@ export const INITIAL_DEMA_SETTINGS: DemaSettings = {
       bio: "Bertanggung jawab atas administrasi tertib arsip kesekretariatan dan dokumentasi musyawarah.",
       quote: "Ketertiban administrasi adalah cermin integritas seorang penuntut ilmu.",
       order: 3,
-      isActive: true
+      isActive: true,
+      isHighlighted: false
     },
     {
       id: "mem-4",
@@ -1721,7 +1724,8 @@ export const INITIAL_DEMA_SETTINGS: DemaSettings = {
       bio: "Mengelola transparansi sirkulasi dana kegiatan dan pelaporan kas organisasi secara akuntabel.",
       quote: "Amanah finansial organisasi dijalankan dengan prinsip kehati-hatian syariah.",
       order: 4,
-      isActive: true
+      isActive: true,
+      isHighlighted: false
     },
     {
       id: "mem-5",
@@ -1733,7 +1737,8 @@ export const INITIAL_DEMA_SETTINGS: DemaSettings = {
       bio: "Koordinator penyelenggaraan Bahtsul Masail mingguan dan verifikasi dalil maraji'.",
       quote: "Menghidupkan nalar fiqh klasik untuk menjawab dinamika realitas modern.",
       order: 5,
-      isActive: true
+      isActive: true,
+      isHighlighted: true
     },
     {
       id: "mem-6",
@@ -1745,7 +1750,8 @@ export const INITIAL_DEMA_SETTINGS: DemaSettings = {
       bio: "Penggiat konten edukasi keagamaan dan penataan portal digital Ma'had Aly.",
       quote: "Jadikan teknologi digital sebagai mimbar dakwah yang bermartabat dan mencerahkan.",
       order: 6,
-      isActive: true
+      isActive: true,
+      isHighlighted: false
     },
     {
       id: "mem-7",
@@ -1757,7 +1763,8 @@ export const INITIAL_DEMA_SETTINGS: DemaSettings = {
       bio: "Mengkoordinir pendampingan penulisan karya ilmiah santri dan bedah literatur turats.",
       quote: "Tradisi santri adalah membaca, menelaah, mengkritisi, dan menulis risalah.",
       order: 7,
-      isActive: true
+      isActive: true,
+      isHighlighted: false
     },
     {
       id: "mem-8",
@@ -1769,7 +1776,8 @@ export const INITIAL_DEMA_SETTINGS: DemaSettings = {
       bio: "Penghubung komunikasi kemasyarakatan dan program pengabdian santri di Barru.",
       quote: "Khidmah untuk ummat adalah buah dari pohon keilmuan yang kita pelajari.",
       order: 8,
-      isActive: true
+      isActive: true,
+      isHighlighted: false
     },
     {
       id: "mem-9",
@@ -1781,7 +1789,8 @@ export const INITIAL_DEMA_SETTINGS: DemaSettings = {
       bio: "Penggiat seni khath Diwani dan Naskhi, pembina halaqah kaligrafi mahasantri.",
       quote: "Keindahan seni tulisan Arab adalah ekspresi kecintaan terhadap kalam Ilahi.",
       order: 9,
-      isActive: true
+      isActive: true,
+      isHighlighted: false
     }
   ]
 };
