@@ -822,6 +822,17 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         if (demaData?.value) {
           setDemaSettings((prev) => ({ ...prev, ...demaData.value }));
         }
+
+        // Fetch Live Security Threats from site_content
+        const { data: securityData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "security_threats")
+          .single();
+        if (securityData?.value && Array.isArray(securityData.value)) {
+          setSecurityThreats(securityData.value);
+          localStorage.setItem("mahad_security_threats", JSON.stringify(securityData.value));
+        }
       } catch (err) {
         console.warn("Supabase live fetch notice:", err);
       }
@@ -938,6 +949,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const saveSecurityThreats = (data: SecurityThreatLog[]) => {
     setSecurityThreats(data);
     localStorage.setItem("mahad_security_threats", JSON.stringify(data));
+    try {
+      supabase.from("site_content").upsert({ key: "security_threats", value: data }, { onConflict: "key" }).then();
+    } catch (e) {}
   };
 
   const addLog = (action: string, target: string, user: string = "Super Admin") => {

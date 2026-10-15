@@ -922,22 +922,40 @@ export default function AdminPage() {
     reason: string;
   }>>([]);
 
-  const loadLockedAccounts = () => {
+  const loadLockedAccounts = async () => {
+    let localStored: Record<string, any> = {};
     if (typeof window !== "undefined") {
       try {
-        const stored = JSON.parse(localStorage.getItem("mahad_locked_accounts") || "{}");
-        setLockedAccountsList(Object.values(stored) as any[]);
-      } catch (e) {
-        setLockedAccountsList([]);
-      }
+        localStored = JSON.parse(localStorage.getItem("mahad_locked_accounts") || "{}");
+      } catch (e) {}
     }
+
+    // Ambil juga dari Supabase agar sinkron antar-perangkat (misal gagal dari HP, tampil di Laptop)
+    try {
+      const { data: dbLocked } = await supabase
+        .from("site_content")
+        .select("value")
+        .eq("key", "locked_accounts")
+        .single();
+
+      if (dbLocked?.value && typeof dbLocked.value === "object") {
+        const merged = { ...dbLocked.value, ...localStored };
+        setLockedAccountsList(Object.values(merged) as any[]);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("mahad_locked_accounts", JSON.stringify(merged));
+        }
+        return;
+      }
+    } catch (e) {}
+
+    setLockedAccountsList(Object.values(localStored) as any[]);
   };
 
   useEffect(() => {
     loadLockedAccounts();
   }, []);
 
-  const handleUnlockAccount = (emailToUnlock: string) => {
+  const handleUnlockAccount = async (emailToUnlock: string) => {
     if (!confirm(`Buka blokir akun ${emailToUnlock}? Pengguna akan diizinkan kembali masuk dan mereset kata sandi.`)) return;
     try {
       const stored = JSON.parse(localStorage.getItem("mahad_locked_accounts") || "{}");
@@ -947,6 +965,14 @@ export default function AdminPage() {
       const failedAttempts = JSON.parse(localStorage.getItem("mahad_failed_attempts") || "{}");
       delete failedAttempts[emailToUnlock.toLowerCase()];
       localStorage.setItem("mahad_failed_attempts", JSON.stringify(failedAttempts));
+
+      // Hapus juga dari database Supabase
+      try {
+        await supabase.from("site_content").upsert({
+          key: "locked_accounts",
+          value: stored
+        }, { onConflict: "key" });
+      } catch (e) {}
 
       loadLockedAccounts();
       addLog(`Super Admin membuka kunci akun ${emailToUnlock}`, "Keamanan Akun");

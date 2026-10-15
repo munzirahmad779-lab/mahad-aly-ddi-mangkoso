@@ -123,11 +123,11 @@ export default function AdminLoginPage() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                type: "brute_force",
+                threatType: "brute_force",
                 severity: "critical",
-                description: `Akun administrator [${normalizedEmail}] TERBLOKIR otomatis setelah 3 kali gagal memasukkan kata sandi.`,
-                targetUrl: "/admin/login",
-                ip: "Client Portal"
+                endpoint: "/admin/login",
+                details: `Akun administrator [${normalizedEmail}] TERBLOKIR otomatis setelah 3 kali gagal memasukkan kata sandi.`,
+                ip: "Client Browser"
               })
             }).catch(() => {});
 
