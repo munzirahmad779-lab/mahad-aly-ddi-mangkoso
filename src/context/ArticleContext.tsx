@@ -379,15 +379,33 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         try {
           const parsedNav = JSON.parse(savedNavbar);
           if (parsedNav && Array.isArray(parsedNav.navLinks)) {
-            parsedNav.navLinks = parsedNav.navLinks.filter(
-              (l: any) => !(l.url === "/kirim-tulisan" && l.label?.toLowerCase().includes("kirim tulisan"))
-            );
+            parsedNav.navLinks = parsedNav.navLinks
+              .filter(
+                (l: any) => !(l.url === "/kirim-tulisan" && l.label?.toLowerCase().includes("kirim tulisan"))
+              )
+              .map((l: any) => {
+                if (l.url === "/dema" || l.label?.toLowerCase().includes("dema") || l.label?.toLowerCase().includes("dewan mahasantri")) {
+                  return { ...l, label: "DeMa", url: "/dema" };
+                }
+                return l;
+              });
+
             if (!parsedNav.navLinks.some((l: any) => l.url === "/donasi")) {
               parsedNav.navLinks.push({
                 id: "nav-donasi",
                 label: "Infaq & Donasi",
                 url: "/donasi",
-                order: parsedNav.navLinks.length + 1,
+                order: 7,
+                isActive: true
+              });
+            }
+
+            if (!parsedNav.navLinks.some((l: any) => l.url === "/dema")) {
+              parsedNav.navLinks.push({
+                id: "nav-8",
+                label: "DeMa",
+                url: "/dema",
+                order: 8,
                 isActive: true
               });
             }
@@ -700,15 +718,33 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           setNavbarSettings((prev) => {
             const next = { ...prev, ...headerData.value };
             if (Array.isArray(next.navLinks)) {
-              next.navLinks = next.navLinks.filter(
-                (l: any) => !(l.url === "/kirim-tulisan" && l.label?.toLowerCase().includes("kirim tulisan"))
-              );
+              next.navLinks = next.navLinks
+                .filter(
+                  (l: any) => !(l.url === "/kirim-tulisan" && l.label?.toLowerCase().includes("kirim tulisan"))
+                )
+                .map((l: any) => {
+                  if (l.url === "/dema" || l.label?.toLowerCase().includes("dema") || l.label?.toLowerCase().includes("dewan mahasantri")) {
+                    return { ...l, label: "DeMa", url: "/dema" };
+                  }
+                  return l;
+                });
+
               if (!next.navLinks.some((l: any) => l.url === "/donasi")) {
                 next.navLinks.push({
                   id: "nav-donasi",
                   label: "Infaq & Donasi",
                   url: "/donasi",
-                  order: next.navLinks.length + 1,
+                  order: 7,
+                  isActive: true
+                });
+              }
+
+              if (!next.navLinks.some((l: any) => l.url === "/dema")) {
+                next.navLinks.push({
+                  id: "nav-8",
+                  label: "DeMa",
+                  url: "/dema",
+                  order: 8,
                   isActive: true
                 });
               }

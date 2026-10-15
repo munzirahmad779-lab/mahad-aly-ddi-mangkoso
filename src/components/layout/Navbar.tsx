@@ -108,9 +108,15 @@ export default function Navbar() {
       ? navbarSettings.navLinks
       : INITIAL_NAVBAR_SETTINGS.navLinks;
 
-  // Filter ONLY active links (excludes any link with isActive === false)
+  // Filter ONLY active links and normalize labels (e.g. ensure DeMa is strictly "DeMa", not long text)
   const navLinks = rawNavLinks
     .filter((link) => link.isActive !== false)
+    .map((link) => {
+      if (link.url === "/dema" || link.url.startsWith("/dema")) {
+        return { ...link, label: "DeMa" };
+      }
+      return link;
+    })
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   const isLinkActive = (url: string) => {
@@ -197,30 +203,30 @@ export default function Navbar() {
           <Link
             href="/"
             onClick={closeMenu}
-            className="flex items-center gap-2.5 sm:gap-3.5 group shrink-0 min-w-fit select-none z-20 relative mr-2 lg:mr-4"
+            className="flex items-center gap-2.5 sm:gap-3 group shrink-0 select-none z-20 relative mr-3 xl:mr-6"
           >
-            <div className="w-11 h-11 sm:w-12 sm:h-12 xl:w-13 xl:h-13 relative shrink-0 drop-shadow-md group-hover:scale-105 transition-transform duration-200">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 xl:w-12 xl:h-12 relative shrink-0 drop-shadow-md group-hover:scale-105 transition-transform duration-200">
               <Image
                 src={logoUrl}
                 alt="Logo Ma'had Aly DDI Mangkoso"
-                width={52}
-                height={52}
+                width={48}
+                height={48}
                 className="w-full h-full object-contain"
                 priority
               />
             </div>
             <div className="leading-tight shrink-0">
-              <span className="block font-serif font-bold text-base sm:text-lg xl:text-xl text-white group-hover:text-mahad-gold transition-colors whitespace-nowrap tracking-tight">
+              <span className="block font-serif font-bold text-sm sm:text-base xl:text-lg text-white group-hover:text-mahad-gold transition-colors whitespace-nowrap tracking-tight">
                 {brandTitle}
               </span>
-              <span className="block text-[10px] sm:text-xs font-semibold text-mahad-gold tracking-wider uppercase whitespace-nowrap">
+              <span className="block text-[9px] sm:text-[10.5px] font-semibold text-mahad-gold tracking-wider uppercase whitespace-nowrap">
                 {brandSubtitle}
               </span>
             </div>
           </Link>
 
           {/* DESKTOP NAVIGATION (Primary standalone links: Beranda -> ... -> DeMa) */}
-          <div className="hidden lg:flex items-center justify-end gap-0.5 xl:gap-2 2xl:gap-2.5 text-[11px] xl:text-[12.5px] 2xl:text-[13px] font-medium flex-1 min-w-0">
+          <div className="hidden lg:flex items-center justify-end gap-1 xl:gap-2.5 2xl:gap-3 text-xs xl:text-[13px] font-medium flex-1">
             {primaryLinks.map((link) => {
               const hasChildren = link.children && link.children.length > 0;
               const isKajianMenu =
