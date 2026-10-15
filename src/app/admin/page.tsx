@@ -3327,15 +3327,13 @@ export default function AdminPage() {
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          URL Foto Formal / Almamater (Opsional)
-                        </label>
-                        <input
-                          type="text"
+                        <ImageUploader
                           value={editingMember.photoUrl || ""}
-                          onChange={(e) => setEditingMember({ ...editingMember, photoUrl: e.target.value })}
-                          placeholder="misal: https://... atau /images/... (kosongkan untuk inisial nama)"
-                          className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 bg-white"
+                          onChange={(url) => setEditingMember({ ...editingMember, photoUrl: url })}
+                          folder="dema"
+                          label="Foto Formal / Almamater Pengurus (Opsional)"
+                          helperText="Unggah foto almamater/formal pengurus (Maksimal 2 MB, rasio 1:1 atau 3:4 disarankan). Kosongkan jika ingin menampilkan inisial nama."
+                          maxSizeMB={2}
                         />
                       </div>
 
