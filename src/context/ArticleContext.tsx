@@ -234,6 +234,7 @@ interface DataContextType {
 
   // Site Settings
   settings: SiteSettings;
+  isSettingsLoaded: boolean;
   updateSettings: (newSettings: Partial<SiteSettings>) => void;
   toggleMaintenanceMode: (enabled: boolean, user?: string) => void;
 
@@ -314,6 +315,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const [pageTexts, setPageTexts] = useState<PageTextsSettings>(INITIAL_PAGE_TEXTS);
   const [donations, setDonations] = useState<DonationProgram[]>(INITIAL_DONATIONS);
   const [securityThreats, setSecurityThreats] = useState<SecurityThreatLog[]>(INITIAL_SECURITY_THREATS);
+  const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(false);
 
   // Load from Supabase + LocalStorage fallback
   useEffect(() => {
@@ -326,8 +328,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           setSettings((prev) => ({
             ...prev,
             ...parsed,
-            maintenanceMode: typeof parsed.maintenanceMode === "boolean" ? parsed.maintenanceMode : true
+            maintenanceMode: typeof parsed.maintenanceMode === "boolean" ? parsed.maintenanceMode : false
           }));
+          setIsSettingsLoaded(true);
         } catch (e) {}
       }
 
@@ -338,9 +341,15 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           .then((d) => {
             if (d?.data) {
               setSettings((prev) => ({ ...prev, ...d.data }));
+              try {
+                localStorage.setItem("mahad_settings", JSON.stringify(d.data));
+              } catch (e) {}
             }
+            setIsSettingsLoaded(true);
           })
-          .catch(() => {});
+          .catch(() => {
+            setIsSettingsLoaded(true);
+          });
       }
 
       const savedArticles = localStorage.getItem("mahad_articles");
@@ -2579,6 +2588,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         pageTexts,
         updatePageTexts,
         settings,
+        isSettingsLoaded,
         updateSettings,
         exportBackupJson,
         importBackupJson,

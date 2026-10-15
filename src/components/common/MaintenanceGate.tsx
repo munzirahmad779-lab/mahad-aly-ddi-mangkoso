@@ -10,7 +10,7 @@ import OfficialComingSoon from "./OfficialComingSoon";
 
 export default function MaintenanceGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { settings } = useArticles();
+  const { settings, isSettingsLoaded } = useArticles();
   const [mounted, setMounted] = useState(false);
   const [isAdminPreview, setIsAdminPreview] = useState(false);
 
@@ -52,8 +52,17 @@ export default function MaintenanceGate({ children }: { children: React.ReactNod
     );
   }
 
-  // 2. Jika Mode Pemeliharaan / Coming Soon AKTIF
-  const isMaintenance = settings?.maintenanceMode ?? true;
+  // 3. Sebelum status pengaturan terverifikasi dari storage/database, render placeholder senyap tanpa flash
+  if (!isSettingsLoaded && !mounted) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-800 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // 4. Cek apakah Mode Pemeliharaan / Coming Soon AKTIF
+  const isMaintenance = settings?.maintenanceMode === true;
 
   if (isMaintenance) {
     // Jika admin sedang dalam Mode Pratinjau (Preview Mode)
@@ -96,7 +105,7 @@ export default function MaintenanceGate({ children }: { children: React.ReactNod
     return <OfficialComingSoon />;
   }
 
-  // 3. Mode Normal (Live Publik): Tampilkan Website Lengkap
+  // 5. Mode Normal (Live Publik): Tampilkan Website Lengkap
   return (
     <>
       <Navbar />
