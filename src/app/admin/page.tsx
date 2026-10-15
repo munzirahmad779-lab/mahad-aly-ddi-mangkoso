@@ -11109,12 +11109,17 @@ export default function AdminPage() {
                         Log Percobaan Serangan &amp; Penyerang Terblokir
                       </h3>
                       <p className="text-slate-400 text-xs">
-                        Setiap probe liar otomatis dicatat alamat IP, user-agent, dan dikirimkan peringatannya ke email admin.
+                        Setiap probe liar otomatis dicatat telemetri dan notifikasinya. Log di web otomatis terhapus setelah 7 hari (arsip permanen tersimpan di Cloudflare Security Analytics).
                       </p>
                     </div>
-                    <span className="text-[11px] font-mono text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                      Sensor Siaga
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono text-amber-800 font-bold bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                        ⏱️ Retensi 7 Hari
+                      </span>
+                      <span className="text-[11px] font-mono text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                        Sensor Siaga
+                      </span>
+                    </div>
                   </div>
 
                   <div className="overflow-x-auto">

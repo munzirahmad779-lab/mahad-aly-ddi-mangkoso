@@ -823,15 +823,21 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           setDemaSettings((prev) => ({ ...prev, ...demaData.value }));
         }
 
-        // Fetch Live Security Threats from site_content
+        // Fetch Live Security Threats from site_content (Retensi Otomatis 7 Hari)
         const { data: securityData } = await supabase
           .from("site_content")
           .select("value")
           .eq("key", "security_threats")
           .single();
         if (securityData?.value && Array.isArray(securityData.value)) {
-          setSecurityThreats(securityData.value);
-          localStorage.setItem("mahad_security_threats", JSON.stringify(securityData.value));
+          const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+          const nowMs = Date.now();
+          const freshLogs = securityData.value.filter((item: any) => {
+            if (!item.createdAt) return true;
+            return nowMs - new Date(item.createdAt).getTime() < SEVEN_DAYS_MS;
+          });
+          setSecurityThreats(freshLogs);
+          localStorage.setItem("mahad_security_threats", JSON.stringify(freshLogs));
         }
       } catch (err) {
         console.warn("Supabase live fetch notice:", err);
@@ -2511,17 +2517,27 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {}
   };
 
-  // ── Pertahanan Keamanan & Deteksi Ancaman ──
+  // ── Pertahanan Keamanan & Deteksi Ancaman (Retensi 7 Hari Otomatis) ──
   const addSecurityThreat = (threat: Omit<SecurityThreatLog, "id" | "timestamp">) => {
     const now = new Date();
     const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
     const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    const nowMs = now.getTime();
+
     const newThreat: SecurityThreatLog = {
       ...threat,
       id: "threat-" + Date.now().toString(),
-      timestamp: `${formattedDate}, ${formattedTime}`
+      timestamp: `${formattedDate}, ${formattedTime}`,
+      createdAt: now.toISOString()
     };
-    const updated = [newThreat, ...securityThreats.slice(0, 99)];
+
+    const validThreats = securityThreats.filter((t) => {
+      if (!t.createdAt) return true;
+      return nowMs - new Date(t.createdAt).getTime() < SEVEN_DAYS_MS;
+    });
+
+    const updated = [newThreat, ...validThreats.slice(0, 99)];
     saveSecurityThreats(updated);
     addLog(`🚨 Ancaman Keamanan (${threat.threatType})`, `${threat.endpoint} [IP: ${threat.ip}]`, "Sistem Pertahanan Web");
   };

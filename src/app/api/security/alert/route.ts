@@ -50,7 +50,20 @@ export async function POST(req: NextRequest) {
         .single();
 
       const existingThreats = Array.isArray(existingData?.value) ? existingData.value : [];
-      const updatedThreats = [newThreat, ...existingThreats.slice(0, 99)];
+      
+      // Auto Pruning: Bersihkan log yang umurnya sudah melebihi 7 hari (7 * 24 * 60 * 60 * 1000 ms)
+      const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+      const nowMs = now.getTime();
+      const validThreats = existingThreats.filter((t: any) => {
+        if (!t.createdAt) return true; // simpan jika belum ada field createdAt
+        const logAge = nowMs - new Date(t.createdAt).getTime();
+        return logAge < SEVEN_DAYS_MS;
+      });
+
+      const updatedThreats = [
+        { ...newThreat, createdAt: now.toISOString() },
+        ...validThreats.slice(0, 99)
+      ];
 
       await supabaseAdmin.from("site_content").upsert({
         key: "security_threats",

@@ -712,6 +712,7 @@ export type ThreatType =
 export interface SecurityThreatLog {
   id: string;
   timestamp: string;
+  createdAt?: string;
   ip: string;
   threatType: ThreatType;
   severity: "critical" | "high" | "medium" | "low";
