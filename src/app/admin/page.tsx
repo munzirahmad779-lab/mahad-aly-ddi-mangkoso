@@ -4384,7 +4384,7 @@ export default function AdminPage() {
 
                       {/* Granular Section Fields per Halaman */}
                       {activePageTextTab === "profil" && (
-                        <div className="pt-4 border-t border-slate-200 space-y-4 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                        <div className="mt-4 space-y-4 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
                           <div className="flex items-center gap-2">
                             <span className="text-base">👳‍♂️</span>
                             <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
@@ -4505,7 +4505,7 @@ export default function AdminPage() {
                       )}
 
                       {activePageTextTab === "akademik" && (
-                        <div className="pt-4 border-t border-slate-200 space-y-4 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                        <div className="mt-4 space-y-4 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
                           <div className="flex items-center gap-2">
                             <span className="text-base">🎓</span>
                             <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
@@ -4636,7 +4636,7 @@ export default function AdminPage() {
                       )}
 
                       {activePageTextTab === "skripsi" && (
-                        <div className="pt-4 border-t border-slate-200 space-y-3 bg-blue-50/60 p-4 rounded-xl border border-blue-200">
+                        <div className="mt-4 space-y-3 bg-blue-50/60 p-4 rounded-xl border border-blue-200">
                           <div className="flex items-center gap-2">
                             <span className="text-base">🎓</span>
                             <h4 className="text-xs font-bold text-blue-950 uppercase tracking-wider">
@@ -4683,7 +4683,7 @@ export default function AdminPage() {
                       )}
 
                       {activePageTextTab === "artikel" && (
-                        <div className="pt-4 border-t border-slate-200 space-y-3 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                        <div className="mt-4 space-y-3 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
                           <div className="flex items-center gap-2">
                             <span className="text-base">📑</span>
                             <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
@@ -4731,7 +4731,7 @@ export default function AdminPage() {
                       )}
 
                       {activePageTextTab === "kirim" && (
-                        <div className="pt-4 border-t border-slate-200 space-y-3 bg-amber-50/50 p-4 rounded-xl border border-amber-200">
+                        <div className="mt-4 space-y-3 bg-amber-50/50 p-4 rounded-xl border border-amber-200">
                           <div className="flex items-center gap-2">
                             <span className="text-base">📝</span>
                             <h4 className="text-xs font-bold text-amber-950 uppercase tracking-wider">
@@ -4778,7 +4778,7 @@ export default function AdminPage() {
                       )}
 
                       {activePageTextTab === "kontak" && (
-                        <div className="pt-4 border-t border-slate-200 space-y-3 bg-slate-100/70 p-4 rounded-xl border border-slate-200">
+                        <div className="mt-4 space-y-3 bg-slate-100/70 p-4 rounded-xl border border-slate-200">
                           <div className="flex items-center gap-2">
                             <span className="text-base">🏢</span>
                             <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
@@ -4827,7 +4827,7 @@ export default function AdminPage() {
                       {/* ══════════════════════════════════════════════════════════════
                           ELEMEN & KARTU KUSTOM TAMBAHAN (BEBAS DITAMBAH DI SEMUA HALAMAN)
                          ══════════════════════════════════════════════════════════════ */}
-                      <div className="pt-4 border-t border-slate-200 space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                      <div className="mt-4 space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <div className="flex items-center gap-2">
                             <span className="text-base">🧩</span>
