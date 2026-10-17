@@ -464,6 +464,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
       const savedDema = localStorage.getItem("mahad_dema_settings");
       if (savedDema) setDemaSettings(JSON.parse(savedDema));
+
+      const savedLogs = localStorage.getItem("mahad_logs");
+      if (savedLogs) setLogs(JSON.parse(savedLogs));
     } catch (e) {
       console.warn("LocalStorage read skipped:", e);
     }
@@ -839,6 +842,17 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           setSecurityThreats(freshLogs);
           localStorage.setItem("mahad_security_threats", JSON.stringify(freshLogs));
         }
+
+        // Fetch Live Activity Logs dari Supabase agar sinkron antar browser/admin
+        const { data: logsData } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "activity_logs")
+          .single();
+        if (logsData?.value && Array.isArray(logsData.value)) {
+          setLogs(logsData.value);
+          localStorage.setItem("mahad_logs", JSON.stringify(logsData.value));
+        }
       } catch (err) {
         console.warn("Supabase live fetch notice:", err);
       }
@@ -879,6 +893,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const saveLogs = (data: ActivityLog[]) => {
     setLogs(data);
     localStorage.setItem("mahad_logs", JSON.stringify(data));
+    try {
+      supabase.from("site_content").upsert({ key: "activity_logs", value: data }, { onConflict: "key" }).then();
+    } catch (e) {}
   };
   const saveMedia = (data: MediaItem[]) => {
     setMedia(data);
