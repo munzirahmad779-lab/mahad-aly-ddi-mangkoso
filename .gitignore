@@ -43,3 +43,6 @@ next-env.d.ts
 
 # wrangler local state
 /.wrangler/
+
+# tangkapan layar uji (bukti lokal, tidak perlu di repo)
+/scratch/screenshots/
