@@ -86,19 +86,19 @@ function SyncAvatar({ src, name }: { src: string; name: string }) {
 
   if (!src || broken) {
     return (
-      <div className="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs shrink-0">
+      <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs shrink-0">
         {initials || "?"}
       </div>
     );
   }
 
   return (
-    <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-100 shrink-0 relative">
+    <div className="w-12 h-12 rounded-2xl overflow-hidden bg-slate-100 shrink-0 relative">
       <Image
         src={src}
         alt={name}
-        width={44}
-        height={44}
+        width={48}
+        height={48}
         unoptimized
         className="w-full h-full object-cover"
         onError={() => setBroken(true)}
@@ -288,120 +288,189 @@ export default function SpreadsheetSyncPanel({
 
   const busy = runState === "working";
 
+  const steps = [
+    "Unduh template CSV (atau siapkan Google Sheet) untuk modul yang dipilih.",
+    "Isi datanya langsung dari HP — urutan kolom bebas, sistem mengenali judulnya.",
+    "Tempel tautan atau unggah berkasnya, cek pratinjau, lalu simpan."
+  ];
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-6 lg:space-y-7">
       {/* ── Pengantar ─────────────────────────────────────────────────── */}
-      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 sm:p-5">
-        <div className="flex items-start gap-3">
-          <span className="text-2xl shrink-0">📊</span>
-          <div className="space-y-1">
-            <h3 className="font-bold text-emerald-950 text-sm sm:text-base">
+      <section className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/60 p-5 shadow-sm sm:p-7">
+        <div className="flex items-start gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">
+            📊
+          </span>
+          <div className="min-w-0 space-y-2">
+            <h3 className="font-serif text-lg font-bold leading-snug text-emerald-950 sm:text-xl">
               Sinkronisasi Spreadsheet → Website (Bebas RLS)
             </h3>
-            <p className="text-xs text-emerald-900 leading-relaxed">
-              Data ditarik dari Google Sheets atau berkas CSV, dibersihkan di server, lalu disimpan
-              memakai <strong>Service Role Key</strong> — sehingga tidak pernah gagal karena Row-Level
-              Security, termasuk saat mengunggah dari HP. Link foto Google Drive otomatis diubah ke CDN
-              cepat <code className="bg-white/70 px-1 rounded">lh3.googleusercontent.com</code>.
+            <p className="max-w-3xl text-sm leading-relaxed text-emerald-900/90">
+              Data ditarik dari Google Sheets atau berkas CSV, dibersihkan di server, lalu disimpan memakai{" "}
+              <strong className="font-semibold">Service Role Key</strong> — sehingga tidak pernah gagal karena
+              Row-Level Security, termasuk saat mengunggah dari HP. Tautan foto Google Drive otomatis diubah
+              menjadi CDN cepat{" "}
+              <code className="rounded-md bg-white/80 px-1.5 py-0.5 font-mono text-[12px]">
+                lh3.googleusercontent.com
+              </code>
+              .
             </p>
           </div>
         </div>
-      </div>
+
+        <ol className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+          {steps.map((step, index) => (
+            <li
+              key={step}
+              className="flex items-start gap-2.5 rounded-2xl bg-white/75 px-3.5 py-3 backdrop-blur-sm"
+            >
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-[11px] font-bold text-white">
+                {index + 1}
+              </span>
+              <span className="text-[13px] leading-snug text-emerald-950">{step}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       {/* ── Peringatan dini: Service Role Key belum diset ─────────────── */}
       {serviceRoleConfigured === false && (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-          <span className="text-xl shrink-0">🔐</span>
-          <div className="space-y-1 text-xs text-red-900 leading-relaxed">
+        <section className="flex items-start gap-3.5 rounded-3xl border border-red-200 bg-red-50 p-5 shadow-sm">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-lg shadow-sm">
+            🔐
+          </span>
+          <div className="space-y-1.5 text-sm leading-relaxed text-red-900">
             <p className="font-bold">Mode tulis belum aktif di server ini</p>
             <p>
-              Variabel <code className="bg-white/80 px-1 rounded">SUPABASE_SERVICE_ROLE_KEY</code> belum
-              diset. Pratinjau tetap bisa dijalankan, tetapi tombol{" "}
-              <strong>Simpan &amp; Publikasikan</strong> akan ditolak Row-Level Security. Set variabel
-              tersebut pada server/deployment lalu muat ulang halaman ini.
+              Variabel{" "}
+              <code className="rounded-md bg-white/80 px-1.5 py-0.5 font-mono text-[12px]">
+                SUPABASE_SERVICE_ROLE_KEY
+              </code>{" "}
+              belum diset. Pratinjau tetap bisa dijalankan, tetapi tombol{" "}
+              <strong className="font-semibold">Simpan &amp; Publikasikan</strong> akan ditolak Row-Level
+              Security. Set variabel tersebut pada server/deployment lalu muat ulang halaman ini.
             </p>
           </div>
-        </div>
+        </section>
       )}
 
       {/* ── Pilihan modul ─────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        {SHEET_MODULES.map((module) => {
-          const isActive = module.id === activeModuleId;
-          return (
-            <button
-              key={module.id}
-              type="button"
-              onClick={() => handleSelectModule(module.id)}
-              className={`text-left p-3 rounded-xl border transition ${
-                isActive
-                  ? "bg-emerald-800 text-white border-emerald-900 shadow"
-                  : "bg-white text-slate-700 border-slate-200 hover:border-emerald-300"
-              }`}
-            >
-              <span className="text-lg block">{module.emoji}</span>
-              <span className="block text-xs font-bold mt-1 leading-tight">{module.label}</span>
-              <span
-                className={`block text-[10px] mt-1 ${isActive ? "text-emerald-200" : "text-slate-500"}`}
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h4 className="text-sm font-bold text-slate-900">Pilih modul yang akan disinkronkan</h4>
+          <span className="text-xs text-slate-500">4 modul · data langsung tampil di halaman publik</span>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {SHEET_MODULES.map((module) => {
+            const isActive = module.id === activeModuleId;
+            return (
+              <button
+                key={module.id}
+                type="button"
+                onClick={() => handleSelectModule(module.id)}
+                aria-pressed={isActive}
+                className={`group flex flex-col gap-2.5 rounded-2xl border p-4 text-left transition ${
+                  isActive
+                    ? "border-emerald-900 bg-emerald-800 text-white shadow-md"
+                    : "border-slate-200 bg-slate-50 text-slate-700 hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-white hover:shadow-sm"
+                }`}
               >
-                {module.target}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+                <span
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl text-base ${
+                    isActive ? "bg-white/15" : "bg-white shadow-sm"
+                  }`}
+                >
+                  {module.emoji}
+                </span>
+                <span className="block text-[13px] font-bold leading-snug">{module.label}</span>
+                <span
+                  className={`block truncate font-mono text-[11px] ${
+                    isActive ? "text-emerald-200" : "text-slate-400"
+                  }`}
+                >
+                  {module.target}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       {/* ── Status terakhir ───────────────────────────────────────────── */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="text-xs text-slate-700 space-y-0.5">
-          <p>
-            <strong>Data tersimpan saat ini:</strong>{" "}
-            {activeStatus ? `${activeStatus.itemCount} baris` : "—"}
-          </p>
-          <p className="text-slate-500">
-            Sinkron terakhir: {formatDateTime(activeStatus?.syncedAt ?? null)}
-            {activeStatus?.source ? ` • ${activeStatus.source}` : ""}
-          </p>
-          <p className="text-slate-500 font-mono text-[10px]">
-            key: {activeModule.siteContentKey}
-            {activeStatus?.hasBackup ? ` • backup: ${formatDateTime(activeStatus.backupAt)}` : ""}
-          </p>
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h4 className="text-sm font-bold text-slate-900">Kondisi data saat ini</h4>
+            <p className="mt-1 text-xs text-slate-500">{activeModule.label}</p>
+          </div>
+
+          <div className="flex flex-wrap gap-2.5">
+            <button
+              type="button"
+              onClick={handleDownloadTemplate}
+              className="rounded-xl bg-slate-100 px-4 py-2.5 text-[13px] font-bold text-slate-800 transition hover:bg-slate-200"
+            >
+              📥 Unduh Template CSV
+            </button>
+            <button
+              type="button"
+              disabled={busy || !activeStatus?.hasBackup}
+              onClick={() => runAction("rollback")}
+              className="rounded-xl bg-amber-100 px-4 py-2.5 text-[13px] font-bold text-amber-900 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-40"
+              title={
+                activeStatus?.hasBackup
+                  ? "Pulihkan data ke kondisi sebelum sinkronisasi terakhir"
+                  : "Belum ada backup untuk modul ini"
+              }
+            >
+              ↩️ Rollback
+            </button>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={handleDownloadTemplate}
-            className="text-xs font-bold px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800"
-          >
-            📥 Unduh Template CSV
-          </button>
-          <button
-            type="button"
-            disabled={busy || !activeStatus?.hasBackup}
-            onClick={() => runAction("rollback")}
-            className="text-xs font-bold px-3 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 disabled:opacity-40 disabled:cursor-not-allowed"
-            title={
-              activeStatus?.hasBackup
-                ? "Pulihkan data ke kondisi sebelum sinkronisasi terakhir"
-                : "Belum ada backup untuk modul ini"
-            }
-          >
-            ↩️ Rollback
-          </button>
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Tersimpan</p>
+            <p className="mt-1.5 text-xl font-bold leading-none text-slate-900">
+              {activeStatus ? activeStatus.itemCount : 0}
+              <span className="ml-1.5 text-xs font-medium text-slate-500">baris</span>
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Sinkron terakhir</p>
+            <p className="mt-1.5 text-sm font-semibold leading-snug text-slate-900">
+              {formatDateTime(activeStatus?.syncedAt ?? null)}
+            </p>
+            {activeStatus?.source && (
+              <p className="mt-0.5 truncate text-[11px] text-slate-500">{activeStatus.source}</p>
+            )}
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Cadangan</p>
+            <p className="mt-1.5 text-sm font-semibold leading-snug text-slate-900">
+              {activeStatus?.hasBackup ? formatDateTime(activeStatus.backupAt) : "Belum ada"}
+            </p>
+          </div>
         </div>
-      </div>
+
+        <p className="mt-3 font-mono text-[11px] text-slate-400">key: {activeModule.siteContentKey}</p>
+      </section>
 
       {/* ── Sumber data ───────────────────────────────────────────────── */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-4">
-        <div className="flex flex-wrap gap-2">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <h4 className="text-sm font-bold text-slate-900">Ambil data dari mana?</h4>
+
+        <div className="mt-4 grid grid-cols-1 gap-1.5 rounded-2xl bg-slate-100 p-1.5 sm:grid-cols-2">
           <button
             type="button"
             onClick={() => handleModeChange("url")}
-            className={`flex-1 min-w-[140px] text-xs font-bold px-3 py-2.5 rounded-xl border transition ${
+            aria-pressed={mode === "url"}
+            className={`rounded-xl px-4 py-3 text-[13px] font-bold transition ${
               mode === "url"
-                ? "bg-emerald-800 text-white border-emerald-900"
-                : "bg-slate-50 text-slate-700 border-slate-200"
+                ? "bg-white text-emerald-900 shadow"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             🔗 Mode A — Tautan Google Sheets
@@ -409,86 +478,101 @@ export default function SpreadsheetSyncPanel({
           <button
             type="button"
             onClick={() => handleModeChange("file")}
-            className={`flex-1 min-w-[140px] text-xs font-bold px-3 py-2.5 rounded-xl border transition ${
+            aria-pressed={mode === "file"}
+            className={`rounded-xl px-4 py-3 text-[13px] font-bold transition ${
               mode === "file"
-                ? "bg-emerald-800 text-white border-emerald-900"
-                : "bg-slate-50 text-slate-700 border-slate-200"
+                ? "bg-white text-emerald-900 shadow"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             📁 Mode B — Unggah CSV dari HP
           </button>
         </div>
 
-        {mode === "url" ? (
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Tautan Google Sheets (wajib publik)
-              </label>
-              <input
-                type="url"
-                inputMode="url"
-                value={sheetUrl}
-                onChange={(e) => setSheetUrl(e.target.value)}
-                placeholder="https://docs.google.com/spreadsheets/d/ID_SPREADSHEET/edit"
-                className="w-full text-xs sm:text-sm px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Nama Tab / Sheet (opsional)
-              </label>
-              <input
-                type="text"
-                value={sheetName}
-                onChange={(e) => setSheetName(e.target.value)}
-                placeholder="Contoh: Masyayikh"
-                className="w-full text-xs sm:text-sm px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-              />
-              <p className="text-[11px] text-slate-500 mt-1">
-                Kosongkan bila data berada pada tab pertama. Pastikan akses sheet:{" "}
-                <em>Siapa saja yang memiliki link</em>.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,text/csv,text/plain"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full border-2 border-dashed border-emerald-300 rounded-2xl p-6 text-center hover:bg-emerald-50 transition"
-            >
-              <span className="text-3xl block">📁</span>
-              <span className="block text-sm font-bold text-emerald-900 mt-2">
-                Pilih File CSV dari HP
-              </span>
-              <span className="block text-[11px] text-slate-600 mt-1">
-                {fileName
-                  ? `Terpilih: ${fileName} (${(csvContent.length / 1024).toFixed(1)} KB)`
-                  : "Ketuk untuk membuka galeri / penyimpanan perangkat"}
-              </span>
-            </button>
-            {csvContent.length > 0 && (
-              <p className="text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
-                ✓ Berkas siap diproses ({csvContent.split(/\r?\n/).length} baris terdeteksi).
-              </p>
-            )}
-          </div>
-        )}
+        <div className="mt-5">
+          {mode === "url" ? (
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="sync-sheet-url"
+                  className="mb-1.5 block text-[13px] font-semibold text-slate-700"
+                >
+                  Tautan Google Sheets <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="sync-sheet-url"
+                  type="url"
+                  inputMode="url"
+                  value={sheetUrl}
+                  onChange={(e) => setSheetUrl(e.target.value)}
+                  placeholder="https://docs.google.com/spreadsheets/d/ID_SPREADSHEET/edit"
+                  className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                />
+              </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 pt-1">
+              <div>
+                <label
+                  htmlFor="sync-sheet-name"
+                  className="mb-1.5 block text-[13px] font-semibold text-slate-700"
+                >
+                  Nama Tab / Sheet <span className="font-normal text-slate-400">(opsional)</span>
+                </label>
+                <input
+                  id="sync-sheet-name"
+                  type="text"
+                  value={sheetName}
+                  onChange={(e) => setSheetName(e.target.value)}
+                  placeholder="Contoh: Masyayikh"
+                  className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                />
+                <p className="mt-1.5 text-xs leading-relaxed text-slate-500">
+                  Kosongkan bila data berada pada tab pertama. Pastikan akses sheet:{" "}
+                  <em>Siapa saja yang memiliki link</em>.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,text/csv,text/plain"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full rounded-3xl border-2 border-dashed border-emerald-300 bg-emerald-50/40 px-5 py-9 text-center transition hover:border-emerald-500 hover:bg-emerald-50"
+              >
+                <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">
+                  📁
+                </span>
+                <span className="mt-3 block text-sm font-bold text-emerald-900">
+                  Pilih File CSV dari HP
+                </span>
+                <span className="mt-1 block text-xs leading-relaxed text-slate-600">
+                  {fileName
+                    ? `Terpilih: ${fileName} (${(csvContent.length / 1024).toFixed(1)} KB)`
+                    : "Ketuk untuk membuka galeri / penyimpanan perangkat"}
+                </span>
+              </button>
+
+              {csvContent.length > 0 && (
+                <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-900">
+                  ✓ Berkas siap diproses ({csvContent.split(/\r?\n/).length} baris terdeteksi).
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <button
             type="button"
             disabled={busy}
             onClick={() => runAction("preview")}
-            className="flex-1 text-xs font-bold px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-900 text-white disabled:opacity-50"
+            className="rounded-2xl bg-slate-800 px-4 py-3.5 text-sm font-bold text-white transition hover:bg-slate-900 disabled:opacity-50"
           >
             {busy ? "⏳ Memproses..." : "👁️ Pratinjau Data (Preview)"}
           </button>
@@ -496,152 +580,172 @@ export default function SpreadsheetSyncPanel({
             type="button"
             disabled={busy}
             onClick={() => runAction("sync")}
-            className="flex-1 text-xs font-bold px-4 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white disabled:opacity-50 shadow"
+            className="rounded-2xl bg-emerald-700 px-4 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-800 disabled:opacity-50"
           >
             {busy ? "⏳ Menyimpan..." : "🚀 Simpan & Publikasikan ke Website"}
           </button>
         </div>
-      </div>
+      </section>
 
       {/* ── Umpan balik ───────────────────────────────────────────────── */}
-      {runState === "error" && error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 rounded-2xl p-4 text-xs leading-relaxed">
-          <strong className="block mb-1">⚠️ Sinkronisasi gagal</strong>
-          {error}
-        </div>
-      )}
+      <div aria-live="polite" className="space-y-3">
+        {runState === "error" && error && (
+          <section className="flex items-start gap-3.5 rounded-3xl border border-red-200 bg-red-50 p-5 shadow-sm">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-lg shadow-sm">
+              ⚠️
+            </span>
+            <div className="min-w-0 space-y-1 text-sm leading-relaxed text-red-900">
+              <p className="font-bold">Sinkronisasi gagal</p>
+              <p className="break-words">{error}</p>
+            </div>
+          </section>
+        )}
 
-      {runState === "success" && message && (
-        <div className="bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-2xl p-4 text-xs leading-relaxed space-y-1">
-          <strong className="block">✅ {message}</strong>
-          <span>
-            Buka{" "}
-            <a
-              href={activeModule.target}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline font-bold"
-            >
-              {activeModule.target}
-            </a>{" "}
-            untuk memeriksa hasilnya di halaman publik.
-          </span>
-        </div>
-      )}
+        {runState === "success" && message && (
+          <section className="flex items-start gap-3.5 rounded-3xl border border-emerald-300 bg-emerald-50 p-5 shadow-sm">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-lg shadow-sm">
+              ✅
+            </span>
+            <div className="min-w-0 space-y-1 text-sm leading-relaxed text-emerald-900">
+              <p className="font-bold">{message}</p>
+              <p>
+                Buka{" "}
+                <a
+                  href={activeModule.target}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold underline underline-offset-2"
+                >
+                  {activeModule.target}
+                </a>{" "}
+                untuk memeriksa hasilnya di halaman publik.
+              </p>
+            </div>
+          </section>
+        )}
 
-      {warnings.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 text-xs space-y-1">
-          <strong className="block">ℹ️ Catatan ({warnings.length})</strong>
-          <ul className="list-disc pl-4 space-y-0.5">
-            {warnings.map((warning, index) => (
-              <li key={index}>{warning}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {warnings.length > 0 && (
+          <section className="flex items-start gap-3.5 rounded-3xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-lg shadow-sm">
+              ℹ️
+            </span>
+            <div className="min-w-0 space-y-2 text-sm leading-relaxed text-amber-900">
+              <p className="font-bold">Catatan ({warnings.length})</p>
+              <ul className="list-disc space-y-1 pl-4">
+                {warnings.map((warning, index) => (
+                  <li key={index} className="break-words">
+                    {warning}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+      </div>
 
       {/* ── Pemetaan kolom ────────────────────────────────────────────── */}
       {detectedHeaders.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-4">
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
           <button
             type="button"
             onClick={() => setShowMapping((prev) => !prev)}
-            className="w-full flex items-center justify-between text-xs font-bold text-slate-700"
+            aria-expanded={showMapping}
+            className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition hover:bg-slate-50 sm:px-6"
           >
-            <span>🔎 Kolom terdeteksi ({detectedHeaders.length})</span>
-            <span>{showMapping ? "▲" : "▼"}</span>
+            <span className="text-sm font-bold text-slate-800">
+              🔎 Kolom terdeteksi ({detectedHeaders.length})
+            </span>
+            <span className="text-xs font-bold text-slate-500">{showMapping ? "▲ Tutup" : "▼ Buka"}</span>
           </button>
+
           {showMapping && (
-            <div className="mt-3 space-y-2">
-              <div className="flex flex-wrap gap-1.5">
+            <div className="space-y-3 border-t border-slate-100 px-5 py-4 sm:px-6">
+              <div className="flex flex-wrap gap-2">
                 {detectedHeaders.map((header, index) => (
                   <span
                     key={`${header}-${index}`}
-                    className="text-[10px] px-2 py-1 rounded bg-slate-100 text-slate-700 font-mono"
+                    className="rounded-lg bg-slate-100 px-2.5 py-1.5 font-mono text-[11px] text-slate-700"
                   >
                     {header || "(kosong)"}
                   </span>
                 ))}
               </div>
               {unknownHeaders.length > 0 && (
-                <p className="text-[11px] text-slate-500">
+                <p className="text-xs leading-relaxed text-slate-500">
                   Kolom diabaikan: {unknownHeaders.join(", ")}
                 </p>
               )}
             </div>
           )}
-        </div>
+        </section>
       )}
 
       {/* ── Pratinjau ─────────────────────────────────────────────────── */}
       {preview && preview.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-          <div className="px-4 py-3 border-b bg-slate-50 flex items-center justify-between flex-wrap gap-2">
-            <h4 className="text-xs font-bold text-slate-800">
-              👁️ Pratinjau {preview.length} baris pertama
-            </h4>
-            <span className="text-[11px] text-slate-500">
-              Periksa nama, foto, dan jabatan sebelum dipublikasikan
-            </span>
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50 px-5 py-4 sm:px-6">
+            <h4 className="text-sm font-bold text-slate-800">👁️ Pratinjau {preview.length} baris pertama</h4>
+            <span className="text-xs text-slate-500">Periksa nama, foto, dan jabatan sebelum disimpan</span>
           </div>
-          <div className="divide-y divide-slate-100 max-h-[460px] overflow-y-auto">
+
+          <ul className="max-h-[520px] divide-y divide-slate-100 overflow-y-auto">
             {preview.map((item, index) => (
-              <div key={`${item.name}-${index}`} className="p-3 flex items-center gap-3">
+              <li key={`${item.name}-${index}`} className="flex items-center gap-4 px-5 py-4 sm:px-6">
                 <SyncAvatar src={item.photoUrl} name={item.name} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-slate-900 truncate">{item.name}</p>
-                  <p className="text-[11px] text-slate-500 truncate">
+                  <p className="truncate text-sm font-semibold text-slate-900">{item.name}</p>
+                  <p className="mt-0.5 truncate text-xs text-slate-500">
                     {item.subtitle || item.meta || "—"}
                   </p>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-1 rounded bg-emerald-100 text-emerald-800 whitespace-nowrap">
-                  {item.badge}
-                </span>
-              </div>
+                {item.badge && (
+                  <span className="shrink-0 rounded-lg bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-800">
+                    {item.badge}
+                  </span>
+                )}
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </section>
       )}
 
       {/* ── Panduan kolom ─────────────────────────────────────────────── */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
-        <h4 className="text-xs font-bold text-slate-800">
-          📋 Susunan kolom wajib untuk {activeModule.label}
+      <section className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm sm:p-6">
+        <h4 className="text-sm font-bold text-slate-800">
+          📋 Susunan kolom untuk {activeModule.label}
         </h4>
-        <div className="overflow-x-auto">
-          <table className="w-full text-[11px] border-collapse">
-            <thead>
-              <tr className="text-left text-slate-500">
-                <th className="py-1.5 pr-3 font-bold">Kolom</th>
-                <th className="py-1.5 pr-3 font-bold">Wajib</th>
-                <th className="py-1.5 font-bold">Contoh</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activeModule.columns.map((column) => (
-                <tr key={column.key} className="border-t border-slate-200">
-                  <td className="py-1.5 pr-3 font-semibold text-slate-800 whitespace-nowrap">
-                    {column.label}
-                  </td>
-                  <td className="py-1.5 pr-3">
-                    {column.required ? (
-                      <span className="text-red-600 font-bold">Wajib</span>
-                    ) : (
-                      <span className="text-slate-400">Opsional</span>
-                    )}
-                  </td>
-                  <td className="py-1.5 text-slate-600">{column.example}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="text-[11px] text-slate-500 pt-1">
-          Urutan kolom bebas — sistem mengenali judul kolom secara otomatis. Gunakan tombol{" "}
-          <strong>📥 Unduh Template CSV</strong> agar susunannya 100% pas, lalu isi dari HP dan unggah
-          kembali.
+        <p className="mt-1 text-xs leading-relaxed text-slate-500">
+          Urutan kolom bebas — sistem mengenali judul kolom secara otomatis.
         </p>
-      </div>
+
+        <ul className="mt-4 divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          {activeModule.columns.map((column) => (
+            <li
+              key={column.key}
+              className="grid grid-cols-1 gap-1 px-4 py-3 sm:grid-cols-[minmax(0,14rem)_7rem_minmax(0,1fr)] sm:items-start sm:gap-4"
+            >
+              <span className="text-[13px] font-semibold text-slate-900">{column.label}</span>
+              <span>
+                {column.required ? (
+                  <span className="inline-flex rounded-md bg-red-50 px-2 py-0.5 text-[11px] font-bold text-red-700">
+                    Wajib
+                  </span>
+                ) : (
+                  <span className="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+                    Opsional
+                  </span>
+                )}
+              </span>
+              <span className="text-xs leading-relaxed text-slate-500">{column.example}</span>
+            </li>
+          ))}
+        </ul>
+
+        <p className="mt-3 text-xs leading-relaxed text-slate-500">
+          Gunakan tombol <strong className="font-semibold text-slate-700">📥 Unduh Template CSV</strong> agar
+          susunannya 100% pas, lalu isi dari HP dan unggah kembali.
+        </p>
+      </section>
     </div>
   );
 }

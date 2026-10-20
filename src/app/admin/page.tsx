@@ -2541,27 +2541,25 @@ export default function AdminPage() {
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "sheets" && (
           <div className="space-y-6">
-            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-emerald-200 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b">
-                <div>
-                  <h3 className="font-serif font-bold text-base text-emerald-950 flex items-center gap-2">
-                    <span>📊</span>
-                    <span>Sinkronisasi Masyayikh, Kurikulum, Sarana &amp; DeMa</span>
-                  </h3>
-                  <p className="text-slate-500 text-[11px] mt-0.5">
-                    Tarik data langsung dari Google Sheets publik atau unggah berkas CSV dari HP.
-                    Data disimpan lewat Service Role sehingga tidak pernah gagal karena Row-Level Security,
-                    dan foto Google Drive otomatis dikonversi ke CDN cepat.
-                  </p>
-                </div>
-                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full self-start border border-emerald-300 whitespace-nowrap">
-                  ⚡ Server-Side Sync • Anti RLS
-                </span>
+            {/* Header menyatu dengan halaman — tanpa kartu bertumpuk agar tidak sesak */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="max-w-3xl">
+                <h3 className="flex items-center gap-2 font-serif text-lg font-bold text-emerald-950">
+                  <span>📊</span>
+                  <span>Sinkronisasi Masyayikh, Kurikulum, Sarana &amp; DeMa</span>
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
+                  Tarik data langsung dari Google Sheets publik atau unggah berkas CSV dari HP. Data
+                  disimpan lewat Service Role sehingga tidak pernah gagal karena Row-Level Security, dan
+                  foto Google Drive otomatis dikonversi ke CDN cepat.
+                </p>
               </div>
-              <div className="pt-4">
-                <SpreadsheetSyncPanel getAuthHeaders={getAdminApiHeaders} />
-              </div>
+              <span className="self-start whitespace-nowrap rounded-full border border-emerald-300 bg-emerald-100 px-3.5 py-1.5 text-[11px] font-bold text-emerald-800">
+                ⚡ Server-Side Sync • Anti RLS
+              </span>
             </div>
+
+            <SpreadsheetSyncPanel getAuthHeaders={getAdminApiHeaders} />
           </div>
         )}
 

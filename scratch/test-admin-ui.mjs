@@ -39,7 +39,22 @@ async function main() {
   fs.mkdirSync(SHOT_DIR, { recursive: true });
 
   const state = await (await fetch(`${MOCK}/__state`)).json();
-  const lecturers = state.siteContent.masyayikh_list.items;
+  // Pakai hasil sinkron sebelumnya bila ada; kalau belum, ambil dari tabel collections
+  const lecturers =
+    state.siteContent.masyayikh_list?.items ??
+    state.collections
+      .filter((row) => row.collection_type === "masyayikh")
+      .map((row, index) => ({
+        name: row.data.name,
+        title: row.data.title,
+        role: row.data.role,
+        photoUrl: row.data.photoUrl,
+        rawPhotoUrl: row.data.photoUrl,
+        expertise: row.data.expertise,
+        education: row.data.education,
+        publications: row.data.publications,
+        order: index + 1
+      }));
 
   const quote = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const csvContent = [
@@ -123,6 +138,16 @@ async function main() {
   check("meta.syncedBy terisi", Boolean(after.siteContent.masyayikh_list.meta.syncedBy));
 
   console.log("\n=== 7. Rollback ===");
+  // Sinkron kedua agar sistem membuat cadangan versi sebelumnya,
+  // baru rollback bisa diuji (tanpa cadangan, tombolnya memang nonaktif).
+  await page.getByRole("button", { name: /Simpan & Publikasikan/i }).click();
+  check("sinkron kedua sukses (membuat cadangan)", await waitText(page, "Berhasil"));
+  const afterSecond = await (await fetch(`${MOCK}/__state`)).json();
+  check(
+    "cadangan terbentuk setelah sinkron kedua",
+    Boolean(afterSecond.siteContent.backup_before_sync_masyayikh?.previous?.items)
+  );
+
   await page.getByRole("button", { name: /Rollback/i }).first().click();
   check("pesan rollback tampil", await waitText(page, "Rollback"));
   const afterRollback = await (await fetch(`${MOCK}/__state`)).json();
