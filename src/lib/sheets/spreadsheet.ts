@@ -240,6 +240,14 @@ export function parseCsv(text: string): string[][] {
 
   if (field.length > 0 || row.length > 0) pushRow();
 
+  // Excel menulis baris petunjuk "sep=;" di awal berkas — jangan dianggap data
+  const firstCell = rows[0]?.[0] ?? "";
+  const looksLikeSepHint =
+    /^sep=.$/i.test(firstCell) || (/^sep=$/i.test(firstCell) && (rows[0]?.length ?? 0) <= 2);
+  if (rows.length > 0 && looksLikeSepHint) {
+    rows.shift();
+  }
+
   return rows;
 }
 
@@ -1035,22 +1043,46 @@ export function normalizeDemaRows(
 // 7. TEMPLATE CSV SIAP UNDUH
 // ══════════════════════════════════════════════════════════════════════════
 
-function escapeCsvCell(value: string): string {
+type CsvDialect = "excel" | "sheets";
+
+/** Bungkus sel hanya bila perlu agar berkas enak dibaca di Notepad/Sheets. */
+function csvCell(value: string, delimiter: string): string {
   const normalized = (value ?? "").replace(/\r\n/g, "\n");
-  return `"${normalized.replace(/"/g, '""')}"`;
+  const needsQuote =
+    normalized.includes(delimiter) ||
+    normalized.includes('"') ||
+    /[\r\n]/.test(normalized) ||
+    /^\s|\s$/.test(normalized);
+  return needsQuote ? `"${normalized.replace(/"/g, '""')}"` : normalized;
 }
 
-/** Bangun teks CSV (header + 1 baris contoh) untuk modul tertentu. */
-export function buildCsvTemplate(module: SheetModuleDef): string {
-  const header = module.columns.map((c) => escapeCsvCell(c.label)).join(",");
-  const example = module.columns.map((c) => escapeCsvCell(c.example)).join(",");
-  // BOM agar Excel (Windows) membaca UTF-8 dengan benar
-  return `\uFEFF${header}\r\n${example}\r\n`;
+/**
+ * Bangun teks template CSV (baris judul + 1 baris contoh).
+ *
+ * - `excel`  : pemisah titik koma + baris petunjuk `sep=;` + BOM UTF-8.
+ *   Baris `sep=;` membuat Excel ( termasuk versi berbahasa Indonesia yang
+ *   pemisah daftarnya `;` ) langsung memecah kolom dengan benar, tidak lagi
+ *   menumpuk semuanya di kolom A.
+ * - `sheets` : pemisah koma + BOM, untuk Google Sheets / Numbers.
+ *
+ * Kedua varian tetap dapat diunggah balik ke panel karena parser mendeteksi
+ * pemisah secara otomatis dan mengabaikan baris `sep=`.
+ */
+export function buildCsvTemplate(module: SheetModuleDef, dialect: CsvDialect = "excel"): string {
+  const delimiter = dialect === "excel" ? ";" : ",";
+  const header = module.columns.map((c) => csvCell(c.label, delimiter)).join(delimiter);
+  const example = module.columns.map((c) => csvCell(c.example, delimiter)).join(delimiter);
+  const sepHint = dialect === "excel" ? `sep=${delimiter}\r\n` : "";
+  return `\uFEFF${sepHint}${header}\r\n${example}\r\n`;
 }
 
-/** Nama file template yang ramah HP: template-masyayikh-mahad-aly.csv */
-export function buildCsvTemplateFileName(module: SheetModuleDef): string {
-  return `template-${module.id}-mahad-aly-ddi-mangkoso.csv`;
+/** Nama berkas: template-masyayikh-excel.csv / template-masyayikh-google-sheets.csv */
+export function buildCsvTemplateFileName(
+  module: SheetModuleDef,
+  dialect: CsvDialect = "excel"
+): string {
+  const suffix = dialect === "excel" ? "excel" : "google-sheets";
+  return `template-${module.id}-${suffix}.csv`;
 }
 
 // ══════════════════════════════════════════════════════════════════════════

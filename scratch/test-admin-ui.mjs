@@ -83,8 +83,19 @@ async function main() {
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  // Abaikan derau jaringan pihak ketiga: Google Tag Manager diblokir di lingkungan uji,
+  // 406 berasal dari Supabase tiruan, gambar storage lintas-origin diblokir ORB.
+  const noise = [
+    "406",
+    "favicon",
+    "googletagmanager",
+    "ERR_CONNECTION_CLOSED",
+    "ERR_BLOCKED_BY_ORB",
+    "Failed to load resource"
+  ];
   page.on("console", (msg) => {
-    if (msg.type() === "error" && !msg.text().includes("406") && !msg.text().includes("favicon")) errors.push(msg.text());
+    const text = msg.text();
+    if (msg.type() === "error" && !noise.some((n) => text.includes(n))) errors.push(text);
   });
 
   console.log("\n=== 1. Buka Panel Admin (mode tamu localhost) ===");

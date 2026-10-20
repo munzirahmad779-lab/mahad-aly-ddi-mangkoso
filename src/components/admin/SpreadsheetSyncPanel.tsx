@@ -207,13 +207,13 @@ export default function SpreadsheetSyncPanel({
     reader.readAsText(file, "UTF-8");
   };
 
-  const handleDownloadTemplate = () => {
-    const template = buildCsvTemplate(activeModule);
+  const handleDownloadTemplate = (dialect: "excel" | "sheets" = "excel") => {
+    const template = buildCsvTemplate(activeModule, dialect);
     const blob = new Blob([template], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = buildCsvTemplateFileName(activeModule);
+    anchor.download = buildCsvTemplateFileName(activeModule, dialect);
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
@@ -409,11 +409,22 @@ export default function SpreadsheetSyncPanel({
           <div className="flex flex-wrap gap-2.5">
             <button
               type="button"
-              onClick={handleDownloadTemplate}
+              onClick={() => handleDownloadTemplate("excel")}
               className="rounded-xl bg-slate-100 px-4 py-2.5 text-[13px] font-bold text-slate-800 transition hover:bg-slate-200"
             >
-              📥 Unduh Template CSV
+              📥 Unduh Template Excel (.csv)
             </button>
+            <button
+              type="button"
+              onClick={() => handleDownloadTemplate("sheets")}
+              className="rounded-xl bg-slate-100 px-4 py-2.5 text-[13px] font-bold text-slate-800 transition hover:bg-slate-200"
+            >
+              📥 Unduh Template Google Sheets (.csv)
+            </button>
+            <span className="w-full text-[11px] leading-relaxed text-slate-500 sm:text-right">
+              Versi Excel memakai pemisah titik koma agar kolom langsung rapi; untuk Google Sheets
+              pakai versi koma.
+            </span>
             <button
               type="button"
               disabled={busy || !activeStatus?.hasBackup}

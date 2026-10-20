@@ -226,46 +226,103 @@ export default function ProfilPage() {
                   .filter((l) => l.isActive)
                   .sort((a, b) => (a.order || 0) - (b.order || 0))
                   .map((m) => {
-                    const educations = Array.isArray(m.education)
-                      ? m.education
-                      : typeof m.education === "string" && (m.education as string).trim().length > 0
-                      ? [(m.education as string)]
-                      : [];
+                    const toList = (value: unknown): string[] => {
+                      const raw = Array.isArray(value) ? value : typeof value === "string" ? [value] : [];
+                      return raw
+                        .flatMap((entry) => String(entry).split(/\s*[•·|]\s*/))
+                        .map((entry) => entry.trim())
+                        .filter(Boolean);
+                    };
 
-                    const publications = Array.isArray(m.publications)
-                      ? m.publications
-                      : typeof m.publications === "string" && (m.publications as string).trim().length > 0
-                      ? [(m.publications as string)]
-                      : [];
+                    const educations = toList(m.education);
+                    const publications = toList(m.publications);
+                    const expertiseItems = (m.expertise || "")
+                      .split(/\s*[,;•·|]\s*/)
+                      .map((entry) => entry.trim())
+                      .filter(Boolean)
+                      .slice(0, 6);
 
                     return (
-                      <div key={m.id} className="p-5 rounded-2xl border border-slate-200 bg-slate-50 space-y-3 shadow-sm hover:shadow-md transition">
-                                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-mahad-gold relative bg-emerald-100 flex items-center justify-center text-xl font-bold text-emerald-800">
-                          <EntityPhoto
-                            src={m.photoUrl}
-                            alt={m.name}
-                            name={m.name}
-                            width={64}
-                            height={64}
-                            fallbackEmoji="👳"
-                          />
+                      <article
+                        key={m.id}
+                        className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md sm:p-6"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-mahad-gold bg-emerald-100 text-xl font-bold text-emerald-800">
+                            <EntityPhoto
+                              src={m.photoUrl}
+                              alt={m.name}
+                              name={m.name}
+                              width={64}
+                              height={64}
+                              fallbackEmoji="👳"
+                            />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-serif text-lg font-bold leading-snug text-slate-900">
+                              {m.name}
+                            </h4>
+                            {m.title && (
+                              <p className="mt-1 text-[13px] font-semibold leading-snug text-emerald-800">
+                                {m.title}
+                              </p>
+                            )}
+                            {m.role && m.role !== m.title && (
+                              <p className="mt-0.5 text-xs leading-snug text-slate-500">{m.role}</p>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-serif font-bold text-base text-slate-900">{m.name}</h4>
-                          <p className="text-xs font-semibold text-emerald-800">{m.title || m.role}</p>
-                        </div>
-                        <div className="pt-2 border-t text-xs text-slate-600 space-y-1">
-                          {m.expertise && (
-                            <p><strong>Keahlian:</strong> {m.expertise}</p>
-                          )}
-                          {educations.length > 0 && (
-                            <p><strong>Pendidikan:</strong> {educations.join(" • ")}</p>
-                          )}
-                          {publications.length > 0 && (
-                            <p><strong>Publikasi:</strong> {publications.join(" • ")}</p>
-                          )}
-                        </div>
-                      </div>
+
+                        {expertiseItems.length > 0 && (
+                          <ul className="flex flex-wrap gap-1.5">
+                            {expertiseItems.map((item, index) => (
+                              <li
+                                key={`${item}-${index}`}
+                                className="rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-900"
+                              >
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {(educations.length > 0 || publications.length > 0) && (
+                          <dl className="space-y-3 border-t border-slate-100 pt-4 text-[13px] leading-relaxed">
+                            {educations.length > 0 && (
+                              <div>
+                                <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                                  Riwayat Pendidikan
+                                </dt>
+                                <dd className="mt-1.5 space-y-1 text-slate-700">
+                                  {educations.map((item, index) => (
+                                    <p key={`edu-${index}`} className="flex gap-2">
+                                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-emerald-500" />
+                                      <span className="min-w-0">{item}</span>
+                                    </p>
+                                  ))}
+                                </dd>
+                              </div>
+                            )}
+
+                            {publications.length > 0 && (
+                              <div>
+                                <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                                  Karya &amp; Publikasi
+                                </dt>
+                                <dd className="mt-1.5 space-y-1 text-slate-700">
+                                  {publications.map((item, index) => (
+                                    <p key={`pub-${index}`} className="flex gap-2">
+                                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-mahad-gold" />
+                                      <span className="min-w-0">{item}</span>
+                                    </p>
+                                  ))}
+                                </dd>
+                              </div>
+                            )}
+                          </dl>
+                        )}
+                      </article>
                     );
                   })}
               </div>
