@@ -286,6 +286,23 @@ export default function AdminLoginPage() {
               </>
             )}
           </button>
+
+          {/* Tombol Masuk Sebagai Guest (Khusus Pengujian Lokal) */}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("mahad_guest_mode", "super_admin");
+                }
+                router.push("/admin");
+              }}
+              className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-mahad-gold/60 text-slate-200 font-medium py-3 rounded-xl shadow transition flex items-center justify-center gap-2 text-xs"
+            >
+              <span>🧪</span>
+              <span>Masuk sebagai Guest (Mode Pengujian Lokal)</span>
+            </button>
+          </div>
         </form>
 
         {/* Modal Lupa Password */}

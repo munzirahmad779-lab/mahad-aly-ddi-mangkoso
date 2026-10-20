@@ -1,10 +1,21 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { requireRole } from "@/lib/supabase/admin-guard";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const key = searchParams.get("key");
+
+    const PROTECTED_KEYS = ["activity_logs", "security_threats", "ai_content_snapshots"];
+
+    // Kunci sensitif atau permintaan dump penuh tanpa key membutuhkan otentikasi admin
+    if (!key || PROTECTED_KEYS.includes(key)) {
+      const auth = await requireRole(request, ["super_admin", "editor"]);
+      if (!auth.ok) {
+        return auth.response;
+      }
+    }
 
     if (key) {
       const { data, error } = await supabaseAdmin
@@ -40,6 +51,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // Menulis atau memperbarui site_content wajib memiliki sesi admin (editor atau super_admin)
+    const auth = await requireRole(request, ["super_admin", "editor"]);
+    if (!auth.ok) {
+      return auth.response;
+    }
+
     const body = await request.json();
     const { key, group_name, label, value } = body;
 

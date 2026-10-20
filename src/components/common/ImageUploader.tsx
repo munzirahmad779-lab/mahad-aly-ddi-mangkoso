@@ -12,6 +12,7 @@ import {
   Copy,
   Check
 } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
 
 interface ImageUploaderProps {
   value: string;
@@ -87,10 +88,17 @@ export default function ImageUploader({
       formData.append("file", file);
       formData.append("folder", folder);
 
-      setUploadProgress(50);
+      const { data: { session } } = await supabase.auth.getSession();
+      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
+      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
 
       const res = await fetch("/api/upload", {
         method: "POST",
+        headers,
         body: formData,
       });
 

@@ -741,6 +741,7 @@ export interface DemaMember {
   isHighlighted?: boolean; // Tampilan kartu hijau mewah (dapat diaktifkan/dinonaktifkan per pengurus)
   instagram?: string;
   phone?: string;
+  rawPhotoUrl?: string;
 }
 
 export interface DemaDivision {

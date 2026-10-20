@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendRawEmail } from "@/lib/email/service";
+import { requireRole } from "@/lib/supabase/admin-guard";
 
 export async function POST(req: NextRequest) {
+  const auth = await requireRole(req, ["super_admin", "editor"]);
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   try {
     const body = await req.json();
     const { to, subject, html, replyTo, submissionId } = body;

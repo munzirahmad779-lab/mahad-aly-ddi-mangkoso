@@ -121,6 +121,7 @@ interface DataContextType {
   // Activity Logs
   logs: ActivityLog[];
   addLog: (action: string, target: string, user?: string) => void;
+  refreshLogs: () => Promise<void>;
 
   // Media Library
   media: MediaItem[];
@@ -284,8 +285,8 @@ interface DataContextType {
 
   // Dewan Mahasantri (DeMa)
   demaSettings: DemaSettings;
-  updateDemaSettings: (updated: Partial<DemaSettings>, user?: string) => void;
-  resetDemaToDefault: (user?: string) => void;
+  updateDemaSettings: (updated: Partial<DemaSettings>, user?: string) => Promise<{ success: boolean; error?: string }> | void;
+  resetDemaToDefault: (user?: string) => Promise<{ success: boolean; error?: string }> | void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -325,7 +326,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const [donations, setDonations] = useState<DonationProgram[]>(INITIAL_DONATIONS);
   const [securityThreats, setSecurityThreats] = useState<SecurityThreatLog[]>(INITIAL_SECURITY_THREATS);
   const [demaSettings, setDemaSettings] = useState<DemaSettings>(INITIAL_DEMA_SETTINGS);
-  const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(false);
+  const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(true);
 
   // Load from Supabase + LocalStorage fallback
   useEffect(() => {
@@ -463,7 +464,28 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       if (savedThreats) setSecurityThreats(JSON.parse(savedThreats));
 
       const savedDema = localStorage.getItem("mahad_dema_settings");
-      if (savedDema) setDemaSettings(JSON.parse(savedDema));
+      if (savedDema) {
+        try {
+          const parsedDema = JSON.parse(savedDema);
+          const hasRealData = Array.isArray(parsedDema?.members) &&
+            parsedDema.members.length >= 20 &&
+            parsedDema.members.some((m: any) => m.name === "IMRAN");
+
+          if (hasRealData) {
+            setDemaSettings(parsedDema);
+          } else {
+            // Outdated cache found (e.g. old mock template): replace immediately with 24 real members
+            localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS));
+            setDemaSettings(INITIAL_DEMA_SETTINGS);
+          }
+        } catch (e) {
+          localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS));
+          setDemaSettings(INITIAL_DEMA_SETTINGS);
+        }
+      } else {
+        localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS));
+        setDemaSettings(INITIAL_DEMA_SETTINGS);
+      }
 
       const savedLogs = localStorage.getItem("mahad_logs");
       if (savedLogs) setLogs(JSON.parse(savedLogs));
@@ -474,6 +496,31 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     // 2. Fetch live data from Supabase PostgreSQL
     async function fetchFromSupabase() {
       try {
+        // Fetch DeMa Settings immediately in parallel so it never waits behind sequential queries
+        (async () => {
+          try {
+            const { data: demaData } = await supabase
+              .from("site_content")
+              .select("value")
+              .eq("key", "dema_settings")
+              .single();
+            if (demaData?.value) {
+              setDemaSettings((prev) => {
+                const dbVal = demaData.value;
+                const dbMembers = Array.isArray(dbVal.members) ? dbVal.members : [];
+                const localMembers = Array.isArray(prev.members) ? prev.members : [];
+                const safeMembers = dbMembers.length > 0
+                  ? dbMembers
+                  : (localMembers.length > 0 ? localMembers : []);
+                const merged = { ...prev, ...dbVal, members: safeMembers };
+                try {
+                  localStorage.setItem("mahad_dema_settings", JSON.stringify(merged));
+                } catch (e) {}
+                return merged;
+              });
+            }
+          } catch (e) {}
+        })();
         // Fetch Articles
         const { data: dbArticles } = await supabase
           .from("articles")
@@ -823,7 +870,33 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           .eq("key", "dema_settings")
           .single();
         if (demaData?.value) {
-          setDemaSettings((prev) => ({ ...prev, ...demaData.value }));
+          setDemaSettings((prev) => {
+            const dbVal = demaData.value;
+            const dbMembers = Array.isArray(dbVal.members) ? dbVal.members : [];
+            const localMembers = Array.isArray(prev.members) ? prev.members : [];
+
+            // SAFEGUARD PERMANEN:
+            // Jika DB memiliki data anggota (>= 1), gunakan data DB.
+            // Namun jika DB kosong (0 anggota, misal akibat bug penyimpanan RLS sebelumnya)
+            // sedangkan di browser lokal pengguna ADA anggota, JANGAN DIHAPUS!
+            // Pertahankan data lokal dan langsung selamatkan (sinkron) ke database server Supabase!
+            const safeMembers = dbMembers.length > 0
+              ? dbMembers
+              : (localMembers.length > 0 ? localMembers : []);
+
+            const merged = { ...prev, ...dbVal, members: safeMembers };
+
+            if (dbMembers.length === 0 && localMembers.length > 0) {
+              console.log("SAFEGUARD DEMA: Menyelamatkan anggota DeMa dari cache browser ke database server...");
+              syncContentToBackend("dema_settings", "dema", "Konten Dewan Mahasantri (DeMa)", merged);
+            }
+
+            try {
+              localStorage.setItem("mahad_dema_settings", JSON.stringify(merged));
+            } catch (e) {}
+
+            return merged;
+          });
         }
 
         // Fetch Live Security Threats from site_content (Retensi Otomatis 7 Hari)
@@ -850,8 +923,29 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           .eq("key", "activity_logs")
           .single();
         if (logsData?.value && Array.isArray(logsData.value)) {
-          setLogs(logsData.value);
-          localStorage.setItem("mahad_logs", JSON.stringify(logsData.value));
+          setLogs((prevLogs) => {
+            const serverLogs: ActivityLog[] = logsData.value;
+            const localLogs: ActivityLog[] = Array.isArray(prevLogs) ? prevLogs : [];
+            const map = new Map<string, ActivityLog>();
+            serverLogs.forEach((l) => {
+              const k = l.id || `${l.timestamp}-${l.action}-${l.target}`;
+              map.set(k, l);
+            });
+            localLogs.forEach((l) => {
+              const k = l.id || `${l.timestamp}-${l.action}-${l.target}`;
+              if (!map.has(k)) {
+                map.set(k, l);
+              }
+            });
+            const merged = Array.from(map.values());
+            try {
+              localStorage.setItem("mahad_logs", JSON.stringify(merged));
+            } catch (e) {}
+            if (merged.length > serverLogs.length) {
+              syncContentToBackend("activity_logs", "system", "Log Aktivitas Admin", merged);
+            }
+            return merged;
+          });
         }
       } catch (err) {
         console.warn("Supabase live fetch notice:", err);
@@ -860,6 +954,44 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
     fetchFromSupabase();
   }, []);
+
+  // Sinkronisasi ulang Live Log Aktivitas dari Supabase
+  const refreshLogs = async () => {
+    try {
+      const { data: logsData } = await supabase
+        .from("site_content")
+        .select("value")
+        .eq("key", "activity_logs")
+        .single();
+      if (logsData?.value && Array.isArray(logsData.value)) {
+        setLogs((prevLogs) => {
+          const serverLogs: ActivityLog[] = logsData.value;
+          const localLogs: ActivityLog[] = Array.isArray(prevLogs) ? prevLogs : [];
+          const map = new Map<string, ActivityLog>();
+          serverLogs.forEach((l) => {
+            const k = l.id || `${l.timestamp}-${l.action}-${l.target}`;
+            map.set(k, l);
+          });
+          localLogs.forEach((l) => {
+            const k = l.id || `${l.timestamp}-${l.action}-${l.target}`;
+            if (!map.has(k)) {
+              map.set(k, l);
+            }
+          });
+          const merged = Array.from(map.values());
+          try {
+            localStorage.setItem("mahad_logs", JSON.stringify(merged));
+          } catch (e) {}
+          if (merged.length > serverLogs.length) {
+            syncContentToBackend("activity_logs", "system", "Log Aktivitas Admin", merged);
+          }
+          return merged;
+        });
+      }
+    } catch (err) {
+      console.warn("Supabase refreshLogs notice:", err);
+    }
+  };
 
   // Helper savers
   const saveArticles = (data: Article[]) => {
@@ -892,10 +1024,12 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   };
   const saveLogs = (data: ActivityLog[]) => {
     setLogs(data);
-    localStorage.setItem("mahad_logs", JSON.stringify(data));
-    try {
-      supabase.from("site_content").upsert({ key: "activity_logs", value: data }, { onConflict: "key" }).then();
-    } catch (e) {}
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("mahad_logs", JSON.stringify(data));
+      } catch (e) {}
+    }
+    syncContentToBackend("activity_logs", "system", "Log Aktivitas Admin", data);
   };
   const saveMedia = (data: MediaItem[]) => {
     setMedia(data);
@@ -971,10 +1105,12 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   };
   const saveSecurityThreats = (data: SecurityThreatLog[]) => {
     setSecurityThreats(data);
-    localStorage.setItem("mahad_security_threats", JSON.stringify(data));
-    try {
-      supabase.from("site_content").upsert({ key: "security_threats", value: data }, { onConflict: "key" }).then();
-    } catch (e) {}
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("mahad_security_threats", JSON.stringify(data));
+      } catch (e) {}
+    }
+    syncContentToBackend("security_threats", "system", "Log Ancaman Keamanan", data);
   };
 
   const addLog = (action: string, target: string, user: string = "Super Admin") => {
@@ -1671,9 +1807,17 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const filtered = media.filter((m) => m.id !== id);
     saveMedia(filtered);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
+      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       await fetch("/api/upload", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ id, url: target?.url }),
       });
     } catch (e) {
@@ -1929,9 +2073,15 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const finalHtml = htmlContent || defaultHtml;
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
+      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
       const res = await fetch("/api/admin/email/send", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           to,
           subject,
@@ -1985,9 +2135,15 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     if (!targetLog) return { success: false, error: "Log email tidak ditemukan." };
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
+      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
       const res = await fetch("/api/admin/email/send", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           to: targetLog.to,
           subject: targetLog.subject,
@@ -2063,20 +2219,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const merged = { ...footerSettings, ...updated };
     saveFooterSettings(merged);
     addLog("Memperbarui Pengaturan Footer", "Footer Manager");
-
-    try {
-      supabase.from("site_content").upsert({
-        key: "footer",
-        group_name: "footer",
-        label: "Footer Settings",
-        value: merged,
-        updated_at: new Date().toISOString()
-      }, { onConflict: "key" }).then(({ error }) => {
-        if (error) console.warn("Supabase footer save notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    syncContentToBackend("footer", "footer", "Footer Settings", merged);
   };
 
   const addFooterNav = (link: Omit<FooterNavLink, "id">) => {
@@ -2120,18 +2263,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     saveFooterNav(INITIAL_FOOTER_NAV);
     saveFooterFocus(INITIAL_FOOTER_FOCUS);
     addLog("Reset Footer ke Default", "Footer Manager");
-
-    try {
-      supabase.from("site_content").upsert({
-        key: "footer",
-        group_name: "footer",
-        label: "Footer Settings",
-        value: INITIAL_FOOTER_SETTINGS,
-        updated_at: new Date().toISOString()
-      }, { onConflict: "key" });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    syncContentToBackend("footer", "footer", "Footer Settings", INITIAL_FOOTER_SETTINGS);
   };
 
   // Site Settings Action
@@ -2139,20 +2271,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const updated = { ...settings, ...newSettings };
     saveSettings(updated);
     addLog("Memperbarui Pengaturan Website", "Identitas & Konfigurasi");
-
-    try {
-      supabase.from("site_content").upsert({
-        key: "site_settings",
-        group_name: "settings",
-        label: "Site Settings",
-        value: updated,
-        updated_at: new Date().toISOString()
-      }, { onConflict: "key" }).then(({ error }) => {
-        if (error) console.warn("Supabase site_settings save notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    syncContentToBackend("site_settings", "settings", "Site Settings", updated);
   };
 
   // Maintenance / Coming Soon Toggle
@@ -2165,19 +2284,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       "Konfigurasi Peluncuran",
       user
     );
-    try {
-      supabase.from("site_content").upsert({
-        key: "site_settings",
-        group_name: "settings",
-        label: "Site Settings",
-        value: updated,
-        updated_at: new Date().toISOString()
-      }, { onConflict: "key" }).then(({ error }) => {
-        if (error) console.warn("Supabase maintenanceMode save notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    syncContentToBackend("site_settings", "settings", "Site Settings", updated);
   };
 
   // Export / Import Backup
@@ -2207,6 +2314,8 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       footerSettings,
       footerNav,
       footerFocus,
+      demaSettings,
+      donations,
       exportedAt: new Date().toISOString()
     };
     return JSON.stringify(fullBackup, null, 2);
@@ -2239,6 +2348,8 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       if (data.footerSettings) saveFooterSettings(data.footerSettings);
       if (data.footerNav) saveFooterNav(data.footerNav);
       if (data.footerFocus) saveFooterFocus(data.footerFocus);
+      if (data.demaSettings) updateDemaSettings(data.demaSettings);
+      if (data.donations) saveDonations(data.donations);
       addLog("Memulihkan Data Backup", "JSON Restore");
       return true;
     } catch (e) {
@@ -2303,21 +2414,21 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setHomeSections(INITIAL_HOME_SECTIONS);
     localStorage.setItem("mahad_home_sections", JSON.stringify(INITIAL_HOME_SECTIONS));
     addLog("Reset Section Beranda ke Standar", "Layout Homepage", user);
-    try { supabase.from("site_content").upsert({ key: "home_sections", value: INITIAL_HOME_SECTIONS }, { onConflict: "key" }).then(); } catch (e) {}
+    syncContentToBackend("home_sections", "home", "Home Sections", INITIAL_HOME_SECTIONS);
   };
 
   const resetAboutContentToDefault = (user?: string) => {
     setAboutPageContent(INITIAL_ABOUT_CONTENT);
     localStorage.setItem("mahad_about_content", JSON.stringify(INITIAL_ABOUT_CONTENT));
     addLog("Reset Halaman Tentang ke Standar", "Profil & Sejarah", user);
-    try { supabase.from("site_content").upsert({ key: "about", value: INITIAL_ABOUT_CONTENT }, { onConflict: "key" }).then(); } catch (e) {}
+    syncContentToBackend("about_page", "about", "About Content", INITIAL_ABOUT_CONTENT);
   };
 
   const resetEmailTemplatesToDefault = (user?: string) => {
     setEmailTemplates(INITIAL_EMAIL_TEMPLATES);
     localStorage.setItem("mahad_email_templates", JSON.stringify(INITIAL_EMAIL_TEMPLATES));
     addLog("Reset Template Email ke Standar", "Template Notifikasi", user);
-    try { supabase.from("site_content").upsert({ key: "email_templates", value: INITIAL_EMAIL_TEMPLATES }, { onConflict: "key" }).then(); } catch (e) {}
+    syncContentToBackend("email_templates", "email", "Email Templates", INITIAL_EMAIL_TEMPLATES);
   };
 
   const resetProfileToDefault = (user?: string) => {
@@ -2417,25 +2528,47 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setPageTexts(INITIAL_PAGE_TEXTS);
     localStorage.setItem("mahad_page_texts", JSON.stringify(INITIAL_PAGE_TEXTS));
     addLog("Reset Teks Halaman ke Standar", "CMS Teks Publik", user);
-    try { supabase.from("site_content").upsert({ key: "page_texts", value: INITIAL_PAGE_TEXTS }, { onConflict: "key" }).then(); } catch (e) {}
+    syncContentToBackend("page_texts", "content", "Page Texts", INITIAL_PAGE_TEXTS);
   };
 
   const resetSettingsToDefault = (user?: string) => {
     setSettings(INITIAL_SETTINGS);
     localStorage.setItem("mahad_settings", JSON.stringify(INITIAL_SETTINGS));
     addLog("Reset Seluruh Pengaturan Web ke Standar", "Konfigurasi Global", user);
-    try { supabase.from("site_settings").upsert({ id: "main", ...INITIAL_SETTINGS }, { onConflict: "id" }).then(); } catch (e) {}
+    syncContentToBackend("site_settings", "settings", "Site Settings", INITIAL_SETTINGS);
   };
 
-  const syncContentToBackend = (key: string, group: string, label: string, value: any) => {
+  const syncContentToBackend = async (
+    key: string,
+    group: string,
+    label: string,
+    value: any
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
-      fetch("/api/admin/content", {
+      const { data: { session } } = await supabase.auth.getSession();
+      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
+      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const res = await fetch("/api/admin/content", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ key, group_name: group, label, value })
-      }).catch((err) => console.warn("Backend sync notice:", err));
-    } catch (e) {
-      console.warn("DB notice:", e);
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        console.error(`Backend sync failed for ${key}:`, errJson);
+        return { success: false, error: errJson.error || "Gagal menyimpan konten ke server database." };
+      }
+
+      return { success: true };
+    } catch (e: any) {
+      console.warn("Backend sync notice:", e);
+      return { success: false, error: e?.message || "Koneksi ke database server terputus." };
     }
   };
 
@@ -2501,9 +2634,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const updated = [newDonation, ...donations];
     saveDonations(updated);
     addLog("Menambah Program Donasi Baru", item.title, user);
-    try {
-      supabase.from("site_content").upsert({ key: "donations", value: updated }, { onConflict: "key" }).then();
-    } catch (e) {}
+    syncContentToBackend("donations", "donations", "Program Donasi & Rekening", updated);
   };
 
   const updateDonation = (id: string, updatedData: Partial<DonationProgram>, user: string = "Super Admin") => {
@@ -2511,9 +2642,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     saveDonations(updated);
     const target = updated.find((d) => d.id === id);
     addLog("Memperbarui Program Donasi", target?.title || id, user);
-    try {
-      supabase.from("site_content").upsert({ key: "donations", value: updated }, { onConflict: "key" }).then();
-    } catch (e) {}
+    syncContentToBackend("donations", "donations", "Program Donasi & Rekening", updated);
   };
 
   const deleteDonation = (id: string, user: string = "Super Admin") => {
@@ -2521,17 +2650,13 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     const updated = donations.filter((d) => d.id !== id);
     saveDonations(updated);
     addLog("Menghapus Program Donasi", target?.title || id, user);
-    try {
-      supabase.from("site_content").upsert({ key: "donations", value: updated }, { onConflict: "key" }).then();
-    } catch (e) {}
+    syncContentToBackend("donations", "donations", "Program Donasi & Rekening", updated);
   };
 
   const resetDonationsToDefault = (user?: string) => {
     saveDonations(INITIAL_DONATIONS);
     addLog("Reset Program Donasi ke Standar", "Modul Donasi & Rekening", user);
-    try {
-      supabase.from("site_content").upsert({ key: "donations", value: INITIAL_DONATIONS }, { onConflict: "key" }).then();
-    } catch (e) {}
+    syncContentToBackend("donations", "donations", "Program Donasi & Rekening", INITIAL_DONATIONS);
   };
 
   // ── Pertahanan Keamanan & Deteksi Ancaman (Retensi 7 Hari Otomatis) ──
@@ -2588,23 +2713,32 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   };
 
   // ── Dewan Mahasantri (DeMa) Handlers ──
-  const updateDemaSettings = (updated: Partial<DemaSettings>, user?: string) => {
+  const updateDemaSettings = async (
+    updated: Partial<DemaSettings>,
+    user?: string
+  ): Promise<{ success: boolean; error?: string }> => {
     const nextSettings = { ...demaSettings, ...updated };
     setDemaSettings(nextSettings);
-    try {
-      localStorage.setItem("mahad_dema_settings", JSON.stringify(nextSettings));
-      supabase.from("site_content").upsert({ key: "dema_settings", value: nextSettings }, { onConflict: "key" }).then();
-    } catch (e) {}
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("mahad_dema_settings", JSON.stringify(nextSettings));
+      } catch (e) {}
+    }
     addLog("Memperbarui Struktur DeMa", nextSettings.periodTitle || "Dewan Mahasantri", user);
+    const syncRes = await syncContentToBackend("dema_settings", "dema", "Konten Dewan Mahasantri (DeMa)", nextSettings);
+    return syncRes;
   };
 
-  const resetDemaToDefault = (user?: string) => {
+  const resetDemaToDefault = async (user?: string): Promise<{ success: boolean; error?: string }> => {
     setDemaSettings(INITIAL_DEMA_SETTINGS);
-    try {
-      localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS));
-      supabase.from("site_content").upsert({ key: "dema_settings", value: INITIAL_DEMA_SETTINGS }, { onConflict: "key" }).then();
-    } catch (e) {}
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS));
+      } catch (e) {}
+    }
     addLog("Reset Struktur DeMa ke Standar", "Dewan Mahasantri (DeMa)", user);
+    const syncRes = await syncContentToBackend("dema_settings", "dema", "Konten Dewan Mahasantri (DeMa)", INITIAL_DEMA_SETTINGS);
+    return syncRes;
   };
 
   return (
@@ -2640,6 +2774,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         deleteUser,
         logs,
         addLog,
+        refreshLogs,
         media,
         addMedia,
         deleteMedia,

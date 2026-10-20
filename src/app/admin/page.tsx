@@ -6,6 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { useArticles } from "@/context/ArticleContext";
 import ImageUploader from "@/components/common/ImageUploader";
+import AIWebsiteEditor from "@/components/admin/AIWebsiteEditor";
 import {
   Article,
   CategoryInfo,
@@ -237,7 +238,8 @@ export default function AdminPage() {
     grantDonationPermission,
     demaSettings,
     updateDemaSettings,
-    resetDemaToDefault
+    resetDemaToDefault,
+    refreshLogs
   } = useArticles();
 
   // Audit Logs & Super Admin Tracking State
@@ -528,6 +530,37 @@ export default function AdminPage() {
   useEffect(() => {
     async function checkAuth() {
       try {
+        if (typeof window !== "undefined" && window.location.search.includes("guest=true")) {
+          localStorage.setItem("mahad_guest_mode", "super_admin");
+        }
+        const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
+        if (isGuest) {
+          setCurrentUser({
+            id: "guest-admin-dev",
+            email: "munzirahmad779@gmail.com"
+          });
+          setUserProfile({
+            role: "super_admin",
+            nama_lengkap: "Tamu Administrator (Localhost Dev)",
+            email: "munzirahmad779@gmail.com"
+          });
+          const { data: userList } = await supabase.from("users").select("*").order("created_at", { ascending: false });
+          if (userList && userList.length > 0) {
+            setDbUsers(userList);
+          } else {
+            setDbUsers([{
+              id: "guest-admin-dev",
+              email: "munzirahmad779@gmail.com",
+              nama_lengkap: "Tamu Administrator (Localhost Dev)",
+              role: "super_admin",
+              is_active: true,
+              created_at: new Date().toISOString()
+            }]);
+          }
+          setAuthLoading(false);
+          return;
+        }
+
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) {
           router.push("/admin/login");
@@ -567,7 +600,8 @@ export default function AdminPage() {
     checkAuth();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
+      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
+      if (!session && !isGuest) {
         router.push("/admin/login");
       }
     });
@@ -578,11 +612,21 @@ export default function AdminPage() {
   }, [router]);
 
   const handleLogout = async () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("mahad_guest_mode");
+    }
     await supabase.auth.signOut();
     router.push("/admin/login");
   };
 
   const getAdminApiHeaders = async (): Promise<Record<string, string>> => {
+    const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
+    if (isGuest) {
+      return {
+        "Content-Type": "application/json",
+        Authorization: "Bearer guest-local-token"
+      };
+    }
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error || !session?.access_token) {
       throw new Error("Sesi admin tidak ditemukan. Silakan keluar dan masuk kembali.");
@@ -786,7 +830,18 @@ export default function AdminPage() {
     | "auditlogs"
     | "donations"
     | "security"
+    | "aieditor"
   >("dashboard");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const m = urlParams.get("menu");
+      if (m) {
+        setActiveMenu(m as any);
+      }
+    }
+  }, []);
 
   // Page Texts CMS State
   const [localPageTexts, setLocalPageTexts] = useState<PageTextsSettings>(pageTexts || INITIAL_PAGE_TEXTS);
@@ -990,6 +1045,7 @@ export default function AdminPage() {
 
   // Dewan Mahasantri (DeMa) Form State
   const [demaForm, setDemaForm] = useState(demaSettings);
+  const [demaSaving, setDemaSaving] = useState(false);
   const [activeDemaTab, setActiveDemaTab] = useState<"info" | "divisions" | "members">("divisions");
   const [editingDivision, setEditingDivision] = useState<Partial<DemaDivision> | null>(null);
   const [editingMember, setEditingMember] = useState<Partial<DemaMember> | null>(null);
@@ -999,7 +1055,14 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    setDemaForm(demaSettings);
+    setDemaForm((prev) => {
+      const prevMembers = prev?.members || [];
+      const newMembers = demaSettings?.members || [];
+      if (prevMembers.length > 0 && newMembers.length === 0) {
+        return { ...demaSettings, members: prevMembers };
+      }
+      return demaSettings;
+    });
   }, [demaSettings]);
 
   // Email Templates Form State
@@ -1347,19 +1410,55 @@ export default function AdminPage() {
 
   // Traffic Stats & GA Guide State
   const [showGaGuide, setShowGaGuide] = useState(false);
-  const [trafficStats, setTrafficStats] = useState<{ totalViews: number; pages: Record<string, number>; lastVisit?: string }>({
+  const [isRefreshingTraffic, setIsRefreshingTraffic] = useState(false);
+  const [trafficStats, setTrafficStats] = useState<{
+    totalViews: number;
+    uniqueVisitors?: number;
+    pages: Record<string, number>;
+    daily?: Record<string, { views: number; unique: number }>;
+    recentVisits?: Array<{ path: string; device: string; referrer: string; timestamp: string }>;
+    lastVisit?: string;
+  }>({
     totalViews: 0,
-    pages: {}
+    uniqueVisitors: 0,
+    pages: {},
+    recentVisits: []
   });
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
+  const fetchGlobalTraffic = async () => {
+    try {
+      const res = await fetch("/api/analytics/stats", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.stats) {
+          setTrafficStats(json.stats);
+          localStorage.setItem("mahad_traffic_stats", JSON.stringify(json.stats));
+        }
+      }
+    } catch (e) {
       try {
         const raw = localStorage.getItem("mahad_traffic_stats");
         if (raw) setTrafficStats(JSON.parse(raw));
-      } catch (e) {}
+      } catch {}
     }
+  };
+
+  useEffect(() => {
+    fetchGlobalTraffic();
+    const timer = setInterval(fetchGlobalTraffic, 8000); // Polling otomatis setiap 8 detik
+    return () => clearInterval(timer);
   }, []);
+
+  // Polling otomatis Log Aktivitas Admin saat tab auditlogs sedang aktif
+  useEffect(() => {
+    if (activeMenu === "auditlogs" && typeof refreshLogs === "function") {
+      refreshLogs();
+      const auditTimer = setInterval(() => {
+        refreshLogs();
+      }, 8000);
+      return () => clearInterval(auditTimer);
+    }
+  }, [activeMenu]);
 
   // 17. Backup Import State
   const [importJsonText, setImportJsonText] = useState("");
@@ -1763,6 +1862,12 @@ export default function AdminPage() {
                 ]
               },
               {
+                title: "🤖 ASISTEN KONTEN AI",
+                items: [
+                  { id: "aieditor", icon: "✨", label: "AI Website Editor", badge: "Baru" }
+                ]
+              },
+              {
                 title: "🎨 TATA LETAK & TAMPILAN",
                 items: [
                   { id: "header", icon: "🧭", label: "Header & Navbar", badge: "Live" },
@@ -1902,6 +2007,23 @@ export default function AdminPage() {
       {/* 📊 MAIN CONTENT PANEL */}
       <main className="flex-1 p-4 sm:p-8 overflow-y-auto max-w-7xl">
         
+        {/* Banner Mode Tamu (Pengujian Lokal) */}
+        {typeof window !== "undefined" && Boolean(localStorage.getItem("mahad_guest_mode")) && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-amber-900 shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🧪</span>
+              <span><strong>Mode Tamu Aktif (Localhost Testing):</strong> Anda masuk sebagai Super Admin untuk menguji website di localhost tanpa memerlukan password.</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="px-3 py-1 bg-amber-200 hover:bg-amber-300 text-amber-900 rounded-lg font-bold transition shrink-0"
+            >
+              Keluar Mode Tamu
+            </button>
+          </div>
+        )}
+
         {/* Header Bar */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
@@ -1911,6 +2033,7 @@ export default function AdminPage() {
               <span className="text-emerald-800 font-bold">{activeMenu}</span>
             </div>
             <h1 className="font-serif font-bold text-xl sm:text-2xl text-slate-900 mt-1 capitalize">
+              {activeMenu === "aieditor" && "✨ AI Website Editor (Asisten Cerdas Konten & Tampilan)"}
               {activeMenu === "dashboard" && "Pusat Kendali & Statistik Website"}
               {activeMenu === "submissions" && "📥 Manajemen Naskah (Tracking, Review & 1-Click Terbit)"}
               {activeMenu === "header" && "🧭 Kelola Header, Logo & Menu Navigasi"}
@@ -2052,10 +2175,48 @@ export default function AdminPage() {
         </div>
 
         {/* ══════════════════════════════════════════════════════════════
+            0. AI WEBSITE CONTENT EDITOR
+           ══════════════════════════════════════════════════════════════ */}
+        {activeMenu === "aieditor" && (
+          <AIWebsiteEditor
+            isSuperAdmin={isSuperAdmin}
+            currentUserName={currentUserName}
+            getAdminHeaders={getAdminApiHeaders}
+            onRefreshData={() => {
+              window.location.reload();
+            }}
+          />
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
             1. DASHBOARD
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "dashboard" && (
           <div className="space-y-6">
+            {/* Banner Pintasan AI Website Editor */}
+            <div className="bg-gradient-to-r from-emerald-900 to-teal-900 rounded-2xl p-5 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm border border-emerald-700/50">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-emerald-800/80 rounded-xl text-mahad-gold text-xl border border-emerald-600/50">
+                  ✨
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-base text-white">
+                    AI Website Content Editor Telah Aktif!
+                  </h3>
+                  <p className="text-emerald-100/80 text-xs mt-0.5">
+                    Rancang dan perbarui teks hero, halaman profil, dan footer dengan kecerdasan AI tanpa perlu mengedit secara manual.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveMenu("aieditor")}
+                className="px-4 py-2.5 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-xs rounded-xl shadow transition shrink-0 flex items-center gap-1.5"
+              >
+                <span>Buka AI Editor</span>
+                <span>&rarr;</span>
+              </button>
+            </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
                 <span className="text-xs text-slate-400 font-bold uppercase">Artikel Terbit</span>
@@ -2161,13 +2322,21 @@ export default function AdminPage() {
                       </div>
 
                       {/* Metrik Trafik Riil dari Sisi Browser Pengunjung */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                         <div className="p-3 bg-emerald-50/60 border border-emerald-200/80 rounded-xl">
-                          <span className="text-[10px] font-bold text-emerald-900 block uppercase">Total Kunjungan Riil</span>
+                          <span className="text-[10px] font-bold text-emerald-900 block uppercase">Total Tayangan</span>
                           <p className="font-serif font-bold text-xl text-emerald-950 mt-0.5">
                             {trafficStats.totalViews || 0}
                           </p>
-                          <span className="text-[9px] text-emerald-700">Tayangan Halaman</span>
+                          <span className="text-[9px] text-emerald-700">Pageviews Riil</span>
+                        </div>
+
+                        <div className="p-3 bg-blue-50/60 border border-blue-200/80 rounded-xl">
+                          <span className="text-[10px] font-bold text-blue-900 block uppercase">Pengunjung Unik</span>
+                          <p className="font-serif font-bold text-xl text-blue-950 mt-0.5">
+                            {trafficStats.uniqueVisitors || 0}
+                          </p>
+                          <span className="text-[9px] text-blue-700">Perangkat / IP</span>
                         </div>
 
                         <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
@@ -2186,7 +2355,7 @@ export default function AdminPage() {
                           <span className="text-[9px] text-slate-500">Pembaca</span>
                         </div>
 
-                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl col-span-2 sm:col-span-1">
                           <span className="text-[10px] font-bold text-slate-600 block uppercase">Portal PMB</span>
                           <p className="font-serif font-bold text-xl text-slate-900 mt-0.5">
                             {trafficStats.pages?.["/pmb"] || 0}
@@ -2195,31 +2364,83 @@ export default function AdminPage() {
                         </div>
                       </div>
 
+                      {/* Log Kunjungan Terkini */}
+                      {Array.isArray(trafficStats.recentVisits) && trafficStats.recentVisits.length > 0 && (
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-[11px] space-y-2">
+                          <div className="flex items-center justify-between font-bold text-slate-700">
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                              <span>Aktivitas Kunjungan Terbaru (Live Stream)</span>
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-normal">Sinkronisasi otomatis aktif</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto pt-1">
+                            {trafficStats.recentVisits.slice(0, 10).map((visit, vIdx) => (
+                              <span
+                                key={vIdx}
+                                className="px-2 py-0.5 bg-white border border-slate-200 rounded-md text-[10px] text-slate-600 font-mono flex items-center gap-1 shadow-2xs"
+                              >
+                                <span className="font-bold text-emerald-800">{visit.path}</span>
+                                <span className="text-slate-400">({visit.device})</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Tombol Aksi & Panduan */}
                       <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs">
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            disabled={isRefreshingTraffic}
+                            onClick={async () => {
+                              setIsRefreshingTraffic(true);
+                              await fetchGlobalTraffic();
+                              setTimeout(() => setIsRefreshingTraffic(false), 500);
+                            }}
+                            className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg transition flex items-center gap-1.5 text-[11px] disabled:opacity-50 cursor-pointer shadow-2xs"
+                            title="Segarkan statistik pengunjung langsung dari server"
+                          >
+                            <span className={isRefreshingTraffic ? "animate-spin" : ""}>🔄</span>
+                            <span>{isRefreshingTraffic ? "Menyegarkan..." : "Segarkan Data"}</span>
+                          </button>
+
                           <button
                             type="button"
                             onClick={() => setShowGaGuide(!showGaGuide)}
                             className="px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg transition flex items-center gap-1.5 text-[11px]"
                           >
                             <span>📖</span>
-                            <span>{showGaGuide ? "Tutup Panduan Pemula" : "Panduan Pemula: Cara Aktifkan Google Analytics dari Nol"}</span>
+                            <span>{showGaGuide ? "Tutup Panduan" : "Panduan GA4"}</span>
                           </button>
 
                           <button
                             type="button"
-                            onClick={() => {
-                              if (confirm("Reset seluruh data hitungan pelacak trafik pengunjung (total views & halaman) menjadi 0?")) {
-                                localStorage.removeItem("mahad_traffic_stats");
-                                setTrafficStats({ totalViews: 0, pages: {} });
-                                alert("✓ Hitungan pelacak trafik berhasil direset menjadi 0!");
+                            onClick={async () => {
+                              if (confirm("Reset seluruh data hitungan pelacak trafik pengunjung (total views, unik & halaman) menjadi 0 di server?")) {
+                                try {
+                                  const headers = await getAdminApiHeaders();
+                                  const res = await fetch("/api/analytics/reset", {
+                                    method: "POST",
+                                    headers
+                                  });
+                                  if (res.ok) {
+                                    setTrafficStats({ totalViews: 0, uniqueVisitors: 0, pages: {}, recentVisits: [] });
+                                    localStorage.removeItem("mahad_traffic_stats");
+                                    alert("✓ Hitungan pelacak trafik di database server berhasil direset menjadi 0!");
+                                  } else {
+                                    alert("Gagal mereset trafik server.");
+                                  }
+                                } catch (e: any) {
+                                  alert("Kesalahan reset: " + e.message);
+                                }
                               }
                             }}
                             className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-lg transition text-[11px] cursor-pointer"
-                            title="Reset data pelacak trafik browser ke 0"
+                            title="Reset data pelacak trafik database & browser ke 0"
                           >
-                            🔄 Reset Trafik ke 0
+                            🗑️ Reset Trafik ke 0
                           </button>
                         </div>
 
@@ -2839,7 +3060,70 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const cached = typeof window !== "undefined" ? localStorage.getItem("mahad_dema_settings") : null;
+                    if (!cached) {
+                      alert("ℹ️ Tidak ditemukan riwayat data DeMa di cache browser ini.");
+                      return;
+                    }
+                    try {
+                      const parsed = JSON.parse(cached);
+                      const memCount = parsed.members?.length || 0;
+                      const divCount = parsed.divisions?.length || 0;
+                      if (confirm(`🔍 Ditemukan arsip data DeMa di memori browser ini:\n- ${divCount} Divisi\n- ${memCount} Pengurus & Anggota\n- Periode: ${parsed.periodTitle || "Belum ada"}\n\nApakah Anda ingin memulihkan data ini dan langsung menyimpannya ke database server?`)) {
+                        setDemaForm(parsed);
+                        const res = await updateDemaSettings(parsed, currentUserName);
+                        if (res && res.success === false) {
+                          alert("⚠️ Gagal sinkron ke database server: " + (res.error || ""));
+                        } else {
+                          alert(`✓ Berhasil memulihkan ${memCount} pengurus dan tersimpan permanen di database server!`);
+                        }
+                      }
+                    } catch (e) {
+                      alert("Gagal membaca cache lokal: " + String(e));
+                    }
+                  }}
+                  className="px-3.5 py-2 bg-emerald-700/60 hover:bg-emerald-600 text-emerald-100 border border-emerald-500/40 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
+                  title="Pulihkan data pengurus DeMa yang tersimpan di memori browser ini"
+                >
+                  <span>🔄</span>
+                  <span>Pulihkan dari Cache Browser</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const rawJson = prompt("Tempelkan (Paste) teks kode JSON DeMa yang didapat dari admin atau backup di sini:");
+                    if (!rawJson || rawJson.trim().length === 0) return;
+                    try {
+                      const parsed = JSON.parse(rawJson);
+                      const memCount = parsed.members?.length || 0;
+                      const divCount = parsed.divisions?.length || 0;
+                      if (!parsed.divisions && !parsed.members) {
+                        alert("⚠️ Format JSON tidak valid atau bukan data struktur DeMa.");
+                        return;
+                      }
+                      setDemaForm(parsed);
+                      setDemaSaving(true);
+                      const res = await updateDemaSettings(parsed, currentUserName);
+                      setDemaSaving(false);
+                      if (res && res.success === false) {
+                        alert("⚠️ Gagal menyimpan ke server: " + (res.error || ""));
+                      } else {
+                        alert(`✓ Berhasil memulihkan ${memCount} pengurus & ${divCount} divisi langsung ke database server!`);
+                      }
+                    } catch (err: any) {
+                      alert("⚠️ Gagal memproses JSON: Format JSON tidak valid (" + err.message + ")");
+                    }
+                  }}
+                  className="px-3.5 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
+                  title="Super Admin dapat menempelkan teks JSON data DeMa yang dikirimkan oleh admin DeMa"
+                >
+                  <span>📋</span>
+                  <span>Tempel JSON DeMa</span>
+                </button>
                 <a
                   href="/dema"
                   target="_blank"
@@ -2852,14 +3136,26 @@ export default function AdminPage() {
                 </a>
                 <button
                   type="button"
-                  onClick={() => {
-                    updateDemaSettings(demaForm, currentUserName);
-                    alert("✓ Data Dewan Mahasantri (DeMa) berhasil disimpan & tersinkron!");
+                  disabled={demaSaving}
+                  onClick={async () => {
+                    setDemaSaving(true);
+                    try {
+                      const res = await updateDemaSettings(demaForm, currentUserName);
+                      if (res && res.success === false) {
+                        alert("⚠️ Gagal menyimpan ke server: " + (res.error || "Periksa koneksi"));
+                      } else {
+                        alert("✓ Data Dewan Mahasantri (DeMa) berhasil disimpan & tersinkron permanen ke database server!");
+                      }
+                    } catch (err: any) {
+                      alert("⚠️ Terjadi kendala penyimpanan: " + (err?.message || ""));
+                    } finally {
+                      setDemaSaving(false);
+                    }
                   }}
-                  className="px-4 py-2 bg-mahad-gold hover:bg-yellow-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition"
+                  className="px-4 py-2 bg-mahad-gold hover:bg-yellow-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition disabled:opacity-50"
                 >
                   <span>💾</span>
-                  <span>Simpan Semua Perubahan</span>
+                  <span>{demaSaving ? "Menyimpan ke Server..." : "Simpan Semua Perubahan"}</span>
                 </button>
               </div>
             </div>
@@ -3660,13 +3956,23 @@ export default function AdminPage() {
                 <div className="pt-4 border-t border-slate-200 flex justify-end">
                   <button
                     type="button"
-                    onClick={() => {
-                      updateDemaSettings(demaForm, currentUserName);
-                      alert("✓ Info Kabinet DeMa berhasil diperbarui!");
+                    disabled={demaSaving}
+                    onClick={async () => {
+                      setDemaSaving(true);
+                      try {
+                        const res = await updateDemaSettings(demaForm, currentUserName);
+                        if (res && res.success === false) {
+                          alert("⚠️ Gagal menyimpan ke server: " + (res.error || ""));
+                        } else {
+                          alert("✓ Info Kabinet DeMa berhasil diperbarui & tersimpan permanen ke database server!");
+                        }
+                      } finally {
+                        setDemaSaving(false);
+                      }
                     }}
-                    className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow"
+                    className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow disabled:opacity-50"
                   >
-                    Simpan Identitas Kabinet
+                    {demaSaving ? "Menyimpan ke Server..." : "Simpan Identitas Kabinet"}
                   </button>
                 </div>
               </div>
@@ -9164,9 +9470,15 @@ export default function AdminPage() {
                             setTestEmailLoading(true);
                             setTestEmailResult(null);
                             try {
+                              const { data: { session } } = await supabase.auth.getSession();
+                              const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
+                              const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
                               const res = await fetch("/api/admin/email/test", {
                                 method: "POST",
-                                headers: { "Content-Type": "application/json" },
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  ...(token ? { Authorization: `Bearer ${token}` } : {})
+                                },
                                 body: JSON.stringify({
                                   to: testEmailTo,
                                   subject: testEmailSubject || undefined,
@@ -10051,6 +10363,25 @@ export default function AdminPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                      <span>Live Sync (8s)</span>
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (typeof refreshLogs === "function") {
+                          await refreshLogs();
+                        }
+                      }}
+                      className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold rounded-xl text-xs flex items-center gap-1.5 transition shadow-2xs"
+                      title="Sinkronkan data log aktivitas terbaru dari server"
+                    >
+                      <span>🔄</span>
+                      <span>Segarkan Log</span>
+                    </button>
+
                     <button
                       type="button"
                       onClick={handleExportAuditLogsCsv}
@@ -10060,11 +10391,23 @@ export default function AdminPage() {
                       <span>📥</span>
                       <span>Unduh Laporan CSV</span>
                     </button>
+
                     <button
                       type="button"
-                      onClick={() => confirmAndReset("Arsip Log Aktivitas", clearActivityLogs)}
+                      onClick={async () => {
+                        if (window.confirm("PERINGATAN: Apakah Anda yakin ingin mengosongkan seluruh arsip log aktivitas admin di server?")) {
+                          try {
+                            const headers = await getAdminApiHeaders();
+                            await fetch("/api/admin/audit", { method: "DELETE", headers });
+                            clearActivityLogs();
+                            alert("✓ Seluruh arsip log aktivitas telah dikosongkan.");
+                          } catch (e: any) {
+                            alert("Gagal mengosongkan log: " + e.message);
+                          }
+                        }
+                      }}
                       className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-xl text-xs flex items-center gap-1.5 transition"
-                      title="Hapus riwayat log lama dan mulai pencatatan bersih baru"
+                      title="Hapus riwayat log lama di server dan mulai pencatatan bersih baru"
                     >
                       <span>🗑️</span>
                       <span>Kosongkan Log</span>

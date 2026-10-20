@@ -1,0 +1,116 @@
+{
+  "seo": {
+    "ogImage": "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=1200&q=80",
+    "keywords": "mahad aly ddi mangkoso, fiqh muasarah, fiqh kontemporer, ushul fikih, anregurutta ambo dalle, barru sulawesi selatan",
+    "siteTitle": "Ma'had Aly DDI Mangkoso — Takhassus Fiqh wa Usuluhu",
+    "enableSitemap": true,
+    "metaDescription": "Portal resmi Ma'had Aly Pendidikan Tinggi Kader Ulama DDI Abdurrahman Ambo Dalle Mangkoso, Barru. Pusat kajian Fiqh Mu'asarah, turats, dan riset hukum Islam.",
+    "googleAnalyticsId": "G-EBBP80BZWL",
+    "searchConsoleCode": "google-site-verification-mangkoso-example"
+  },
+  "hero": {
+    "badge": "Pusat Kaderisasi Fuqaha Kontemporer",
+    "title": "Meneguhkan Khazanah Turats, Menjawab Dinamika Fiqh Kontemporer",
+    "subtitle": "Pendidikan Tinggi Kader Ulama Takhassus Fiqh wa Usuluhu — Berakar kuat pada sanad keilmuan klasik Anregurutta, progresif merespons tantangan zaman.",
+    "arabicMotto": "تَفَقُّهٌ فِي الدِّيْنِ · بَصِيْرَةٌ فِي الزَّ�َانِ · خِدْ�َةٌ لِلْأُ�َّةِ",
+    "ctaPrimaryLink": "/artikel",
+    "ctaPrimaryText": "Jelajahi Kajian Fiqh",
+    "ctaSecondaryLink": "/skripsi",
+    "ctaSecondaryText": "Repositori Skripsi"
+  },
+  "misi": [
+    "Menyelenggarakan pendidikan kader ulama yang menerapkan sistem intensifikasi pengkajian, penguatan pada ilmu-ilmu alat (usûl), pendalaman dan pengayaan pada ilmu-ilmu keislaman yang langsung merujuk kepada kitab-kitab sumbernya yang asli."
+  ],
+  "visi": "Mencetak ulama yang berkarakter, yang mampu mengintegrasikan nilai-nilai khuluqiyyah, ilmiah dan amaliah serta memiliki reputasi keulamaan sebagai ahli waris para nabi.",
+  "phone": "+62 812-3456-7890",
+  "quote": {
+    "source": "HR. Al-Bukhari no. 71 & Muslim no. 1037",
+    "context": "Landasan Visi Pendidikan Kader Ulama Ma'had Aly DDI Mangkoso",
+    "imageUrl": "https://ymxijorgoucpsxgcvtgu.supabase.co/storage/v1/object/public/media/masyayikh/download--6--1791469343913-g4meg.jpeg",
+    "showImage": true,
+    "arabicQuote": "�َنْ يُرِدِ اللَّهُ بِهِ خَيْرًا يُفَقِّهْهُ فِي الدِّينِ",
+    "translation": "Barangsiapa yang Allah kehendaki kebaikan baginya, niscaya Allah akan pahamkan dia secara mendalam dalam urusan agama."
+  },
+  "footer": {
+    "email": "mahadaly@ddimangkoso.ac.id",
+    "address": "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
+    "logoUrl": "/image_067524.png",
+    "orgName": "Ma'had Aly",
+    "tagline": "Mewarisi Khazanah Turats • Menjaga Sanad Ulama Nusantara",
+    "whatsapp": "+62 812-3456-7890",
+    "tiktokUrl": "",
+    "orgSubname": "DDI Mangkoso",
+    "youtubeUrl": "https://youtube.com/@mahadalyddimangkoso",
+    "description": "Pendidikan Tinggi Kader Ulama jenjang Marhalah Ula (M.1). Berkhidmat melahirkan generasi mutafaqqih fiddin berwawasan wasathiyyah dan berakhlak mulia.",
+    "facebookUrl": "https://facebook.com/mahadalyddimangkoso",
+    "telegramUrl": "",
+    "adminLinkUrl": "/admin",
+    "columnLayout": 4,
+    "instagramUrl": "https://instagram.com/mahadalyddimangkoso",
+    "copyrightText": "© 2026 Ma'had Aly DDI Mangkoso. Hak Cipta Dilindungi.",
+    "footerBgColor": "#0b4a25",
+    "showAdminLink": true,
+    "adminLinkLabel": "🔒 Masuk Panel Redaksi (Admin)",
+    "footerTextColor": "#f4e8c1",
+    "kanalDescription": "Ikuti kabar pengajian, kajian halaqah, dan penerbitan jurnal resmi Ma'had Aly DDI Mangkoso:"
+  },
+  "address": "Kompleks Pondok Pesantren DDI Mangkoso, Kel. Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulawesi Selatan 90752",
+  "location": "Kab. Barru, Sulawesi Selatan",
+  "mudirName": "AGH. Prof. Dr. M. Faried Wadjedy, MA",
+  "takhassus": "Fiqh wa Usuluhu (Fiqh dan Ushul Fikih)",
+  "focusField": "Fiqh Mu'asarah (الفقه ال�عاصر) — Fiqh Kontemporer",
+  "socialMedia": {
+    "youtube": "https://youtube.com/@mahadalyddimangkoso",
+    "facebook": "https://facebook.com/mahadalyddimangkoso",
+    "whatsapp": "+62 812-3456-7890",
+    "instagram": "https://instagram.com/mahadalyddimangkoso",
+    "fullAddress": "Kompleks Pondok Pesantren DDI Mangkoso, Kel. Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulawesi Selatan 90752",
+    "emailOfficial": "mahadaly@ddimangkoso.ac.id"
+  },
+  "historyArabic": "تأسس المعهد العالي لمعهد دار الدعوة والإرشاد عبد الرحمن عبو دالي منغكوسو لمعالجة ندرة العلماء وتحديات العصر، بهدف إعداد كوادر علماء ذوي شخصية متميزة. وتقاليد دراسة الكتب الصفراء في هذا المعهد مستمرة منذ ٢١ ديسمبر ١٩٣٨ حتى الآن.",
+  "historyContent": "Berangkat dari keprihatinan atas merosotnya bekal keulamaan di sebagian besar pondok pesantren akibat kurangnya kiyai berkapasitas ulama, akumulasi kurikulum yang menyita porsi ilmu keislaman, serta tantangan zaman dan perkembangan ICT yang berdampak negatif, Pondok Pesantren Pusat Darud Da'wah wal-Irsyad Abdurrahman Ambo Dalle Mangkoso mendirikan Al-Ma'had Al-'Aliy untuk mencetak kader ulama yang berkarakter dan mengintegrasikan ilmu, amal, serta moral.\nPengajian kitab kuning di pondok pesantren ini sudah berjalan sejak berdirinya pada tanggal 21 Desember 1938 dan tidak pernah terhenti sampai sekarang, sehingga budaya membaca kitab kuning bukanlah hal yang baru di pesantren ini.\nPenyelenggaraan ini didukung oleh potensi yang dimiliki pesantren, di antaranya keberadaan ulama dan asatizah yang berkemampuan mengajarkan kitab kuning dan putih, santri dalam jumlah banyak, koleksi kitab mu'tabar yang cukup, serta alumni yang telah menyelesaikan pendidikan tingkat doktor di berbagai disiplin ilmu keislaman baik di dalam maupun luar negeri.",
+  "emailSubmission": "munzirahmad779@gmail.com",
+  "establishedDate": "10 Ramadhani 1439 H / 25 Mei 2018 M",
+  "institutionName": "Ma'had Aly Pendidikan Tinggi Kader Ulama DDI Abdurrahman Ambo Dalle, Mangkoso",
+  "maintenanceMode": false,
+  "googleAnalyticsId": "G-EBBP80BZWL",
+  "maintenanceConfig": {
+    "badge": "Tahap Finalisasi Data & Khazanah Digital",
+    "email": "redaksi@mahadaly-ddimangkoso.my.id",
+    "title": "Meneguhkan Khazanah Turats, Menjawab Dinamika Zaman",
+    "address": " Ma'had Aly DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
+    "pillars": [
+      {
+        "label": "Jenjang Marhalah Ula",
+        "value": "M.1"
+      },
+      {
+        "label": "Masa Pengkaderan",
+        "value": "4 Tahun"
+      },
+      {
+        "label": "Sanad Kitab Salaf",
+        "value": "Turats"
+      },
+      {
+        "label": "Beasiswa Penuh",
+        "value": "Beasiswa Unggulan bagi yang Beprestasi"
+      }
+    ],
+    "subtitle": "Pendidikan Tinggi Kader Ulama Takhassus Fiqh wa Usuluhu — Berakar kuat pada sanad keilmuan klasik Anregurutta, progresif merespons tantangan kontemporer.",
+    "noticeNote": "Insya Allah, portal resmi ini akan segera diluncurkan secara penuh untuk masyarakat luas. Bagi mahasantri, alumni, dan calon pendaftar yang membutuhkan informasi resmi, silakan menghubungi narahubung sekretariat di bawah ini.",
+    "noticeTitle": "Maklumat Redaksi & Pengelola Portal",
+    "arabicHeading": "بِسْ�ِ اللَّهِ الرَّحْ�َٰنِ الرَّحِي�ِ",
+    "noticeContent": "Saat ini dewan masyaikh dan tim redaksi sedang menyempurnakan basis data kurikulum kitab turats klasik, repositori risalah ilmiah mahasantri, direktori fatwa bahtsul masail, dan sistem penerimaan mahasantri baru (PMB).",
+    "whatsappLabel": "Hubungi WhatsApp Admin Redaksi",
+    "noticeGreeting": "Assalamu'alaikum Warahmatullahi Wabarakatuh.",
+    "whatsappNumber": "+62 81354229189"
+  },
+  "gradingSystemRules": "Sistem penilaian menggabungkan pengujian hafalan matan turats (ikhtibar), penguasaan qawa'id fiqhiyyah, keaktifan halaqah Bahtsul Masail, serta penulisan risalah ilmiah skripsi (munaqasyah) dengan standar kelulusan predikat Mumtaz (Cum Laude).",
+  "academicGuideBookUrl": "https://drive.google.com/file/d/pedoman-akademik-mahad-aly-2026/view?usp=sharing",
+  "academicGuideBookSize": "4.5 MB",
+  "academicGuideBookYear": "2026/2027",
+  "targetSubmissionEmails": [
+    "munzirahmad779@gmail.com"
+  ]
+}

@@ -1,25 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { r2Client, r2BucketName, r2PublicUrl, r2Endpoint, isR2Configured } from "@/lib/r2/client";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { requireRole } from "@/lib/supabase/admin-guard";
 
 export const dynamic = "force-dynamic";
 
-// Allowed MIME types
+// Allowed MIME types (SVG dilarang untuk keamanan demi mencegah XSS tersimpan)
 const ALLOWED_MIME_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
-  "image/svg+xml",
   "image/gif",
   "application/pdf",
 ];
 
+// Folder yang diizinkan untuk penyimpanan file
+const ALLOWED_FOLDERS = [
+  "logo",
+  "masyayikh",
+  "sarana",
+  "artikel",
+  "berita",
+  "galeri",
+  "skripsi-cover",
+  "skripsi",
+  "donasi",
+  "dema",
+  "umum"
+];
+
 export async function POST(req: NextRequest) {
   try {
+    // 0. Autentikasi Pengguna: Harus admin (super_admin, editor, atau penulis)
+    const auth = await requireRole(req, ["super_admin", "editor", "penulis"]);
+    if (!auth.ok) {
+      return auth.response;
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const folder = (formData.get("folder") as string) || "umum";
-    const uploadedBy = (formData.get("uploadedBy") as string) || "admin";
+    const requestedFolder = ((formData.get("folder") as string) || "umum").trim();
+    const uploadedBy = auth.email || auth.userId;
 
     if (!file) {
       return NextResponse.json(
@@ -28,10 +49,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Validasi Tipe File
+    // Validasi folder: Harus sesuai allowlist, pola [a-z0-9-], dan tolak path traversal
+    if (
+      !ALLOWED_FOLDERS.includes(requestedFolder) ||
+      !/^[a-z0-9-]+$/.test(requestedFolder) ||
+      requestedFolder.includes("..") ||
+      requestedFolder.startsWith("/")
+    ) {
+      return NextResponse.json(
+        { error: `Folder tujuan "${requestedFolder}" tidak diizinkan.` },
+        { status: 400 }
+      );
+    }
+    const folder = requestedFolder;
+
+    // 1. Validasi Tipe File (Tolak SVG dan format liar)
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: `Format file "${file.type || "tidak dikenal"}" tidak didukung.` },
+        { error: `Format file "${file.type || "tidak dikenal"}" tidak didukung demi keamanan sistem.` },
         { status: 400 }
       );
     }
@@ -162,6 +197,12 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    // 0. Autentikasi Pengguna: Hanya editor dan super_admin yang berwenang menghapus file
+    const auth = await requireRole(req, ["super_admin", "editor"]);
+    if (!auth.ok) {
+      return auth.response;
+    }
+
     const { url, id, key: directKey } = await req.json();
 
     let key = directKey;
@@ -179,6 +220,21 @@ export async function DELETE(req: NextRequest) {
         } catch {
           key = url.replace(/^\/+/, "");
         }
+      }
+    }
+
+    // Validasi key yang akan dihapus: wajib diawali folder yang diizinkan dan tidak boleh traversal
+    if (key) {
+      const topFolder = key.split("/")[0];
+      if (
+        !ALLOWED_FOLDERS.includes(topFolder) ||
+        key.includes("..") ||
+        key.startsWith("/")
+      ) {
+        return NextResponse.json(
+          { error: "Akses penghapusan kunci file di luar folder terdaftar ditolak." },
+          { status: 403 }
+        );
       }
     }
 

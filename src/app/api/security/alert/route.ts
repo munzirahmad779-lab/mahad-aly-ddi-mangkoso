@@ -4,45 +4,91 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { threatType, severity, ip, endpoint, details, adminEmails } = body;
+    const body = await req.json().catch(() => ({}));
 
-    const clientIp =
-      ip ||
+    // 1. IP Sanitization - Prioritaskan header server di atas body input
+    const serverHeaderIp =
+      req.headers.get("cf-connecting-ip")?.trim() ||
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      req.headers.get("cf-connecting-ip") ||
-      "127.0.0.1";
+      req.headers.get("x-real-ip")?.trim();
 
-    const userAgent = req.headers.get("user-agent") || "Unknown";
+    const rawBodyIp = typeof body.ip === "string" ? body.ip.trim() : "";
+    const safeBodyIp = rawBodyIp.replace(/[^a-zA-Z0-9.:_-]/g, "").slice(0, 45);
+    const clientIp = serverHeaderIp || safeBodyIp || "127.0.0.1";
+
+    const userAgent = req.headers.get("user-agent")?.slice(0, 200) || "Unknown";
+
+    // 2. Sanitasi threatType & severity ke allowed enum
+    const ALLOWED_THREAT_TYPES = [
+      "brute_force",
+      "suspicious_scanner",
+      "sql_injection",
+      "xss_attempt",
+      "unauthorized_access",
+      "rate_limit_exceeded"
+    ];
+    const rawThreat = typeof body.threatType === "string" ? body.threatType.trim().toLowerCase() : "";
+    const safeThreatType = ALLOWED_THREAT_TYPES.includes(rawThreat) ? rawThreat : "brute_force";
+
+    const ALLOWED_SEVERITIES = ["critical", "high", "medium", "low"] as const;
+    const rawSeverity = typeof body.severity === "string" ? body.severity.trim().toLowerCase() : "";
+    const safeSeverity = (ALLOWED_SEVERITIES.includes(rawSeverity as any) ? rawSeverity : "high") as "critical" | "high" | "medium" | "low";
+
+    // 3. Sanitasi endpoint & details
+    const rawEndpoint = typeof body.endpoint === "string" ? body.endpoint.trim() : "/admin/login";
+    const safeEndpoint = rawEndpoint.slice(0, 100).replace(/[^\w\-/.]/g, "") || "/admin/login";
+
+    const rawDetails = typeof body.details === "string" ? body.details.trim() : "";
+    const safeDetails = rawDetails.slice(0, 500).replace(/<[^>]*>?/gm, "");
+
+    // 4. Resolusi email penerima dari database (JANGAN percaya input adminEmails dari klien!)
+    let verifiedAdminEmails: string[] = [];
+    try {
+      const { data: dbAdmins } = await supabaseAdmin
+        .from("users")
+        .select("email")
+        .eq("is_active", true);
+
+      verifiedAdminEmails = (dbAdmins || [])
+        .map((u: any) => u.email?.trim().toLowerCase())
+        .filter(Boolean);
+    } catch (fetchErr) {
+      console.warn("Gagal mengambil email admin dari database:", fetchErr);
+    }
+
+    const defaultAdminEmail = (process.env.ADMIN_NOTIFICATION_EMAIL || "munzirahmad779@gmail.com").trim().toLowerCase();
+    if (!verifiedAdminEmails.includes(defaultAdminEmail)) {
+      verifiedAdminEmails.push(defaultAdminEmail);
+    }
 
     const alertResult = await sendSecurityAlertEmailToAdmins({
-      threatType: threatType || "suspicious_scanner",
-      severity: severity || "high",
+      threatType: safeThreatType,
+      severity: safeSeverity,
       ip: clientIp,
-      endpoint: endpoint || "/unknown",
-      details: details ? `${details} (User-Agent: ${userAgent})` : `User-Agent: ${userAgent}`,
-      adminEmails
+      endpoint: safeEndpoint,
+      details: safeDetails ? `${safeDetails} (User-Agent: ${userAgent})` : `User-Agent: ${userAgent}`,
+      adminEmails: verifiedAdminEmails
     });
 
-    // Sinkronkan ke database Supabase agar langsung tampil di Pusat Pertahanan & Panel Akun Terkunci
+    // 5. Sinkronkan ke database Supabase agar langsung tampil di Pusat Pertahanan & Panel Akun Terkunci
     try {
       const now = new Date();
       const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
       const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
-      
+
       const newThreat = {
         id: "threat-" + Date.now().toString(),
-        threatType: threatType || "brute_force",
-        severity: severity || "high",
+        threatType: safeThreatType,
+        severity: safeSeverity,
         ip: clientIp,
-        endpoint: endpoint || "/admin/login",
-        details: details ? `${details} (User-Agent: ${userAgent})` : `User-Agent: ${userAgent}`,
+        endpoint: safeEndpoint,
+        details: safeDetails ? `${safeDetails} (User-Agent: ${userAgent})` : `User-Agent: ${userAgent}`,
         timestamp: `${formattedDate}, ${formattedTime}`,
         status: "blocked",
         alertSent: true
       };
 
-      // 1. Ambil data security_threats yang ada di Supabase
+      // 5a. Ambil data security_threats yang ada di Supabase
       const { data: existingData } = await supabaseAdmin
         .from("site_content")
         .select("value")
@@ -50,12 +96,12 @@ export async function POST(req: NextRequest) {
         .single();
 
       const existingThreats = Array.isArray(existingData?.value) ? existingData.value : [];
-      
+
       // Auto Pruning: Bersihkan log yang umurnya sudah melebihi 7 hari (7 * 24 * 60 * 60 * 1000 ms)
       const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
       const nowMs = now.getTime();
       const validThreats = existingThreats.filter((t: any) => {
-        if (!t.createdAt) return true; // simpan jika belum ada field createdAt
+        if (!t.createdAt) return true;
         const logAge = nowMs - new Date(t.createdAt).getTime();
         return logAge < SEVEN_DAYS_MS;
       });
@@ -67,34 +113,41 @@ export async function POST(req: NextRequest) {
 
       await supabaseAdmin.from("site_content").upsert({
         key: "security_threats",
-        value: updatedThreats
+        group_name: "security",
+        label: "Daftar Ancaman & Sensor Siber",
+        value: updatedThreats,
+        updated_at: new Date().toISOString()
       }, { onConflict: "key" });
 
-      // 2. Jika merupakan brute force salah sandi, sinkronkan juga ke database locked_accounts
-      if (threatType === "brute_force") {
-        const { data: lockedData } = await supabaseAdmin
-          .from("site_content")
-          .select("value")
-          .eq("key", "locked_accounts")
-          .single();
+      // 5b. Jika brute force salah sandi, sinkronkan ke locked_accounts
+      if (safeThreatType === "brute_force") {
+        const emailMatch = safeDetails.match(/\[([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\]/);
+        const lockedEmail = emailMatch ? emailMatch[1].toLowerCase() : null;
 
-        const currentLocked = lockedData?.value && typeof lockedData.value === "object" ? lockedData.value : {};
-        
-        // Ekstrak email jika tersedia
-        const emailMatch = details?.match(/\[(.*?)\]/);
-        const lockedEmail = emailMatch ? emailMatch[1].toLowerCase() : "unknown@admin";
-        
-        currentLocked[lockedEmail] = {
-          email: lockedEmail,
-          failedCount: 3,
-          lockedAt: new Date().toISOString(),
-          reason: "3 kali salah memasukkan kata sandi"
-        };
+        if (lockedEmail) {
+          const { data: lockedData } = await supabaseAdmin
+            .from("site_content")
+            .select("value")
+            .eq("key", "locked_accounts")
+            .single();
 
-        await supabaseAdmin.from("site_content").upsert({
-          key: "locked_accounts",
-          value: currentLocked
-        }, { onConflict: "key" });
+          const currentLocked = lockedData?.value && typeof lockedData.value === "object" ? lockedData.value : {};
+
+          currentLocked[lockedEmail] = {
+            email: lockedEmail,
+            failedCount: 3,
+            lockedAt: new Date().toISOString(),
+            reason: "3 kali salah memasukkan kata sandi"
+          };
+
+          await supabaseAdmin.from("site_content").upsert({
+            key: "locked_accounts",
+            group_name: "security",
+            label: "Daftar Akun Terkunci",
+            value: currentLocked,
+            updated_at: new Date().toISOString()
+          }, { onConflict: "key" });
+        }
       }
     } catch (dbErr) {
       console.warn("Gagal mencatat log keamanan ke Supabase:", dbErr);
