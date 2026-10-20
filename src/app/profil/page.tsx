@@ -1,11 +1,44 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { useArticles } from "@/context/ArticleContext";
+import EntityPhoto from "@/components/common/EntityPhoto";
+
+/** Kerangka kartu katalog selama data server dimuat — mencegah kedipan data contoh/mock. */
+function CatalogSkeleton({ variant, count = 3 }: { variant: "masyayikh" | "sarana"; count?: number }) {
+  const placeholders = Array.from({ length: count });
+
+  if (variant === "sarana") {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {placeholders.map((_, index) => (
+          <div key={index} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 animate-pulse">
+            <div className="w-full h-36 rounded-xl bg-slate-200" />
+            <div className="h-3 w-20 bg-slate-200 rounded" />
+            <div className="h-4 w-3/4 bg-slate-200 rounded" />
+            <div className="h-3 w-full bg-slate-200 rounded" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {placeholders.map((_, index) => (
+        <div key={index} className="p-5 rounded-2xl border border-slate-200 bg-slate-50 space-y-3 animate-pulse">
+          <div className="w-16 h-16 rounded-full bg-slate-200" />
+          <div className="h-4 w-2/3 bg-slate-200 rounded" />
+          <div className="h-3 w-1/2 bg-slate-200 rounded" />
+          <div className="h-3 w-full bg-slate-200 rounded" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function ProfilPage() {
-  const { settings, lecturers, facilities, accreditations, pageTexts } = useArticles();
+  const { settings, lecturers, facilities, accreditations, pageTexts, isCatalogReady } = useArticles();
   const [activeTab, setActiveTab] = useState<
     "sejarah" | "visi-misi" | "masyayikh" | "struktur" | "sarana" | "akreditasi"
   >("sejarah");
@@ -101,6 +134,18 @@ export default function ProfilPage() {
               </h2>
             </div>
 
+            {/* Tarikh pendirian ditampilkan permanen agar tidak hilang saat uraian sejarah diisi. */}
+            {settings?.establishedDate && (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 bg-amber-200/70 px-2 py-0.5 rounded">
+                  Tarikh Pendirian
+                </span>
+                <span className="text-xs sm:text-sm font-semibold text-amber-950">
+                  {settings.establishedDate}
+                </span>
+              </div>
+            )}
+
             {settings?.historyArabic && (
               <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100 text-right font-serif text-lg text-emerald-900 leading-loose" dir="rtl">
                 {settings.historyArabic}
@@ -169,7 +214,9 @@ export default function ProfilPage() {
               </span>
             </div>
 
-            {safeLecturers.length === 0 ? (
+            {!isCatalogReady ? (
+              <CatalogSkeleton variant="masyayikh" count={3} />
+            ) : safeLecturers.length === 0 ? (
               <div className="p-8 text-center text-slate-500 bg-slate-50 rounded-2xl border text-sm">
                 Belum ada data masyayikh yang aktif. Admin dapat menambahkannya via Panel Admin.
               </div>
@@ -193,19 +240,15 @@ export default function ProfilPage() {
 
                     return (
                       <div key={m.id} className="p-5 rounded-2xl border border-slate-200 bg-slate-50 space-y-3 shadow-sm hover:shadow-md transition">
-                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-mahad-gold relative bg-emerald-100 flex items-center justify-center text-xl font-bold text-emerald-800">
-                          {m.photoUrl ? (
-                            <Image
-                              src={m.photoUrl}
-                              alt={m.name}
-                              width={64}
-                              height={64}
-                              className="w-full h-full object-cover"
-                              unoptimized={true}
-                            />
-                          ) : (
-                            <span>👳</span>
-                          )}
+                                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-mahad-gold relative bg-emerald-100 flex items-center justify-center text-xl font-bold text-emerald-800">
+                          <EntityPhoto
+                            src={m.photoUrl}
+                            alt={m.name}
+                            name={m.name}
+                            width={64}
+                            height={64}
+                            fallbackEmoji="👳"
+                          />
                         </div>
                         <div>
                           <h4 className="font-serif font-bold text-base text-slate-900">{m.name}</h4>
@@ -268,22 +311,26 @@ export default function ProfilPage() {
             <h2 className="font-serif font-bold text-2xl text-emerald-950">
               {pageTexts?.profilSaranaTitle || "Sarana & Prasarana Pembelajaran"}
             </h2>
+            {!isCatalogReady ? (
+              <CatalogSkeleton variant="sarana" count={3} />
+            ) : safeFacilities.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 bg-slate-50 rounded-2xl border text-sm">
+                Belum ada data sarana &amp; prasarana. Admin dapat menambahkannya via Panel Admin.
+              </div>
+            ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-xs sm:text-sm">
               {safeFacilities.map((fac) => (
                 <div key={fac.id} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
-                  <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-200 relative">
-                    {fac.photoUrl ? (
-                      <Image
-                        src={fac.photoUrl}
-                        alt={fac.name}
-                        width={400}
-                        height={200}
-                        className="w-full h-full object-cover"
-                        unoptimized={true}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl">🏛️</div>
-                    )}
+                                    <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-200 relative">
+                    <EntityPhoto
+                      src={fac.photoUrl}
+                      alt={fac.name}
+                      name={fac.name}
+                      width={400}
+                      height={200}
+                      fallbackEmoji="🏛️"
+                      fallbackClassName="w-full h-full flex items-center justify-center text-3xl"
+                    />
                   </div>
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
@@ -291,10 +338,14 @@ export default function ProfilPage() {
                     </span>
                     <h4 className="font-bold text-slate-900 text-base mt-1">{fac.name}</h4>
                     <p className="text-slate-600 mt-1 text-xs leading-relaxed">{fac.description}</p>
+                    {fac.capacity && (
+                      <p className="text-[11px] text-emerald-800 font-semibold mt-1">Kapasitas: {fac.capacity}</p>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
+            )}
           </div>
         )}
 

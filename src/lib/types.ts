@@ -172,14 +172,22 @@ export interface Lecturer {
   publications: string[];
   order: number;
   isActive: boolean;
+  // URL asli (mis. Google Drive) sebelum dikonversi ke CDN — untuk pelacakan admin
+  rawPhotoUrl?: string;
+  source?: "manual" | "spreadsheet";
 }
 
 export interface Facility {
   id: string;
   name: string;
-  category: "Masjid" | "Asrama" | "Perpustakaan" | "Laboratorium" | "Aula" | "Lainnya";
+  category: "Masjid" | "Asrama" | "Perpustakaan" | "Laboratorium" | "Aula" | "Lainnya" | string;
   photoUrl: string;
   description: string;
+  capacity?: string;
+  specs?: string;
+  order?: number;
+  rawPhotoUrl?: string;
+  source?: "manual" | "spreadsheet";
 }
 
 export interface Accreditation {
@@ -201,6 +209,11 @@ export interface Course {
   supportBook: string;
   lecturer: string;
   description: string;
+  // Kolom opsional hasil sinkronisasi spreadsheet
+  code?: string;
+  type?: "Wajib" | "Pilihan" | string;
+  order?: number;
+  source?: "manual" | "spreadsheet";
 }
 
 export interface CalendarEvent {
@@ -762,4 +775,26 @@ export interface DemaSettings {
   leadQuoteArabic?: string;
   divisions: DemaDivision[];
   members: DemaMember[];
+}
+
+// ══════════════════════════════════════════════════════════════
+// 13. PAYLOAD SINKRONISASI SPREADSHEET (GOOGLE SHEETS / CSV)
+// ══════════════════════════════════════════════════════════════
+export type SheetSyncModuleId = "masyayikh" | "kurikulum" | "sarana" | "dema";
+
+export interface SheetSyncMeta {
+  module: SheetSyncModuleId;
+  /** ISO timestamp kapan data ditarik */
+  syncedAt: string;
+  /** Nama sheet / file sumber */
+  source: string;
+  /** Jumlah baris valid yang disimpan */
+  count: number;
+  /** Email admin yang menjalankan sinkronisasi */
+  syncedBy?: string;
+}
+
+export interface SheetSyncPayload<T> {
+  items: T[];
+  meta: SheetSyncMeta;
 }

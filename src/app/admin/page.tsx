@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase/client";
 import { useArticles } from "@/context/ArticleContext";
 import ImageUploader from "@/components/common/ImageUploader";
 import AIWebsiteEditor from "@/components/admin/AIWebsiteEditor";
+import SpreadsheetSyncPanel from "@/components/admin/SpreadsheetSyncPanel";
 import {
   Article,
   CategoryInfo,
@@ -808,6 +809,7 @@ export default function AdminPage() {
     | "profile"
     | "academic"
     | "dema"
+    | "sheets"
     | "content"
     | "publications"
     | "bahtsul"
@@ -1895,6 +1897,7 @@ export default function AdminPage() {
                   { id: "profile", icon: "📜", label: "Profil Lembaga" },
                   { id: "academic", icon: "📖", label: "Akademik & Kurikulum" },
                   { id: "dema", icon: "👑", label: "Dewan Mahasantri (DeMa)", badge: "Baru" },
+                  { id: "sheets", icon: "📊", label: "Sinkronisasi Spreadsheet", badge: "Sync" },
                   { id: "aboutpage", icon: "🏛️", label: "Halaman Tentang" },
                   { id: "comingsoon", icon: "⏳", label: "Coming Soon & Pemeliharaan" }
                 ]
@@ -2044,6 +2047,7 @@ export default function AdminPage() {
               {activeMenu === "profile" && "📜 Kelola Halaman Profil (Sejarah, Visi Misi, Dosen, Sarana, Akreditasi)"}
               {activeMenu === "academic" && "📖 Kelola Akademik (Takhassus, Kurikulum 8 Semester, Kalender)"}
               {activeMenu === "dema" && "👑 Kelola Dewan Mahasantri (DeMa) - Divisi, Pengurus & Kabinet"}
+{activeMenu === "sheets" && "📊 Sinkronisasi Data dari Google Spreadsheet / CSV (Bebas RLS)"}
               {activeMenu === "content" && "🎨 Kustomisasi Kalam Hikmah Anregurutta (Arab RTL)"}
               {activeMenu === "publications" && "📚 Publikasi Fiqh (Artikel, Kategori Tanpa Batas, Skripsi + Drive)"}
               {activeMenu === "pagetexts" && "✍️ Edit Teks & Narasi Halaman Publik (CMS Tanpa Ngoding)"}
@@ -2535,6 +2539,32 @@ export default function AdminPage() {
         {/* ══════════════════════════════════════════════════════════════
             2. PROFIL LEMBAGA
            ══════════════════════════════════════════════════════════════ */}
+        {activeMenu === "sheets" && (
+          <div className="space-y-6">
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-emerald-200 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b">
+                <div>
+                  <h3 className="font-serif font-bold text-base text-emerald-950 flex items-center gap-2">
+                    <span>📊</span>
+                    <span>Sinkronisasi Masyayikh, Kurikulum, Sarana &amp; DeMa</span>
+                  </h3>
+                  <p className="text-slate-500 text-[11px] mt-0.5">
+                    Tarik data langsung dari Google Sheets publik atau unggah berkas CSV dari HP.
+                    Data disimpan lewat Service Role sehingga tidak pernah gagal karena Row-Level Security,
+                    dan foto Google Drive otomatis dikonversi ke CDN cepat.
+                  </p>
+                </div>
+                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full self-start border border-emerald-300 whitespace-nowrap">
+                  ⚡ Server-Side Sync • Anti RLS
+                </span>
+              </div>
+              <div className="pt-4">
+                <SpreadsheetSyncPanel getAuthHeaders={getAdminApiHeaders} />
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeMenu === "profile" && (
           <div className="space-y-6">
             {/* Box Pengelolaan Sub-Menu Profil (Header Navbar Sync) */}

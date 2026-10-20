@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 
 export default function AkademikPage() {
-  const { settings, courses, calendarEvents, pageTexts } = useArticles();
+  const { settings, courses, calendarEvents, pageTexts, isCatalogReady } = useArticles();
   const [selectedSemester, setSelectedSemester] = useState<number>(1);
 
   const safeCourses = Array.isArray(courses) ? courses : [];
@@ -91,28 +91,63 @@ export default function AkademikPage() {
 
           {/* List Matakuliah Semester Terpilih */}
           <div className="space-y-4">
-            <h3 className="font-bold text-base text-emerald-900">
-              Daftar Mata Kuliah Semester {selectedSemester}
-            </h3>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="font-bold text-base text-emerald-900">
+                Daftar Mata Kuliah Semester {selectedSemester}
+              </h3>
+              {isCatalogReady && filteredCourses.length > 0 && (
+                <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+              {`${filteredCourses.length} mata kuliah • ${filteredCourses.reduce((total, item) => total + (item.credits || 0), 0)} SKS`}
+                </span>
+              )}
+            </div>
 
-            {filteredCourses.length === 0 ? (
+            {!isCatalogReady ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map((placeholder) => (
+                  <div key={placeholder} className="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-3 animate-pulse">
+                    <div className="h-3 w-24 bg-slate-200 rounded" />
+                    <div className="h-4 w-3/4 bg-slate-200 rounded" />
+                    <div className="h-3 w-full bg-slate-200 rounded" />
+                    <div className="h-3 w-2/3 bg-slate-200 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : filteredCourses.length === 0 ? (
               <div className="p-6 bg-slate-50 rounded-xl border text-center text-xs text-slate-500">
-                Belum ada rincian mata kuliah untuk semester {selectedSemester}. Admin dapat menambahkannya via Panel Admin.
+                Belum ada rincian mata kuliah untuk semester {selectedSemester}. Tarik data dari Google
+                Spreadsheet melalui Panel Admin (Sinkronisasi Spreadsheet), atau tambahkan manual.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredCourses.map((crs) => (
                   <div key={crs.id} className="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-emerald-800 text-xs bg-emerald-100 px-2.5 py-0.5 rounded">
-                        {crs.credits} SKS
-                      </span>
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-emerald-800 text-xs bg-emerald-100 px-2.5 py-0.5 rounded">
+                          {crs.credits} SKS
+                        </span>
+                        {crs.code && (
+                          <span className="font-mono text-[10px] text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                            {crs.code}
+                          </span>
+                        )}
+                        {crs.type && (
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${crs.type === "Pilihan" ? "bg-amber-100 text-amber-800" : "bg-slate-200 text-slate-700"}`}>
+                            {crs.type}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[11px] text-slate-500">Pengampu: {crs.lecturer}</span>
                     </div>
                     <h4 className="font-serif font-bold text-slate-900 text-base">{crs.name}</h4>
                     <p className="text-slate-600 text-xs leading-relaxed">{crs.description}</p>
                     <div className="pt-2 border-t text-[11px] text-slate-500 space-y-0.5">
-                      <p><strong>Kitab Utama:</strong> {crs.mainBook}</p>
+                      {crs.mainBook ? (
+                        <p><strong>Maraji&apos; Kitab:</strong> {crs.mainBook}</p>
+                      ) : (
+                        <p className="italic text-slate-400">Maraji&apos; kitab belum diisi.</p>
+                      )}
                       {crs.supportBook && <p><strong>Kitab Pendukung:</strong> {crs.supportBook}</p>}
                     </div>
                   </div>

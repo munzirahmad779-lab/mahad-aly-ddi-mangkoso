@@ -240,6 +240,7 @@ interface DataContextType {
   // Site Settings
   settings: SiteSettings;
   isSettingsLoaded: boolean;
+  isCatalogReady: boolean;
   updateSettings: (newSettings: Partial<SiteSettings>) => void;
   toggleMaintenanceMode: (enabled: boolean, user?: string) => void;
 
@@ -289,6 +290,19 @@ interface DataContextType {
   resetDemaToDefault: (user?: string) => Promise<{ success: boolean; error?: string }> | void;
 }
 
+/**
+ * Ambil larik item dari nilai site_content hasil sinkronisasi.
+ * Mendukung dua bentuk: larik langsung (data lama) atau { items, meta }.
+ */
+function extractCatalogItems(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value;
+  if (value && typeof value === "object") {
+    const items = (value as { items?: unknown }).items;
+    if (Array.isArray(items)) return items;
+  }
+  return [];
+}
+
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function ArticleProvider({ children }: { children: React.ReactNode }) {
@@ -327,12 +341,15 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const [securityThreats, setSecurityThreats] = useState<SecurityThreatLog[]>(INITIAL_SECURITY_THREATS);
   const [demaSettings, setDemaSettings] = useState<DemaSettings>(INITIAL_DEMA_SETTINGS);
   const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(true);
+  // False sampai katalog (masyayikh/kurikulum/sarana) selesai dihidrasi dari server.
+  // Dipakai halaman publik untuk menampilkan skeleton rapi alih-alih data mock (anti-flicker).
+  const [isCatalogReady, setIsCatalogReady] = useState<boolean>(false);
 
   // Load from Supabase + LocalStorage fallback
   useEffect(() => {
     // 0. Cache Invalidation: Hapus semua cache browser lama agar tidak pernah memunculkan data usang (anti-flicker)
     try {
-      const CURRENT_CACHE_VERSION = "2026-10-20-v5-real-sync";
+      const CURRENT_CACHE_VERSION = "2026-10-20-v6-sheets-cloud-sync";
       const storedVersion = localStorage.getItem("mahad_cache_version");
       if (storedVersion !== CURRENT_CACHE_VERSION) {
         [
@@ -349,7 +366,10 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           "mahad_footer_settings",
           "mahad_lecturers",
           "mahad_facilities",
-          "mahad_courses"
+          "mahad_courses",
+          "mahad_sync_masyayikh",
+          "mahad_sync_facilities",
+          "mahad_sync_courses"
         ].forEach((k) => localStorage.removeItem(k));
         localStorage.setItem("mahad_cache_version", CURRENT_CACHE_VERSION);
       }
@@ -403,7 +423,10 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           aboutRes,
           pageTextsRes,
           demaRes,
-          securityRes
+          securityRes,
+          masyayikhListRes,
+          coursesListRes,
+          saranaListRes
         ] = await Promise.allSettled([
           supabase.from("articles").select("*").order("created_at", { ascending: false }),
           supabase.from("theses").select("*").order("created_at", { ascending: false }),
@@ -421,7 +444,10 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           supabase.from("site_content").select("value").eq("key", "about_page").single(),
           supabase.from("site_content").select("value").eq("key", "page_texts").single(),
           supabase.from("site_content").select("value").eq("key", "dema_settings").single(),
-          supabase.from("site_content").select("value").eq("key", "security_threats").single()
+          supabase.from("site_content").select("value").eq("key", "security_threats").single(),
+          supabase.from("site_content").select("value").eq("key", "masyayikh_list").single(),
+          supabase.from("site_content").select("value").eq("key", "courses_list").single(),
+          supabase.from("site_content").select("value").eq("key", "sarana_list").single()
         ]);
 
         // Process Articles
@@ -547,6 +573,23 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
               }));
             if (dbFacilities.length > 0) setFacilities(dbFacilities);
           }
+        }
+
+        // ── Hasil SINKRONISASI SPREADSHEET (prioritas tertinggi) ──────────
+        // Data ini ditulis oleh /api/admin/sync/sheets memakai Service Role.
+        if (masyayikhListRes.status === "fulfilled") {
+          const items = extractCatalogItems((masyayikhListRes.value as any)?.data?.value);
+          if (items.length > 0) setLecturers(items as Lecturer[]);
+        }
+
+        if (coursesListRes.status === "fulfilled") {
+          const items = extractCatalogItems((coursesListRes.value as any)?.data?.value);
+          if (items.length > 0) setCourses(items as Course[]);
+        }
+
+        if (saranaListRes.status === "fulfilled") {
+          const items = extractCatalogItems((saranaListRes.value as any)?.data?.value);
+          if (items.length > 0) setFacilities(items as Facility[]);
         }
 
         // Process Site Settings
@@ -730,7 +773,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    fetchFromSupabase();
+    fetchFromSupabase().finally(() => {
+      setIsCatalogReady(true);
+    });
   }, []);
 
   // Sinkronisasi ulang Live Log Aktivitas dari Supabase
@@ -2628,6 +2673,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         updatePageTexts,
         settings,
         isSettingsLoaded,
+        isCatalogReady,
         updateSettings,
         exportBackupJson,
         importBackupJson,
