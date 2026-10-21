@@ -426,7 +426,8 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           securityRes,
           masyayikhListRes,
           coursesListRes,
-          saranaListRes
+          saranaListRes,
+          activityLogsRes
         ] = await Promise.allSettled([
           supabase.from("articles").select("*").order("created_at", { ascending: false }),
           supabase.from("theses").select("*").order("created_at", { ascending: false }),
@@ -447,7 +448,8 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           supabase.from("site_content").select("value").eq("key", "security_threats").single(),
           supabase.from("site_content").select("value").eq("key", "masyayikh_list").single(),
           supabase.from("site_content").select("value").eq("key", "courses_list").single(),
-          supabase.from("site_content").select("value").eq("key", "sarana_list").single()
+          supabase.from("site_content").select("value").eq("key", "sarana_list").single(),
+          supabase.from("site_content").select("value").eq("key", "activity_logs").single()
         ]);
 
         // Process Articles
@@ -755,6 +757,17 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
+        // Process Activity Logs (Real-time live audit trail dari Supabase)
+        if (activityLogsRes.status === "fulfilled") {
+          const val = (activityLogsRes.value as any)?.data?.value;
+          if (Array.isArray(val) && val.length > 0) {
+            setLogs(val);
+            try {
+              localStorage.setItem("mahad_logs", JSON.stringify(val));
+            } catch (e) {}
+          }
+        }
+
         // Process Security Threats
         if (securityRes.status === "fulfilled") {
           const val = (securityRes.value as any)?.data?.value;
@@ -787,29 +800,10 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         .eq("key", "activity_logs")
         .single();
       if (logsData?.value && Array.isArray(logsData.value)) {
-        setLogs((prevLogs) => {
-          const serverLogs: ActivityLog[] = logsData.value;
-          const localLogs: ActivityLog[] = Array.isArray(prevLogs) ? prevLogs : [];
-          const map = new Map<string, ActivityLog>();
-          serverLogs.forEach((l) => {
-            const k = l.id || `${l.timestamp}-${l.action}-${l.target}`;
-            map.set(k, l);
-          });
-          localLogs.forEach((l) => {
-            const k = l.id || `${l.timestamp}-${l.action}-${l.target}`;
-            if (!map.has(k)) {
-              map.set(k, l);
-            }
-          });
-          const merged = Array.from(map.values());
-          try {
-            localStorage.setItem("mahad_logs", JSON.stringify(merged));
-          } catch (e) {}
-          if (merged.length > serverLogs.length) {
-            syncContentToBackend("activity_logs", "system", "Log Aktivitas Admin", merged);
-          }
-          return merged;
-        });
+        setLogs(logsData.value);
+        try {
+          localStorage.setItem("mahad_logs", JSON.stringify(logsData.value));
+        } catch (e) {}
       }
     } catch (err) {
       console.warn("Supabase refreshLogs notice:", err);

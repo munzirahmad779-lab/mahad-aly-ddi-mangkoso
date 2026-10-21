@@ -2559,7 +2559,7 @@ export default function AdminPage() {
               </span>
             </div>
 
-            <SpreadsheetSyncPanel getAuthHeaders={getAdminApiHeaders} />
+            <SpreadsheetSyncPanel getAuthHeaders={getAdminApiHeaders} onSynced={refreshLogs} />
           </div>
         )}
 
