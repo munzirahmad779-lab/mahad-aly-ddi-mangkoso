@@ -41,7 +41,8 @@ import {
   DemaSettings,
   DemaDivision,
   DemaMember,
-  OrganizationMember
+  OrganizationMember,
+  PMBSettings
 } from "./types";
 
 export const INITIAL_HERO: HeroSectionData = {
@@ -474,6 +475,81 @@ export const INITIAL_BAHTSUL_QA: BahtsulMasailQA[] = [
     attachmentUrl: ""
   }
 ];
+
+export const INITIAL_PMB_SETTINGS: PMBSettings = {
+  title: "Brosur Pendaftaran Imtihan Qabul",
+  subtitle: "Ma'had Aly Pontren DDI Mangkoso",
+  academicYear: "Angkatan XI 'Am Jam'iy 1448 H.",
+  programTakhassus: "Fiqh dan Ushul Fiqh",
+  scholarshipBadge: "100% Beasiswa - Full Beasiswa",
+  accreditationBadge: "Akreditasi A (Mumtaz)",
+  quotaTotal: "30 Orang untuk Banin dan Banat",
+  quotaScholarship: "25 Orang (Jalur Beasiswa)",
+  quotaMandiri: "5 Orang (Jalur Mandiri)",
+  registrationPeriod: "17 Sya'ban 1447 H hingga 16 Ramadhan 1447 H",
+  registrationLink: "https://bit.ly/pmb-mahadaly-mangkoso",
+  brochurePdfUrl: "",
+  brochureImageUrl: "",
+  qrCodeUrl: "",
+  examSubjects: [
+    "Hifzh Al-Qur'an",
+    "Baca kitab kuning (Bidayatul-Mujtahid wa Nihayatul-Muqtashid) dengan qawa'idnya",
+    "Test Wawancara"
+  ],
+  requirements: [
+    "Beragama Islam berhaluan Ahlu al-Sunnah",
+    "Tamat/jelang tamat Madrasah Aliyah atau sederajat",
+    "Siap untuk mengikuti imtihan qabul sesuai dengan materi imtihan",
+    "Berakhlak mulia dan siap untuk menaati tata tertib dan kode etik Ma'had Aly Pontren DDI Mangkoso",
+    "Tidak memiliki riwayat durhaka pada orang tua dan guru",
+    "Tidak memiliki riwayat yang cacat di tengah-tengah umat seperti perilaku asusila, narkoba, ekstasi, miras, dan kriminal yang berurusan dengan aparat penegak hukum",
+    "Tidak memiliki riwayat pelanggaran berat pada tata tertib dan kode etik santri dari madrasah asalnya",
+    "Bukan perokok",
+    "Memiliki jiwa/karakter ulama"
+  ],
+  schedules: [
+    {
+      id: "sch-1",
+      stageName: "Daur al-Ittisalah (Online) - Khusus Alumni",
+      date: "17-27 Ramadhan 1447 H",
+      description: "Khusus Alumni Pontren DDI Mangkoso via daring"
+    },
+    {
+      id: "sch-2",
+      stageName: "Daur al-Ittisalah (Online) - Terbuka untuk Umum",
+      date: "07-17 Syawal 1447 H",
+      description: "Terbuka bagi calon mahasantri umum seluruh Indonesia via daring"
+    },
+    {
+      id: "sch-3",
+      stageName: "Daur al-Muqabalah (Offline / Luring)",
+      date: "27 Syawal 1447 H",
+      description: "Serentak dilaksanakan di Kampus Ma'had Aly DDI Mangkoso"
+    },
+    {
+      id: "sch-4",
+      stageName: "Natijah Imtihan (Pengumuman Hasil Seleksi)",
+      date: "07 Dzulqa'dah 1447 H",
+      description: "Serentak dipublish via online (website) dan offline"
+    }
+  ],
+  contacts: [
+    {
+      id: "c-1",
+      name: "Syamsu Rijal, S.Pd.I.",
+      phone: "+62 852-9992-9870",
+      role: "Panitia Seleksi PMB"
+    },
+    {
+      id: "c-2",
+      name: "Dr. G. H. Aydi Syam, S.H.I., M.H.I.",
+      phone: "+62 822-5109-6936",
+      role: "Sekretariat Imtihan Qabul"
+    }
+  ],
+  address: "Jalan Raya AG. H. Abdurrahman Ambo Dalle, Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulawesi Selatan",
+  notes: "Pendaftaran dibuka 17 Sya'ban 1447 H hingga 16 Ramadhan 1447 H via online dengan cara mengisi formulir online atau scan QR Code resmi."
+};
 
 export const INITIAL_PMB_WAVES: PMBWave[] = [
   {

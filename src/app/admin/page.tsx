@@ -156,6 +156,8 @@ export default function AdminPage() {
     addBahtsulQA,
     updateBahtsulQA,
     deleteBahtsulQA,
+    pmbSettings,
+    updatePmbSettings,
     pmbWaves,
     addPMBWave,
     updatePMBWave,
@@ -1392,7 +1394,36 @@ export default function AdminPage() {
     attachmentName: ""
   });
 
-  // 10. PMB Wave Form State
+  // 10. PMB Tabs & Settings State
+  const [pmbSubTab, setPmbSubTab] = useState<"brosur" | "persyaratan" | "jadwal" | "kontak" | "gelombang" | "faq">("brosur");
+  const [pmbBrochureForm, setPmbBrochureForm] = useState(pmbSettings);
+
+  // Sync pmbBrochureForm when pmbSettings changes from database
+  useEffect(() => {
+    if (pmbSettings) {
+      setPmbBrochureForm(pmbSettings);
+    }
+  }, [pmbSettings]);
+
+  // PMB Requirements & Exam Subjects state
+  const [newRequirementText, setNewRequirementText] = useState("");
+  const [editingReqIdx, setEditingReqIdx] = useState<number | null>(null);
+  const [editingReqText, setEditingReqText] = useState("");
+
+  const [newExamSubjectText, setNewExamSubjectText] = useState("");
+  const [editingExamIdx, setEditingExamIdx] = useState<number | null>(null);
+  const [editingExamText, setEditingExamText] = useState("");
+
+  // PMB Schedules & Contacts state
+  const [pmbScheduleForm, setPmbScheduleForm] = useState({ stageName: "", date: "", description: "" });
+  const [isEditingPmbSchedule, setIsEditingPmbSchedule] = useState(false);
+  const [editingPmbScheduleId, setEditingPmbScheduleId] = useState<string | null>(null);
+
+  const [pmbContactForm, setPmbContactForm] = useState({ name: "", phone: "", role: "" });
+  const [isEditingPmbContact, setIsEditingPmbContact] = useState(false);
+  const [editingPmbContactId, setEditingPmbContactId] = useState<string | null>(null);
+
+  // 10b. PMB Wave Form State
   const [isEditingPMBWave, setIsEditingPMBWave] = useState(false);
   const [editingPMBWaveId, setEditingPMBWaveId] = useState<string | null>(null);
   const [pmbWaveForm, setPmbWaveForm] = useState({
@@ -3513,10 +3544,10 @@ export default function AdminPage() {
             {/* Sub: Struktur Organisasi */}
             {activeSubMenu === "struktur" && (() => {
               const currentOrgMembers: OrganizationMember[] =
-                settingsForm.organizationStructure && settingsForm.organizationStructure.length > 0
-                  ? settingsForm.organizationStructure
-                  : (settings?.organizationStructure && settings.organizationStructure.length > 0
-                      ? settings.organizationStructure
+                settings?.organizationStructure && settings.organizationStructure.length > 0
+                  ? settings.organizationStructure
+                  : (settingsForm.organizationStructure && settingsForm.organizationStructure.length > 0
+                      ? settingsForm.organizationStructure
                       : INITIAL_ORGANIZATION_MEMBERS);
 
               const handleSaveOrgMember = (e: React.FormEvent) => {
@@ -3558,12 +3589,8 @@ export default function AdminPage() {
 
                 updatedList.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-                const updatedSettings = {
-                  ...settingsForm,
-                  organizationStructure: updatedList
-                };
-                setSettingsForm(updatedSettings);
-                updateSettings(updatedSettings);
+                setSettingsForm((prev) => ({ ...prev, organizationStructure: updatedList }));
+                updateSettings({ organizationStructure: updatedList });
 
                 setIsEditingOrgMember(false);
                 setEditingOrgMemberId(null);
@@ -3595,12 +3622,8 @@ export default function AdminPage() {
               const handleDeleteOrgMember = (id: string, roleName: string) => {
                 if (!confirm(`Hapus jabatan/pejabat "${roleName}" dari struktur organisasi?`)) return;
                 const updatedList = currentOrgMembers.filter((m) => m.id !== id);
-                const updatedSettings = {
-                  ...settingsForm,
-                  organizationStructure: updatedList
-                };
-                setSettingsForm(updatedSettings);
-                updateSettings(updatedSettings);
+                setSettingsForm((prev) => ({ ...prev, organizationStructure: updatedList }));
+                updateSettings({ organizationStructure: updatedList });
                 if (editingOrgMemberId === id) {
                   setIsEditingOrgMember(false);
                   setEditingOrgMemberId(null);
@@ -7351,276 +7374,739 @@ export default function AdminPage() {
         )}
 
         {/* ══════════════════════════════════════════════════════════════
-            7. PMB ONLINE (STATUS COMING SOON / MANAJEMEN)
+            7. PMB ONLINE (BROSUR TAHUNAN, SYARAT, JADWAL, KONTAK, GELOMBANG & FAQ)
            ══════════════════════════════════════════════════════════════ */}
         {activeMenu === "pmb" && (
           <div className="space-y-6 text-xs">
-            {/* Status Card */}
-            <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded">
-                  Status: COMING SOON (Januari 2027) &bull; Beasiswa Penuh 100%
-                </span>
-                <h3 className="font-serif font-bold text-lg text-emerald-950 mt-1">
-                  Penerimaan Mahasantri Baru (PMB Online)
+            {/* Top Bar Status & Quick Actions */}
+            <div className="bg-gradient-to-r from-emerald-900 to-emerald-800 text-white p-6 rounded-2xl shadow-md border border-emerald-700 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-mahad-green-dark bg-mahad-gold px-2.5 py-0.5 rounded-full font-mono">
+                    {pmbSettings.academicYear || "PMB Aktif"}
+                  </span>
+                  <span className="text-[10px] bg-white/20 text-emerald-100 px-2 py-0.5 rounded">
+                    Takhassus: {pmbSettings.programTakhassus || "Fiqh dan Ushul Fiqh"}
+                  </span>
+                  {pmbSettings.accreditationBadge && (
+                    <span className="text-[10px] bg-emerald-700 text-white px-2 py-0.5 rounded border border-emerald-500">
+                      ⭐ {pmbSettings.accreditationBadge}
+                    </span>
+                  )}
+                </div>
+                <h3 className="font-serif font-bold text-xl text-white">
+                  Pusat Kendali Brosur &amp; Penerimaan Mahasantri Baru (PMB)
                 </h3>
-                <p className="text-slate-600 text-xs mt-0.5">
-                  Kelola gelombang pendaftaran, persyaratan berkas, kuota mahasantri, dan FAQ pendaftaran.
+                <p className="text-emerald-100/90 text-xs max-w-2xl">
+                  Perubahan brosur, persyaratan, materi imtihan, jadwal seleksi, kontak panitia, gelombang, dan FAQ tersinkronisasi <strong>Real-Time</strong> ke database Supabase dan langsung tampil pada pratinjau publik.
                 </p>
               </div>
-              <div className="flex gap-2">
+
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
                 <button
                   type="button"
                   onClick={handleExportSubscribersCsv}
-                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow"
+                  className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl shadow text-xs flex items-center gap-1.5 transition"
                 >
-                  📥 Unduh CSV Subscriber ({subscribers.length})
+                  <span>📥 Unduh CSV Subscriber ({subscribers.length})</span>
                 </button>
                 <Link
                   href="/pmb"
                   target="_blank"
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow"
+                  className="px-4 py-2 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold rounded-xl shadow text-xs flex items-center gap-1.5 transition"
                 >
-                  Pratinjau &rarr;
+                  <span>👁️ Pratinjau Halaman PMB &rarr;</span>
                 </Link>
               </div>
             </div>
 
-            {/* Gelombang PMB & FAQ Form */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                  {isEditingPMBWave ? "✏️ Edit Gelombang Pendaftaran PMB" : "➕ Tambah Gelombang Pendaftaran PMB"}
-                </h3>
+            {/* Sub-Navigation Tabs */}
+            <div className="flex flex-wrap gap-2 pb-2 border-b border-slate-200">
+              {[
+                { id: "brosur", label: "📜 Brosur & Identitas Tahunan", badge: null },
+                { id: "persyaratan", label: "📋 Syarat & Materi Imtihan", badge: (pmbSettings.requirements?.length || 0) + (pmbSettings.examSubjects?.length || 0) },
+                { id: "jadwal", label: "🗓️ Jadwal Seleksi", badge: pmbSettings.schedules?.length || 0 },
+                { id: "kontak", label: "📞 Kontak Panitia", badge: pmbSettings.contacts?.length || 0 },
+                { id: "gelombang", label: "🌊 Gelombang PMB", badge: pmbWaves.length },
+                { id: "faq", label: "❓ FAQ PMB", badge: pmbFAQs.length }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setPmbSubTab(tab.id as any)}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 ${
+                    pmbSubTab === tab.id
+                      ? "bg-emerald-800 text-white shadow"
+                      : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  {tab.badge !== null && (
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                      pmbSubTab === tab.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-700"
+                    }`}>
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* TAB 1: BROSUR & IDENTITAS TAHUNAN */}
+            {pmbSubTab === "brosur" && (
+              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+                  <div>
+                    <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
+                      <span>📜</span>
+                      <span>Identitas Brosur Tahunan &amp; Kuota Penerimaan</span>
+                    </h3>
+                    <p className="text-slate-500 text-xs mt-0.5">
+                      Sesuaikan angkatan, kuota, tautan formulir online, dan berkas brosur sesuai cetakan brosur terbaru setiap tahunnya.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                    Tersinkron Database Cloud
+                  </span>
+                </div>
+
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (!pmbWaveForm.name) return;
-                    if (isEditingPMBWave && editingPMBWaveId) {
-                      updatePMBWave(editingPMBWaveId, {
-                        name: pmbWaveForm.name,
-                        startDate: pmbWaveForm.startDate,
-                        endDate: pmbWaveForm.endDate,
-                        quota: pmbWaveForm.quota,
-                        scholarshipInfo: pmbWaveForm.scholarshipInfo,
-                        requirements: Array.isArray(pmbWaveForm.requirements) ? pmbWaveForm.requirements : pmbWaveForm.requirements.split("\n").filter(Boolean),
-                        procedure: Array.isArray(pmbWaveForm.procedure) ? pmbWaveForm.procedure : pmbWaveForm.procedure.split("\n").filter(Boolean),
-                        imageUrl: pmbWaveForm.imageUrl,
-                        registrationLink: pmbWaveForm.registrationLink,
-                        brochureUrl: pmbWaveForm.brochureUrl
-                      });
-                      alert("✓ Gelombang PMB berhasil diperbarui!");
-                      setIsEditingPMBWave(false);
-                      setEditingPMBWaveId(null);
-                    } else {
-                      addPMBWave({
-                        name: pmbWaveForm.name,
-                        startDate: pmbWaveForm.startDate,
-                        endDate: pmbWaveForm.endDate,
-                        quota: pmbWaveForm.quota,
-                        scholarshipInfo: pmbWaveForm.scholarshipInfo,
-                        requirements: pmbWaveForm.requirements.split("\n").filter(Boolean),
-                        procedure: pmbWaveForm.procedure.split("\n").filter(Boolean),
-                        imageUrl: pmbWaveForm.imageUrl,
-                        registrationLink: pmbWaveForm.registrationLink,
-                        brochureUrl: pmbWaveForm.brochureUrl
-                      });
-                      alert("✓ Gelombang PMB berhasil ditambahkan!");
-                    }
-                    setPmbWaveForm({
-                      name: "",
-                      startDate: "01 Jan 2027",
-                      endDate: "28 Feb 2027",
-                      quota: "15 Mahasantri",
-                      scholarshipInfo: "Beasiswa Penuh 100%",
-                      requirements: "Lulusan MA/Pesantren\nHafalan 5 Juz\nMampu baca kitab kuning",
-                      procedure: "Daftar Online\nUnggah Berkas\nTes Seleksi Kitab",
-                      imageUrl: "",
-                      registrationLink: "",
-                      brochureUrl: ""
-                    });
+                    updatePmbSettings(pmbBrochureForm);
+                    alert("✓ Pengaturan Brosur & Pendaftaran PMB berhasil disimpan!");
                   }}
-                  className="space-y-3"
+                  className="space-y-6"
                 >
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Nama Gelombang *</label>
-                    <input
-                      type="text"
-                      required
-                      value={pmbWaveForm.name}
-                      onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, name: e.target.value })}
-                      className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Tanggal Buka</label>
+                      <label className="block font-bold text-slate-700 mb-1">Judul Utama Brosur *</label>
                       <input
                         type="text"
-                        value={pmbWaveForm.startDate}
-                        onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, startDate: e.target.value })}
-                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                        required
+                        value={pmbBrochureForm.title || ""}
+                        onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, title: e.target.value })}
+                        placeholder="Brosur Pendaftaran Imtihan Qabul"
+                        className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl font-bold text-slate-900"
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Tanggal Tutup</label>
+                      <label className="block font-bold text-slate-700 mb-1">Subjudul Lembaga *</label>
                       <input
                         type="text"
-                        value={pmbWaveForm.endDate}
-                        onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, endDate: e.target.value })}
-                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">Kuota Mahasantri</label>
-                      <input
-                        type="text"
-                        value={pmbWaveForm.quota}
-                        onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, quota: e.target.value })}
-                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">Info Beasiswa</label>
-                      <input
-                        type="text"
-                        value={pmbWaveForm.scholarshipInfo}
-                        onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, scholarshipInfo: e.target.value })}
-                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                        required
+                        value={pmbBrochureForm.subtitle || ""}
+                        onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, subtitle: e.target.value })}
+                        placeholder="Ma'had Aly Pontren DDI Mangkoso"
+                        className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl font-semibold text-slate-900"
                       />
                     </div>
                   </div>
 
-                  {/* Foto Brosur / Poster Alur Seleksi (Opsional) */}
-                  {/* Foto Brosur / Poster Alur Seleksi (Opsional) */}
-                  <div>
-                    <ImageUploader
-                      label="Unggah Poster / Brosur Visual PMB (Langsung dari Perangkat)"
-                      folder="umum"
-                      value={pmbWaveForm.imageUrl || ""}
-                      onChange={(url) => setPmbWaveForm((prev) => ({ ...prev, imageUrl: url }))}
-                      helperText="Pilih desain poster atau banner alur seleksi PMB (PNG, JPG, WebP). Bisa dikosongkan."
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Angkatan &amp; Tahun Akademik Hijri *</label>
+                      <input
+                        type="text"
+                        required
+                        value={pmbBrochureForm.academicYear || ""}
+                        onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, academicYear: e.target.value })}
+                        placeholder="Angkatan XI 'Am Jam'iy 1448 H."
+                        className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Program Takhassus *</label>
+                      <input
+                        type="text"
+                        required
+                        value={pmbBrochureForm.programTakhassus || ""}
+                        onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, programTakhassus: e.target.value })}
+                        placeholder="Fiqh dan Ushul Fiqh"
+                        className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Badge Akreditasi</label>
+                      <input
+                        type="text"
+                        value={pmbBrochureForm.accreditationBadge || ""}
+                        onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, accreditationBadge: e.target.value })}
+                        placeholder="Akreditasi A (Mumtaz)"
+                        className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl"
+                      />
+                    </div>
                   </div>
 
-                  {/* Berkas Brosur PDF Lengkap */}
-                  <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2">
-                    <ImageUploader
-                      label="Unggah Berkas Brosur PMB Resmi (PDF)"
-                      folder="umum"
-                      accept="application/pdf,.pdf"
-                      maxSizeMB={20}
-                      value={pmbWaveForm.brochureUrl || ""}
-                      onChange={(url) => setPmbWaveForm((prev) => ({ ...prev, brochureUrl: url }))}
-                      helperText="Unggah file PDF brosur lengkap penerimaan santri baru untuk diunduh calon pendaftar (Bisa dikosongkan)."
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Badge Beasiswa</label>
+                      <input
+                        type="text"
+                        value={pmbBrochureForm.scholarshipBadge || ""}
+                        onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, scholarshipBadge: e.target.value })}
+                        placeholder="100% Beasiswa - Full Beasiswa"
+                        className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Periode Pendaftaran *</label>
+                      <input
+                        type="text"
+                        required
+                        value={pmbBrochureForm.registrationPeriod || ""}
+                        onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, registrationPeriod: e.target.value })}
+                        placeholder="17 Sya'ban 1447 H hingga 16 Ramadhan 1447 H"
+                        className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">🔗 Link Formulir Online</label>
+                      <input
+                        type="text"
+                        value={pmbBrochureForm.registrationLink || ""}
+                        onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, registrationLink: e.target.value })}
+                        placeholder="https://bit.ly/pmb-mahadaly-mangkoso"
+                        className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl font-mono"
+                      />
+                    </div>
                   </div>
 
-                  {/* Tautan Pendaftaran Online */}
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                    <label className="block font-bold text-slate-700 text-[11px]">
-                      🔗 Tautan Formulir Pendaftaran Online (Google Form / Portal)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="https://bit.ly/pmb-mahadaly atau link formulir eksternal"
-                      value={pmbWaveForm.registrationLink || ""}
-                      onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, registrationLink: e.target.value })}
-                      className="w-full p-2 text-xs bg-white border rounded-lg"
-                    />
+                  {/* Kuota Rincian */}
+                  <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-3">
+                    <h4 className="font-serif font-bold text-sm text-emerald-950 flex items-center gap-2">
+                      <span>👥</span>
+                      <span>Alokasi Kuota Mahasantri Baru</span>
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Kuota Total *</label>
+                        <input
+                          type="text"
+                          required
+                          value={pmbBrochureForm.quotaTotal || ""}
+                          onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, quotaTotal: e.target.value })}
+                          placeholder="30 Orang untuk Banin dan Banat"
+                          className="w-full p-2 text-xs bg-white border rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Alokasi Beasiswa *</label>
+                        <input
+                          type="text"
+                          required
+                          value={pmbBrochureForm.quotaScholarship || ""}
+                          onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, quotaScholarship: e.target.value })}
+                          placeholder="25 Orang (Jalur Beasiswa)"
+                          className="w-full p-2 text-xs bg-white border rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Alokasi Mandiri *</label>
+                        <input
+                          type="text"
+                          required
+                          value={pmbBrochureForm.quotaMandiri || ""}
+                          onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, quotaMandiri: e.target.value })}
+                          placeholder="5 Orang (Jalur Mandiri)"
+                          className="w-full p-2 text-xs bg-white border rounded-lg"
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Persyaratan (Per Baris)</label>
-                    <textarea
-                      rows={3}
-                      value={pmbWaveForm.requirements}
-                      onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, requirements: e.target.value })}
-                      className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
-                    />
+                  {/* Berkas Brosur PDF, Gambar Brosur & QR Code */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                      <ImageUploader
+                        label="📄 Berkas Brosur Lengkap (PDF)"
+                        folder="umum"
+                        accept="application/pdf,.pdf"
+                        maxSizeMB={20}
+                        value={pmbBrochureForm.brochurePdfUrl || ""}
+                        onChange={(url) => setPmbBrochureForm((prev) => ({ ...prev, brochurePdfUrl: url }))}
+                        helperText="Upload PDF resmi brosur pendaftaran untuk tombol 'Unduh Brosur PMB'."
+                      />
+                    </div>
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                      <ImageUploader
+                        label="🖼️ Gambar Brosur PMB (Visual JPG/PNG)"
+                        folder="umum"
+                        accept="image/*"
+                        maxSizeMB={10}
+                        value={pmbBrochureForm.brochureImageUrl || ""}
+                        onChange={(url) => setPmbBrochureForm((prev) => ({ ...prev, brochureImageUrl: url }))}
+                        helperText="Gambar visual brosur PMB untuk ditampilkan pada halaman web."
+                      />
+                    </div>
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                      <ImageUploader
+                        label="📱 Gambar QR Code Pendaftaran"
+                        folder="umum"
+                        accept="image/*"
+                        maxSizeMB={5}
+                        value={pmbBrochureForm.qrCodeUrl || ""}
+                        onChange={(url) => setPmbBrochureForm((prev) => ({ ...prev, qrCodeUrl: url }))}
+                        helperText="Scan barcode pendaftaran untuk memudahkan pendaftar mobile."
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Tahapan / Prosedur (Per Baris)</label>
-                    <textarea
-                      rows={3}
-                      value={pmbWaveForm.procedure}
-                      onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, procedure: e.target.value })}
-                      className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
-                    />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Alamat Sekretariat &amp; Kampus</label>
+                      <textarea
+                        rows={2}
+                        value={pmbBrochureForm.address || ""}
+                        onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, address: e.target.value })}
+                        placeholder="Jalan Raya AG. H. Abdurrahman Ambo Dalle, Mangkoso..."
+                        className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Catatan Resmi Panitia</label>
+                      <textarea
+                        rows={2}
+                        value={pmbBrochureForm.notes || ""}
+                        onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, notes: e.target.value })}
+                        placeholder="Pendaftaran dibuka via online dengan cara mengisi formulir..."
+                        className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl"
+                      />
+                    </div>
                   </div>
-                  <button type="submit" className="w-full py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow">
-                    {isEditingPMBWave ? "💾 Simpan Perubahan Gelombang" : "Simpan Gelombang PMB"}
-                  </button>
-                  {isEditingPMBWave && (
+
+                  <div className="pt-2 flex items-center justify-between">
+                    <p className="text-[11px] text-slate-400">
+                      Semua perubahan tersimpan permanen dan langsung memperbarui halaman /pmb secara real-time.
+                    </p>
                     <button
-                      type="button"
-                      onClick={() => {
-                        setIsEditingPMBWave(false);
-                        setEditingPMBWaveId(null);
-                        setPmbWaveForm({
-                          name: "",
-                          startDate: "01 Jan 2027",
-                          endDate: "28 Feb 2027",
-                          quota: "15 Mahasantri",
-                          scholarshipInfo: "Beasiswa Penuh 100%",
-                          requirements: "Lulusan MA/Pesantren\nHafalan 5 Juz\nMampu baca kitab kuning",
-                          procedure: "Daftar Online\nUnggah Berkas\nTes Seleksi Kitab",
-                          imageUrl: "",
-                          registrationLink: "",
-                          brochureUrl: ""
-                        });
-                      }}
-                      className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                      type="submit"
+                      className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow-md transition"
                     >
-                      ❌ Batal Edit
+                      💾 Simpan Pengaturan Brosur PMB
                     </button>
-                  )}
+                  </div>
                 </form>
               </div>
+            )}
 
-              <div className="lg:col-span-7 space-y-6">
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                  <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                    Gelombang Aktif ({pmbWaves.length})
-                  </h3>
-                  <div className="space-y-2.5">
-                    {pmbWaves.map((w) => (
-                      <div key={w.id} className="p-3 bg-slate-50 rounded-xl border flex items-center justify-between text-xs">
-                        <div>
-                          <span className="font-bold text-emerald-800 text-[10px] bg-emerald-100 px-2 py-0.5 rounded">Kuota: {w.quota}</span>
-                          <h4 className="font-bold text-slate-900 mt-1">{w.name}</h4>
-                          <p className="text-slate-500 text-[11px]">{w.startDate} s/d {w.endDate} &bull; {w.scholarshipInfo}</p>
+            {/* TAB 2: PERSYARATAN & MATERI IMTIHAN */}
+            {pmbSubTab === "persyaratan" && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Kolom Kiri: Persyaratan Pendaftaran */}
+                <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b">
+                    <div>
+                      <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
+                        <span>📋</span>
+                        <span>Persyaratan Pendaftaran Imtihan ({pmbSettings.requirements?.length || 0})</span>
+                      </h3>
+                      <p className="text-[11px] text-slate-500">
+                        Admin dapat menambah poin baru, mengubah poin yang ada, atau menghapus syarat.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Form Tambah Poin Persyaratan */}
+                  <div className="p-3 bg-slate-50 border rounded-xl flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ketik poin persyaratan baru..."
+                      value={newRequirementText}
+                      onChange={(e) => setNewRequirementText(e.target.value)}
+                      className="flex-1 p-2 text-xs bg-white border rounded-lg"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && newRequirementText.trim()) {
+                          e.preventDefault();
+                          const updated = [...(pmbSettings.requirements || []), newRequirementText.trim()];
+                          updatePmbSettings({ requirements: updated });
+                          setNewRequirementText("");
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      disabled={!newRequirementText.trim()}
+                      onClick={() => {
+                        if (!newRequirementText.trim()) return;
+                        const updated = [...(pmbSettings.requirements || []), newRequirementText.trim()];
+                        updatePmbSettings({ requirements: updated });
+                        setNewRequirementText("");
+                      }}
+                      className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-40 text-white font-bold rounded-lg text-xs"
+                    >
+                      ➕ Tambah
+                    </button>
+                  </div>
+
+                  {/* List Persyaratan */}
+                  <div className="space-y-2 max-h-120 overflow-y-auto pr-1">
+                    {(pmbSettings.requirements || []).map((req, idx) => {
+                      const isEditing = editingReqIdx === idx;
+
+                      return (
+                        <div
+                          key={idx}
+                          className="p-3 bg-slate-50 rounded-xl border flex items-start justify-between gap-3 text-xs hover:bg-slate-100/80 transition"
+                        >
+                          <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+
+                          <div className="flex-1">
+                            {isEditing ? (
+                              <div className="space-y-2">
+                                <textarea
+                                  rows={2}
+                                  value={editingReqText}
+                                  onChange={(e) => setEditingReqText(e.target.value)}
+                                  className="w-full p-2 text-xs bg-white border rounded-lg"
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (!editingReqText.trim()) return;
+                                      const updated = [...(pmbSettings.requirements || [])];
+                                      updated[idx] = editingReqText.trim();
+                                      updatePmbSettings({ requirements: updated });
+                                      setEditingReqIdx(null);
+                                      setEditingReqText("");
+                                    }}
+                                    className="px-2.5 py-1 bg-emerald-800 text-white font-bold rounded text-[11px]"
+                                  >
+                                    💾 Simpan
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingReqIdx(null);
+                                      setEditingReqText("");
+                                    }}
+                                    className="px-2.5 py-1 bg-slate-200 text-slate-700 font-bold rounded text-[11px]"
+                                  >
+                                    Batal
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-slate-800 leading-relaxed font-medium">
+                                {req}
+                              </p>
+                            )}
+                          </div>
+
+                          {!isEditing && (
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingReqIdx(idx);
+                                  setEditingReqText(req);
+                                }}
+                                className="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold text-[11px]"
+                                title="Edit persyaratan"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm(`Hapus persyaratan: "${req}"?`)) {
+                                    const updated = (pmbSettings.requirements || []).filter((_, i) => i !== idx);
+                                    updatePmbSettings({ requirements: updated });
+                                  }
+                                }}
+                                className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-[11px]"
+                                title="Hapus persyaratan"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          )}
                         </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Kolom Kanan: Materi Imtihan Qabul */}
+                <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b">
+                    <div>
+                      <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
+                        <span>📖</span>
+                        <span>Materi Imtihan Qabul ({pmbSettings.examSubjects?.length || 0})</span>
+                      </h3>
+                      <p className="text-[11px] text-slate-500">
+                        Mata uji seleksi imtihan (Hifzh, Baca Kitab Kuning, Wawancara).
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Form Tambah Materi */}
+                  <div className="p-3 bg-slate-50 border rounded-xl flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Materi ujian baru..."
+                      value={newExamSubjectText}
+                      onChange={(e) => setNewExamSubjectText(e.target.value)}
+                      className="flex-1 p-2 text-xs bg-white border rounded-lg"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && newExamSubjectText.trim()) {
+                          e.preventDefault();
+                          const updated = [...(pmbSettings.examSubjects || []), newExamSubjectText.trim()];
+                          updatePmbSettings({ examSubjects: updated });
+                          setNewExamSubjectText("");
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      disabled={!newExamSubjectText.trim()}
+                      onClick={() => {
+                        if (!newExamSubjectText.trim()) return;
+                        const updated = [...(pmbSettings.examSubjects || []), newExamSubjectText.trim()];
+                        updatePmbSettings({ examSubjects: updated });
+                        setNewExamSubjectText("");
+                      }}
+                      className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-40 text-white font-bold rounded-lg text-xs"
+                    >
+                      ➕ Tambah
+                    </button>
+                  </div>
+
+                  {/* List Materi Imtihan */}
+                  <div className="space-y-2">
+                    {(pmbSettings.examSubjects || []).map((subject, idx) => {
+                      const isEditing = editingExamIdx === idx;
+
+                      return (
+                        <div
+                          key={idx}
+                          className="p-3 bg-slate-50 rounded-xl border flex items-center justify-between gap-3 text-xs"
+                        >
+                          <div className="flex-1">
+                            {isEditing ? (
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={editingExamText}
+                                  onChange={(e) => setEditingExamText(e.target.value)}
+                                  className="flex-1 p-1.5 text-xs bg-white border rounded"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!editingExamText.trim()) return;
+                                    const updated = [...(pmbSettings.examSubjects || [])];
+                                    updated[idx] = editingExamText.trim();
+                                    updatePmbSettings({ examSubjects: updated });
+                                    setEditingExamIdx(null);
+                                    setEditingExamText("");
+                                  }}
+                                  className="px-2 py-1 bg-emerald-800 text-white font-bold rounded text-[10px]"
+                                >
+                                  Simpan
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingExamIdx(null);
+                                    setEditingExamText("");
+                                  }}
+                                  className="px-2 py-1 bg-slate-200 text-slate-700 font-bold rounded text-[10px]"
+                                >
+                                  Batal
+                                </button>
+                              </div>
+                            ) : (
+                              <p className="font-semibold text-slate-900">
+                                {subject}
+                              </p>
+                            )}
+                          </div>
+
+                          {!isEditing && (
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingExamIdx(idx);
+                                  setEditingExamText(subject);
+                                }}
+                                className="px-2 py-0.5 bg-amber-500 text-white rounded font-bold text-[10px]"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm(`Hapus materi: "${subject}"?`)) {
+                                    const updated = (pmbSettings.examSubjects || []).filter((_, i) => i !== idx);
+                                    updatePmbSettings({ examSubjects: updated });
+                                  }
+                                }}
+                                className="px-2 py-0.5 bg-red-600 text-white rounded font-bold text-[10px]"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: JADWAL SELEKSI (SCHEDULES) */}
+            {pmbSubTab === "jadwal" && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Form Tambah/Edit Jadwal */}
+                <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
+                    {isEditingPmbSchedule ? "✏️ Edit Tahapan Jadwal Seleksi" : "➕ Tambah Tahapan Seleksi"}
+                  </h3>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!pmbScheduleForm.stageName || !pmbScheduleForm.date) return;
+
+                      const currentSchedules = pmbSettings.schedules || [];
+                      let updatedSchedules: any[];
+
+                      if (isEditingPmbSchedule && editingPmbScheduleId) {
+                        updatedSchedules = currentSchedules.map((s) =>
+                          s.id === editingPmbScheduleId
+                            ? { ...s, ...pmbScheduleForm }
+                            : s
+                        );
+                        alert("✓ Tahapan seleksi berhasil diperbarui!");
+                      } else {
+                        const newStage = {
+                          id: `sch-${Date.now()}`,
+                          stageName: pmbScheduleForm.stageName,
+                          date: pmbScheduleForm.date,
+                          description: pmbScheduleForm.description
+                        };
+                        updatedSchedules = [...currentSchedules, newStage];
+                        alert("✓ Tahapan seleksi berhasil ditambahkan!");
+                      }
+
+                      updatePmbSettings({ schedules: updatedSchedules });
+                      setIsEditingPmbSchedule(false);
+                      setEditingPmbScheduleId(null);
+                      setPmbScheduleForm({ stageName: "", date: "", description: "" });
+                    }}
+                    className="space-y-3"
+                  >
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Nama Tahapan Seleksi *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Misal: Daur al-Ittisalah (Online) - Alumni"
+                        value={pmbScheduleForm.stageName}
+                        onChange={(e) => setPmbScheduleForm({ ...pmbScheduleForm, stageName: e.target.value })}
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-bold text-slate-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Tanggal / Waktu Pelaksanaan *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Misal: 17-27 Ramadhan 1447 H"
+                        value={pmbScheduleForm.date}
+                        onChange={(e) => setPmbScheduleForm({ ...pmbScheduleForm, date: e.target.value })}
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Deskripsi / Keterangan</label>
+                      <textarea
+                        rows={2}
+                        placeholder="Keterangan tempat atau teknis pelaksanaan..."
+                        value={pmbScheduleForm.description}
+                        onChange={(e) => setPmbScheduleForm({ ...pmbScheduleForm, description: e.target.value })}
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                      />
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="submit"
+                        className="flex-1 py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow"
+                      >
+                        {isEditingPmbSchedule ? "💾 Simpan Perubahan Jadwal" : "➕ Tambah ke Jadwal"}
+                      </button>
+                      {isEditingPmbSchedule && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditingPmbSchedule(false);
+                            setEditingPmbScheduleId(null);
+                            setPmbScheduleForm({ stageName: "", date: "", description: "" });
+                          }}
+                          className="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl"
+                        >
+                          Batal
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+
+                {/* Daftar Jadwal Seleksi */}
+                <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
+                    Daftar Tahapan Seleksi PMB ({pmbSettings.schedules?.length || 0})
+                  </h3>
+
+                  <div className="space-y-2.5">
+                    {(pmbSettings.schedules || []).map((sch, idx) => (
+                      <div
+                        key={sch.id || idx}
+                        className="p-3.5 bg-slate-50 rounded-xl border flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded">
+                            Tahap {idx + 1} &bull; {sch.date}
+                          </span>
+                          <h4 className="font-bold text-slate-900 mt-0.5">{sch.stageName}</h4>
+                          {sch.description && (
+                            <p className="text-[11px] text-slate-500">{sch.description}</p>
+                          )}
+                        </div>
+
                         <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             type="button"
                             onClick={() => {
-                              setIsEditingPMBWave(true);
-                              setEditingPMBWaveId(w.id);
-                              setPmbWaveForm({
-                                name: w.name,
-                                startDate: w.startDate,
-                                endDate: w.endDate,
-                                quota: w.quota,
-                                scholarshipInfo: w.scholarshipInfo,
-                                requirements: Array.isArray(w.requirements) ? w.requirements.join("\n") : (w.requirements || ""),
-                                procedure: Array.isArray(w.procedure) ? w.procedure.join("\n") : (w.procedure || ""),
-                                imageUrl: w.imageUrl || "",
-                                registrationLink: w.registrationLink || "",
-                                brochureUrl: w.brochureUrl || ""
+                              setIsEditingPmbSchedule(true);
+                              setEditingPmbScheduleId(sch.id);
+                              setPmbScheduleForm({
+                                stageName: sch.stageName,
+                                date: sch.date,
+                                description: sch.description || ""
                               });
                             }}
                             className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold"
-                            title="Edit Gelombang PMB"
                           >
                             ✏️ Edit
                           </button>
                           <button
                             type="button"
                             onClick={() => {
-                              if (confirm(`Hapus gelombang: "${w.name}"?`)) deletePMBWave(w.id);
+                              if (confirm(`Hapus tahapan: "${sch.stageName}"?`)) {
+                                const updated = (pmbSettings.schedules || []).filter((s) => s.id !== sch.id);
+                                updatePmbSettings({ schedules: updated });
+                              }
                             }}
                             className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold"
                           >
@@ -7631,9 +8117,425 @@ export default function AdminPage() {
                     ))}
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* FAQ Management */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            {/* TAB 4: KONTAK PANITIA & NARAHUBUNG */}
+            {pmbSubTab === "kontak" && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Form Kontak */}
+                <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
+                    {isEditingPmbContact ? "✏️ Edit Kontak Panitia" : "➕ Tambah Kontak Panitia"}
+                  </h3>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!pmbContactForm.name || !pmbContactForm.phone) return;
+
+                      const currentContacts = pmbSettings.contacts || [];
+                      let updatedContacts: any[];
+
+                      if (isEditingPmbContact && editingPmbContactId) {
+                        updatedContacts = currentContacts.map((c) =>
+                          c.id === editingPmbContactId
+                            ? { ...c, ...pmbContactForm }
+                            : c
+                        );
+                        alert("✓ Kontak panitia berhasil diperbarui!");
+                      } else {
+                        const newContact = {
+                          id: `c-${Date.now()}`,
+                          name: pmbContactForm.name,
+                          phone: pmbContactForm.phone,
+                          role: pmbContactForm.role || "Panitia PMB"
+                        };
+                        updatedContacts = [...currentContacts, newContact];
+                        alert("✓ Kontak panitia berhasil ditambahkan!");
+                      }
+
+                      updatePmbSettings({ contacts: updatedContacts });
+                      setIsEditingPmbContact(false);
+                      setEditingPmbContactId(null);
+                      setPmbContactForm({ name: "", phone: "", role: "" });
+                    }}
+                    className="space-y-3"
+                  >
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Nama Lengkap &amp; Gelar Panitia *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Misal: Syamsu Rijal, S.Pd.I."
+                        value={pmbContactForm.name}
+                        onChange={(e) => setPmbContactForm({ ...pmbContactForm, name: e.target.value })}
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-bold text-slate-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Nomor WhatsApp / HP *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Misal: +62 852-9992-9870"
+                        value={pmbContactForm.phone}
+                        onChange={(e) => setPmbContactForm({ ...pmbContactForm, phone: e.target.value })}
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Jabatan / Peran dalam PMB</label>
+                      <input
+                        type="text"
+                        placeholder="Misal: Panitia Seleksi PMB / Sekretariat Imtihan"
+                        value={pmbContactForm.role}
+                        onChange={(e) => setPmbContactForm({ ...pmbContactForm, role: e.target.value })}
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                      />
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="submit"
+                        className="flex-1 py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow"
+                      >
+                        {isEditingPmbContact ? "💾 Simpan Perubahan Kontak" : "➕ Tambah Narahubung"}
+                      </button>
+                      {isEditingPmbContact && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditingPmbContact(false);
+                            setEditingPmbContactId(null);
+                            setPmbContactForm({ name: "", phone: "", role: "" });
+                          }}
+                          className="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl"
+                        >
+                          Batal
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+
+                {/* Daftar Kontak Panitia */}
+                <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
+                    Narahubung &amp; Panitia Seleksi Resmi ({pmbSettings.contacts?.length || 0})
+                  </h3>
+
+                  <div className="space-y-2.5">
+                    {(pmbSettings.contacts || []).map((contact) => (
+                      <div
+                        key={contact.id}
+                        className="p-3.5 bg-slate-50 rounded-xl border flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div>
+                          <span className="text-[10px] font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded">
+                            {contact.role || "Panitia PMB"}
+                          </span>
+                          <h4 className="font-bold text-slate-900 mt-1">{contact.name}</h4>
+                          <p className="text-slate-500 font-mono text-[11px]">{contact.phone}</p>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <a
+                            href={`https://wa.me/${contact.phone.replace(/[^0-9]/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded font-bold"
+                            title="Tes Buka WhatsApp"
+                          >
+                            💬 WA
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEditingPmbContact(true);
+                              setEditingPmbContactId(contact.id);
+                              setPmbContactForm({
+                                name: contact.name,
+                                phone: contact.phone,
+                                role: contact.role || ""
+                              });
+                            }}
+                            className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Hapus narahubung: "${contact.name}"?`)) {
+                                const updated = (pmbSettings.contacts || []).filter((c) => c.id !== contact.id);
+                                updatePmbSettings({ contacts: updated });
+                              }
+                            }}
+                            className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold"
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 5: GELOMBANG PENDAFTARAN */}
+            {pmbSubTab === "gelombang" && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
+                    {isEditingPMBWave ? "✏️ Edit Gelombang Pendaftaran PMB" : "➕ Tambah Gelombang Pendaftaran PMB"}
+                  </h3>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!pmbWaveForm.name) return;
+                      if (isEditingPMBWave && editingPMBWaveId) {
+                        updatePMBWave(editingPMBWaveId, {
+                          name: pmbWaveForm.name,
+                          startDate: pmbWaveForm.startDate,
+                          endDate: pmbWaveForm.endDate,
+                          quota: pmbWaveForm.quota,
+                          scholarshipInfo: pmbWaveForm.scholarshipInfo,
+                          requirements: Array.isArray(pmbWaveForm.requirements) ? pmbWaveForm.requirements : pmbWaveForm.requirements.split("\n").filter(Boolean),
+                          procedure: Array.isArray(pmbWaveForm.procedure) ? pmbWaveForm.procedure : pmbWaveForm.procedure.split("\n").filter(Boolean),
+                          imageUrl: pmbWaveForm.imageUrl,
+                          registrationLink: pmbWaveForm.registrationLink,
+                          brochureUrl: pmbWaveForm.brochureUrl
+                        });
+                        alert("✓ Gelombang PMB berhasil diperbarui!");
+                        setIsEditingPMBWave(false);
+                        setEditingPMBWaveId(null);
+                      } else {
+                        addPMBWave({
+                          name: pmbWaveForm.name,
+                          startDate: pmbWaveForm.startDate,
+                          endDate: pmbWaveForm.endDate,
+                          quota: pmbWaveForm.quota,
+                          scholarshipInfo: pmbWaveForm.scholarshipInfo,
+                          requirements: pmbWaveForm.requirements.split("\n").filter(Boolean),
+                          procedure: pmbWaveForm.procedure.split("\n").filter(Boolean),
+                          imageUrl: pmbWaveForm.imageUrl,
+                          registrationLink: pmbWaveForm.registrationLink,
+                          brochureUrl: pmbWaveForm.brochureUrl
+                        });
+                        alert("✓ Gelombang PMB berhasil ditambahkan!");
+                      }
+                      setPmbWaveForm({
+                        name: "",
+                        startDate: "01 Jan 2027",
+                        endDate: "28 Feb 2027",
+                        quota: "15 Mahasantri",
+                        scholarshipInfo: "Beasiswa Penuh 100%",
+                        requirements: "Lulusan MA/Pesantren\nHafalan 5 Juz\nMampu baca kitab kuning",
+                        procedure: "Daftar Online\nUnggah Berkas\nTes Seleksi Kitab",
+                        imageUrl: "",
+                        registrationLink: "",
+                        brochureUrl: ""
+                      });
+                    }}
+                    className="space-y-3"
+                  >
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Nama Gelombang *</label>
+                      <input
+                        type="text"
+                        required
+                        value={pmbWaveForm.name}
+                        onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, name: e.target.value })}
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Tanggal Buka</label>
+                        <input
+                          type="text"
+                          value={pmbWaveForm.startDate}
+                          onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, startDate: e.target.value })}
+                          className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Tanggal Tutup</label>
+                        <input
+                          type="text"
+                          value={pmbWaveForm.endDate}
+                          onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, endDate: e.target.value })}
+                          className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Kuota Mahasantri</label>
+                        <input
+                          type="text"
+                          value={pmbWaveForm.quota}
+                          onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, quota: e.target.value })}
+                          className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Info Beasiswa</label>
+                        <input
+                          type="text"
+                          value={pmbWaveForm.scholarshipInfo}
+                          onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, scholarshipInfo: e.target.value })}
+                          className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <ImageUploader
+                        label="Unggah Poster / Brosur Visual PMB"
+                        folder="umum"
+                        value={pmbWaveForm.imageUrl || ""}
+                        onChange={(url) => setPmbWaveForm((prev) => ({ ...prev, imageUrl: url }))}
+                        helperText="Pilih desain poster atau banner alur seleksi PMB (PNG, JPG, WebP)."
+                      />
+                    </div>
+
+                    <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2">
+                      <ImageUploader
+                        label="Unggah Berkas Brosur PMB Resmi (PDF)"
+                        folder="umum"
+                        accept="application/pdf,.pdf"
+                        maxSizeMB={20}
+                        value={pmbWaveForm.brochureUrl || ""}
+                        onChange={(url) => setPmbWaveForm((prev) => ({ ...prev, brochureUrl: url }))}
+                        helperText="Unggah file PDF brosur lengkap penerimaan santri baru."
+                      />
+                    </div>
+
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                      <label className="block font-bold text-slate-700 text-[11px]">
+                        🔗 Tautan Formulir Pendaftaran Online (Google Form / Portal)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="https://bit.ly/pmb-mahadaly atau link formulir eksternal"
+                        value={pmbWaveForm.registrationLink || ""}
+                        onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, registrationLink: e.target.value })}
+                        className="w-full p-2 text-xs bg-white border rounded-lg"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Persyaratan (Per Baris)</label>
+                      <textarea
+                        rows={3}
+                        value={pmbWaveForm.requirements}
+                        onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, requirements: e.target.value })}
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Tahapan / Prosedur (Per Baris)</label>
+                      <textarea
+                        rows={3}
+                        value={pmbWaveForm.procedure}
+                        onChange={(e) => setPmbWaveForm({ ...pmbWaveForm, procedure: e.target.value })}
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                      />
+                    </div>
+                    <button type="submit" className="w-full py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow">
+                      {isEditingPMBWave ? "💾 Simpan Perubahan Gelombang" : "Simpan Gelombang PMB"}
+                    </button>
+                    {isEditingPMBWave && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingPMBWave(false);
+                          setEditingPMBWaveId(null);
+                          setPmbWaveForm({
+                            name: "",
+                            startDate: "01 Jan 2027",
+                            endDate: "28 Feb 2027",
+                            quota: "15 Mahasantri",
+                            scholarshipInfo: "Beasiswa Penuh 100%",
+                            requirements: "Lulusan MA/Pesantren\nHafalan 5 Juz\nMampu baca kitab kuning",
+                            procedure: "Daftar Online\nUnggah Berkas\nTes Seleksi Kitab",
+                            imageUrl: "",
+                            registrationLink: "",
+                            brochureUrl: ""
+                          });
+                        }}
+                        className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                      >
+                        ❌ Batal Edit
+                      </button>
+                    )}
+                  </form>
+                </div>
+
+                <div className="lg:col-span-7 space-y-6">
+                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
+                      Gelombang Aktif ({pmbWaves.length})
+                    </h3>
+                    <div className="space-y-2.5">
+                      {pmbWaves.map((w) => (
+                        <div key={w.id} className="p-3 bg-slate-50 rounded-xl border flex items-center justify-between text-xs">
+                          <div>
+                            <span className="font-bold text-emerald-800 text-[10px] bg-emerald-100 px-2 py-0.5 rounded">Kuota: {w.quota}</span>
+                            <h4 className="font-bold text-slate-900 mt-1">{w.name}</h4>
+                            <p className="text-slate-500 text-[11px]">{w.startDate} s/d {w.endDate} &bull; {w.scholarshipInfo}</p>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsEditingPMBWave(true);
+                                setEditingPMBWaveId(w.id);
+                                setPmbWaveForm({
+                                  name: w.name,
+                                  startDate: w.startDate,
+                                  endDate: w.endDate,
+                                  quota: w.quota,
+                                  scholarshipInfo: w.scholarshipInfo,
+                                  requirements: Array.isArray(w.requirements) ? w.requirements.join("\n") : (w.requirements || ""),
+                                  procedure: Array.isArray(w.procedure) ? w.procedure.join("\n") : (w.procedure || ""),
+                                  imageUrl: w.imageUrl || "",
+                                  registrationLink: w.registrationLink || "",
+                                  brochureUrl: w.brochureUrl || ""
+                                });
+                              }}
+                              className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold"
+                              title="Edit Gelombang PMB"
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Hapus gelombang: "${w.name}"?`)) deletePMBWave(w.id);
+                              }}
+                              className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold"
+                            >
+                              Hapus
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 6: FAQ PMB */}
+            {pmbSubTab === "faq" && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                   <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
                     {isEditingPMBFAQ ? "✏️ Edit FAQ PMB" : "➕ Tambah FAQ PMB"}
                   </h3>
@@ -7689,61 +8591,60 @@ export default function AdminPage() {
                       )}
                     </div>
                   </form>
+                </div>
 
-                  {/* Daftar FAQ PMB */}
-                  <div className="pt-3 border-t border-slate-100 space-y-2">
-                    <h4 className="font-bold text-slate-800 text-xs">
-                      Daftar Pertanyaan FAQ ({pmbFAQs.length})
-                    </h4>
-                    {pmbFAQs.length === 0 ? (
-                      <p className="text-[11px] text-slate-400 italic">Belum ada FAQ PMB yang ditambahkan.</p>
-                    ) : (
-                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                        {pmbFAQs.map((faq) => (
-                          <div key={faq.id} className="p-2.5 bg-slate-50 border rounded-xl flex items-start justify-between gap-2 text-xs">
-                            <div className="space-y-0.5">
-                              <span className="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">
-                                {faq.category}
-                              </span>
-                              <p className="font-bold text-slate-900 text-xs mt-0.5">{faq.question}</p>
-                              <p className="text-[11px] text-slate-600 line-clamp-2">{faq.answer}</p>
-                            </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setIsEditingPMBFAQ(true);
-                                  setEditingPMBFAQId(faq.id);
-                                  setPmbFaqForm({
-                                    question: faq.question,
-                                    answer: faq.answer,
-                                    category: faq.category || "Pendaftaran"
-                                  });
-                                }}
-                                className="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold text-[11px]"
-                                title="Edit FAQ"
-                              >
-                                ✏️ Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (confirm(`Hapus pertanyaan: "${faq.question}"?`)) deletePMBFAQ(faq.id);
-                                }}
-                                className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-[11px]"
-                                title="Hapus FAQ"
-                              >
-                                🗑️ Hapus
-                              </button>
-                            </div>
+                <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
+                    Daftar Pertanyaan FAQ ({pmbFAQs.length})
+                  </h3>
+                  {pmbFAQs.length === 0 ? (
+                    <p className="text-[11px] text-slate-400 italic">Belum ada FAQ PMB yang ditambahkan.</p>
+                  ) : (
+                    <div className="space-y-2 max-h-120 overflow-y-auto pr-1">
+                      {pmbFAQs.map((faq) => (
+                        <div key={faq.id} className="p-2.5 bg-slate-50 border rounded-xl flex items-start justify-between gap-2 text-xs">
+                          <div className="space-y-0.5">
+                            <span className="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">
+                              {faq.category}
+                            </span>
+                            <p className="font-bold text-slate-900 text-xs mt-0.5">{faq.question}</p>
+                            <p className="text-[11px] text-slate-600 line-clamp-2">{faq.answer}</p>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsEditingPMBFAQ(true);
+                                setEditingPMBFAQId(faq.id);
+                                setPmbFaqForm({
+                                  question: faq.question,
+                                  answer: faq.answer,
+                                  category: faq.category || "Pendaftaran"
+                                });
+                              }}
+                              className="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold text-[11px]"
+                              title="Edit FAQ"
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Hapus pertanyaan: "${faq.question}"?`)) deletePMBFAQ(faq.id);
+                              }}
+                              className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-[11px]"
+                              title="Hapus FAQ"
+                            >
+                              🗑️ Hapus
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 

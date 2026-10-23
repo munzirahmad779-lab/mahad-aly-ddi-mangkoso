@@ -39,7 +39,8 @@ import {
   SecurityThreatLog,
   DemaSettings,
   DemaDivision,
-  DemaMember
+  DemaMember,
+  PMBSettings
 } from "@/lib/types";
 import {
   INITIAL_ARTICLES,
@@ -58,6 +59,7 @@ import {
   INITIAL_BAHTSUL_QA,
   INITIAL_PMB_WAVES,
   INITIAL_PMB_FAQS,
+  INITIAL_PMB_SETTINGS,
   INITIAL_SUBSCRIBERS,
   INITIAL_EMAIL_LOGS,
   INITIAL_GALLERY_ALBUMS,
@@ -164,7 +166,9 @@ interface DataContextType {
   updateBahtsulQA: (id: string, updatedData: Partial<BahtsulMasailQA>) => void;
   deleteBahtsulQA: (id: string) => void;
 
-  // PMB Waves & FAQs
+  // PMB Waves, FAQs & Settings Brosur
+  pmbSettings: PMBSettings;
+  updatePmbSettings: (newSettings: Partial<PMBSettings>) => void;
   pmbWaves: PMBWave[];
   addPMBWave: (wave: Omit<PMBWave, "id">) => void;
   updatePMBWave: (id: string, updatedData: Partial<PMBWave>) => void;
@@ -321,6 +325,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const [courses, setCourses] = useState<Course[]>(INITIAL_COURSES);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>(INITIAL_CALENDAR);
   const [bahtsulQA, setBahtsulQA] = useState<BahtsulMasailQA[]>(INITIAL_BAHTSUL_QA);
+  const [pmbSettings, setPmbSettings] = useState<PMBSettings>(INITIAL_PMB_SETTINGS);
   const [pmbWaves, setPmbWaves] = useState<PMBWave[]>(INITIAL_PMB_WAVES);
   const [pmbFAQs, setPmbFAQs] = useState<PMBFAQ[]>(INITIAL_PMB_FAQS);
   const [subscribers, setSubscribers] = useState<EmailSubscriber[]>(INITIAL_SUBSCRIBERS);
@@ -399,6 +404,27 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
       const savedLogs = localStorage.getItem("mahad_logs");
       if (savedLogs) setLogs(JSON.parse(savedLogs));
+
+      const savedPmbSettings = localStorage.getItem("mahad_pmb_settings");
+      if (savedPmbSettings) {
+        try { setPmbSettings((prev) => ({ ...prev, ...JSON.parse(savedPmbSettings) })); } catch {}
+      }
+      const savedPmbWaves = localStorage.getItem("mahad_pmb_waves");
+      if (savedPmbWaves) {
+        try { setPmbWaves(JSON.parse(savedPmbWaves)); } catch {}
+      }
+      const savedPmbFAQs = localStorage.getItem("mahad_pmb_faqs");
+      if (savedPmbFAQs) {
+        try { setPmbFAQs(JSON.parse(savedPmbFAQs)); } catch {}
+      }
+      const savedFooterNav = localStorage.getItem("mahad_footer_nav");
+      if (savedFooterNav) {
+        try { setFooterNav(JSON.parse(savedFooterNav)); } catch {}
+      }
+      const savedFooterFocus = localStorage.getItem("mahad_footer_focus");
+      if (savedFooterFocus) {
+        try { setFooterFocus(JSON.parse(savedFooterFocus)); } catch {}
+      }
     } catch (e) {
       console.warn("LocalStorage check notice:", e);
     }
@@ -427,7 +453,8 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           masyayikhListRes,
           coursesListRes,
           saranaListRes,
-          activityLogsRes
+          activityLogsRes,
+          allSiteContentRes
         ] = await Promise.allSettled([
           supabase.from("articles").select("*").order("created_at", { ascending: false }),
           supabase.from("theses").select("*").order("created_at", { ascending: false }),
@@ -449,7 +476,8 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           supabase.from("site_content").select("value").eq("key", "masyayikh_list").single(),
           supabase.from("site_content").select("value").eq("key", "courses_list").single(),
           supabase.from("site_content").select("value").eq("key", "sarana_list").single(),
-          supabase.from("site_content").select("value").eq("key", "activity_logs").single()
+          supabase.from("site_content").select("value").eq("key", "activity_logs").single(),
+          supabase.from("site_content").select("key, value")
         ]);
 
         // Process Articles
@@ -781,6 +809,78 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
             setSecurityThreats(freshLogs);
           }
         }
+
+        // Process All Site Content (PMB Brosur, PMB Waves, FAQs, Footer, dsb.)
+        if (allSiteContentRes.status === "fulfilled") {
+          const rows = (allSiteContentRes.value as any)?.data;
+          if (Array.isArray(rows) && rows.length > 0) {
+            const map: Record<string, any> = {};
+            rows.forEach((r: any) => {
+              if (r.key) map[r.key] = r.value;
+            });
+
+            if (map["pmb_settings"] && typeof map["pmb_settings"] === "object") {
+              setPmbSettings((prev) => {
+                const merged = { ...prev, ...map["pmb_settings"] };
+                try { localStorage.setItem("mahad_pmb_settings", JSON.stringify(merged)); } catch {}
+                return merged;
+              });
+            }
+
+            if (Array.isArray(map["pmb_waves"]) && map["pmb_waves"].length > 0) {
+              setPmbWaves(map["pmb_waves"]);
+              try { localStorage.setItem("mahad_pmb_waves", JSON.stringify(map["pmb_waves"])); } catch {}
+            }
+
+            if (Array.isArray(map["pmb_faqs"]) && map["pmb_faqs"].length > 0) {
+              setPmbFAQs(map["pmb_faqs"]);
+              try { localStorage.setItem("mahad_pmb_faqs", JSON.stringify(map["pmb_faqs"])); } catch {}
+            }
+
+            if (map["footer"] && typeof map["footer"] === "object") {
+              setFooterSettings((prev) => {
+                const merged = { ...prev, ...map["footer"] };
+                try { localStorage.setItem("mahad_footer_settings", JSON.stringify(merged)); } catch {}
+                return merged;
+              });
+            }
+
+            if (Array.isArray(map["footer_nav"]) && map["footer_nav"].length > 0) {
+              setFooterNav(map["footer_nav"]);
+              try { localStorage.setItem("mahad_footer_nav", JSON.stringify(map["footer_nav"])); } catch {}
+            }
+
+            if (Array.isArray(map["footer_focus"]) && map["footer_focus"].length > 0) {
+              setFooterFocus(map["footer_focus"]);
+              try { localStorage.setItem("mahad_footer_focus", JSON.stringify(map["footer_focus"])); } catch {}
+            }
+
+            if (Array.isArray(map["accreditations"]) && map["accreditations"].length > 0) {
+              setAccreditations(map["accreditations"]);
+              try { localStorage.setItem("mahad_accreditations", JSON.stringify(map["accreditations"])); } catch {}
+            }
+
+            if (Array.isArray(map["calendar_events"]) && map["calendar_events"].length > 0) {
+              setCalendarEvents(map["calendar_events"]);
+              try { localStorage.setItem("mahad_calendar", JSON.stringify(map["calendar_events"])); } catch {}
+            }
+
+            if (Array.isArray(map["bahtsul_masail"]) && map["bahtsul_masail"].length > 0) {
+              setBahtsulQA(map["bahtsul_masail"]);
+              try { localStorage.setItem("mahad_bahtsul", JSON.stringify(map["bahtsul_masail"])); } catch {}
+            }
+
+            if (Array.isArray(map["gallery_albums"]) && map["gallery_albums"].length > 0) {
+              setGalleryAlbums(map["gallery_albums"]);
+              try { localStorage.setItem("mahad_gallery", JSON.stringify(map["gallery_albums"])); } catch {}
+            }
+
+            if (Array.isArray(map["donations"]) && map["donations"].length > 0) {
+              setDonations(map["donations"]);
+              try { localStorage.setItem("mahad_donations", JSON.stringify(map["donations"])); } catch {}
+            }
+          }
+        }
       } catch (err) {
         console.error("Gagal sinkronisasi data Supabase:", err);
       }
@@ -808,6 +908,28 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
               if (Array.isArray(val)) setLogs(val);
             } else if (key === "header") {
               setNavbarSettings((prev) => ({ ...prev, ...val }));
+            } else if (key === "footer") {
+              setFooterSettings((prev) => ({ ...prev, ...val }));
+            } else if (key === "footer_nav") {
+              if (Array.isArray(val)) setFooterNav(val);
+            } else if (key === "footer_focus") {
+              if (Array.isArray(val)) setFooterFocus(val);
+            } else if (key === "pmb_settings") {
+              setPmbSettings((prev) => ({ ...prev, ...val }));
+            } else if (key === "pmb_waves") {
+              if (Array.isArray(val)) setPmbWaves(val);
+            } else if (key === "pmb_faqs") {
+              if (Array.isArray(val)) setPmbFAQs(val);
+            } else if (key === "accreditations") {
+              if (Array.isArray(val)) setAccreditations(val);
+            } else if (key === "calendar_events") {
+              if (Array.isArray(val)) setCalendarEvents(val);
+            } else if (key === "bahtsul_masail") {
+              if (Array.isArray(val)) setBahtsulQA(val);
+            } else if (key === "gallery_albums") {
+              if (Array.isArray(val)) setGalleryAlbums(val);
+            } else if (key === "donations") {
+              if (Array.isArray(val)) setDonations(val);
             } else if (key === "sarana_list") {
               if (Array.isArray(val)) setFacilities(val);
             } else if (key === "masyayikh_list") {
@@ -912,30 +1034,48 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const saveFacilities = (data: Facility[]) => {
     setFacilities(data);
     localStorage.setItem("mahad_facilities", JSON.stringify(data));
+    syncContentToBackend("sarana_list", "profile", "Sarana & Prasarana", data);
   };
   const saveAccreditations = (data: Accreditation[]) => {
     setAccreditations(data);
     localStorage.setItem("mahad_accreditations", JSON.stringify(data));
+    syncContentToBackend("accreditations", "profile", "Akreditasi Lembaga", data);
   };
   const saveCourses = (data: Course[]) => {
     setCourses(data);
     localStorage.setItem("mahad_courses", JSON.stringify(data));
+    syncContentToBackend("courses_list", "academic", "Kurikulum & Mata Kuliah", data);
   };
   const saveCalendarEvents = (data: CalendarEvent[]) => {
     setCalendarEvents(data);
     localStorage.setItem("mahad_calendar", JSON.stringify(data));
+    syncContentToBackend("calendar_events", "academic", "Kalender Akademik", data);
   };
   const saveBahtsulQA = (data: BahtsulMasailQA[]) => {
     setBahtsulQA(data);
     localStorage.setItem("mahad_bahtsul", JSON.stringify(data));
+    syncContentToBackend("bahtsul_masail", "content", "Bahtsul Masail Tanya Jawab", data);
+  };
+  const savePmbSettings = (data: PMBSettings) => {
+    setPmbSettings(data);
+    try {
+      localStorage.setItem("mahad_pmb_settings", JSON.stringify(data));
+    } catch (e) {}
+    syncContentToBackend("pmb_settings", "pmb", "Pengaturan Brosur & Pendaftaran PMB", data);
   };
   const savePmbWaves = (data: PMBWave[]) => {
     setPmbWaves(data);
-    localStorage.setItem("mahad_pmb_waves", JSON.stringify(data));
+    try {
+      localStorage.setItem("mahad_pmb_waves", JSON.stringify(data));
+    } catch (e) {}
+    syncContentToBackend("pmb_waves", "pmb", "Gelombang Pendaftaran PMB", data);
   };
   const savePmbFAQs = (data: PMBFAQ[]) => {
     setPmbFAQs(data);
-    localStorage.setItem("mahad_pmb_faqs", JSON.stringify(data));
+    try {
+      localStorage.setItem("mahad_pmb_faqs", JSON.stringify(data));
+    } catch (e) {}
+    syncContentToBackend("pmb_faqs", "pmb", "FAQ Pendaftaran PMB", data);
   };
   const saveSubscribers = (data: EmailSubscriber[]) => {
     setSubscribers(data);
@@ -948,6 +1088,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const saveGalleryAlbums = (data: GalleryAlbum[]) => {
     setGalleryAlbums(data);
     localStorage.setItem("mahad_gallery", JSON.stringify(data));
+    syncContentToBackend("gallery_albums", "media", "Galeri Foto & Album", data);
   };
   const saveComingSoonPages = (data: ComingSoonPageSetting[]) => {
     setComingSoonPages(data);
@@ -959,19 +1100,31 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   };
   const saveFooterSettings = (data: FooterSettings) => {
     setFooterSettings(data);
-    localStorage.setItem("mahad_footer_settings", JSON.stringify(data));
+    try {
+      localStorage.setItem("mahad_footer_settings", JSON.stringify(data));
+    } catch (e) {}
+    syncContentToBackend("footer", "footer", "Footer Settings", data);
   };
   const saveFooterNav = (data: FooterNavLink[]) => {
     setFooterNav(data);
-    localStorage.setItem("mahad_footer_nav", JSON.stringify(data));
+    try {
+      localStorage.setItem("mahad_footer_nav", JSON.stringify(data));
+    } catch (e) {}
+    syncContentToBackend("footer_nav", "footer", "Navigasi Footer", data);
   };
   const saveFooterFocus = (data: FooterFocusItem[]) => {
     setFooterFocus(data);
-    localStorage.setItem("mahad_footer_focus", JSON.stringify(data));
+    try {
+      localStorage.setItem("mahad_footer_focus", JSON.stringify(data));
+    } catch (e) {}
+    syncContentToBackend("footer_focus", "footer", "Fokus Khazanah Footer", data);
   };
   const saveDonations = (data: DonationProgram[]) => {
     setDonations(data);
-    localStorage.setItem("mahad_donations", JSON.stringify(data));
+    try {
+      localStorage.setItem("mahad_donations", JSON.stringify(data));
+    } catch (e) {}
+    syncContentToBackend("donations", "donations", "Program Donasi & Wakaf", data);
   };
   const saveSecurityThreats = (data: SecurityThreatLog[]) => {
     setSecurityThreats(data);
@@ -1878,7 +2031,13 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     addLog("Menghapus Bahtsul Masail", target?.title || id);
   };
 
-  // PMB Wave & FAQ Actions
+  // PMB Settings, Wave & FAQ Actions
+  const updatePmbSettings = (newSettings: Partial<PMBSettings>) => {
+    const merged = { ...pmbSettings, ...newSettings };
+    savePmbSettings(merged);
+    addLog("Memperbarui Brosur & Pengaturan PMB", merged.academicYear || "PMB");
+  };
+
   const addPMBWave = (data: Omit<PMBWave, "id">) => {
     const newWave: PMBWave = { ...data, id: "pmb-" + Date.now().toString() };
     savePmbWaves([...pmbWaves, newWave]);
@@ -2369,6 +2528,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetPMBToDefault = (user?: string) => {
+    savePmbSettings(INITIAL_PMB_SETTINGS);
     savePmbWaves(INITIAL_PMB_WAVES);
     savePmbFAQs(INITIAL_PMB_FAQS);
     addLog("Reset PMB Online ke Standar", "Gelombang & FAQ PMB", user);
@@ -2672,6 +2832,8 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         addBahtsulQA,
         updateBahtsulQA,
         deleteBahtsulQA,
+        pmbSettings,
+        updatePmbSettings,
         pmbWaves,
         addPMBWave,
         updatePMBWave,

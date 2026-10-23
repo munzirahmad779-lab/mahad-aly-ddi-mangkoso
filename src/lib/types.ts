@@ -261,6 +261,43 @@ export interface PMBFAQ {
   category: string;
 }
 
+export interface PMBScheduleItem {
+  id: string;
+  stageName: string;
+  date: string;
+  description?: string;
+}
+
+export interface PMBContactItem {
+  id: string;
+  name: string;
+  phone: string;
+  role?: string;
+}
+
+export interface PMBSettings {
+  title: string;
+  subtitle: string;
+  academicYear: string;
+  programTakhassus: string;
+  scholarshipBadge: string;
+  accreditationBadge: string;
+  quotaTotal: string;
+  quotaScholarship: string;
+  quotaMandiri: string;
+  registrationPeriod: string;
+  registrationLink: string;
+  brochurePdfUrl?: string;
+  brochureImageUrl?: string;
+  qrCodeUrl?: string;
+  examSubjects: string[];
+  requirements: string[];
+  schedules: PMBScheduleItem[];
+  contacts: PMBContactItem[];
+  address?: string;
+  notes?: string;
+}
+
 export interface EmailSubscriber {
   id: string;
   email: string;

@@ -70,6 +70,14 @@ export async function requireSuperAdmin(request: Request): Promise<Authorization
 
 export type AllowedAdminRole = "super_admin" | "editor" | "penulis";
 
+export function normalizeAdminRole(role: string | null | undefined): AllowedAdminRole {
+  if (!role) return "penulis";
+  const r = role.toLowerCase().trim();
+  if (r === "super_admin" || r === "superadmin") return "super_admin";
+  if (r === "editor" || r === "admin" || r === "redaksi") return "editor";
+  return "penulis";
+}
+
 export type RoleAuthorizationResult =
   | { ok: true; userId: string; email: string; role: AllowedAdminRole }
   | { ok: false; response: NextResponse };
@@ -138,9 +146,9 @@ export async function requireRole(
   }
 
   const isBootstrapSuperAdmin = user.email?.trim().toLowerCase() === BOOTSTRAP_SUPER_ADMIN_EMAIL;
-  const userRole: AllowedAdminRole = (isBootstrapSuperAdmin
+  const userRole: AllowedAdminRole = isBootstrapSuperAdmin
     ? "super_admin"
-    : (profile?.role as AllowedAdminRole)) || "penulis";
+    : normalizeAdminRole(profile?.role);
 
   if (!allowedRoles.includes(userRole) && !isBootstrapSuperAdmin) {
     return {
