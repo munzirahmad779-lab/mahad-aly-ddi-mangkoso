@@ -40,7 +40,8 @@ import {
   MaintenanceConfig,
   DemaSettings,
   DemaDivision,
-  DemaMember
+  DemaMember,
+  OrganizationMember
 } from "./types";
 
 export const INITIAL_HERO: HeroSectionData = {
@@ -144,6 +145,49 @@ export const INITIAL_MAINTENANCE_CONFIG: MaintenanceConfig = {
   ]
 };
 
+export const INITIAL_ORGANIZATION_MEMBERS: OrganizationMember[] = [
+  {
+    id: "org-1",
+    role: "Mudir Ma'had Aly",
+    name: "AGH. Prof. Dr. M. Faried Wadjedy, MA",
+    description: "Pimpinan Tertinggi & Pengasuh Halaqah Turats",
+    category: "Pimpinan",
+    order: 1
+  },
+  {
+    id: "org-2",
+    role: "Wakil Mudir I (Bidang Akademik & Kurikulum)",
+    name: "Ust. M. Idrus, M.Ag.",
+    description: "Pengarah Kurikulum Turats 8 Semester & Mutaba'ah Ta'lim",
+    category: "Wakil Mudir",
+    order: 2
+  },
+  {
+    id: "org-3",
+    role: "Wakil Mudir II (Keuangan & Beasiswa OTA)",
+    name: "Biro Administrasi & Orang Tua Asuh",
+    description: "Pengelolaan Operasional, Infaq Lembaga & Beasiswa Mahasantri",
+    category: "Wakil Mudir",
+    order: 3
+  },
+  {
+    id: "org-4",
+    role: "Lembaga Bahtsul Masail (LBM)",
+    name: "Dewan Masyaikh & Peneliti Muda Fiqh Mu'asarah",
+    description: "Pengkajian Masail Fiqhiyyah Kontemporer & Perumusan Fatwa",
+    category: "Lembaga & Unit",
+    order: 4
+  },
+  {
+    id: "org-5",
+    role: "LP2M (Pusat Riset & Pengabdian)",
+    name: "Redaksi Jurnal & Mimbar Kajian Ilmiah",
+    description: "Pengembangan Riset Turats, Publikasi Ilmiah & Pengabdian Santri",
+    category: "Lembaga & Unit",
+    order: 5
+  }
+];
+
 export const INITIAL_SETTINGS: SiteSettings = {
   institutionName: "Ma'had Aly Pendidikan Tinggi Kader Ulama DDI Abdurrahman Ambo Dalle, Mangkoso",
   takhassus: "Fiqh wa Usuluhu (Fiqh dan Ushul Fikih)",
@@ -173,7 +217,8 @@ export const INITIAL_SETTINGS: SiteSettings = {
   footer: INITIAL_FOOTER_SETTINGS,
   maintenanceMode: false,
   maintenanceConfig: INITIAL_MAINTENANCE_CONFIG,
-  customProfileSections: []
+  customProfileSections: [],
+  organizationStructure: INITIAL_ORGANIZATION_MEMBERS
 };
 
 export const INITIAL_LECTURERS: Lecturer[] = [

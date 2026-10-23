@@ -424,6 +424,7 @@ export interface SiteSettings {
   maintenanceMode?: boolean;
   maintenanceConfig?: MaintenanceConfig;
   customProfileSections?: CustomProfileSection[];
+  organizationStructure?: OrganizationMember[];
 }
 
 export interface MaintenancePillar {
@@ -808,4 +809,14 @@ export interface CustomProfileSection {
   items?: string[];
   imageUrl?: string;
   updatedAt?: string;
+}
+
+export interface OrganizationMember {
+  id: string;
+  role: string;
+  name: string;
+  description?: string;
+  category?: string;
+  photoUrl?: string;
+  order?: number;
 }

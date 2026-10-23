@@ -38,9 +38,10 @@ import {
   DemaDivision,
   DemaMember,
   DemaSettings,
-  CustomProfileSection
+  CustomProfileSection,
+  OrganizationMember
 } from "@/lib/types";
-import { INITIAL_PAGE_TEXTS, INITIAL_NAVBAR_SETTINGS, INITIAL_MAINTENANCE_CONFIG } from "@/lib/mock-data";
+import { INITIAL_PAGE_TEXTS, INITIAL_NAVBAR_SETTINGS, INITIAL_MAINTENANCE_CONFIG, INITIAL_ORGANIZATION_MEMBERS } from "@/lib/mock-data";
 
 const SYSTEM_NAV_PAGES = [
   { label: "🏠 Beranda", url: "/" },
@@ -413,6 +414,40 @@ export default function AdminPage() {
         setActiveSubMenu("sejarah");
       }
     }
+  };
+
+  const handleUpdateProfilSubItem = (childId: string, updatedLabel: string, updatedUrl: string) => {
+    if (!updatedLabel.trim()) {
+      alert("Nama sub-menu tidak boleh kosong.");
+      return;
+    }
+    const currentNavLinks = navbarSettings?.navLinks && navbarSettings.navLinks.length > 0
+      ? navbarSettings.navLinks
+      : INITIAL_NAVBAR_SETTINGS.navLinks;
+
+    const profilLink = currentNavLinks.find(
+      (l: any) => l.url === "/profil" || l.id === "nav-2" || l.label.toLowerCase() === "profil"
+    );
+    const existingChildren = profilLink?.children || [];
+    const updatedChildren = existingChildren.map((c: any) => {
+      if (c.id === childId) {
+        return { ...c, label: updatedLabel.trim(), url: updatedUrl.trim() };
+      }
+      return c;
+    });
+
+    const updatedNavLinks = currentNavLinks.map((link: any) => {
+      if (link.url === "/profil" || link.id === "nav-2" || link.label.toLowerCase() === "profil") {
+        return { ...link, children: updatedChildren };
+      }
+      return link;
+    });
+
+    updateNavbarSettings({ navLinks: updatedNavLinks });
+    setEditingSubMenuId(null);
+    setEditingSubMenuLabel("");
+    setEditingSubMenuUrl("");
+    alert("✓ Sub-menu berhasil diperbarui!");
   };
 
   const handleSaveCustomProfileSection = (slug: string, sectionData: Partial<CustomProfileSection>) => {
@@ -1295,6 +1330,8 @@ export default function AdminPage() {
   });
 
   // 5. Facility Form State
+  const [isEditingFacility, setIsEditingFacility] = useState(false);
+  const [editingFacilityId, setEditingFacilityId] = useState<string | null>(null);
   const [facilityForm, setFacilityForm] = useState({
     name: "",
     category: "Masjid" as Facility["category"],
@@ -1303,6 +1340,8 @@ export default function AdminPage() {
   });
 
   // 6. Accreditation Form State
+  const [isEditingAccreditation, setIsEditingAccreditation] = useState(false);
+  const [editingAccreditationId, setEditingAccreditationId] = useState<string | null>(null);
   const [accreditationForm, setAccreditationForm] = useState({
     name: "",
     issuer: "Kementerian Agama RI",
@@ -1326,6 +1365,8 @@ export default function AdminPage() {
   });
 
   // 8. Calendar Form State
+  const [isEditingCalendar, setIsEditingCalendar] = useState(false);
+  const [editingCalendarId, setEditingCalendarId] = useState<string | null>(null);
   const [calendarForm, setCalendarForm] = useState({
     name: "",
     startDate: "01 Nov 2026",
@@ -1335,6 +1376,8 @@ export default function AdminPage() {
   });
 
   // 9. Bahtsul Masail Form State
+  const [isEditingBahtsul, setIsEditingBahtsul] = useState(false);
+  const [editingBahtsulId, setEditingBahtsulId] = useState<string | null>(null);
   const [bahtsulForm, setBahtsulForm] = useState({
     title: "",
     question: "",
@@ -1350,6 +1393,8 @@ export default function AdminPage() {
   });
 
   // 10. PMB Wave Form State
+  const [isEditingPMBWave, setIsEditingPMBWave] = useState(false);
+  const [editingPMBWaveId, setEditingPMBWaveId] = useState<string | null>(null);
   const [pmbWaveForm, setPmbWaveForm] = useState({
     name: "",
     startDate: "01 Jan 2027",
@@ -1364,11 +1409,31 @@ export default function AdminPage() {
   });
 
   // 11. PMB FAQ Form State
+  const [isEditingPMBFAQ, setIsEditingPMBFAQ] = useState(false);
+  const [editingPMBFAQId, setEditingPMBFAQId] = useState<string | null>(null);
   const [pmbFaqForm, setPmbFaqForm] = useState({
     question: "",
     answer: "",
     category: "Pendaftaran"
   });
+
+  // 11b. Organization Member (Struktur Organisasi) Form State
+  const [isEditingOrgMember, setIsEditingOrgMember] = useState(false);
+  const [editingOrgMemberId, setEditingOrgMemberId] = useState<string | null>(null);
+  const [orgMemberForm, setOrgMemberForm] = useState<OrganizationMember>({
+    id: "",
+    role: "",
+    name: "",
+    description: "",
+    category: "Pimpinan",
+    photoUrl: "",
+    order: 1
+  });
+
+  // 11c. Quick Edit Sub-Menu Navigasi Profil
+  const [editingSubMenuId, setEditingSubMenuId] = useState<string | null>(null);
+  const [editingSubMenuLabel, setEditingSubMenuLabel] = useState("");
+  const [editingSubMenuUrl, setEditingSubMenuUrl] = useState("");
 
   // 12. News Form State
   const [isEditingNews, setIsEditingNews] = useState(false);
@@ -1387,6 +1452,8 @@ export default function AdminPage() {
   });
 
   // 13. Gallery Album Form State
+  const [isEditingGalleryAlbum, setIsEditingGalleryAlbum] = useState(false);
+  const [editingGalleryAlbumId, setEditingGalleryAlbumId] = useState<string | null>(null);
   const [galleryForm, setGalleryForm] = useState({
     title: "",
     category: "Kegiatan Akademik",
@@ -2698,6 +2765,60 @@ export default function AdminPage() {
                 {/* List Sub-Menu Profil Saat Ini */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {profilChildren.map((item: any, idx: number) => {
+                    if (editingSubMenuId === item.id) {
+                      return (
+                        <div
+                          key={item.id || idx}
+                          className="p-3 bg-emerald-50 border-2 border-emerald-500 rounded-xl space-y-2 col-span-1 sm:col-span-2 md:col-span-3 shadow-md"
+                        >
+                          <div className="flex items-center justify-between pb-1 border-b border-emerald-200">
+                            <span className="font-bold text-xs text-emerald-950">✏️ Edit Navigasi Sub-Menu Header</span>
+                            <span className="text-[10px] text-emerald-700 font-mono">{item.id}</span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Nama / Label Menu</label>
+                              <input
+                                type="text"
+                                value={editingSubMenuLabel}
+                                onChange={(e) => setEditingSubMenuLabel(e.target.value)}
+                                className="w-full p-2 bg-white border border-emerald-300 rounded-lg text-xs font-bold text-slate-900"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-700 mb-0.5">URL / Tautan Hashtag</label>
+                              <input
+                                type="text"
+                                value={editingSubMenuUrl}
+                                onChange={(e) => setEditingSubMenuUrl(e.target.value)}
+                                className="w-full p-2 bg-white border border-emerald-300 rounded-lg text-xs font-mono text-slate-900"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingSubMenuId(null);
+                                setEditingSubMenuLabel("");
+                                setEditingSubMenuUrl("");
+                              }}
+                              className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold transition"
+                            >
+                              Batal
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateProfilSubItem(item.id, editingSubMenuLabel, editingSubMenuUrl)}
+                              className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-bold shadow transition"
+                            >
+                              💾 Simpan Perubahan Link
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
+
                     const isCustom = !item.url?.includes("#sejarah") &&
                       !item.url?.includes("#visi") &&
                       !item.url?.includes("#masyayikh") &&
@@ -2748,12 +2869,25 @@ export default function AdminPage() {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
+                              setEditingSubMenuId(item.id);
+                              setEditingSubMenuLabel(item.label);
+                              setEditingSubMenuUrl(item.url);
+                            }}
+                            className="p-1 text-slate-600 hover:text-emerald-800 hover:bg-emerald-100/60 rounded text-[11px] shrink-0 font-bold"
+                            title="Ubah Nama atau URL Menu"
+                          >
+                            ⚙️ Ubah
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setActiveSubMenu(targetSubMenu);
                             }}
                             className="p-1 text-emerald-800 hover:bg-emerald-100 rounded text-xs shrink-0 font-bold"
                             title="Buka Editor Konten"
                           >
-                            ✏️ Edit
+                            ✏️ Konten
                           </button>
                           <button
                             type="button"
@@ -3089,14 +3223,21 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-xs">
                   <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                    ➕ Tambah Sarana / Prasarana
+                    {isEditingFacility ? "✏️ Edit Sarana / Prasarana" : "➕ Tambah Sarana / Prasarana"}
                   </h3>
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
                       if (!facilityForm.name) return;
-                      addFacility(facilityForm);
-                      alert("Sarana berhasil ditambahkan!");
+                      if (isEditingFacility && editingFacilityId) {
+                        updateFacility(editingFacilityId, facilityForm);
+                        alert("✓ Sarana berhasil diperbarui!");
+                        setIsEditingFacility(false);
+                        setEditingFacilityId(null);
+                      } else {
+                        addFacility(facilityForm);
+                        alert("✓ Sarana berhasil ditambahkan!");
+                      }
                       setFacilityForm({ name: "", category: "Masjid", photoUrl: "", description: "" });
                     }}
                     className="space-y-3"
@@ -3145,8 +3286,21 @@ export default function AdminPage() {
                       />
                     </div>
                     <button type="submit" className="w-full py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow">
-                      Simpan Sarana
+                      {isEditingFacility ? "💾 Simpan Perubahan Sarana" : "Simpan Sarana"}
                     </button>
+                    {isEditingFacility && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingFacility(false);
+                          setEditingFacilityId(null);
+                          setFacilityForm({ name: "", category: "Masjid", photoUrl: "", description: "" });
+                        }}
+                        className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                      >
+                        ❌ Batal Edit
+                      </button>
+                    )}
                   </form>
                 </div>
 
@@ -3162,15 +3316,34 @@ export default function AdminPage() {
                           <h4 className="font-bold text-slate-900 mt-1">{fac.name}</h4>
                           <p className="text-slate-500 text-[11px]">{fac.description}</p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm(`Hapus sarana: "${fac.name}"?`)) deleteFacility(fac.id);
-                          }}
-                          className="px-2.5 py-1 bg-red-600 text-white rounded font-bold"
-                        >
-                          Hapus
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEditingFacility(true);
+                              setEditingFacilityId(fac.id);
+                              setFacilityForm({
+                                name: fac.name,
+                                category: fac.category,
+                                photoUrl: fac.photoUrl || "",
+                                description: fac.description || ""
+                              });
+                            }}
+                            className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold"
+                            title="Edit Sarana"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Hapus sarana: "${fac.name}"?`)) deleteFacility(fac.id);
+                            }}
+                            className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold"
+                          >
+                            Hapus
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -3183,7 +3356,7 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-xs">
                   <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                    ➕ Tambah Sertifikat Akreditasi
+                    {isEditingAccreditation ? "✏️ Edit Sertifikat Akreditasi" : "➕ Tambah Sertifikat Akreditasi"}
                   </h3>
                   <form
                     onSubmit={(e) => {
@@ -3193,8 +3366,15 @@ export default function AdminPage() {
                         return;
                       }
                       if (!validatePdfSize(accreditationForm.fileSize)) return;
-                      addAccreditation(accreditationForm);
-                      alert("Akreditasi berhasil disimpan!");
+                      if (isEditingAccreditation && editingAccreditationId) {
+                        updateAccreditation(editingAccreditationId, accreditationForm);
+                        alert("✓ Akreditasi berhasil diperbarui!");
+                        setIsEditingAccreditation(false);
+                        setEditingAccreditationId(null);
+                      } else {
+                        addAccreditation(accreditationForm);
+                        alert("✓ Akreditasi berhasil disimpan!");
+                      }
                       setAccreditationForm({
                         name: "",
                         issuer: "Kementerian Agama RI",
@@ -3256,8 +3436,28 @@ export default function AdminPage() {
                       />
                     </div>
                     <button type="submit" className="w-full py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow">
-                      Simpan Akreditasi
+                      {isEditingAccreditation ? "💾 Simpan Perubahan Akreditasi" : "Simpan Akreditasi"}
                     </button>
+                    {isEditingAccreditation && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingAccreditation(false);
+                          setEditingAccreditationId(null);
+                          setAccreditationForm({
+                            name: "",
+                            issuer: "Kementerian Agama RI",
+                            validDate: "Berlaku Permanen",
+                            pdfUrl: "",
+                            fileSize: "2.5 MB",
+                            status: "Resmi Kemenag"
+                          });
+                        }}
+                        className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                      >
+                        ❌ Batal Edit
+                      </button>
+                    )}
                   </form>
                 </div>
 
@@ -3273,15 +3473,36 @@ export default function AdminPage() {
                           <h4 className="font-bold text-slate-900 mt-1">{acc.name}</h4>
                           <p className="text-slate-500 text-[11px]">{acc.issuer} &bull; {acc.validDate}</p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm(`Hapus akreditasi: "${acc.name}"?`)) deleteAccreditation(acc.id);
-                          }}
-                          className="px-2.5 py-1 bg-red-600 text-white rounded font-bold"
-                        >
-                          Hapus
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEditingAccreditation(true);
+                              setEditingAccreditationId(acc.id);
+                              setAccreditationForm({
+                                name: acc.name,
+                                issuer: acc.issuer,
+                                validDate: acc.validDate,
+                                pdfUrl: acc.pdfUrl,
+                                fileSize: acc.fileSize || "2.5 MB",
+                                status: acc.status || "Resmi Kemenag"
+                              });
+                            }}
+                            className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold"
+                            title="Edit Akreditasi"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Hapus akreditasi: "${acc.name}"?`)) deleteAccreditation(acc.id);
+                            }}
+                            className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold"
+                          >
+                            Hapus
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -3290,73 +3511,378 @@ export default function AdminPage() {
             )}
 
             {/* Sub: Struktur Organisasi */}
-            {activeSubMenu === "struktur" && (
-              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
-                  <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
-                    <span>👥</span>
-                    <span>Struktur Organisasi &amp; Kepemimpinan Lembaga</span>
-                  </h3>
-                  <a
-                    href="/profil#struktur"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-emerald-700 hover:text-emerald-900 font-bold text-xs flex items-center gap-1"
-                  >
-                    <span>👁️ Pratinjau di Web Publik</span>
-                    <span>&rarr;</span>
-                  </a>
-                </div>
-                <form onSubmit={handleSaveSettings} className="space-y-4">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Nama Mudir Ma&apos;had Aly *</label>
-                    <input
-                      type="text"
-                      value={settingsForm.mudirName || ""}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, mudirName: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 border rounded-lg font-bold text-slate-900"
-                      placeholder="Contoh: AGH. Prof. Dr. M. Faried Wadjedy, MA"
-                    />
-                    <p className="text-[11px] text-slate-500 mt-1">Nama pimpinan tertinggi yang ditampilkan di kartu kepemimpinan profil dan dokumen resmi.</p>
-                  </div>
-                  <div>
-                    <ImageUploader
-                      value={settingsForm.organizationChartUrl || ""}
-                      onChange={(url) => setSettingsForm({ ...settingsForm, organizationChartUrl: url })}
-                      folder="umum"
-                      label="Bagan / Skema Struktur Organisasi (Opsional)"
-                      helperText="Unggah gambar bagan struktur organisasi atau diagram kepengurusan (PNG/JPG)"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Atau Masukkan URL Gambar Bagan Langsung</label>
-                    <input
-                      type="url"
-                      value={settingsForm.organizationChartUrl || ""}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, organizationChartUrl: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 border rounded-lg font-mono text-xs"
-                      placeholder="https://..."
-                    />
-                  </div>
-                  {settingsForm.organizationChartUrl && (
-                    <div className="p-3 bg-slate-50 border rounded-xl">
-                      <p className="text-[11px] font-bold text-slate-700 mb-2">Pratinjau Bagan:</p>
-                      <img
-                        src={settingsForm.organizationChartUrl}
-                        alt="Bagan Struktur Organisasi"
-                        className="max-h-60 rounded-lg border object-contain mx-auto"
-                      />
+            {activeSubMenu === "struktur" && (() => {
+              const currentOrgMembers: OrganizationMember[] =
+                settingsForm.organizationStructure && settingsForm.organizationStructure.length > 0
+                  ? settingsForm.organizationStructure
+                  : (settings?.organizationStructure && settings.organizationStructure.length > 0
+                      ? settings.organizationStructure
+                      : INITIAL_ORGANIZATION_MEMBERS);
+
+              const handleSaveOrgMember = (e: React.FormEvent) => {
+                e.preventDefault();
+                if (!orgMemberForm.role.trim() || !orgMemberForm.name.trim()) {
+                  alert("Mohon isi Nama Jabatan dan Nama Pejabat!");
+                  return;
+                }
+
+                let updatedList: OrganizationMember[];
+                if (isEditingOrgMember && editingOrgMemberId) {
+                  updatedList = currentOrgMembers.map((m) =>
+                    m.id === editingOrgMemberId
+                      ? {
+                          ...m,
+                          role: orgMemberForm.role.trim(),
+                          name: orgMemberForm.name.trim(),
+                          description: orgMemberForm.description || "",
+                          category: orgMemberForm.category || "Pimpinan",
+                          photoUrl: orgMemberForm.photoUrl || "",
+                          order: Number(orgMemberForm.order) || m.order || 1
+                        }
+                      : m
+                  );
+                  alert(`✓ Jabatan "${orgMemberForm.role}" berhasil diperbarui!`);
+                } else {
+                  const newMember: OrganizationMember = {
+                    id: `org-${Date.now()}`,
+                    role: orgMemberForm.role.trim(),
+                    name: orgMemberForm.name.trim(),
+                    description: orgMemberForm.description || "",
+                    category: orgMemberForm.category || "Pimpinan",
+                    photoUrl: orgMemberForm.photoUrl || "",
+                    order: Number(orgMemberForm.order) || currentOrgMembers.length + 1
+                  };
+                  updatedList = [...currentOrgMembers, newMember];
+                  alert(`✓ Jabatan "${orgMemberForm.role}" berhasil ditambahkan!`);
+                }
+
+                updatedList.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                const updatedSettings = {
+                  ...settingsForm,
+                  organizationStructure: updatedList
+                };
+                setSettingsForm(updatedSettings);
+                updateSettings(updatedSettings);
+
+                setIsEditingOrgMember(false);
+                setEditingOrgMemberId(null);
+                setOrgMemberForm({
+                  id: "",
+                  role: "",
+                  name: "",
+                  description: "",
+                  category: "Pimpinan",
+                  photoUrl: "",
+                  order: updatedList.length + 1
+                });
+              };
+
+              const handleEditOrgMember = (member: OrganizationMember) => {
+                setIsEditingOrgMember(true);
+                setEditingOrgMemberId(member.id);
+                setOrgMemberForm({
+                  id: member.id,
+                  role: member.role,
+                  name: member.name,
+                  description: member.description || "",
+                  category: member.category || "Pimpinan",
+                  photoUrl: member.photoUrl || "",
+                  order: member.order || 1
+                });
+              };
+
+              const handleDeleteOrgMember = (id: string, roleName: string) => {
+                if (!confirm(`Hapus jabatan/pejabat "${roleName}" dari struktur organisasi?`)) return;
+                const updatedList = currentOrgMembers.filter((m) => m.id !== id);
+                const updatedSettings = {
+                  ...settingsForm,
+                  organizationStructure: updatedList
+                };
+                setSettingsForm(updatedSettings);
+                updateSettings(updatedSettings);
+                if (editingOrgMemberId === id) {
+                  setIsEditingOrgMember(false);
+                  setEditingOrgMemberId(null);
+                  setOrgMemberForm({
+                    id: "",
+                    role: "",
+                    name: "",
+                    description: "",
+                    category: "Pimpinan",
+                    photoUrl: "",
+                    order: updatedList.length + 1
+                  });
+                }
+                alert(`✓ Jabatan "${roleName}" berhasil dihapus.`);
+              };
+
+              const handleCancelEditOrgMember = () => {
+                setIsEditingOrgMember(false);
+                setEditingOrgMemberId(null);
+                setOrgMemberForm({
+                  id: "",
+                  role: "",
+                  name: "",
+                  description: "",
+                  category: "Pimpinan",
+                  photoUrl: "",
+                  order: currentOrgMembers.length + 1
+                });
+              };
+
+              return (
+                <div className="space-y-6 text-xs">
+                  {/* Bagian 1: Kelola Pejabat & Jabatan (Multi-Member CRUD) */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Form Tambah / Edit Jabatan */}
+                    <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                      <div className="pb-2 border-b">
+                        <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
+                          <span>{isEditingOrgMember ? "✏️" : "➕"}</span>
+                          <span>{isEditingOrgMember ? "Edit Jabatan Struktur" : "Tambah Jabatan Baru"}</span>
+                        </h3>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Tambahkan Mudir, Wadir, Kepala Lembaga, Sekretaris, Bendahara, Dosen Senior, dll.
+                        </p>
+                      </div>
+
+                      <form onSubmit={handleSaveOrgMember} className="space-y-3">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Nama Jabatan / Posisi *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Misal: Wakil Mudir I Bid. Akademik"
+                            value={orgMemberForm.role}
+                            onChange={(e) => setOrgMemberForm({ ...orgMemberForm, role: e.target.value })}
+                            className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-bold text-slate-900"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Nama Pejabat &amp; Gelar Lengkap *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Misal: Dr. H. Muh. Rasyid Ridha, Lc., M.H.I."
+                            value={orgMemberForm.name}
+                            onChange={(e) => setOrgMemberForm({ ...orgMemberForm, name: e.target.value })}
+                            className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-semibold text-slate-900"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Kategori / Tingkat</label>
+                            <select
+                              value={orgMemberForm.category || "Pimpinan"}
+                              onChange={(e) => setOrgMemberForm({ ...orgMemberForm, category: e.target.value })}
+                              className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                            >
+                              <option value="Pimpinan">👑 Pimpinan Utama (Mudir / Wadir)</option>
+                              <option value="Lembaga">🔬 Lembaga Kajian (LBM / LP2M)</option>
+                              <option value="Administrasi">📋 Tata Usaha & Administrasi</option>
+                              <option value="Pengasuhan">🕌 Pengasuhan & Keasramaan</option>
+                              <option value="Lainnya">📌 Lainnya</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Urutan Tampilan</label>
+                            <input
+                              type="number"
+                              min={1}
+                              value={orgMemberForm.order || 1}
+                              onChange={(e) => setOrgMemberForm({ ...orgMemberForm, order: parseInt(e.target.value) || 1 })}
+                              className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <ImageUploader
+                            value={orgMemberForm.photoUrl || ""}
+                            onChange={(url) => setOrgMemberForm({ ...orgMemberForm, photoUrl: url })}
+                            folder="masyayikh"
+                            label="Pasfoto Pejabat (Opsional)"
+                            helperText="Unggah foto formal pimpinan / staf (JPG/PNG)"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Tupoksi / Deskripsi Ringkas (Opsional)</label>
+                          <textarea
+                            rows={2}
+                            placeholder="Misal: Mengoordinasikan seluruh kebijakan akademik, kurikulum turats, dan perkuliahan."
+                            value={orgMemberForm.description || ""}
+                            onChange={(e) => setOrgMemberForm({ ...orgMemberForm, description: e.target.value })}
+                            className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                          />
+                        </div>
+
+                        <div className="flex gap-2 pt-1">
+                          <button
+                            type="submit"
+                            className="flex-1 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow transition"
+                          >
+                            {isEditingOrgMember ? "💾 Simpan Perubahan Jabatan" : "➕ Tambahkan ke Struktur"}
+                          </button>
+                          {isEditingOrgMember && (
+                            <button
+                              type="button"
+                              onClick={handleCancelEditOrgMember}
+                              className="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition"
+                            >
+                              Batal
+                            </button>
+                          )}
+                        </div>
+                      </form>
                     </div>
-                  )}
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow"
-                  >
-                    💾 Simpan Struktur Organisasi
-                  </button>
-                </form>
-              </div>
-            )}
+
+                    {/* Daftar Jabatan Struktur Organisasi */}
+                    <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b">
+                        <h3 className="font-serif font-bold text-lg text-emerald-950">
+                          Daftar Jabatan Struktur ({currentOrgMembers.length})
+                        </h3>
+                        <a
+                          href="/profil#struktur"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-emerald-700 hover:text-emerald-900 font-bold text-xs flex items-center gap-1"
+                        >
+                          <span>👁️ Lihat di Web Publik</span>
+                          <span>&rarr;</span>
+                        </a>
+                      </div>
+
+                      <div className="space-y-2.5 max-h-130 overflow-y-auto pr-1">
+                        {currentOrgMembers.map((member, idx) => (
+                          <div
+                            key={member.id || idx}
+                            className={`p-3.5 bg-slate-50 hover:bg-slate-100/70 rounded-xl border flex items-center justify-between gap-3 transition ${
+                              editingOrgMemberId === member.id ? "ring-2 ring-emerald-600 bg-emerald-50/50" : ""
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-200 border border-slate-300 shrink-0 flex items-center justify-center">
+                                {member.photoUrl ? (
+                                  <img src={member.photoUrl} alt={member.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-base text-slate-400 font-bold">👤</span>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-full border border-emerald-200">
+                                    #{member.order || idx + 1} &bull; {member.role}
+                                  </span>
+                                  {member.category && (
+                                    <span className="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-medium">
+                                      {member.category}
+                                    </span>
+                                  )}
+                                </div>
+                                <h4 className="font-bold text-slate-900 mt-1 truncate">{member.name}</h4>
+                                {member.description && (
+                                  <p className="text-slate-500 text-[11px] truncate max-w-md">{member.description}</p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleEditOrgMember(member)}
+                                className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold transition"
+                                title="Edit data jabatan ini"
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteOrgMember(member.id, member.role)}
+                                className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold transition"
+                                title="Hapus dari struktur"
+                              >
+                                🗑️ Hapus
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bagian 2: Nama Mudir Resmi & Bagan Diagram Visual */}
+                  <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="pb-3 border-b">
+                      <h3 className="font-serif font-bold text-base text-emerald-950 flex items-center gap-2">
+                        <span>📊</span>
+                        <span>Bagan Diagram Skema Struktur Organisasi</span>
+                      </h3>
+                      <p className="text-slate-500 text-[11px] mt-0.5">
+                        Unggah gambar diagram/bagan lengkap struktur organisasi untuk ditampilkan di bawah kartu pimpinan.
+                      </p>
+                    </div>
+
+                    <form onSubmit={handleSaveSettings} className="space-y-4">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Nama Mudir Ma&apos;had Aly Resmi *</label>
+                        <input
+                          type="text"
+                          value={settingsForm.mudirName || ""}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, mudirName: e.target.value })}
+                          className="w-full p-2.5 bg-slate-50 border rounded-lg font-bold text-slate-900"
+                          placeholder="Contoh: AGH. Prof. Dr. M. Faried Wadjedy, MA"
+                        />
+                        <p className="text-[11px] text-slate-500 mt-1">Nama pimpinan tertinggi yang ditampilkan di kartu kepemimpinan profil dan dokumen resmi.</p>
+                      </div>
+
+                      <div>
+                        <ImageUploader
+                          value={settingsForm.organizationChartUrl || ""}
+                          onChange={(url) => setSettingsForm({ ...settingsForm, organizationChartUrl: url })}
+                          folder="umum"
+                          label="Bagan / Skema Struktur Organisasi (Opsional)"
+                          helperText="Unggah gambar bagan struktur organisasi atau diagram kepengurusan (PNG/JPG)"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Atau Masukkan URL Gambar Bagan Langsung</label>
+                        <input
+                          type="url"
+                          value={settingsForm.organizationChartUrl || ""}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, organizationChartUrl: e.target.value })}
+                          className="w-full p-2.5 bg-slate-50 border rounded-lg font-mono text-xs"
+                          placeholder="https://..."
+                        />
+                      </div>
+
+                      {settingsForm.organizationChartUrl && (
+                        <div className="p-3 bg-slate-50 border rounded-xl">
+                          <p className="text-[11px] font-bold text-slate-700 mb-2">Pratinjau Bagan:</p>
+                          <img
+                            src={settingsForm.organizationChartUrl}
+                            alt="Bagan Struktur Organisasi"
+                            className="max-h-60 rounded-lg border object-contain mx-auto"
+                          />
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow"
+                      >
+                        💾 Simpan Pengaturan Bagan &amp; Nama Mudir
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Sub: Dynamic Custom Sub-Menu Editor (Misal: Program Lembaga / #progran) */}
             {(() => {
@@ -4636,14 +5162,21 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-xs">
                   <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                    ➕ Tambah Agenda Kalender
+                    {isEditingCalendar ? "✏️ Edit Agenda Kalender" : "➕ Tambah Agenda Kalender"}
                   </h3>
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
                       if (!calendarForm.name) return;
-                      addCalendarEvent(calendarForm);
-                      alert("Agenda kalender berhasil ditambahkan!");
+                      if (isEditingCalendar && editingCalendarId) {
+                        updateCalendarEvent(editingCalendarId, calendarForm);
+                        alert("✓ Agenda kalender berhasil diperbarui!");
+                        setIsEditingCalendar(false);
+                        setEditingCalendarId(null);
+                      } else {
+                        addCalendarEvent(calendarForm);
+                        alert("✓ Agenda kalender berhasil ditambahkan!");
+                      }
                       setCalendarForm({
                         name: "",
                         startDate: "01 Nov 2026",
@@ -4707,8 +5240,27 @@ export default function AdminPage() {
                       />
                     </div>
                     <button type="submit" className="w-full py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow">
-                      Simpan Agenda Kalender
+                      {isEditingCalendar ? "💾 Simpan Perubahan Agenda" : "Simpan Agenda Kalender"}
                     </button>
+                    {isEditingCalendar && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingCalendar(false);
+                          setEditingCalendarId(null);
+                          setCalendarForm({
+                            name: "",
+                            startDate: "01 Nov 2026",
+                            endDate: "05 Nov 2026",
+                            category: "kuliah",
+                            description: ""
+                          });
+                        }}
+                        className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                      >
+                        ❌ Batal Edit
+                      </button>
+                    )}
                   </form>
                 </div>
 
@@ -4724,15 +5276,35 @@ export default function AdminPage() {
                           <h4 className="font-bold text-slate-900 mt-1">{ev.name}</h4>
                           <p className="text-slate-500 text-[11px]">{ev.startDate} s/d {ev.endDate}</p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm(`Hapus agenda: "${ev.name}"?`)) deleteCalendarEvent(ev.id);
-                          }}
-                          className="px-2.5 py-1 bg-red-600 text-white rounded font-bold"
-                        >
-                          Hapus
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEditingCalendar(true);
+                              setEditingCalendarId(ev.id);
+                              setCalendarForm({
+                                name: ev.name,
+                                startDate: ev.startDate,
+                                endDate: ev.endDate,
+                                category: ev.category,
+                                description: ev.description || ""
+                              });
+                            }}
+                            className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold"
+                            title="Edit Agenda"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Hapus agenda: "${ev.name}"?`)) deleteCalendarEvent(ev.id);
+                            }}
+                            className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold"
+                          >
+                            Hapus
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -6564,7 +7136,7 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                  ➕ Buat Draf Keputusan / Tanya Jawab Fiqh
+                  {isEditingBahtsul ? "✏️ Edit Draf Putusan / Fatwa" : "➕ Buat Draf Keputusan / Tanya Jawab Fiqh"}
                 </h3>
                 <form
                   onSubmit={(e) => {
@@ -6573,8 +7145,15 @@ export default function AdminPage() {
                       alert("Mohon isi judul dan jawaban fatwa!");
                       return;
                     }
-                    addBahtsulQA(bahtsulForm);
-                    alert("Draf Bahtsul Masail berhasil disimpan!");
+                    if (isEditingBahtsul && editingBahtsulId) {
+                      updateBahtsulQA(editingBahtsulId, bahtsulForm);
+                      alert("✓ Fatwa Bahtsul Masail berhasil diperbarui!");
+                      setIsEditingBahtsul(false);
+                      setEditingBahtsulId(null);
+                    } else {
+                      addBahtsulQA(bahtsulForm);
+                      alert("✓ Draf Bahtsul Masail berhasil disimpan!");
+                    }
                     setBahtsulForm({
                       title: "",
                       question: "",
@@ -6685,8 +7264,33 @@ export default function AdminPage() {
                     />
                   </div>
                   <button type="submit" className="w-full py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow">
-                    Simpan Draf Bahtsul
+                    {isEditingBahtsul ? "💾 Simpan Perubahan Fatwa" : "Simpan Draf Bahtsul"}
                   </button>
+                  {isEditingBahtsul && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingBahtsul(false);
+                        setEditingBahtsulId(null);
+                        setBahtsulForm({
+                          title: "",
+                          question: "",
+                          answer: "",
+                          theme: "Fiqh Muamalah Kontemporer",
+                          author: "Lembaga Bahtsul Masail",
+                          date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+                          status: "published",
+                          arabicReferences: "",
+                          imageUrl: "",
+                          attachmentUrl: "",
+                          attachmentName: ""
+                        });
+                      }}
+                      className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                    >
+                      ❌ Batal Edit
+                    </button>
+                  )}
                 </form>
               </div>
 
@@ -6703,13 +7307,37 @@ export default function AdminPage() {
                       </div>
                       <h4 className="font-bold text-slate-900">{bm.title}</h4>
                       <p className="text-slate-600 line-clamp-2">{bm.answer}</p>
-                      <div className="flex justify-end pt-2">
+                      <div className="flex items-center gap-1.5 justify-end pt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditingBahtsul(true);
+                            setEditingBahtsulId(bm.id);
+                            setBahtsulForm({
+                              title: bm.title,
+                              question: bm.question,
+                              answer: bm.answer,
+                              theme: bm.theme,
+                              author: bm.author || "Lembaga Bahtsul Masail",
+                              date: bm.date || new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+                              status: bm.status || "published",
+                              arabicReferences: bm.arabicReferences || "",
+                              imageUrl: bm.imageUrl || "",
+                              attachmentUrl: bm.attachmentUrl || "",
+                              attachmentName: bm.attachmentName || ""
+                            });
+                          }}
+                          className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold"
+                          title="Edit Draf Fatwa"
+                        >
+                          ✏️ Edit
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
                             if (confirm(`Hapus keputusan: "${bm.title}"?`)) deleteBahtsulQA(bm.id);
                           }}
-                          className="px-2.5 py-1 bg-red-600 text-white rounded font-bold"
+                          className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold"
                         >
                           Hapus
                         </button>
@@ -6762,25 +7390,43 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                  ➕ Tambah Gelombang Pendaftaran PMB
+                  {isEditingPMBWave ? "✏️ Edit Gelombang Pendaftaran PMB" : "➕ Tambah Gelombang Pendaftaran PMB"}
                 </h3>
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (!pmbWaveForm.name) return;
-                    addPMBWave({
-                      name: pmbWaveForm.name,
-                      startDate: pmbWaveForm.startDate,
-                      endDate: pmbWaveForm.endDate,
-                      quota: pmbWaveForm.quota,
-                      scholarshipInfo: pmbWaveForm.scholarshipInfo,
-                      requirements: pmbWaveForm.requirements.split("\n").filter(Boolean),
-                      procedure: pmbWaveForm.procedure.split("\n").filter(Boolean),
-                      imageUrl: pmbWaveForm.imageUrl,
-                      registrationLink: pmbWaveForm.registrationLink,
-                      brochureUrl: pmbWaveForm.brochureUrl
-                    });
-                    alert("Gelombang PMB berhasil ditambahkan!");
+                    if (isEditingPMBWave && editingPMBWaveId) {
+                      updatePMBWave(editingPMBWaveId, {
+                        name: pmbWaveForm.name,
+                        startDate: pmbWaveForm.startDate,
+                        endDate: pmbWaveForm.endDate,
+                        quota: pmbWaveForm.quota,
+                        scholarshipInfo: pmbWaveForm.scholarshipInfo,
+                        requirements: Array.isArray(pmbWaveForm.requirements) ? pmbWaveForm.requirements : pmbWaveForm.requirements.split("\n").filter(Boolean),
+                        procedure: Array.isArray(pmbWaveForm.procedure) ? pmbWaveForm.procedure : pmbWaveForm.procedure.split("\n").filter(Boolean),
+                        imageUrl: pmbWaveForm.imageUrl,
+                        registrationLink: pmbWaveForm.registrationLink,
+                        brochureUrl: pmbWaveForm.brochureUrl
+                      });
+                      alert("✓ Gelombang PMB berhasil diperbarui!");
+                      setIsEditingPMBWave(false);
+                      setEditingPMBWaveId(null);
+                    } else {
+                      addPMBWave({
+                        name: pmbWaveForm.name,
+                        startDate: pmbWaveForm.startDate,
+                        endDate: pmbWaveForm.endDate,
+                        quota: pmbWaveForm.quota,
+                        scholarshipInfo: pmbWaveForm.scholarshipInfo,
+                        requirements: pmbWaveForm.requirements.split("\n").filter(Boolean),
+                        procedure: pmbWaveForm.procedure.split("\n").filter(Boolean),
+                        imageUrl: pmbWaveForm.imageUrl,
+                        registrationLink: pmbWaveForm.registrationLink,
+                        brochureUrl: pmbWaveForm.brochureUrl
+                      });
+                      alert("✓ Gelombang PMB berhasil ditambahkan!");
+                    }
                     setPmbWaveForm({
                       name: "",
                       startDate: "01 Jan 2027",
@@ -6905,8 +7551,32 @@ export default function AdminPage() {
                     />
                   </div>
                   <button type="submit" className="w-full py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow">
-                    Simpan Gelombang PMB
+                    {isEditingPMBWave ? "💾 Simpan Perubahan Gelombang" : "Simpan Gelombang PMB"}
                   </button>
+                  {isEditingPMBWave && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingPMBWave(false);
+                        setEditingPMBWaveId(null);
+                        setPmbWaveForm({
+                          name: "",
+                          startDate: "01 Jan 2027",
+                          endDate: "28 Feb 2027",
+                          quota: "15 Mahasantri",
+                          scholarshipInfo: "Beasiswa Penuh 100%",
+                          requirements: "Lulusan MA/Pesantren\nHafalan 5 Juz\nMampu baca kitab kuning",
+                          procedure: "Daftar Online\nUnggah Berkas\nTes Seleksi Kitab",
+                          imageUrl: "",
+                          registrationLink: "",
+                          brochureUrl: ""
+                        });
+                      }}
+                      className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                    >
+                      ❌ Batal Edit
+                    </button>
+                  )}
                 </form>
               </div>
 
@@ -6923,15 +7593,40 @@ export default function AdminPage() {
                           <h4 className="font-bold text-slate-900 mt-1">{w.name}</h4>
                           <p className="text-slate-500 text-[11px]">{w.startDate} s/d {w.endDate} &bull; {w.scholarshipInfo}</p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm(`Hapus gelombang: "${w.name}"?`)) deletePMBWave(w.id);
-                          }}
-                          className="px-2.5 py-1 bg-red-600 text-white rounded font-bold"
-                        >
-                          Hapus
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEditingPMBWave(true);
+                              setEditingPMBWaveId(w.id);
+                              setPmbWaveForm({
+                                name: w.name,
+                                startDate: w.startDate,
+                                endDate: w.endDate,
+                                quota: w.quota,
+                                scholarshipInfo: w.scholarshipInfo,
+                                requirements: Array.isArray(w.requirements) ? w.requirements.join("\n") : (w.requirements || ""),
+                                procedure: Array.isArray(w.procedure) ? w.procedure.join("\n") : (w.procedure || ""),
+                                imageUrl: w.imageUrl || "",
+                                registrationLink: w.registrationLink || "",
+                                brochureUrl: w.brochureUrl || ""
+                              });
+                            }}
+                            className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold"
+                            title="Edit Gelombang PMB"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Hapus gelombang: "${w.name}"?`)) deletePMBWave(w.id);
+                            }}
+                            className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold"
+                          >
+                            Hapus
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -6940,14 +7635,21 @@ export default function AdminPage() {
                 {/* FAQ Management */}
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                   <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                    ➕ Tambah FAQ PMB
+                    {isEditingPMBFAQ ? "✏️ Edit FAQ PMB" : "➕ Tambah FAQ PMB"}
                   </h3>
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
                       if (!pmbFaqForm.question || !pmbFaqForm.answer) return;
-                      addPMBFAQ(pmbFaqForm);
-                      alert("FAQ berhasil ditambahkan!");
+                      if (isEditingPMBFAQ && editingPMBFAQId) {
+                        updatePMBFAQ(editingPMBFAQId, pmbFaqForm);
+                        alert("✓ FAQ berhasil diperbarui!");
+                        setIsEditingPMBFAQ(false);
+                        setEditingPMBFAQId(null);
+                      } else {
+                        addPMBFAQ(pmbFaqForm);
+                        alert("✓ FAQ berhasil ditambahkan!");
+                      }
                       setPmbFaqForm({ question: "", answer: "", category: "Pendaftaran" });
                     }}
                     className="space-y-2.5"
@@ -6968,10 +7670,77 @@ export default function AdminPage() {
                       onChange={(e) => setPmbFaqForm({ ...pmbFaqForm, answer: e.target.value })}
                       className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
                     />
-                    <button type="submit" className="px-4 py-2 bg-slate-800 text-white font-bold rounded-lg shadow">
-                      Tambah FAQ
-                    </button>
+                    <div className="flex gap-2">
+                      <button type="submit" className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-lg shadow text-xs">
+                        {isEditingPMBFAQ ? "💾 Simpan Perubahan FAQ" : "Tambah FAQ"}
+                      </button>
+                      {isEditingPMBFAQ && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditingPMBFAQ(false);
+                            setEditingPMBFAQId(null);
+                            setPmbFaqForm({ question: "", answer: "", category: "Pendaftaran" });
+                          }}
+                          className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs"
+                        >
+                          Batal
+                        </button>
+                      )}
+                    </div>
                   </form>
+
+                  {/* Daftar FAQ PMB */}
+                  <div className="pt-3 border-t border-slate-100 space-y-2">
+                    <h4 className="font-bold text-slate-800 text-xs">
+                      Daftar Pertanyaan FAQ ({pmbFAQs.length})
+                    </h4>
+                    {pmbFAQs.length === 0 ? (
+                      <p className="text-[11px] text-slate-400 italic">Belum ada FAQ PMB yang ditambahkan.</p>
+                    ) : (
+                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        {pmbFAQs.map((faq) => (
+                          <div key={faq.id} className="p-2.5 bg-slate-50 border rounded-xl flex items-start justify-between gap-2 text-xs">
+                            <div className="space-y-0.5">
+                              <span className="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">
+                                {faq.category}
+                              </span>
+                              <p className="font-bold text-slate-900 text-xs mt-0.5">{faq.question}</p>
+                              <p className="text-[11px] text-slate-600 line-clamp-2">{faq.answer}</p>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsEditingPMBFAQ(true);
+                                  setEditingPMBFAQId(faq.id);
+                                  setPmbFaqForm({
+                                    question: faq.question,
+                                    answer: faq.answer,
+                                    category: faq.category || "Pendaftaran"
+                                  });
+                                }}
+                                className="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold text-[11px]"
+                                title="Edit FAQ"
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm(`Hapus pertanyaan: "${faq.question}"?`)) deletePMBFAQ(faq.id);
+                                }}
+                                className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-[11px]"
+                                title="Hapus FAQ"
+                              >
+                                🗑️ Hapus
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -7210,7 +7979,7 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-xs">
                   <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
-                    ➕ Tambah Album Galeri Foto
+                    {isEditingGalleryAlbum ? "✏️ Edit Album Galeri Foto" : "➕ Tambah Album Galeri Foto"}
                   </h3>
                   <form
                     onSubmit={(e) => {
@@ -7219,16 +7988,31 @@ export default function AdminPage() {
                         alert("Mohon isi judul dan URL foto sampul!");
                         return;
                       }
-                      addGalleryAlbum({
-                        title: galleryForm.title,
-                        category: galleryForm.category,
-                        date: galleryForm.date,
-                        coverUrl: galleryForm.coverUrl,
-                        photos: [
-                          { id: "ph-" + Date.now().toString(), url: galleryForm.coverUrl, caption: galleryForm.captionInput || galleryForm.title }
-                        ]
-                      });
-                      alert("Album galeri berhasil ditambahkan!");
+                      if (isEditingGalleryAlbum && editingGalleryAlbumId) {
+                        const existingAlbum = galleryAlbums.find((a) => a.id === editingGalleryAlbumId);
+                        updateGalleryAlbum(editingGalleryAlbumId, {
+                          title: galleryForm.title,
+                          category: galleryForm.category,
+                          coverUrl: galleryForm.coverUrl,
+                          photos: existingAlbum?.photos?.length ? existingAlbum.photos : [
+                            { id: "ph-" + Date.now().toString(), url: galleryForm.coverUrl, caption: galleryForm.captionInput || galleryForm.title }
+                          ]
+                        });
+                        alert("✓ Album galeri berhasil diperbarui!");
+                        setIsEditingGalleryAlbum(false);
+                        setEditingGalleryAlbumId(null);
+                      } else {
+                        addGalleryAlbum({
+                          title: galleryForm.title,
+                          category: galleryForm.category,
+                          date: galleryForm.date,
+                          coverUrl: galleryForm.coverUrl,
+                          photos: [
+                            { id: "ph-" + Date.now().toString(), url: galleryForm.coverUrl, caption: galleryForm.captionInput || galleryForm.title }
+                          ]
+                        });
+                        alert("✓ Album galeri berhasil ditambahkan!");
+                      }
                       setGalleryForm({
                         title: "",
                         category: "Kegiatan Akademik",
@@ -7278,8 +8062,28 @@ export default function AdminPage() {
                       />
                     </div>
                     <button type="submit" className="w-full py-2.5 bg-emerald-800 text-white font-bold rounded-xl shadow">
-                      Simpan Album Galeri
+                      {isEditingGalleryAlbum ? "💾 Simpan Perubahan Album" : "Simpan Album Galeri"}
                     </button>
+                    {isEditingGalleryAlbum && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingGalleryAlbum(false);
+                          setEditingGalleryAlbumId(null);
+                          setGalleryForm({
+                            title: "",
+                            category: "Kegiatan Akademik",
+                            date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+                            coverUrl: "",
+                            photoUrlInput: "",
+                            captionInput: ""
+                          });
+                        }}
+                        className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                      >
+                        ❌ Batal Edit
+                      </button>
+                    )}
                   </form>
                 </div>
 
@@ -7295,15 +8099,36 @@ export default function AdminPage() {
                           <h4 className="font-bold text-slate-900 mt-1">{alb.title}</h4>
                           <p className="text-slate-500 text-[11px]">{alb.date} &bull; {alb.photos.length} Foto</p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm(`Hapus album: "${alb.title}"?`)) deleteGalleryAlbum(alb.id);
-                          }}
-                          className="px-2.5 py-1 bg-red-600 text-white rounded font-bold"
-                        >
-                          Hapus
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEditingGalleryAlbum(true);
+                              setEditingGalleryAlbumId(alb.id);
+                              setGalleryForm({
+                                title: alb.title,
+                                category: alb.category,
+                                date: alb.date,
+                                coverUrl: alb.coverUrl,
+                                photoUrlInput: alb.photos?.[0]?.url || "",
+                                captionInput: alb.photos?.[0]?.caption || alb.title
+                              });
+                            }}
+                            className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold"
+                            title="Edit Album"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Hapus album: "${alb.title}"?`)) deleteGalleryAlbum(alb.id);
+                            }}
+                            className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold"
+                          >
+                            Hapus
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

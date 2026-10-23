@@ -402,45 +402,137 @@ export default function ProfilPage() {
         {/* TAB 4: STRUKTUR ORGANISASI */}
         {activeTab === "struktur" && (
           <div id="struktur" className="bg-white rounded-2xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-6">
-            <h2 className="font-serif font-bold text-2xl text-emerald-950">Struktur Organisasi Ma&apos;had Aly</h2>
-            <div className="space-y-4 text-xs sm:text-sm text-slate-700">
-              <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
-                <span className="font-bold text-emerald-900 block text-xs uppercase tracking-wider">Mudir Ma&apos;had Aly:</span>
-                <p className="text-xl font-serif font-bold text-slate-900 mt-1">{settings?.mudirName || "AGH. Prof. Dr. M. Faried Wadjedy, MA"}</p>
-                <p className="text-xs text-slate-600 mt-1">Pimpinan Tertinggi &amp; Pengasuh Halaqah Turats</p>
+            <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-8 bg-mahad-gold rounded-full inline-block"></span>
+                <h2 className="font-serif font-bold text-2xl text-emerald-950">
+                  Struktur Organisasi &amp; Kepengurusan Ma&apos;had Aly
+                </h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                  <span className="font-bold text-slate-800 block">Wakil Mudir I (Bidang Akademik &amp; Kurikulum):</span>
-                  <p className="text-slate-700 font-semibold mt-0.5">Ust. M. Idrus, M.Ag.</p>
-                </div>
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                  <span className="font-bold text-slate-800 block">Wakil Mudir II (Keuangan &amp; Beasiswa OTA):</span>
-                  <p className="text-slate-700 font-semibold mt-0.5">Biro Administrasi &amp; Orang Tua Asuh</p>
-                </div>
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                  <span className="font-bold text-slate-800 block">Lembaga Bahtsul Masail (LBM):</span>
-                  <p className="text-slate-700 font-semibold mt-0.5">Dewan Masyaikh &amp; Peneliti Muda Fiqh Mu&apos;asarah</p>
-                </div>
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                  <span className="font-bold text-slate-800 block">LP2M (Pusat Riset &amp; Pengabdian):</span>
-                  <p className="text-slate-700 font-semibold mt-0.5">Redaksi Jurnal &amp; Mimbar Kajian Ilmiah</p>
-                </div>
-              </div>
-
-              {settings?.organizationChartUrl && (
-                <div className="mt-6 p-4 sm:p-6 bg-slate-50 border border-slate-200 rounded-2xl text-center space-y-3">
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 block">
-                    Bagan &amp; Struktur Hirarki Kepemimpinan
-                  </span>
-                  <img
-                    src={settings.organizationChartUrl}
-                    alt="Bagan Struktur Organisasi Ma'had Aly DDI Mangkoso"
-                    className="max-h-[550px] w-auto mx-auto rounded-xl border shadow-sm object-contain"
-                  />
-                </div>
-              )}
+              <span className="text-xs text-slate-500 font-medium">
+                Pimpinan &amp; Pengelola Sivitas Akademika
+              </span>
             </div>
+
+            {(() => {
+              const members = (settings?.organizationStructure && settings.organizationStructure.length > 0)
+                ? settings.organizationStructure
+                : [
+                    {
+                      id: "org-1",
+                      role: "Mudir Ma'had Aly",
+                      name: settings?.mudirName || "AGH. Prof. Dr. M. Faried Wadjedy, MA",
+                      description: "Pimpinan Tertinggi & Pengasuh Halaqah Turats",
+                      category: "Pimpinan",
+                      order: 1
+                    },
+                    {
+                      id: "org-2",
+                      role: "Wakil Mudir I (Bidang Akademik & Kurikulum)",
+                      name: "Ust. M. Idrus, M.Ag.",
+                      description: "Pengarah Kurikulum Turats 8 Semester & Mutaba'ah Ta'lim",
+                      category: "Wakil Mudir",
+                      order: 2
+                    },
+                    {
+                      id: "org-3",
+                      role: "Wakil Mudir II (Keuangan & Beasiswa OTA)",
+                      name: "Biro Administrasi & Orang Tua Asuh",
+                      description: "Pengelolaan Operasional, Infaq Lembaga & Beasiswa Mahasantri",
+                      category: "Wakil Mudir",
+                      order: 3
+                    },
+                    {
+                      id: "org-4",
+                      role: "Lembaga Bahtsul Masail (LBM)",
+                      name: "Dewan Masyaikh & Peneliti Muda Fiqh Mu'asarah",
+                      description: "Pengkajian Masail Fiqhiyyah Kontemporer & Perumusan Fatwa",
+                      category: "Lembaga & Unit",
+                      order: 4
+                    },
+                    {
+                      id: "org-5",
+                      role: "LP2M (Pusat Riset & Pengabdian)",
+                      name: "Redaksi Jurnal & Mimbar Kajian Ilmiah",
+                      description: "Pengembangan Riset Turats, Publikasi Ilmiah & Pengabdian Santri",
+                      category: "Lembaga & Unit",
+                      order: 5
+                    }
+                  ];
+
+              const leader = members.find((m) => m.category === "Pimpinan" || m.role.toLowerCase().includes("mudir") || m.order === 1) || members[0];
+              const otherMembers = members.filter((m) => m.id !== leader?.id);
+
+              return (
+                <div className="space-y-6">
+                  {/* Pimpinan Utama */}
+                  {leader && (
+                    <div className="p-6 bg-gradient-to-r from-emerald-50 via-teal-50/40 to-slate-50 rounded-2xl border border-emerald-200 shadow-sm flex flex-col sm:flex-row items-center gap-5">
+                      {leader.photoUrl && (
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-emerald-600 shadow-md shrink-0">
+                          <img src={leader.photoUrl} alt={leader.name} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <div className="text-center sm:text-left flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-900 bg-emerald-200/80 px-3 py-1 rounded-full border border-emerald-300">
+                          {leader.role}
+                        </span>
+                        <h3 className="text-xl sm:text-2xl font-serif font-bold text-slate-900 mt-2">
+                          {leader.name}
+                        </h3>
+                        {leader.description && (
+                          <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
+                            {leader.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Jajaran Struktur Lainnya */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {otherMembers.map((m) => (
+                      <div
+                        key={m.id}
+                        className="p-5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-500 transition space-y-2.5 flex items-start gap-4"
+                      >
+                        {m.photoUrl && (
+                          <div className="w-14 h-14 rounded-full overflow-hidden border border-emerald-200 shadow shrink-0 mt-0.5">
+                            <img src={m.photoUrl} alt={m.name} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          {m.category && (
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                              {m.category}
+                            </span>
+                          )}
+                          <h4 className="font-bold text-slate-900 text-sm mt-1">{m.role}</h4>
+                          <p className="text-emerald-900 font-semibold text-xs mt-0.5">{m.name}</p>
+                          {m.description && (
+                            <p className="text-slate-500 text-[11px] mt-1 leading-relaxed">{m.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Bagan Visual (Jika Ada) */}
+                  {settings?.organizationChartUrl && (
+                    <div className="mt-8 p-4 sm:p-6 bg-slate-50 border border-slate-200 rounded-2xl text-center space-y-3">
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 block">
+                        Bagan &amp; Struktur Hirarki Kepemimpinan
+                      </span>
+                      <img
+                        src={settings.organizationChartUrl}
+                        alt="Bagan Struktur Organisasi Ma'had Aly DDI Mangkoso"
+                        className="max-h-[550px] w-auto mx-auto rounded-xl border shadow-sm object-contain"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
 

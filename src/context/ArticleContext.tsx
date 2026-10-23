@@ -550,12 +550,12 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
                 education: Array.isArray(c.data?.education)
                   ? c.data.education
                   : typeof c.data?.education === "string" && c.data.education.trim().length > 0
-                  ? c.data.education.split("•").map((s: string) => s.trim()).filter(Boolean)
+                  ? c.data.education.split("â€¢").map((s: string) => s.trim()).filter(Boolean)
                   : [],
                 publications: Array.isArray(c.data?.publications)
                   ? c.data.publications
                   : typeof c.data?.publications === "string" && c.data.publications.trim().length > 0
-                  ? c.data.publications.split("•").map((s: string) => s.trim()).filter(Boolean)
+                  ? c.data.publications.split("â€¢").map((s: string) => s.trim()).filter(Boolean)
                   : [],
                 order: idx + 1,
                 isActive: c.data?.isActive !== false
@@ -577,7 +577,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        // ── Hasil SINKRONISASI SPREADSHEET (prioritas tertinggi) ──────────
+        // â”€â”€ Hasil SINKRONISASI SPREADSHEET (prioritas tertinggi) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         // Data ini ditulis oleh /api/admin/sync/sheets memakai Service Role.
         if (masyayikhListRes.status === "fulfilled") {
           const items = extractCatalogItems((masyayikhListRes.value as any)?.data?.value);
@@ -789,6 +789,59 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     fetchFromSupabase().finally(() => {
       setIsCatalogReady(true);
     });
+
+    // Multi-admin Live Real-time Synchronization via Supabase Channels & Polling
+    const channel = supabase
+      .channel("multi-admin-live-sync")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_content" },
+        (payload: any) => {
+          if (payload?.new && payload.new.key) {
+            const key = payload.new.key;
+            const val = payload.new.value;
+            if (key === "site_settings") {
+              setSettings((prev) => ({ ...prev, ...val }));
+            } else if (key === "dema_settings") {
+              setDemaSettings((prev) => ({ ...prev, ...val }));
+            } else if (key === "activity_logs") {
+              if (Array.isArray(val)) setLogs(val);
+            } else if (key === "header") {
+              setNavbarSettings((prev) => ({ ...prev, ...val }));
+            } else if (key === "sarana_list") {
+              if (Array.isArray(val)) setFacilities(val);
+            } else if (key === "masyayikh_list") {
+              if (Array.isArray(val)) setLecturers(val);
+            } else if (key === "courses_list") {
+              if (Array.isArray(val)) setCourses(val);
+            } else if (key === "about_page") {
+              setAboutPageContent((prev) => ({ ...prev, ...val }));
+            } else if (key === "page_texts") {
+              setPageTexts((prev) => ({ ...prev, ...val }));
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    const handleWindowFocus = () => {
+      refreshLogs();
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("focus", handleWindowFocus);
+    }
+
+    const syncInterval = setInterval(() => {
+      refreshLogs();
+    }, 15000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(syncInterval);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("focus", handleWindowFocus);
+      }
+    };
   }, []);
 
   // Sinkronisasi ulang Live Log Aktivitas dari Supabase
@@ -2210,9 +2263,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setAboutPageContent(INITIAL_ABOUT_CONTENT);
   };
 
-  // ══════════════════════════════════════════════════════════════
+  // â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ
   // MODULAR RESET TO DEFAULT PER PANEL (PENCEGAH KETELEDORAN ADMIN)
-  // ══════════════════════════════════════════════════════════════
+  // â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ
   const resetNavbarToDefault = (user?: string) => {
     setNavbarSettings(INITIAL_NAVBAR_SETTINGS);
     localStorage.setItem("mahad_navbar_settings", JSON.stringify(INITIAL_NAVBAR_SETTINGS));
@@ -2435,7 +2488,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     syncContentToBackend("page_texts", "content", "Page Texts CMS", next);
   };
 
-  // ── Donasi, Wakaf & Infaq Actions ──
+  // â”€â”€ Donasi, Wakaf & Infaq Actions â”€â”€
   const addDonation = (item: Omit<DonationProgram, "id" | "createdAt">, user: string = "Super Admin") => {
     const slugBase = item.title
       .toLowerCase()
@@ -2476,7 +2529,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     syncContentToBackend("donations", "donations", "Program Donasi & Rekening", INITIAL_DONATIONS);
   };
 
-  // ── Pertahanan Keamanan & Deteksi Ancaman (Retensi 7 Hari Otomatis) ──
+  // â”€â”€ Pertahanan Keamanan & Deteksi Ancaman (Retensi 7 Hari Otomatis) â”€â”€
   const addSecurityThreat = (threat: Omit<SecurityThreatLog, "id" | "timestamp">) => {
     const now = new Date();
     const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
@@ -2498,7 +2551,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
     const updated = [newThreat, ...validThreats.slice(0, 99)];
     saveSecurityThreats(updated);
-    addLog(`🚨 Ancaman Keamanan (${threat.threatType})`, `${threat.endpoint} [IP: ${threat.ip}]`, "Sistem Pertahanan Web");
+    addLog(`ًںڑ¨ Ancaman Keamanan (${threat.threatType})`, `${threat.endpoint} [IP: ${threat.ip}]`, "Sistem Pertahanan Web");
   };
 
   const clearSecurityThreats = (user?: string) => {
@@ -2506,7 +2559,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     addLog("Membersihkan Log Ancaman Keamanan", "Pusat Keamanan", user);
   };
 
-  // ── Izin Khusus Kelola Donasi ──
+  // â”€â”€ Izin Khusus Kelola Donasi â”€â”€
   const grantDonationPermission = (userId: string, granted: boolean, adminName: string = "Super Admin") => {
     const updatedUsers = users.map((u) => {
       if (u.id === userId) {
@@ -2529,7 +2582,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  // ── Dewan Mahasantri (DeMa) Handlers ──
+  // â”€â”€ Dewan Mahasantri (DeMa) Handlers â”€â”€
   const updateDemaSettings = async (
     updated: Partial<DemaSettings>,
     user?: string
