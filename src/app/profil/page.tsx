@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useArticles } from "@/context/ArticleContext";
 import EntityPhoto from "@/components/common/EntityPhoto";
+import { CustomProfileSection } from "@/lib/types";
 
 /** Kerangka kartu katalog selama data server dimuat — mencegah kedipan data contoh/mock. */
 function CatalogSkeleton({ variant, count = 3 }: { variant: "masyayikh" | "sarana"; count?: number }) {
@@ -38,21 +39,73 @@ function CatalogSkeleton({ variant, count = 3 }: { variant: "masyayikh" | "saran
 }
 
 export default function ProfilPage() {
-  const { settings, lecturers, facilities, accreditations, pageTexts, isCatalogReady } = useArticles();
-  const [activeTab, setActiveTab] = useState<
-    "sejarah" | "visi-misi" | "masyayikh" | "struktur" | "sarana" | "akreditasi"
-  >("sejarah");
+  const { settings, lecturers, facilities, accreditations, pageTexts, isCatalogReady, navbarSettings } = useArticles();
+  const [activeTab, setActiveTab] = useState<string>("sejarah");
 
   const safeLecturers = Array.isArray(lecturers) ? lecturers : [];
   const safeFacilities = Array.isArray(facilities) ? facilities : [];
   const safeAccreditations = Array.isArray(accreditations) ? accreditations : [];
   const safeMisi = Array.isArray(settings?.misi) ? settings.misi : [];
 
-  // Listen to URL hash to activate matching tab (e.g., #masyayikh, #sejarah, #sarana)
+  // Extract profil dropdown sub-menus from navbar settings
+  const profilNavLink = (navbarSettings?.navLinks || []).find(
+    (l: any) => l.url === "/profil" || l.id === "nav-2" || l.label?.toLowerCase() === "profil"
+  );
+  const profilChildren = profilNavLink?.children || [];
+
+  // Identify custom sub-menus (excluding core 6 anchors)
+  const customSections = useMemo(() => {
+    const list: {
+      slug: string;
+      label: string;
+      section?: CustomProfileSection;
+    }[] = [];
+
+    // 1. From live navbar dropdown (e.g. Program Lembaga -> /profil#progran)
+    profilChildren.forEach((child: any) => {
+      const url = (child.url || "").toLowerCase();
+      const isStd = url.includes("#sejarah") ||
+        url.includes("#visi") ||
+        url.includes("#masyayikh") ||
+        url.includes("#dosen") ||
+        url.includes("#struktur") ||
+        url.includes("#sarana") ||
+        url.includes("#akreditasi");
+      if (!isStd) {
+        const slug = (child.url || "").replace(/^.*#/, "").toLowerCase().trim() || child.id;
+        const matched = (settings?.customProfileSections || []).find(
+          (s) => s.slug?.toLowerCase() === slug.toLowerCase() || s.id === child.id
+        );
+        if (!list.some((item) => item.slug === slug)) {
+          list.push({
+            slug,
+            label: child.label,
+            section: matched
+          });
+        }
+      }
+    });
+
+    // 2. From settings.customProfileSections (if added directly)
+    (settings?.customProfileSections || []).forEach((sec) => {
+      if (!list.some((item) => item.slug.toLowerCase() === sec.slug?.toLowerCase())) {
+        list.push({
+          slug: sec.slug,
+          label: sec.title,
+          section: sec
+        });
+      }
+    });
+
+    return list;
+  }, [profilChildren, settings?.customProfileSections]);
+
+  // Listen to URL hash to activate matching tab (e.g., #masyayikh, #sejarah, #progran, #program)
   useEffect(() => {
     const handleHash = () => {
       if (typeof window !== "undefined") {
-        const rawHash = window.location.hash.replace("#", "").toLowerCase();
+        const rawHash = window.location.hash.replace("#", "").toLowerCase().trim();
+        if (!rawHash) return;
         if (rawHash === "masyayikh" || rawHash === "dosen") {
           setActiveTab("masyayikh");
         } else if (rawHash === "sejarah") {
@@ -65,6 +118,18 @@ export default function ProfilPage() {
           setActiveTab("sarana");
         } else if (rawHash === "akreditasi") {
           setActiveTab("akreditasi");
+        } else {
+          // Check if it matches a custom slug directly or aliases (e.g. progran / program)
+          const matched = customSections.find(
+            (cs) => cs.slug === rawHash ||
+              (rawHash === "program" && cs.slug === "progran") ||
+              (rawHash === "progran" && cs.slug === "program")
+          );
+          if (matched) {
+            setActiveTab(matched.slug);
+          } else {
+            setActiveTab(rawHash);
+          }
         }
       }
     };
@@ -72,7 +137,7 @@ export default function ProfilPage() {
     handleHash();
     window.addEventListener("hashchange", handleHash);
     return () => window.removeEventListener("hashchange", handleHash);
-  }, []);
+  }, [customSections]);
 
   return (
     <main className="pt-32 md:pt-36 pb-20 bg-slate-50 min-h-screen">
@@ -102,13 +167,17 @@ export default function ProfilPage() {
             { id: "masyayikh", label: `Masyayikh & Dosen (${safeLecturers.filter((l) => l.isActive).length})` },
             { id: "struktur", label: "Struktur Organisasi" },
             { id: "sarana", label: `Sarana & Prasarana (${safeFacilities.length})` },
-            { id: "akreditasi", label: `Sertifikat Akreditasi (${safeAccreditations.length})` }
+            { id: "akreditasi", label: `Sertifikat Akreditasi (${safeAccreditations.length})` },
+            ...customSections.map((cs) => ({
+              id: cs.slug,
+              label: cs.label
+            }))
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => {
-                setActiveTab(tab.id as any);
+                setActiveTab(tab.id);
                 if (typeof window !== "undefined") {
                   window.history.replaceState(null, "", `#${tab.id}`);
                 }
@@ -358,6 +427,19 @@ export default function ProfilPage() {
                   <p className="text-slate-700 font-semibold mt-0.5">Redaksi Jurnal &amp; Mimbar Kajian Ilmiah</p>
                 </div>
               </div>
+
+              {settings?.organizationChartUrl && (
+                <div className="mt-6 p-4 sm:p-6 bg-slate-50 border border-slate-200 rounded-2xl text-center space-y-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 block">
+                    Bagan &amp; Struktur Hirarki Kepemimpinan
+                  </span>
+                  <img
+                    src={settings.organizationChartUrl}
+                    alt="Bagan Struktur Organisasi Ma'had Aly DDI Mangkoso"
+                    className="max-h-[550px] w-auto mx-auto rounded-xl border shadow-sm object-contain"
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -440,6 +522,79 @@ export default function ProfilPage() {
             </div>
           </div>
         )}
+
+        {/* TAB KUSTOM DINAMIS (Misal: Program Lembaga / #progran / #program) */}
+        {(() => {
+          const currentCustom = customSections.find((cs) => cs.slug === activeTab);
+          if (!currentCustom) return null;
+
+          return (
+            <div id={currentCustom.slug} className="bg-white rounded-2xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-6">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-8 bg-mahad-gold rounded-full inline-block"></span>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
+                    Program &amp; Layanan Kelembagaan
+                  </span>
+                  <h2 className="font-serif font-bold text-2xl sm:text-3xl text-emerald-950 mt-1">
+                    {currentCustom.section?.title || currentCustom.label}
+                  </h2>
+                </div>
+              </div>
+
+              {currentCustom.section?.subtitle && (
+                <p className="text-slate-700 font-medium text-sm sm:text-base leading-relaxed border-l-4 border-emerald-700/40 pl-4 py-1 italic bg-emerald-50/50 rounded-r-xl">
+                  {currentCustom.section.subtitle}
+                </p>
+              )}
+
+              {currentCustom.section?.imageUrl && (
+                <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50 flex items-center justify-center">
+                  <img
+                    src={currentCustom.section.imageUrl}
+                    alt={currentCustom.section.title || currentCustom.label}
+                    className="w-full h-auto max-h-[500px] object-cover"
+                  />
+                </div>
+              )}
+
+              {currentCustom.section?.content ? (
+                <div className="text-slate-700 leading-relaxed space-y-4 text-sm sm:text-base whitespace-pre-line">
+                  {currentCustom.section.content}
+                </div>
+              ) : !currentCustom.section?.items || currentCustom.section.items.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 bg-slate-50 rounded-2xl border text-sm">
+                  <p className="font-semibold text-slate-700">Konten Program Sedang Disiapkan</p>
+                  <p className="text-xs text-slate-500 mt-1">Uraian rincian program lembaga ini dapat dilengkapi melalui Panel Admin.</p>
+                </div>
+              ) : null}
+
+              {currentCustom.section?.items && currentCustom.section.items.length > 0 && (
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
+                    <span>📋</span>
+                    <span>Rincian Program &amp; Agenda</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {currentCustom.section.items.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-start gap-3 hover:bg-emerald-50 transition"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-emerald-800 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                          {idx + 1}
+                        </span>
+                        <p className="text-xs sm:text-sm font-medium text-slate-800 leading-relaxed">
+                          {item}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Elemen Tambahan Kustom CMS Halaman Profil */}
         {(() => {

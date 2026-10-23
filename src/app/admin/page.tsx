@@ -37,7 +37,8 @@ import {
   MaintenancePillar,
   DemaDivision,
   DemaMember,
-  DemaSettings
+  DemaSettings,
+  CustomProfileSection
 } from "@/lib/types";
 import { INITIAL_PAGE_TEXTS, INITIAL_NAVBAR_SETTINGS, INITIAL_MAINTENANCE_CONFIG } from "@/lib/mock-data";
 
@@ -336,9 +337,53 @@ export default function AdminPage() {
     });
 
     updateNavbarSettings({ navLinks: updatedNavLinks });
+
+    // Initialize custom section in site settings so the bubble and form appear immediately
+    const cleanSlug = cleanUrl.replace(/^.*#/, "").toLowerCase().trim() || `sub-${Date.now()}`;
+    const isStandard = ["sejarah", "visi", "masyayikh", "dosen", "struktur", "sarana", "akreditasi"].some(
+      (std) => cleanSlug.includes(std)
+    );
+
+    if (!isStandard) {
+      const existingSections = Array.isArray(settingsForm.customProfileSections)
+        ? [...settingsForm.customProfileSections]
+        : [];
+      if (!existingSections.some((s) => s.slug === cleanSlug)) {
+        const newSection: CustomProfileSection = {
+          id: `section-${cleanSlug}`,
+          slug: cleanSlug,
+          title: newProfilSubLabel.trim(),
+          subtitle: "",
+          content: "",
+          items: [],
+          imageUrl: "",
+          updatedAt: new Date().toISOString()
+        };
+        const updatedSections = [...existingSections, newSection];
+        const updatedSettings = { ...settingsForm, customProfileSections: updatedSections };
+        setSettingsForm(updatedSettings);
+        updateSettings(updatedSettings);
+      }
+      // Immediately open the newly created bubble tab editor!
+      setActiveSubMenu(`custom_${cleanSlug}`);
+    } else {
+      const targetStd = cleanSlug.includes("sejarah")
+        ? "sejarah"
+        : cleanSlug.includes("visi")
+        ? "visimisi"
+        : cleanSlug.includes("masyayikh") || cleanSlug.includes("dosen")
+        ? "dosen"
+        : cleanSlug.includes("struktur")
+        ? "struktur"
+        : cleanSlug.includes("sarana")
+        ? "sarana"
+        : "akreditasi";
+      setActiveSubMenu(targetStd);
+    }
+
     setNewProfilSubLabel("");
     setNewProfilSubUrl("");
-    alert(`✓ Sub-Menu Profil "${newProfilSubLabel.trim()}" berhasil ditambahkan & tersinkron ke Header Navbar!`);
+    alert(`✓ Sub-Menu Profil "${newProfilSubLabel.trim()}" berhasil ditambahkan & tab editor telah dibuka!`);
   };
 
   const handleDeleteProfilSubItem = (childId: string) => {
@@ -350,6 +395,7 @@ export default function AdminPage() {
       (l: any) => l.url === "/profil" || l.id === "nav-2" || l.label.toLowerCase() === "profil"
     );
     const existingChildren = profilLink?.children || [];
+    const deletedChild = existingChildren.find((c: any) => c.id === childId);
     const updatedChildren = existingChildren.filter((c: any) => c.id !== childId);
 
     const updatedNavLinks = currentNavLinks.map((link: any) => {
@@ -360,6 +406,73 @@ export default function AdminPage() {
     });
 
     updateNavbarSettings({ navLinks: updatedNavLinks });
+
+    if (deletedChild) {
+      const delSlug = (deletedChild.url || "").replace(/^.*#/, "").toLowerCase().trim();
+      if (activeSubMenu === `custom_${delSlug}` || activeSubMenu === delSlug) {
+        setActiveSubMenu("sejarah");
+      }
+    }
+  };
+
+  const handleSaveCustomProfileSection = (slug: string, sectionData: Partial<CustomProfileSection>) => {
+    const existingList = Array.isArray(settingsForm.customProfileSections)
+      ? [...settingsForm.customProfileSections]
+      : [];
+    const index = existingList.findIndex((s) => s.slug === slug || s.id === sectionData.id);
+    const updatedSection: CustomProfileSection = {
+      id: sectionData.id || `custom-${slug}`,
+      slug: slug,
+      title: sectionData.title?.trim() || "Program Lembaga",
+      subtitle: sectionData.subtitle || "",
+      content: sectionData.content || "",
+      items: Array.isArray(sectionData.items) ? sectionData.items : [],
+      imageUrl: sectionData.imageUrl || "",
+      updatedAt: new Date().toISOString()
+    };
+
+    if (index >= 0) {
+      existingList[index] = { ...existingList[index], ...updatedSection };
+    } else {
+      existingList.push(updatedSection);
+    }
+
+    const updatedSettings = {
+      ...settingsForm,
+      customProfileSections: existingList
+    };
+
+    setSettingsForm(updatedSettings);
+    updateSettings(updatedSettings);
+
+    // Also update navbar label if title changed
+    const currentNavLinks = navbarSettings?.navLinks && navbarSettings.navLinks.length > 0
+      ? navbarSettings.navLinks
+      : INITIAL_NAVBAR_SETTINGS.navLinks;
+    const profilLink = currentNavLinks.find(
+      (l: any) => l.url === "/profil" || l.id === "nav-2" || l.label.toLowerCase() === "profil"
+    );
+    if (profilLink && Array.isArray(profilLink.children)) {
+      let childChanged = false;
+      const updatedChildren = profilLink.children.map((c: any) => {
+        const cSlug = (c.url || "").replace(/^.*#/, "").toLowerCase().trim();
+        if (cSlug === slug && c.label !== updatedSection.title) {
+          childChanged = true;
+          return { ...c, label: updatedSection.title };
+        }
+        return c;
+      });
+      if (childChanged) {
+        const updatedNavLinks = currentNavLinks.map((l: any) =>
+          (l.url === "/profil" || l.id === "nav-2" || l.label.toLowerCase() === "profil")
+            ? { ...l, children: updatedChildren }
+            : l
+        );
+        updateNavbarSettings({ navLinks: updatedNavLinks });
+      }
+    }
+
+    alert(`✓ Konten Sub-Halaman "${updatedSection.title}" berhasil disimpan ke sistem & web publik!`);
   };
 
   const [donationForm, setDonationForm] = useState<{
@@ -2584,22 +2697,81 @@ export default function AdminPage() {
 
                 {/* List Sub-Menu Profil Saat Ini */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {profilChildren.map((item: any, idx: number) => (
-                    <div key={item.id || idx} className="p-3 bg-slate-50 border rounded-xl flex items-center justify-between gap-2 hover:border-emerald-500 transition">
-                      <div className="truncate">
-                        <p className="font-bold text-slate-800 truncate">{item.label}</p>
-                        <p className="text-[10px] text-emerald-700 font-mono truncate">{item.url}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteProfilSubItem(item.id)}
-                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg text-xs shrink-0 font-bold"
-                        title="Hapus Sub-Menu Ini"
+                  {profilChildren.map((item: any, idx: number) => {
+                    const isCustom = !item.url?.includes("#sejarah") &&
+                      !item.url?.includes("#visi") &&
+                      !item.url?.includes("#masyayikh") &&
+                      !item.url?.includes("#dosen") &&
+                      !item.url?.includes("#struktur") &&
+                      !item.url?.includes("#sarana") &&
+                      !item.url?.includes("#akreditasi");
+                    const slug = (item.url || "").replace(/^.*#/, "").toLowerCase().trim() || item.id;
+                    const targetSubMenu = isCustom
+                      ? `custom_${slug}`
+                      : item.url.includes("#sejarah")
+                      ? "sejarah"
+                      : item.url.includes("#visi")
+                      ? "visimisi"
+                      : item.url.includes("#masyayikh") || item.url.includes("#dosen")
+                      ? "dosen"
+                      : item.url.includes("#struktur")
+                      ? "struktur"
+                      : item.url.includes("#sarana")
+                      ? "sarana"
+                      : "akreditasi";
+
+                    const isCurrentActive = activeSubMenu === targetSubMenu ||
+                      (targetSubMenu === "sejarah" && activeSubMenu === "overview");
+
+                    return (
+                      <div
+                        key={item.id || idx}
+                        onClick={() => setActiveSubMenu(targetSubMenu)}
+                        className={`p-3 bg-slate-50 border rounded-xl flex items-center justify-between gap-2 hover:border-emerald-500 transition cursor-pointer ${
+                          isCurrentActive ? "border-emerald-600 bg-emerald-50/80 shadow-sm" : ""
+                        }`}
+                        title="Klik untuk membuka formulir editor sub-menu ini"
                       >
-                        🗑️
-                      </button>
-                    </div>
-                  ))}
+                        <div className="truncate flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <p className="font-bold text-slate-800 truncate text-xs">{item.label}</p>
+                            {isCustom && (
+                              <span className="text-[9px] bg-emerald-200 text-emerald-900 px-1.5 py-0.2 rounded font-bold">
+                                Kustom
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-emerald-700 font-mono truncate">{item.url}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveSubMenu(targetSubMenu);
+                            }}
+                            className="p-1 text-emerald-800 hover:bg-emerald-100 rounded text-xs shrink-0 font-bold"
+                            title="Buka Editor Konten"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm(`Hapus sub-menu "${item.label}" dari navbar header?`)) {
+                                handleDeleteProfilSubItem(item.id);
+                              }
+                            }}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg text-xs shrink-0 font-bold"
+                            title="Hapus Sub-Menu Ini"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Form Tambah Sub-Menu Baru */}
@@ -2634,29 +2806,84 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Tabs Pengelolaan Konten Profil */}
-              <div className="flex flex-wrap gap-2 pb-2 border-b">
-                {[
-                  { id: "sejarah", label: "📜 Sejarah & Deskripsi" },
-                  { id: "visimisi", label: "🎯 Visi & Misi" },
-                  { id: "dosen", label: `👳 Masyayikh & Dosen (${lecturers.length})` },
-                  { id: "sarana", label: `🏛️ Sarana & Prasarana (${facilities.length})` },
-                  { id: "akreditasi", label: `📜 Sertifikat Akreditasi (${accreditations.length})` }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveSubMenu(tab.id)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-                      activeSubMenu === tab.id
-                        ? "bg-emerald-800 text-white shadow"
-                        : "bg-white text-slate-700 hover:bg-slate-200"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+              {/* Tabs Pengelolaan Konten Profil (Termasuk Sub-Menu Dinamis Kustom) */}
+              {(() => {
+                const customTabs: { id: string; slug: string; label: string; navItem: any }[] = [];
+                profilChildren.forEach((child: any) => {
+                  const url = (child.url || "").toLowerCase();
+                  const isStd = url.includes("#sejarah") ||
+                    url.includes("#visi") ||
+                    url.includes("#masyayikh") ||
+                    url.includes("#dosen") ||
+                    url.includes("#struktur") ||
+                    url.includes("#sarana") ||
+                    url.includes("#akreditasi");
+                  if (!isStd) {
+                    const slug = (child.url || "").replace(/^.*#/, "").toLowerCase().trim() || child.id;
+                    if (!customTabs.some((t) => t.slug === slug)) {
+                      customTabs.push({
+                        id: `custom_${slug}`,
+                        slug: slug,
+                        label: `📑 ${child.label}`,
+                        navItem: child
+                      });
+                    }
+                  }
+                });
+
+                (settingsForm.customProfileSections || []).forEach((sec) => {
+                  if (!customTabs.some((t) => t.slug.toLowerCase() === sec.slug?.toLowerCase())) {
+                    customTabs.push({
+                      id: `custom_${sec.slug}`,
+                      slug: sec.slug,
+                      label: `📑 ${sec.title}`,
+                      navItem: null
+                    });
+                  }
+                });
+
+                const tabs = [
+                  { id: "sejarah", label: "📜 Sejarah & Deskripsi", isActive: activeSubMenu === "overview" || activeSubMenu === "sejarah" },
+                  { id: "visimisi", label: "🎯 Visi & Misi", isActive: activeSubMenu === "visimisi" },
+                  { id: "dosen", label: `👳 Masyayikh & Dosen (${lecturers.length})`, isActive: activeSubMenu === "dosen" },
+                  { id: "struktur", label: "👥 Struktur Organisasi", isActive: activeSubMenu === "struktur" },
+                  { id: "sarana", label: `🏛️ Sarana & Prasarana (${facilities.length})`, isActive: activeSubMenu === "sarana" },
+                  { id: "akreditasi", label: `📜 Sertifikat Akreditasi (${accreditations.length})`, isActive: activeSubMenu === "akreditasi" },
+                  ...customTabs.map((ct) => ({
+                    id: ct.id,
+                    label: ct.label,
+                    isActive: activeSubMenu === ct.id || activeSubMenu === ct.slug,
+                    isCustom: true,
+                    slug: ct.slug
+                  }))
+                ];
+
+                return (
+                  <div className="flex flex-wrap gap-2 pb-2 border-b">
+                    {tabs.map((tab: any) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setActiveSubMenu(tab.id)}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                          tab.isActive
+                            ? "bg-emerald-800 text-white shadow ring-2 ring-emerald-600/40"
+                            : tab.isCustom
+                            ? "bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100"
+                            : "bg-white text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        <span>{tab.label}</span>
+                        {tab.isCustom && (
+                          <span className="text-[9px] bg-white/50 text-emerald-950 px-1.5 py-0.2 rounded font-mono">
+                            #{tab.slug}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
 
             {/* Sub: Sejarah */}
             {(activeSubMenu === "overview" || activeSubMenu === "sejarah") && (
@@ -3061,6 +3288,249 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+
+            {/* Sub: Struktur Organisasi */}
+            {activeSubMenu === "struktur" && (
+              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
+                    <span>👥</span>
+                    <span>Struktur Organisasi &amp; Kepemimpinan Lembaga</span>
+                  </h3>
+                  <a
+                    href="/profil#struktur"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-700 hover:text-emerald-900 font-bold text-xs flex items-center gap-1"
+                  >
+                    <span>👁️ Pratinjau di Web Publik</span>
+                    <span>&rarr;</span>
+                  </a>
+                </div>
+                <form onSubmit={handleSaveSettings} className="space-y-4">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Nama Mudir Ma&apos;had Aly *</label>
+                    <input
+                      type="text"
+                      value={settingsForm.mudirName || ""}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, mudirName: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border rounded-lg font-bold text-slate-900"
+                      placeholder="Contoh: AGH. Prof. Dr. M. Faried Wadjedy, MA"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">Nama pimpinan tertinggi yang ditampilkan di kartu kepemimpinan profil dan dokumen resmi.</p>
+                  </div>
+                  <div>
+                    <ImageUploader
+                      value={settingsForm.organizationChartUrl || ""}
+                      onChange={(url) => setSettingsForm({ ...settingsForm, organizationChartUrl: url })}
+                      folder="umum"
+                      label="Bagan / Skema Struktur Organisasi (Opsional)"
+                      helperText="Unggah gambar bagan struktur organisasi atau diagram kepengurusan (PNG/JPG)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Atau Masukkan URL Gambar Bagan Langsung</label>
+                    <input
+                      type="url"
+                      value={settingsForm.organizationChartUrl || ""}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, organizationChartUrl: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border rounded-lg font-mono text-xs"
+                      placeholder="https://..."
+                    />
+                  </div>
+                  {settingsForm.organizationChartUrl && (
+                    <div className="p-3 bg-slate-50 border rounded-xl">
+                      <p className="text-[11px] font-bold text-slate-700 mb-2">Pratinjau Bagan:</p>
+                      <img
+                        src={settingsForm.organizationChartUrl}
+                        alt="Bagan Struktur Organisasi"
+                        className="max-h-60 rounded-lg border object-contain mx-auto"
+                      />
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow"
+                  >
+                    💾 Simpan Struktur Organisasi
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* Sub: Dynamic Custom Sub-Menu Editor (Misal: Program Lembaga / #progran) */}
+            {(() => {
+              if (!activeSubMenu.startsWith("custom_")) return null;
+              const currentSlug = activeSubMenu.replace("custom_", "").toLowerCase().trim();
+              const matchedTab = profilChildren.find((c: any) => {
+                const cSlug = (c.url || "").replace(/^.*#/, "").toLowerCase().trim() || c.id;
+                return cSlug === currentSlug;
+              });
+              const currentSection = (settingsForm.customProfileSections || []).find(
+                (s) => s.slug?.toLowerCase() === currentSlug
+              );
+              const defaultTitle = currentSection?.title || matchedTab?.label || "Program Lembaga";
+
+              return (
+                <div className="bg-white p-6 sm:p-8 rounded-2xl border border-emerald-200 shadow-sm space-y-5 text-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                          Sub-Halaman Profil Kustom
+                        </span>
+                        <span className="font-mono text-[10px] text-emerald-700">/profil#{currentSlug}</span>
+                      </div>
+                      <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
+                        <span>📑</span>
+                        <span>Kelola Konten: {defaultTitle}</span>
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`/profil#${currentSlug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold rounded-lg border border-emerald-300 flex items-center gap-1.5 transition text-xs"
+                      >
+                        <span>👁️ Pratinjau Publik</span>
+                        <span>&rarr;</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.currentTarget;
+                      const titleInput = (form.elements.namedItem("sectionTitle") as HTMLInputElement)?.value;
+                      const subtitleInput = (form.elements.namedItem("sectionSubtitle") as HTMLInputElement)?.value;
+                      const contentInput = (form.elements.namedItem("sectionContent") as HTMLTextAreaElement)?.value;
+                      const itemsInput = (form.elements.namedItem("sectionItems") as HTMLTextAreaElement)?.value;
+                      const imageUrlInput = (form.elements.namedItem("sectionImageUrl") as HTMLInputElement)?.value;
+
+                      handleSaveCustomProfileSection(currentSlug, {
+                        id: currentSection?.id || `custom-${currentSlug}`,
+                        slug: currentSlug,
+                        title: titleInput || defaultTitle,
+                        subtitle: subtitleInput,
+                        content: contentInput,
+                        items: itemsInput.split("\n").map((s) => s.trim()).filter(Boolean),
+                        imageUrl: imageUrlInput
+                      });
+                    }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Judul Sub-Halaman / Program *</label>
+                      <input
+                        type="text"
+                        name="sectionTitle"
+                        required
+                        defaultValue={currentSection?.title || defaultTitle}
+                        key={`title-${currentSlug}-${currentSection?.title}`}
+                        className="w-full p-2.5 bg-slate-50 border rounded-lg font-bold text-slate-900"
+                        placeholder="Misal: Program Lembaga / Program Unggulan Ma'had Aly"
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">Judul utama yang muncul di banner dan tab navigasi publik.</p>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Sub-Judul / Keterangan Singkat / Tagline</label>
+                      <input
+                        type="text"
+                        name="sectionSubtitle"
+                        defaultValue={currentSection?.subtitle || ""}
+                        key={`sub-${currentSlug}-${currentSection?.subtitle}`}
+                        className="w-full p-2.5 bg-slate-50 border rounded-lg"
+                        placeholder="Misal: Kaderisasi Ulama Fiqh Berdaya Saing Global & Otoritatif Turats"
+                      />
+                    </div>
+
+                    <div>
+                      <ImageUploader
+                        value={currentSection?.imageUrl || ""}
+                        onChange={(url) => {
+                          handleSaveCustomProfileSection(currentSlug, {
+                            ...currentSection,
+                            imageUrl: url
+                          });
+                        }}
+                        folder="umum"
+                        label="Foto / Brosur / Ilustrasi Pendukung Program"
+                        helperText="Unggah flyer, brosur, atau foto kegiatan terkait (PNG/JPG maks. 5 MB)"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Atau Masukkan URL Gambar Langsung</label>
+                      <input
+                        type="url"
+                        name="sectionImageUrl"
+                        defaultValue={currentSection?.imageUrl || ""}
+                        key={`img-${currentSlug}-${currentSection?.imageUrl}`}
+                        className="w-full p-2.5 bg-slate-50 border rounded-lg font-mono text-xs"
+                        placeholder="https://..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Uraian / Deskripsi Lengkap Program</label>
+                      <textarea
+                        rows={6}
+                        name="sectionContent"
+                        defaultValue={currentSection?.content || ""}
+                        key={`cnt-${currentSlug}-${currentSection?.content}`}
+                        className="w-full p-2.5 bg-slate-50 border rounded-lg leading-relaxed text-xs"
+                        placeholder="Tuliskan latar belakang, kurikulum unggulan, capaian alumni, dan agenda program lembaga secara terperinci..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Poin-Poin Rincian Program / Agenda / Kurikulum (Satu baris per poin)
+                      </label>
+                      <textarea
+                        rows={5}
+                        name="sectionItems"
+                        defaultValue={(currentSection?.items || []).join("\n")}
+                        key={`items-${currentSlug}-${(currentSection?.items || []).join(",")}`}
+                        className="w-full p-2.5 bg-slate-50 border rounded-lg leading-relaxed text-xs font-mono"
+                        placeholder="Kajian Halaqah Turats Kitab Kuning Setiap Ba'da Shubuh&#10;Laboratorium Bahtsul Masail & Fatwa Kontemporer&#10;Program Sanad Hadits & Tahfidz Mandiri"
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Setiap baris akan otomatis diubah menjadi kartu bernomor elegan di halaman profil publik.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t">
+                      <button
+                        type="submit"
+                        className="w-full sm:w-auto px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow flex items-center justify-center gap-2"
+                      >
+                        <span>💾</span>
+                        <span>Simpan Konten Sub-Halaman Ini</span>
+                      </button>
+
+                      {matchedTab && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(`Hapus sub-menu "${matchedTab.label}" dari navbar header dan tab profil?`)) {
+                              handleDeleteProfilSubItem(matchedTab.id);
+                            }
+                          }}
+                          className="w-full sm:w-auto px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold rounded-xl flex items-center justify-center gap-1.5 transition"
+                        >
+                          <span>🗑️</span>
+                          <span>Hapus Sub-Menu Ini</span>
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -4024,7 +4494,7 @@ export default function AdminPage() {
                   type="button"
                   onClick={() => setActiveSubMenu(tab.id)}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-                    activeSubMenu === tab.id
+                    activeSubMenu === tab.id || (tab.id === "kurikulum" && activeSubMenu === "overview")
                       ? "bg-emerald-800 text-white shadow"
                       : "bg-white text-slate-700 hover:bg-slate-200"
                   }`}
@@ -5419,7 +5889,7 @@ export default function AdminPage() {
                     }
                   }}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-                    activeSubMenu === sub.id
+                    activeSubMenu === sub.id || (sub.id === "articles" && activeSubMenu === "overview")
                       ? "bg-emerald-800 text-white shadow"
                       : "bg-white text-slate-700 hover:bg-slate-200"
                   }`}
@@ -6523,7 +6993,7 @@ export default function AdminPage() {
                   type="button"
                   onClick={() => setActiveSubMenu(sub.id)}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-                    activeSubMenu === sub.id
+                    activeSubMenu === sub.id || (sub.id === "news" && activeSubMenu === "overview")
                       ? "bg-emerald-800 text-white shadow"
                       : "bg-white text-slate-700 hover:bg-slate-200"
                   }`}

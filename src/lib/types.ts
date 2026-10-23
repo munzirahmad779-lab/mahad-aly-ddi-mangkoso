@@ -423,6 +423,7 @@ export interface SiteSettings {
   footer?: FooterSettings;
   maintenanceMode?: boolean;
   maintenanceConfig?: MaintenanceConfig;
+  customProfileSections?: CustomProfileSection[];
 }
 
 export interface MaintenancePillar {
@@ -797,4 +798,14 @@ export interface SheetSyncMeta {
 export interface SheetSyncPayload<T> {
   items: T[];
   meta: SheetSyncMeta;
+}
+export interface CustomProfileSection {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  content?: string;
+  items?: string[];
+  imageUrl?: string;
+  updatedAt?: string;
 }

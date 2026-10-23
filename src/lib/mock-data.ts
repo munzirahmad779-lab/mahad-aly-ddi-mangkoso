@@ -172,7 +172,8 @@ export const INITIAL_SETTINGS: SiteSettings = {
   socialMedia: INITIAL_SOCIAL_MEDIA,
   footer: INITIAL_FOOTER_SETTINGS,
   maintenanceMode: false,
-  maintenanceConfig: INITIAL_MAINTENANCE_CONFIG
+  maintenanceConfig: INITIAL_MAINTENANCE_CONFIG,
+  customProfileSections: []
 };
 
 export const INITIAL_LECTURERS: Lecturer[] = [
