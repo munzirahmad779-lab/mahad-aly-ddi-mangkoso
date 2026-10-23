@@ -1136,13 +1136,20 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     syncContentToBackend("security_threats", "system", "Log Ancaman Keamanan", data);
   };
 
-  const addLog = (action: string, target: string, user: string = "Super Admin") => {
+  const addLog = (action: string, target: string, user?: string) => {
+    let actor = user;
+    if (!actor && typeof window !== "undefined") {
+      actor = localStorage.getItem("mahad_current_admin_name") || undefined;
+    }
+    if (!actor) {
+      actor = "Admin";
+    }
     const now = new Date();
     const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
     const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
     const newLog: ActivityLog = {
       id: "log-" + Date.now().toString(),
-      user,
+      user: actor,
       action,
       target,
       timestamp: `${formattedDate}, ${formattedTime}`

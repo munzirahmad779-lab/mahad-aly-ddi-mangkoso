@@ -729,13 +729,18 @@ export default function AdminPage() {
 
         if (profile) {
           setUserProfile(profile);
+          if (profile.nama_lengkap) {
+            localStorage.setItem("mahad_current_admin_name", profile.nama_lengkap);
+          }
         } else {
           // Fallback if not in users table yet
+          const fallbackName = session.user.email?.split("@")[0] || "Admin";
           setUserProfile({
             role: session.user.email === "munzirahmad779@gmail.com" ? "super_admin" : "editor",
-            nama_lengkap: session.user.email?.split("@")[0] || "Admin",
+            nama_lengkap: fallbackName,
             email: session.user.email || ""
           });
+          localStorage.setItem("mahad_current_admin_name", fallbackName);
         }
 
         // Fetch real database users list

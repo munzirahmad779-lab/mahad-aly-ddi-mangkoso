@@ -118,11 +118,11 @@ export const INITIAL_FOOTER_NAV: FooterNavLink[] = [
 ];
 
 export const INITIAL_FOOTER_FOCUS: FooterFocusItem[] = [
-  { id: "ffoc-1", name: "Usul Fikih & Qawa'id Fiqhiyyah", icon: "⚖️", position: 1, isActive: true },
-  { id: "ffoc-2", name: "Fiqh Muqaran (Perbandingan Madzhab)", icon: "📖", position: 2, isActive: true },
-  { id: "ffoc-3", name: "'Ulumul Qur'an & Tafsir Turats", icon: "✨", position: 3, isActive: true },
-  { id: "ffoc-4", name: "Dirasah Hadits wa Rijaluha", icon: "📜", position: 4, isActive: true },
-  { id: "ffoc-5", name: "Manuskrip Gurutta Ambo Dalle", icon: "👑", position: 5, isActive: true }
+  { id: "ffoc-1", name: "Ilmu Tauhid/Aqidah dan Akhlaq", icon: "⚖️", position: 1, isActive: true },
+  { id: "ffoc-2", name: "Bahasa Arab dengan semua ilmu-ilmu alatnya seperti ilmu Nahwu, Sharaf, Balaghah, dan ilmu-ilmu yang serumpun dengannya", icon: "📖", position: 2, isActive: true },
+  { id: "ffoc-3", name: "Ilmu Ushul al-Tafsir", icon: "✨", position: 3, isActive: true },
+  { id: "ffoc-4", name: "Ilmu Ushul al-Hadits", icon: "📜", position: 4, isActive: true },
+  { id: "ffoc-5", name: "Ilmu Ushul al-Fiqh", icon: "👑", position: 5, isActive: true }
 ];
 
 export const INITIAL_MAINTENANCE_CONFIG: MaintenanceConfig = {
