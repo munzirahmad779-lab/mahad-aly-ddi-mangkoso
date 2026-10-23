@@ -554,7 +554,7 @@ export const INITIAL_PMB_SETTINGS: PMBSettings = {
 export const INITIAL_PMB_WAVES: PMBWave[] = [
   {
     id: "pmb-1",
-    name: "Gelombang I (Jalur Prestasi Tahfidz & Kitab Kuning)",
+    name: "Gelombang I",
     startDate: "01 Januari 2027",
     endDate: "28 Februari 2027",
     quota: "15 Mahasantri",
