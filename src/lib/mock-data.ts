@@ -479,6 +479,8 @@ export const INITIAL_BAHTSUL_QA: BahtsulMasailQA[] = [
 export const INITIAL_PMB_SETTINGS: PMBSettings = {
   title: "Brosur Pendaftaran Imtihan Qabul",
   subtitle: "Ma'had Aly Pontren DDI Mangkoso",
+  headerArabicText: "المعهد العالي للدعوة والإرشاد منجكوسو",
+  heroDescription: "Membina kader ulama mutafaqqih fiddin berwawasan wasathiyyah dan berakhlak mulia dengan sanad keilmuan muttashil.",
   academicYear: "Angkatan XI 'Am Jam'iy 1448 H.",
   programTakhassus: "Fiqh dan Ushul Fiqh",
   scholarshipBadge: "100% Beasiswa - Full Beasiswa",
@@ -486,6 +488,8 @@ export const INITIAL_PMB_SETTINGS: PMBSettings = {
   quotaTotal: "30 Orang untuk Banin dan Banat",
   quotaScholarship: "25 Orang (Jalur Beasiswa)",
   quotaMandiri: "5 Orang (Jalur Mandiri)",
+  cardStudyProgramTitle: "Jenjang Marhalah Ula (M.1)",
+  cardStudyProgramSubtitle: "Ijazah Terakreditasi Mumtaz & Sanad Kitab",
   registrationPeriod: "17 Sya'ban 1447 H hingga 16 Ramadhan 1447 H",
   registrationLink: "https://bit.ly/pmb-mahadaly-mangkoso",
   brochurePdfUrl: "",
@@ -548,7 +552,9 @@ export const INITIAL_PMB_SETTINGS: PMBSettings = {
     }
   ],
   address: "Jalan Raya AG. H. Abdurrahman Ambo Dalle, Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulawesi Selatan",
-  notes: "Pendaftaran dibuka 17 Sya'ban 1447 H hingga 16 Ramadhan 1447 H via online dengan cara mengisi formulir online atau scan QR Code resmi."
+  notes: "Pendaftaran dibuka 17 Sya'ban 1447 H hingga 16 Ramadhan 1447 H via online dengan cara mengisi formulir online atau scan QR Code resmi.",
+  documentationImages: [],
+  customSections: []
 };
 
 export const INITIAL_PMB_WAVES: PMBWave[] = [

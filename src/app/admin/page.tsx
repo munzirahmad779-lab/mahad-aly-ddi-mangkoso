@@ -24,6 +24,8 @@ import {
   BahtsulMasailQA,
   PMBWave,
   PMBFAQ,
+  PMBCustomSection,
+  PMBDocumentationImage,
   GalleryAlbum,
   PageSeoItem,
   PageTextsSettings,
@@ -1400,8 +1402,26 @@ export default function AdminPage() {
   });
 
   // 10. PMB Tabs & Settings State
-  const [pmbSubTab, setPmbSubTab] = useState<"brosur" | "persyaratan" | "jadwal" | "kontak" | "gelombang" | "faq">("brosur");
+  const [pmbSubTab, setPmbSubTab] = useState<"brosur" | "persyaratan" | "jadwal" | "kontak" | "gelombang" | "faq" | "elemen" | "dokumentasi" | "pratinjau">("brosur");
   const [pmbBrochureForm, setPmbBrochureForm] = useState(pmbSettings);
+
+  // PMB Dynamic Custom Sections state (Disesuaikan brosur baru tiap tahun)
+  const [customSectionForm, setCustomSectionForm] = useState<Omit<PMBCustomSection, "id">>({
+    title: "",
+    subtitle: "",
+    badge: "",
+    icon: "📌",
+    content: "",
+    items: [],
+    order: 1,
+    isActive: true
+  });
+  const [isEditingSection, setIsEditingSection] = useState(false);
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [sectionItemsRaw, setSectionItemsRaw] = useState("");
+
+  // PMB Documentation Images state (Foto dokumentasi mahasantri & imtihan)
+  const [docImageForm, setDocImageForm] = useState({ url: "", caption: "" });
 
   // Sync pmbBrochureForm when pmbSettings changes from database
   useEffect(() => {
@@ -7433,7 +7453,10 @@ export default function AdminPage() {
                 { id: "jadwal", label: "🗓️ Jadwal Seleksi", badge: pmbSettings.schedules?.length || 0 },
                 { id: "kontak", label: "📞 Kontak Panitia", badge: pmbSettings.contacts?.length || 0 },
                 { id: "gelombang", label: "🌊 Gelombang PMB", badge: pmbWaves.length },
-                { id: "faq", label: "❓ FAQ PMB", badge: pmbFAQs.length }
+                { id: "faq", label: "❓ FAQ PMB", badge: pmbFAQs.length },
+                { id: "elemen", label: "✨ Elemen Brosur Dinamis", badge: pmbSettings.customSections?.length || 0 },
+                { id: "dokumentasi", label: "📸 Foto Dokumentasi", badge: pmbSettings.documentationImages?.length || 0 },
+                { id: "pratinjau", label: "👁️ Pratinjau Langsung (Mockup)", badge: null }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -7483,6 +7506,37 @@ export default function AdminPage() {
                   }}
                   className="space-y-6"
                 >
+                  <div className="p-4 bg-emerald-50/50 border border-emerald-200/80 rounded-2xl space-y-3">
+                    <h4 className="font-serif font-bold text-sm text-emerald-950 flex items-center gap-2">
+                      <span>✨</span>
+                      <span>Teks Arab Brosur &amp; Narasi Utama</span>
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Teks Judul Arab / Kaligrafi Brosur</label>
+                        <input
+                          type="text"
+                          value={pmbBrochureForm.headerArabicText || ""}
+                          onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, headerArabicText: e.target.value })}
+                          placeholder="المعهد العالي للدعوة والإرشاد منجكوسو"
+                          className="w-full p-2.5 text-xs bg-white border rounded-xl font-serif text-slate-900"
+                          dir="rtl"
+                        />
+                        <p className="text-[10px] text-slate-500 mt-1">Sesuai teks kaligrafi kop resmi brosur PMB.</p>
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Deskripsi Narasi Hero PMB</label>
+                        <textarea
+                          rows={2}
+                          value={pmbBrochureForm.heroDescription || ""}
+                          onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, heroDescription: e.target.value })}
+                          placeholder="Membina kader ulama mutafaqqih fiddin berwawasan wasathiyyah dan berakhlak mulia dengan sanad keilmuan muttashil."
+                          className="w-full p-2 text-xs bg-white border rounded-xl text-slate-900"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block font-bold text-slate-700 mb-1">Judul Utama Brosur *</label>
@@ -7615,6 +7669,29 @@ export default function AdminPage() {
                           onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, quotaMandiri: e.target.value })}
                           placeholder="5 Orang (Jalur Mandiri)"
                           className="w-full p-2 text-xs bg-white border rounded-lg"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-emerald-200/60">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Judul Card Jenjang Pendidikan</label>
+                        <input
+                          type="text"
+                          value={pmbBrochureForm.cardStudyProgramTitle || ""}
+                          onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, cardStudyProgramTitle: e.target.value })}
+                          placeholder="Jenjang Marhalah Ula (M.1)"
+                          className="w-full p-2 text-xs bg-white border rounded-lg font-semibold text-slate-800"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Subjudul Card Jenjang Pendidikan</label>
+                        <input
+                          type="text"
+                          value={pmbBrochureForm.cardStudyProgramSubtitle || ""}
+                          onChange={(e) => setPmbBrochureForm({ ...pmbBrochureForm, cardStudyProgramSubtitle: e.target.value })}
+                          placeholder="Ijazah Terakreditasi Mumtaz & Sanad Kitab"
+                          className="w-full p-2 text-xs bg-white border rounded-lg text-slate-700"
                         />
                       </div>
                     </div>
@@ -8647,6 +8724,634 @@ export default function AdminPage() {
                       ))}
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 7: ELEMEN BROSUR DINAMIS TIAP TAHUN */}
+            {pmbSubTab === "elemen" && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Kolom Kiri: Form Tambah/Edit Elemen Kustom */}
+                <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <div className="pb-2 border-b">
+                    <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
+                      <span>✨</span>
+                      <span>{isEditingSection ? "Edit Elemen Brosur" : "Tambah Elemen Baru Brosur"}</span>
+                    </h3>
+                    <p className="text-slate-500 text-xs mt-0.5">
+                      Gunakan fitur ini untuk menambah bagian baru sesuai brosur cetak tiap tahun (misal: Fasilitas, Tata Tertib Imtihan, Beasiswa, dll.).
+                    </p>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!customSectionForm.title.trim()) return;
+
+                      const parsedItems = sectionItemsRaw
+                        ? sectionItemsRaw.split("\n").map((s) => s.trim()).filter(Boolean)
+                        : [];
+
+                      const currentSections = pmbSettings.customSections || [];
+                      let updated: PMBCustomSection[];
+
+                      if (isEditingSection && editingSectionId) {
+                        updated = currentSections.map((s) =>
+                          s.id === editingSectionId
+                            ? {
+                                ...s,
+                                ...customSectionForm,
+                                items: parsedItems
+                              }
+                            : s
+                        );
+                        alert("✓ Elemen brosur berhasil diperbarui!");
+                      } else {
+                        const newSec: PMBCustomSection = {
+                          id: "sec-" + Date.now().toString(),
+                          ...customSectionForm,
+                          items: parsedItems
+                        };
+                        updated = [...currentSections, newSec];
+                        alert("✓ Elemen brosur baru berhasil ditambahkan!");
+                      }
+
+                      updatePmbSettings({ customSections: updated });
+                      setIsEditingSection(false);
+                      setEditingSectionId(null);
+                      setSectionItemsRaw("");
+                      setCustomSectionForm({
+                        title: "",
+                        subtitle: "",
+                        badge: "",
+                        icon: "📌",
+                        content: "",
+                        items: [],
+                        order: (updated.length || 0) + 1,
+                        isActive: true
+                      });
+                    }}
+                    className="space-y-3"
+                  >
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Judul Elemen / Bagian Brosur *</label>
+                      <input
+                        type="text"
+                        required
+                        value={customSectionForm.title}
+                        onChange={(e) => setCustomSectionForm({ ...customSectionForm, title: e.target.value })}
+                        placeholder="Contoh: Fasilitas &amp; Asrama Mahasantri"
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-bold"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Ikon / Emoji</label>
+                        <input
+                          type="text"
+                          value={customSectionForm.icon || "📌"}
+                          onChange={(e) => setCustomSectionForm({ ...customSectionForm, icon: e.target.value })}
+                          placeholder="📌"
+                          className="w-full p-2 text-xs bg-slate-50 border rounded-lg text-center text-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Badge / Tag (Opsional)</label>
+                        <input
+                          type="text"
+                          value={customSectionForm.badge || ""}
+                          onChange={(e) => setCustomSectionForm({ ...customSectionForm, badge: e.target.value })}
+                          placeholder="Contoh: Info Penting"
+                          className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Subjudul / Penjelasan Singkat</label>
+                      <input
+                        type="text"
+                        value={customSectionForm.subtitle || ""}
+                        onChange={(e) => setCustomSectionForm({ ...customSectionForm, subtitle: e.target.value })}
+                        placeholder="Contoh: Sarana penunjang kenyamanan belajar santri"
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Narasi / Teks Isi</label>
+                      <textarea
+                        rows={3}
+                        value={customSectionForm.content}
+                        onChange={(e) => setCustomSectionForm({ ...customSectionForm, content: e.target.value })}
+                        placeholder="Tuliskan keterangan lengkap atau penjelasan materi brosur di sini..."
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg leading-relaxed"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Daftar Poin-Poin / Butir Informasi (1 baris per poin)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={sectionItemsRaw}
+                        onChange={(e) => setSectionItemsRaw(e.target.value)}
+                        placeholder="Contoh:&#10;Gedung asrama ber-AC&#10;Perpustakaan kitab kuning 24 jam&#10;Makan dan minum disediakan pesantren"
+                        className="w-full p-2 text-xs bg-slate-50 border rounded-lg font-mono text-[11px]"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={customSectionForm.isActive}
+                          onChange={(e) => setCustomSectionForm({ ...customSectionForm, isActive: e.target.checked })}
+                          className="w-4 h-4 rounded text-emerald-800"
+                        />
+                        <span>Tampilkan di Halaman PMB Publik</span>
+                      </label>
+
+                      <div className="flex items-center gap-2">
+                        <label className="text-xs font-bold text-slate-500">Urutan:</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={customSectionForm.order}
+                          onChange={(e) => setCustomSectionForm({ ...customSectionForm, order: parseInt(e.target.value) || 1 })}
+                          className="w-16 p-1.5 text-xs bg-slate-50 border rounded-lg text-center font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow text-xs transition"
+                    >
+                      {isEditingSection ? "💾 Simpan Perubahan Elemen" : "➕ Tambahkan ke Brosur PMB"}
+                    </button>
+
+                    {isEditingSection && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingSection(false);
+                          setEditingSectionId(null);
+                          setSectionItemsRaw("");
+                          setCustomSectionForm({
+                            title: "",
+                            subtitle: "",
+                            badge: "",
+                            icon: "📌",
+                            content: "",
+                            items: [],
+                            order: (pmbSettings.customSections?.length || 0) + 1,
+                            isActive: true
+                          });
+                        }}
+                        className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                      >
+                        ❌ Batal Edit
+                      </button>
+                    )}
+                  </form>
+                </div>
+
+                {/* Kolom Kanan: Daftar Elemen Brosur Aktif */}
+                <div className="lg:col-span-7 space-y-4">
+                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b">
+                      <h3 className="font-serif font-bold text-lg text-emerald-950">
+                        Elemen Brosur Tersimpan ({pmbSettings.customSections?.length || 0})
+                      </h3>
+                      <span className="text-[11px] text-slate-500">
+                        {pmbSettings.customSections?.filter((s) => s.isActive).length || 0} aktif tayang
+                      </span>
+                    </div>
+
+                    {(!pmbSettings.customSections || pmbSettings.customSections.length === 0) ? (
+                      <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        <span className="text-3xl block mb-2">✨</span>
+                        <p className="text-xs font-bold text-slate-700">Belum ada elemen tambahan yang dibuat.</p>
+                        <p className="text-[11px] text-slate-400 mt-1 max-w-sm mx-auto">
+                          Gunakan form di samping jika ada materi brosur baru tahun ini yang belum tercakup di form standar.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {pmbSettings.customSections.map((sec) => (
+                          <div
+                            key={sec.id}
+                            className={`p-4 rounded-xl border transition ${
+                              sec.isActive ? "bg-white border-slate-200 hover:border-emerald-300" : "bg-slate-50/70 border-slate-200 opacity-60"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-start gap-3">
+                                <span className="text-2xl mt-0.5">{sec.icon || "📌"}</span>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="font-serif font-bold text-sm text-slate-900">{sec.title}</h4>
+                                    {sec.badge && (
+                                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.2 rounded-full">
+                                        {sec.badge}
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] text-slate-400 font-mono">Urutan #{sec.order}</span>
+                                  </div>
+                                  {sec.subtitle && <p className="text-xs text-slate-500 mt-0.5">{sec.subtitle}</p>}
+                                  {sec.content && (
+                                    <p className="text-xs text-slate-700 mt-2 line-clamp-2 leading-relaxed">
+                                      {sec.content}
+                                    </p>
+                                  )}
+                                  {sec.items && sec.items.length > 0 && (
+                                    <p className="text-[11px] text-emerald-800 font-medium mt-1">
+                                      ✓ Memiliki {sec.items.length} butir poin daftar
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setIsEditingSection(true);
+                                    setEditingSectionId(sec.id);
+                                    setCustomSectionForm({
+                                      title: sec.title,
+                                      subtitle: sec.subtitle || "",
+                                      badge: sec.badge || "",
+                                      icon: sec.icon || "📌",
+                                      content: sec.content || "",
+                                      items: sec.items || [],
+                                      order: sec.order || 1,
+                                      isActive: sec.isActive
+                                    });
+                                    setSectionItemsRaw(sec.items ? sec.items.join("\n") : "");
+                                  }}
+                                  className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold text-xs"
+                                  title="Edit Elemen"
+                                >
+                                  ✏️ Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = (pmbSettings.customSections || []).map((s) =>
+                                      s.id === sec.id ? { ...s, isActive: !s.isActive } : s
+                                    );
+                                    updatePmbSettings({ customSections: updated });
+                                  }}
+                                  className={`px-2.5 py-1 rounded font-bold text-xs ${
+                                    sec.isActive ? "bg-slate-200 hover:bg-slate-300 text-slate-700" : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                                  }`}
+                                  title="Ubah Status Tayang"
+                                >
+                                  {sec.isActive ? "Sembunyikan" : "Aktifkan"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm(`Hapus elemen brosur: "${sec.title}"?`)) {
+                                      const updated = (pmbSettings.customSections || []).filter((s) => s.id !== sec.id);
+                                      updatePmbSettings({ customSections: updated });
+                                    }
+                                  }}
+                                  className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-xs"
+                                  title="Hapus Elemen"
+                                >
+                                  🗑️ Hapus
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 8: FOTO DOKUMENTASI PMB */}
+            {pmbSubTab === "dokumentasi" && (
+              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <div className="pb-4 border-b">
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
+                    <span>📸</span>
+                    <span>Galeri Foto Dokumentasi Brosur PMB</span>
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-0.5">
+                    Unggah atau sematkan foto dokumentasi mahasantri, kampus, dan suasana ujian seleksi seperti yang tertera di bagian bawah brosur cetak.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                  {/* Form Upload Foto Baru */}
+                  <div className="md:col-span-5 space-y-4 p-5 bg-slate-50 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-xs text-slate-800 uppercase tracking-wider">Tambah Foto Dokumentasi</h4>
+                    <ImageUploader
+                      label="Unggah File Foto (JPG/PNG)"
+                      folder="pmb"
+                      accept="image/*"
+                      maxSizeMB={5}
+                      value={docImageForm.url}
+                      onChange={(url) => setDocImageForm((prev) => ({ ...prev, url }))}
+                      helperText="Pilih foto dokumentasi PMB yang ingin ditampilkan."
+                    />
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Keterangan / Kepsyen Foto (Opsional)</label>
+                      <input
+                        type="text"
+                        value={docImageForm.caption}
+                        onChange={(e) => setDocImageForm({ ...docImageForm, caption: e.target.value })}
+                        placeholder="Contoh: Suasana Imtihan Qabul Gelombang 1"
+                        className="w-full p-2 text-xs bg-white border rounded-lg"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={!docImageForm.url}
+                      onClick={() => {
+                        if (!docImageForm.url) return;
+                        const newImg: PMBDocumentationImage = {
+                          id: "doc-" + Date.now().toString(),
+                          url: docImageForm.url,
+                          caption: docImageForm.caption.trim() || undefined
+                        };
+                        const updated = [...(pmbSettings.documentationImages || []), newImg];
+                        updatePmbSettings({ documentationImages: updated });
+                        setDocImageForm({ url: "", caption: "" });
+                        alert("✓ Foto dokumentasi PMB berhasil ditambahkan!");
+                      }}
+                      className="w-full py-2 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-40 text-white font-bold rounded-xl text-xs transition"
+                    >
+                      ➕ Tambahkan Foto ke Galeri PMB
+                    </button>
+                  </div>
+
+                  {/* Grid Foto Tersimpan */}
+                  <div className="md:col-span-7 space-y-3">
+                    <h4 className="font-bold text-xs text-slate-800 uppercase tracking-wider">
+                      Foto Tersimpan ({pmbSettings.documentationImages?.length || 0})
+                    </h4>
+                    {(!pmbSettings.documentationImages || pmbSettings.documentationImages.length === 0) ? (
+                      <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        <span className="text-3xl block mb-2">📸</span>
+                        <p className="text-xs font-bold text-slate-600">Belum ada foto dokumentasi brosur.</p>
+                        <p className="text-[11px] text-slate-400 mt-1">Unggah foto dokumentasi untuk melengkapi tampilan brosur PMB.</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {pmbSettings.documentationImages.map((img) => (
+                          <div key={img.id} className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-video shadow-sm">
+                            <img src={img.url} alt={img.caption || "Foto PMB"} className="w-full h-full object-cover" />
+                            {img.caption && (
+                              <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white text-[10px] p-1 text-center truncate">
+                                {img.caption}
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm("Hapus foto dokumentasi ini?")) {
+                                  const updated = (pmbSettings.documentationImages || []).filter((i) => i.id !== img.id);
+                                  updatePmbSettings({ documentationImages: updated });
+                                }
+                              }}
+                              className="absolute top-1.5 right-1.5 p-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs opacity-0 group-hover:opacity-100 transition shadow"
+                              title="Hapus Foto"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 9: PRATINJAU LANGSUNG (LIVE MOCKUP PREVIEW) */}
+            {pmbSubTab === "pratinjau" && (
+              <div className="space-y-6">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div>
+                    <h4 className="font-serif font-bold text-base text-slate-900 flex items-center gap-2">
+                      <span>👁️</span>
+                      <span>Pratinjau Langsung Brosur &amp; Pendaftaran PMB (Live Mockup)</span>
+                    </h4>
+                    <p className="text-slate-500 text-xs mt-0.5">
+                      Simulasi tampilan visual halaman PMB publik secara real-time berdasarkan data dan pengaturan yang aktif saat ini.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (typeof window !== "undefined") {
+                          localStorage.setItem("mahad_admin_preview", "true");
+                          window.open("/pmb?preview=true", "_blank");
+                        }
+                      }}
+                      className="px-4 py-2 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5"
+                    >
+                      <span>Buka Halaman PMB Publik di Tab Baru &rarr;</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live Mockup Container */}
+                <div className="rounded-3xl border border-slate-300 overflow-hidden shadow-lg bg-slate-50">
+                  {/* Hero Mockup */}
+                  <div className="bg-emerald-950 text-white py-12 px-6 text-center relative">
+                    <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-amber-300 bg-white/10 px-3 py-0.5 rounded-full border border-amber-300/30">
+                        ✨ {pmbSettings.academicYear || "Penerimaan Mahasantri Baru"}
+                      </span>
+                      {pmbSettings.accreditationBadge && (
+                        <span className="text-[10px] font-bold uppercase text-emerald-200 bg-emerald-900/60 px-3 py-0.5 rounded-full border border-emerald-500/40">
+                          ⭐ {pmbSettings.accreditationBadge}
+                        </span>
+                      )}
+                    </div>
+
+                    {pmbSettings.headerArabicText && (
+                      <p className="font-serif text-lg text-amber-300/90 mb-1">{pmbSettings.headerArabicText}</p>
+                    )}
+
+                    <h1 className="font-serif font-bold text-2xl sm:text-4xl text-white">
+                      {pmbSettings.title || "Brosur Pendaftaran Imtihan Qabul"}
+                    </h1>
+
+                    <p className="text-amber-300 font-serif font-medium text-sm sm:text-base mt-1">
+                      {pmbSettings.subtitle || "Ma'had Aly Pontren DDI Mangkoso"} &bull; Takhassus {pmbSettings.programTakhassus || "Fiqh dan Ushul Fiqh"}
+                    </p>
+
+                    <p className="text-emerald-100 text-xs sm:text-sm max-w-xl mx-auto mt-2 leading-relaxed">
+                      {pmbSettings.heroDescription || "Membina kader ulama mutafaqqih fiddin berwawasan wasathiyyah dan berakhlak mulia dengan sanad keilmuan muttashil."}
+                    </p>
+
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-[11px]">
+                      {pmbSettings.scholarshipBadge && (
+                        <span className="bg-amber-400/20 text-amber-200 border border-amber-400/40 px-3 py-1 rounded-xl font-bold">
+                          🎁 {pmbSettings.scholarshipBadge}
+                        </span>
+                      )}
+                      {pmbSettings.quotaTotal && (
+                        <span className="bg-emerald-800/80 text-emerald-100 border border-emerald-600/50 px-3 py-1 rounded-xl">
+                          👥 Kuota: <strong>{pmbSettings.quotaTotal}</strong>
+                        </span>
+                      )}
+                      {pmbSettings.registrationPeriod && (
+                        <span className="bg-white/10 text-emerald-100 border border-white/20 px-3 py-1 rounded-xl">
+                          🗓️ Periode: <strong>{pmbSettings.registrationPeriod}</strong>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Cards Mockup */}
+                  <div className="max-w-5xl mx-auto px-4 -mt-5 relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                      <span className="text-2xl">🎓</span>
+                      <div>
+                        <h5 className="font-bold text-xs text-slate-900">Jalur Beasiswa Penuh</h5>
+                        <p className="text-[10px] text-slate-500">{pmbSettings.quotaScholarship || "25 Mahasantri"}</p>
+                      </div>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                      <span className="text-2xl">👥</span>
+                      <div>
+                        <h5 className="font-bold text-xs text-slate-900">Jalur Mandiri</h5>
+                        <p className="text-[10px] text-slate-500">{pmbSettings.quotaMandiri || "5 Mahasantri"}</p>
+                      </div>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                      <span className="text-2xl">📜</span>
+                      <div>
+                        <h5 className="font-bold text-xs text-slate-900">{pmbSettings.cardStudyProgramTitle || "Jenjang Marhalah Ula (M.1)"}</h5>
+                        <p className="text-[10px] text-slate-500">{pmbSettings.cardStudyProgramSubtitle || "Ijazah Terakreditasi Mumtaz & Sanad Kitab"}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content Mockup */}
+                  <div className="max-w-5xl mx-auto p-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-3">
+                        <h5 className="font-serif font-bold text-sm text-slate-900 flex items-center gap-2 border-b pb-2">
+                          <span>📋</span>
+                          <span>Persyaratan Pendaftaran ({pmbSettings.requirements?.length || 0})</span>
+                        </h5>
+                        <ul className="space-y-1.5 text-xs text-slate-700">
+                          {(pmbSettings.requirements || []).map((req, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="font-bold text-emerald-800 text-[11px] shrink-0">{i + 1}.</span>
+                              <span>{req}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-3">
+                        <h5 className="font-serif font-bold text-sm text-slate-900 flex items-center gap-2 border-b pb-2">
+                          <span>📖</span>
+                          <span>Materi Imtihan Qabul ({pmbSettings.examSubjects?.length || 0})</span>
+                        </h5>
+                        <div className="space-y-2">
+                          {(pmbSettings.examSubjects || []).map((subj, i) => (
+                            <div key={i} className="p-2.5 bg-slate-50 rounded-lg border text-xs font-semibold text-slate-800 flex items-center gap-2">
+                              <span className="text-emerald-700">✓</span>
+                              <span>{subj}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Schedules Mockup */}
+                    {pmbSettings.schedules && pmbSettings.schedules.length > 0 && (
+                      <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-3">
+                        <h5 className="font-serif font-bold text-sm text-slate-900 flex items-center gap-2 border-b pb-2">
+                          <span>🗓️</span>
+                          <span>Tahapan &amp; Jadwal Imtihan ({pmbSettings.schedules.length})</span>
+                        </h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                          {pmbSettings.schedules.map((sch, i) => (
+                            <div key={sch.id || i} className="p-3 bg-slate-50 rounded-lg border text-xs space-y-1">
+                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded">Tahap {i + 1}</span>
+                              <p className="font-bold text-slate-900 text-xs mt-1">{sch.stageName}</p>
+                              <p className="text-[11px] text-amber-800 font-semibold">{sch.date}</p>
+                              {sch.description && <p className="text-[10px] text-slate-500 pt-1 border-t">{sch.description}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Custom Sections Mockup */}
+                    {pmbSettings.customSections && pmbSettings.customSections.filter((s) => s.isActive).length > 0 && (
+                      <div className="space-y-3">
+                        {pmbSettings.customSections
+                          .filter((s) => s.isActive)
+                          .sort((a, b) => (a.order || 0) - (b.order || 0))
+                          .map((sec) => (
+                            <div key={sec.id} className="bg-white p-5 rounded-xl border border-slate-200 space-y-2">
+                              <div className="flex items-center gap-2 border-b pb-2">
+                                <span className="text-xl">{sec.icon || "📌"}</span>
+                                <h5 className="font-serif font-bold text-sm text-slate-900">{sec.title}</h5>
+                                {sec.badge && (
+                                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.2 rounded font-bold">
+                                    {sec.badge}
+                                  </span>
+                                )}
+                              </div>
+                              {sec.content && <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line">{sec.content}</p>}
+                              {sec.items && sec.items.length > 0 && (
+                                <ul className="space-y-1 text-xs text-slate-700 pt-1">
+                                  {sec.items.map((it, i) => (
+                                    <li key={i} className="flex items-center gap-2">
+                                      <span className="text-emerald-700">✓</span>
+                                      <span>{it}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    )}
+
+                    {/* Contacts Mockup */}
+                    {pmbSettings.contacts && pmbSettings.contacts.length > 0 && (
+                      <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-3">
+                        <h5 className="font-serif font-bold text-sm text-slate-900 flex items-center gap-2 border-b pb-2">
+                          <span>📞</span>
+                          <span>Narahubung &amp; Kontak Panitia Seleksi ({pmbSettings.contacts.length})</span>
+                        </h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {pmbSettings.contacts.map((c) => (
+                            <div key={c.id} className="p-3 bg-slate-50 rounded-lg border flex items-center justify-between gap-3 text-xs">
+                              <div>
+                                <span className="text-[9px] uppercase font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded">{c.role}</span>
+                                <p className="font-bold text-slate-900 mt-1">{c.name}</p>
+                                <p className="text-slate-500 font-mono text-[11px]">{c.phone}</p>
+                              </div>
+                              <span className="text-[10px] bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-bold">WhatsApp</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

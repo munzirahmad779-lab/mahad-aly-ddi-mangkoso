@@ -57,7 +57,13 @@ export default function PmbPage() {
             )}
           </div>
 
-          <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white mt-2 leading-tight">
+          {pmb.headerArabicText && (
+            <div className="font-serif text-lg sm:text-2xl text-mahad-gold/90 mb-2 tracking-wide font-medium">
+              {pmb.headerArabicText}
+            </div>
+          )}
+
+          <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white mt-1 leading-tight">
             {pmb.title || "Brosur Pendaftaran Imtihan Qabul"}
           </h1>
           
@@ -66,7 +72,7 @@ export default function PmbPage() {
           </p>
 
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-3 leading-relaxed">
-            Membina kader ulama mutafaqqih fiddin berwawasan wasathiyyah dan berakhlak mulia dengan sanad keilmuan muttashil.
+            {pmb.heroDescription || "Membina kader ulama mutafaqqih fiddin berwawasan wasathiyyah dan berakhlak mulia dengan sanad keilmuan muttashil."}
           </p>
 
           {/* Badges Kuota & Periode */}
@@ -176,8 +182,8 @@ export default function PmbPage() {
               📜
             </div>
             <div>
-              <h4 className="font-bold text-slate-900 text-xs sm:text-sm">Jenjang Marhalah Ula (M.1)</h4>
-              <p className="text-[11px] text-slate-500">Ijazah Terakreditasi Mumtaz &amp; Sanad Kitab</p>
+              <h4 className="font-bold text-slate-900 text-xs sm:text-sm">{pmb.cardStudyProgramTitle || "Jenjang Marhalah Ula (M.1)"}</h4>
+              <p className="text-[11px] text-slate-500">{pmb.cardStudyProgramSubtitle || "Ijazah Terakreditasi Mumtaz & Sanad Kitab"}</p>
             </div>
           </div>
         </div>
@@ -516,6 +522,75 @@ export default function PmbPage() {
             </div>
           )}
         </div>
+
+        {/* Elemen / Bagian Tambahan Brosur PMB (Dinamis Tiap Tahun) */}
+        {pmb.customSections && pmb.customSections.filter((s) => s.isActive).length > 0 && (
+          <div className="space-y-6">
+            {pmb.customSections
+              .filter((s) => s.isActive)
+              .sort((a, b) => (a.order || 0) - (b.order || 0))
+              .map((sec) => (
+                <div key={sec.id} className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{sec.icon || "📌"}</span>
+                      <div>
+                        <h3 className="font-serif font-bold text-xl text-slate-900">{sec.title}</h3>
+                        {sec.subtitle && <p className="text-xs text-slate-500 mt-0.5">{sec.subtitle}</p>}
+                      </div>
+                    </div>
+                    {sec.badge && (
+                      <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                        {sec.badge}
+                      </span>
+                    )}
+                  </div>
+                  {sec.content && (
+                    <div className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                      {sec.content}
+                    </div>
+                  )}
+                  {sec.items && sec.items.length > 0 && (
+                    <ul className="space-y-2.5 pt-1">
+                      {sec.items.map((item, i) => (
+                        <li key={i} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700">
+                          <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                            ✓
+                          </span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+          </div>
+        )}
+
+        {/* Galeri Dokumentasi Brosur & Kegiatan Mahasantri */}
+        {pmb.documentationImages && pmb.documentationImages.length > 0 && (
+          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <span className="text-lg">📸</span>
+              <div>
+                <h3 className="font-serif font-bold text-lg text-slate-900">Dokumentasi &amp; Kegiatan Ma&apos;had Aly</h3>
+                <p className="text-xs text-slate-500">Galeri foto kegiatan mahasantri dan seleksi imtihan qabul</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {pmb.documentationImages.map((img) => (
+                <div key={img.id} className="group relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-video shadow-sm">
+                  <img src={img.url} alt={img.caption || "Dokumentasi PMB"} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                  {img.caption && (
+                    <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white text-[10px] p-1.5 text-center truncate">
+                      {img.caption}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Tanya Jawab Sering Ditanyakan (FAQ PMB) */}
         {pmbFAQs && pmbFAQs.length > 0 && (

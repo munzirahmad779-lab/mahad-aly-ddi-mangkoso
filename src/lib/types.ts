@@ -275,9 +275,29 @@ export interface PMBContactItem {
   role?: string;
 }
 
+export interface PMBCustomSection {
+  id: string;
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  icon?: string;
+  content: string;
+  items?: string[];
+  order: number;
+  isActive: boolean;
+}
+
+export interface PMBDocumentationImage {
+  id: string;
+  url: string;
+  caption?: string;
+}
+
 export interface PMBSettings {
   title: string;
   subtitle: string;
+  headerArabicText?: string;
+  heroDescription?: string;
   academicYear: string;
   programTakhassus: string;
   scholarshipBadge: string;
@@ -285,6 +305,8 @@ export interface PMBSettings {
   quotaTotal: string;
   quotaScholarship: string;
   quotaMandiri: string;
+  cardStudyProgramTitle?: string;
+  cardStudyProgramSubtitle?: string;
   registrationPeriod: string;
   registrationLink: string;
   brochurePdfUrl?: string;
@@ -296,6 +318,8 @@ export interface PMBSettings {
   contacts: PMBContactItem[];
   address?: string;
   notes?: string;
+  documentationImages?: PMBDocumentationImage[];
+  customSections?: PMBCustomSection[];
 }
 
 export interface EmailSubscriber {
