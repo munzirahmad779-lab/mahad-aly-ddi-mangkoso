@@ -1180,12 +1180,18 @@ export default function AdminPage() {
       delete failedAttempts[emailToUnlock.toLowerCase()];
       localStorage.setItem("mahad_failed_attempts", JSON.stringify(failedAttempts));
 
-      // Hapus juga dari database Supabase
+      // Hapus juga dari database Supabase (via API server, bukan anon key)
       try {
-        await supabase.from("site_content").upsert({
-          key: "locked_accounts",
-          value: stored
-        }, { onConflict: "key" });
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        const isGuest = localStorage.getItem("mahad_guest_mode");
+        const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+        if (token) headers.Authorization = `Bearer ${token}`;
+        await fetch("/api/admin/content", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ key: "locked_accounts", group_name: "system", label: "Akun Terkunci", value: stored })
+        });
       } catch (e) {}
 
       loadLockedAccounts();
@@ -14730,10 +14736,26 @@ export default function AdminPage() {
                                 type="button"
                                 onClick={async () => {
                                   const newStatus = !usr.is_active;
-                                  const { error } = await supabase.from("users").update({ is_active: newStatus }).eq("id", usr.id);
-                                  if (!error) {
-                                    setDbUsers(dbUsers.map((u) => (u.id === usr.id ? { ...u, is_active: newStatus } : u)));
-                                    alert(`Status pengguna ${usr.email} diubah menjadi ${newStatus ? "Aktif" : "Nonaktif"}!`);
+                                  try {
+                                    const { data: { session } } = await supabase.auth.getSession();
+                                    const headers: Record<string, string> = { "Content-Type": "application/json" };
+                                    const isGuest = localStorage.getItem("mahad_guest_mode");
+                                    const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+                                    if (token) headers.Authorization = `Bearer ${token}`;
+                                    const res = await fetch("/api/admin/db", {
+                                      method: "POST",
+                                      headers,
+                                      body: JSON.stringify({ table: "users", op: "update", payload: { is_active: newStatus }, match: { id: usr.id } })
+                                    });
+                                    if (res.ok) {
+                                      setDbUsers(dbUsers.map((u) => (u.id === usr.id ? { ...u, is_active: newStatus } : u)));
+                                      alert(`Status pengguna ${usr.email} diubah menjadi ${newStatus ? "Aktif" : "Nonaktif"}!`);
+                                    } else {
+                                      const errJson = await res.json().catch(() => ({}));
+                                      alert(`Gagal mengubah status pengguna: ${errJson.error || res.statusText}`);
+                                    }
+                                  } catch (e) {
+                                    alert("Gagal mengubah status pengguna: koneksi server terputus.");
                                   }
                                 }}
                                 className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition ${

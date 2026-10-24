@@ -71,6 +71,10 @@ function applySecurityHeaders(res: NextResponse) {
 }
 
 export const config = {
+  // PENTING: matcher dibatasi, JANGAN diperluas dengan regex lookahead luas.
+  // Matcher yang menyentuh /_next/image membuat optimizer gambar Next 16
+  // gagal ("received null") sehingga logo/gambar lokal tidak tampil.
+  // Security headers untuk seluruh situs ditangani next.config.ts headers().
   matcher: [
     "/admin/:path*",
     "/wp-login.php",
@@ -80,6 +84,8 @@ export const config = {
     "/.env",
     "/.git/:path*",
     "/phpmyadmin/:path*",
-    "/shell.php"
+    "/shell.php",
+    "/eval-stdin.php",
+    "/admin.php"
   ]
 };

@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendSecurityAlertEmailToAdmins } from "@/lib/email/service";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    // Endpoint ini mengirim email nyata ke admin: tanpa batas, bot bisa membanjiri inbox.
+    const rl = checkRateLimit(`alert:${getClientIp(req)}`, 5, 5 * 60 * 1000);
+    if (!rl.allowed) return rateLimitResponse(rl);
+
     const body = await req.json().catch(() => ({}));
 
     // 1. IP Sanitization - Prioritaskan header server di atas body input

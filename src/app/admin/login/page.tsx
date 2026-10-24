@@ -75,119 +75,40 @@ export default function AdminLoginPage() {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // 1. Cek apakah akun sedang terkunci akibat 3 kali salah kata sandi
     try {
-      const lockedAccounts = typeof window !== "undefined"
-        ? JSON.parse(localStorage.getItem("mahad_locked_accounts") || "{}")
-        : {};
+      // Login melewati proxy server: rate limit & penguncian brute-force
+      // ditegakkan di server, bukan di localStorage browser.
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password })
+      });
 
-      if (lockedAccounts[normalizedEmail]) {
-        setErrorMessage(
-          "🚫 AKUN TERBLOKIR: Akun Anda telah dinonaktifkan sementara karena 3 kali salah memasukkan kata sandi demi keamanan lembaga. Hubungi Super Admin Ma'had Aly untuk membuka blokir dan mengizinkan reset kata sandi."
-        );
+      const result = await res.json().catch(() => ({}));
+
+      if (!res.ok || !result?.success || !result?.session) {
+        setErrorMessage(result?.error || "Email atau kata sandi tidak cocok. Periksa kembali akun Anda.");
         setLoading(false);
         return;
       }
-    } catch (e) {}
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password
+      // Terapkan sesi yang diterbitkan server ke client supabase
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: result.session.access_token,
+        refresh_token: result.session.refresh_token
       });
+      if (sessionError) throw sessionError;
 
-      if (error) {
-        // Hitung percobaan gagal untuk email ini
-        let attempts = 1;
-        try {
-          const failedMap = typeof window !== "undefined"
-            ? JSON.parse(localStorage.getItem("mahad_failed_attempts") || "{}")
-            : {};
-          attempts = (failedMap[normalizedEmail] || 0) + 1;
-          failedMap[normalizedEmail] = attempts;
-          localStorage.setItem("mahad_failed_attempts", JSON.stringify(failedMap));
-
-          if (attempts >= 3) {
-            // Blokir akun seketika!
-            const lockedAccounts = JSON.parse(localStorage.getItem("mahad_locked_accounts") || "{}");
-            lockedAccounts[normalizedEmail] = {
-              email: normalizedEmail,
-              failedCount: attempts,
-              lockedAt: new Date().toISOString(),
-              reason: "3 kali salah memasukkan kata sandi"
-            };
-            localStorage.setItem("mahad_locked_accounts", JSON.stringify(lockedAccounts));
-
-            // Kirim notifikasi darurat ke admin & catat ke log keamanan
-            fetch("/api/security/alert", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                threatType: "brute_force",
-                severity: "critical",
-                endpoint: "/admin/login",
-                details: `Akun administrator [${normalizedEmail}] TERBLOKIR otomatis setelah 3 kali gagal memasukkan kata sandi.`,
-                ip: "Client Browser"
-              })
-            }).catch(() => {});
-
-            setErrorMessage(
-              "🚫 AKUN TERBLOKIR: Anda telah 3 kali salah memasukkan kata sandi! Demi keamanan website, akun Anda terkunci otomatis. Hubungi Super Admin Ma'had Aly untuk membuka blokir dan mengatur ulang kata sandi."
-            );
-            setLoading(false);
-            return;
-          } else {
-            const sisa = 3 - attempts;
-            setErrorMessage(
-              `Kata sandi atau email tidak cocok. Peringatan: Sisa kesempatan ${sisa} kali lagi sebelum akun terblokir otomatis.`
-            );
-            setLoading(false);
-            return;
-          }
-        } catch (storageErr) {
-          setErrorMessage(
-            error.message === "Invalid login credentials"
-              ? "Email atau kata sandi tidak cocok. Periksa kembali akun Anda."
-              : error.message
-          );
-          setLoading(false);
-          return;
-        }
+      if (rememberMe) {
+        localStorage.setItem("mahad_remember_email", email.trim());
+        localStorage.setItem("mahad_session_remember", "true");
+      } else {
+        localStorage.removeItem("mahad_remember_email");
+        localStorage.removeItem("mahad_session_remember");
       }
 
-      if (data?.session) {
-        // Reset failed attempts saat berhasil login
-        try {
-          const failedMap = JSON.parse(localStorage.getItem("mahad_failed_attempts") || "{}");
-          delete failedMap[normalizedEmail];
-          localStorage.setItem("mahad_failed_attempts", JSON.stringify(failedMap));
-        } catch (e) {}
-
-        // Cek status role di tabel public.users
-        const { data: userProfile, error: profileError } = await supabase
-          .from("users")
-          .select("role, is_active, nama_lengkap")
-          .eq("id", data.user.id)
-          .single();
-
-        if (profileError || !userProfile?.is_active) {
-          await supabase.auth.signOut();
-          setErrorMessage("Akun Anda tidak aktif atau belum memiliki hak akses panel admin.");
-          setLoading(false);
-          return;
-        }
-
-        if (rememberMe) {
-          localStorage.setItem("mahad_remember_email", email.trim());
-          localStorage.setItem("mahad_session_remember", "true");
-        } else {
-          localStorage.removeItem("mahad_remember_email");
-          localStorage.removeItem("mahad_session_remember");
-        }
-
-        router.push("/admin");
-        router.refresh();
-      }
+      router.push("/admin");
+      router.refresh();
     } catch (err: any) {
       setErrorMessage(err?.message || "Terjadi kesalahan saat masuk. Coba lagi.");
     } finally {

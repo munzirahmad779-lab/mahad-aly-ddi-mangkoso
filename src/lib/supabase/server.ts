@@ -19,3 +19,16 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
     autoRefreshToken: false
   }
 });
+
+// Client anon untuk operasi auth di server (mis. proxy login) — TIDAK punya
+// hak istimewa; RLS tetap berlaku. Verifikasi kredensial tidak boleh memakai
+// service role.
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || SUPABASE_PUBLISHABLE_FALLBACK;
+
+export const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
+  }
+});

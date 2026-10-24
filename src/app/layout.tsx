@@ -3,7 +3,93 @@ import { Inter, Amiri, Cinzel } from "next/font/google";
 import MaintenanceGate from "@/components/common/MaintenanceGate";
 import GoogleAnalytics from "@/components/common/GoogleAnalytics";
 import { ArticleProvider } from "@/context/ArticleContext";
+import { supabaseAnon } from "@/lib/supabase/server";
+import {
+  mapDbArticles,
+  mapDbTheses,
+  mapDbCategories,
+  mapDbNews,
+  mapDbCollections
+} from "@/lib/content-mappers";
 import "./globals.css";
+
+// Konten identitas (footer, navbar, hero) diambil di SERVER supaya HTML
+// pertama sudah memuat nilai dari database — menghilangkan kedipan
+// "teks default → teks admin" saat halaman pertama dibuka.
+// ISR 30 detik: cepat seperti statis, tapi menyegarkan data dari DB.
+export const revalidate = 30;
+
+// Ambil nilai site_content dengan pengaman waktu (maks 2 detik) agar
+// lambat/putusnya database tidak pernah menahan render halaman.
+// Cache module-level: seed diambil maksimal 1x per 30 detik. Permintaan
+// berikutnya instan; kalau kueri gagal/lambat, pakai data terakhir yang
+// berhasil (stale-while-error) sehingga seed TIDAK PERNAH kosong mendadak.
+let seedCache: { data: Record<string, unknown>; at: number } | null = null;
+const SEED_TTL_MS = 30_000;
+const SEED_FETCH_TIMEOUT_MS = 6_000;
+
+async function fetchInitialContent(): Promise<Record<string, unknown>> {
+  const KEYS = [
+    "footer", "footer_nav", "footer_focus", "header", "home.hero", "site_settings",
+    "home_sections", "about_page", "page_texts", "dema_settings", "masyayikh_list",
+    "courses_list", "sarana_list", "accreditations", "calendar_events",
+    "bahtsul_masail", "pmb_settings", "pmb_waves", "pmb_faqs",
+    "gallery_albums", "donations", "email_templates"
+  ];
+
+  // 1. Cache segar → instan
+  if (seedCache && Date.now() - seedCache.at < SEED_TTL_MS) {
+    return seedCache.data;
+  }
+
+  // 2. Kueri paralel: site_content (1 kueri) + tabel konten publik
+  try {
+    const query = Promise.all([
+      supabaseAnon
+        .from("site_content")
+        .select("key, value")
+        .in("key", KEYS)
+        .then(({ data, error }) => {
+          if (error || !Array.isArray(data)) throw new Error(error?.message || "query gagal");
+          const map: Record<string, unknown> = {};
+          for (const row of data) {
+            if (row?.key && row.value != null) map[row.key] = row.value;
+          }
+          return map;
+        }),
+      supabaseAnon.from("articles").select("*").then(r => mapDbArticles((r.data as any[]) || [])),
+      supabaseAnon.from("theses").select("*").then(r => mapDbTheses((r.data as any[]) || [])),
+      supabaseAnon.from("categories").select("*").then(r => mapDbCategories((r.data as any[]) || [])),
+      supabaseAnon.from("news").select("*").then(r => mapDbNews((r.data as any[]) || [])),
+      supabaseAnon.from("collections").select("*").then(r => mapDbCollections((r.data as any[]) || []))
+    ]);
+
+    const timeout = new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), SEED_FETCH_TIMEOUT_MS)
+    );
+    const hasil = await Promise.race([
+      query.then(([content, articles, theses, categories, news, collections]) => ({
+        ...content,
+        __articles: articles,
+        __theses: theses,
+        __categories: categories,
+        __news: news,
+        __lecturers: collections.lecturers,
+        __facilities: collections.facilities
+      })),
+      timeout
+    ]);
+
+    if (hasil && Object.keys(hasil).length > 0) {
+      seedCache = { data: hasil, at: Date.now() };
+      return hasil;
+    }
+    // Kueri timeout/kosong → pakai cache lama bila ada
+    return seedCache?.data ?? {};
+  } catch {
+    return seedCache?.data ?? {};
+  }
+}
 
 const inter = Inter({
   subsets: ["latin"],
@@ -87,12 +173,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-EBBP80BZWL";
+  const initialContent = await fetchInitialContent();
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -142,25 +229,12 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <script
-          async
-          src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${gaId}', {
-                page_path: typeof window !== 'undefined' ? window.location.pathname : '',
-              });
-            `,
-          }}
-        />
+        {/* GA4 dimuat SEKALI lewat komponen <GoogleAnalytics /> (afterInteractive).
+            Duplikat di head dihapus — sebelumnya gtag 353 KiB terunduh dua kali
+            dan memperlambat LCP seluruh halaman. */}
       </head>
       <body className="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-mahad-gold selection:text-mahad-green-dark flex flex-col min-h-screen">
-        <ArticleProvider>
+        <ArticleProvider initialContent={initialContent}>
           <GoogleAnalytics />
           <MaintenanceGate>{children}</MaintenanceGate>
         </ArticleProvider>

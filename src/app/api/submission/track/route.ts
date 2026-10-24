@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  // Rate limit: pelacakan publik, cegah enumerasi kode tracking massal
+  const rl = checkRateLimit(`track-sub:${getClientIp(req)}`, 30, 60 * 1000);
+  if (!rl.allowed) return rateLimitResponse(rl);
+
   try {
     const { searchParams } = new URL(req.url);
     const kode = searchParams.get("kode")?.trim().toUpperCase();

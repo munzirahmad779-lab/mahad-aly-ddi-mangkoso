@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import crypto from "crypto";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  // Rate limit: telemetri publik, batasi banjir bot
+  const rl = checkRateLimit(`track:${getClientIp(req)}`, 120, 60 * 1000);
+  if (!rl.allowed) return rateLimitResponse(rl);
+
   try {
     const body = await req.json().catch(() => ({}));
     const pathname = typeof body.pathname === "string" ? body.pathname : "/";

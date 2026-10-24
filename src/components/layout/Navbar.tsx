@@ -657,6 +657,7 @@ export default function Navbar() {
             />
             <button
               type="submit"
+              aria-label="Cari kajian, fatwa, dan artikel"
               className="absolute right-3 top-2.5 text-mahad-gold"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

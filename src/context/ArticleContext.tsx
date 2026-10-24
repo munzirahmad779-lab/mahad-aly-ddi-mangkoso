@@ -309,42 +309,68 @@ function extractCatalogItems(value: unknown): unknown[] {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-export function ArticleProvider({ children }: { children: React.ReactNode }) {
-  const [articles, setArticles] = useState<Article[]>(INITIAL_ARTICLES);
-  const [categories, setCategories] = useState<CategoryInfo[]>(INITIAL_CATEGORIES);
-  const [theses, setTheses] = useState<Thesis[]>(INITIAL_THESES);
+export function ArticleProvider({
+  children,
+  initialContent,
+}: {
+  children: React.ReactNode;
+  // Seed dari server (RootLayout): nilai site_content terkini saat HTML
+  // pertama dirender, agar footer/navbar/hero tidak berkedip dari teks
+  // default ke teks admin setelah fetch client selesai.
+  initialContent?: Record<string, unknown>;
+}) {
+  const seedObject = <T,>(key: string, fallback: T): T =>
+    (initialContent && typeof initialContent[key] === "object" && initialContent[key] !== null
+      ? { ...(fallback as object), ...(initialContent[key] as object) }
+      : fallback) as T;
+  const seedArray = <T,>(key: string, fallback: T): T =>
+    (initialContent && Array.isArray(initialContent[key])
+      ? (initialContent[key] as T)
+      : fallback) as T;
+
+  const [articles, setArticles] = useState<Article[]>(() => seedArray("__articles", INITIAL_ARTICLES));
+  const [categories, setCategories] = useState<CategoryInfo[]>(() => seedArray("__categories", INITIAL_CATEGORIES));
+  const [theses, setTheses] = useState<Thesis[]>(() => seedArray("__theses", INITIAL_THESES));
   const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [news, setNews] = useState<NewsItem[]>(INITIAL_NEWS);
-  const [settings, setSettings] = useState<SiteSettings>(INITIAL_SETTINGS);
+  const [news, setNews] = useState<NewsItem[]>(() => seedArray("__news", INITIAL_NEWS));
+  const [settings, setSettings] = useState<SiteSettings>(() => seedObject("site_settings", INITIAL_SETTINGS));
   const [users, setUsers] = useState<AdminUser[]>(INITIAL_ADMIN_USERS);
   const [logs, setLogs] = useState<ActivityLog[]>(INITIAL_ACTIVITY_LOGS);
   const [media, setMedia] = useState<MediaItem[]>(INITIAL_MEDIA);
-  const [lecturers, setLecturers] = useState<Lecturer[]>(INITIAL_LECTURERS);
-  const [facilities, setFacilities] = useState<Facility[]>(INITIAL_FACILITIES);
-  const [accreditations, setAccreditations] = useState<Accreditation[]>(INITIAL_ACCREDITATIONS);
-  const [courses, setCourses] = useState<Course[]>(INITIAL_COURSES);
-  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>(INITIAL_CALENDAR);
-  const [bahtsulQA, setBahtsulQA] = useState<BahtsulMasailQA[]>(INITIAL_BAHTSUL_QA);
-  const [pmbSettings, setPmbSettings] = useState<PMBSettings>(INITIAL_PMB_SETTINGS);
-  const [pmbWaves, setPmbWaves] = useState<PMBWave[]>(INITIAL_PMB_WAVES);
-  const [pmbFAQs, setPmbFAQs] = useState<PMBFAQ[]>(INITIAL_PMB_FAQS);
+  const [lecturers, setLecturers] = useState<Lecturer[]>(
+    () => (initialContent && Array.isArray(initialContent["masyayikh_list"])
+      ? (initialContent["masyayikh_list"] as Lecturer[])
+      : seedArray("__lecturers", INITIAL_LECTURERS))
+  );
+  const [facilities, setFacilities] = useState<Facility[]>(
+    () => (initialContent && Array.isArray(initialContent["sarana_list"])
+      ? (initialContent["sarana_list"] as Facility[])
+      : seedArray("__facilities", INITIAL_FACILITIES))
+  );
+  const [accreditations, setAccreditations] = useState<Accreditation[]>(() => seedArray("accreditations", INITIAL_ACCREDITATIONS));
+  const [courses, setCourses] = useState<Course[]>(() => seedArray("courses_list", INITIAL_COURSES));
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>(() => seedArray("calendar_events", INITIAL_CALENDAR));
+  const [bahtsulQA, setBahtsulQA] = useState<BahtsulMasailQA[]>(() => seedArray("bahtsul_masail", INITIAL_BAHTSUL_QA));
+  const [pmbSettings, setPmbSettings] = useState<PMBSettings>(() => seedObject("pmb_settings", INITIAL_PMB_SETTINGS));
+  const [pmbWaves, setPmbWaves] = useState<PMBWave[]>(() => seedArray("pmb_waves", INITIAL_PMB_WAVES));
+  const [pmbFAQs, setPmbFAQs] = useState<PMBFAQ[]>(() => seedArray("pmb_faqs", INITIAL_PMB_FAQS));
   const [subscribers, setSubscribers] = useState<EmailSubscriber[]>(INITIAL_SUBSCRIBERS);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>(INITIAL_EMAIL_LOGS);
-  const [galleryAlbums, setGalleryAlbums] = useState<GalleryAlbum[]>(INITIAL_GALLERY_ALBUMS);
+  const [galleryAlbums, setGalleryAlbums] = useState<GalleryAlbum[]>(() => seedArray("gallery_albums", INITIAL_GALLERY_ALBUMS));
   const [comingSoonPages, setComingSoonPages] = useState<ComingSoonPageSetting[]>(INITIAL_COMING_SOON_PAGES);
   const [pageSeoList, setPageSeoList] = useState<PageSeoItem[]>(INITIAL_PAGE_SEO);
-  const [footerSettings, setFooterSettings] = useState<FooterSettings>(INITIAL_FOOTER_SETTINGS);
-  const [footerNav, setFooterNav] = useState<FooterNavLink[]>(INITIAL_FOOTER_NAV);
-  const [footerFocus, setFooterFocus] = useState<FooterFocusItem[]>(INITIAL_FOOTER_FOCUS);
-  const [navbarSettings, setNavbarSettings] = useState<NavbarSettings>(INITIAL_NAVBAR_SETTINGS);
-  const [heroSettings, setHeroSettings] = useState<HeroSectionSettings>(INITIAL_HERO_SETTINGS);
-  const [homeSections, setHomeSections] = useState<HomeSectionConfigItem[]>(INITIAL_HOME_SECTIONS);
-  const [emailTemplates, setEmailTemplates] = useState<EmailTemplateItem[]>(INITIAL_EMAIL_TEMPLATES);
-  const [aboutPageContent, setAboutPageContent] = useState<AboutPageContent>(INITIAL_ABOUT_CONTENT);
-  const [pageTexts, setPageTexts] = useState<PageTextsSettings>(INITIAL_PAGE_TEXTS);
-  const [donations, setDonations] = useState<DonationProgram[]>(INITIAL_DONATIONS);
+  const [footerSettings, setFooterSettings] = useState<FooterSettings>(() => seedObject("footer", INITIAL_FOOTER_SETTINGS));
+  const [footerNav, setFooterNav] = useState<FooterNavLink[]>(() => seedArray("footer_nav", INITIAL_FOOTER_NAV));
+  const [footerFocus, setFooterFocus] = useState<FooterFocusItem[]>(() => seedArray("footer_focus", INITIAL_FOOTER_FOCUS));
+  const [navbarSettings, setNavbarSettings] = useState<NavbarSettings>(() => seedObject("header", INITIAL_NAVBAR_SETTINGS));
+  const [heroSettings, setHeroSettings] = useState<HeroSectionSettings>(() => seedObject("home.hero", INITIAL_HERO_SETTINGS));
+  const [homeSections, setHomeSections] = useState<HomeSectionConfigItem[]>(() => seedArray("home_sections", INITIAL_HOME_SECTIONS));
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplateItem[]>(() => seedArray("email_templates", INITIAL_EMAIL_TEMPLATES));
+  const [aboutPageContent, setAboutPageContent] = useState<AboutPageContent>(() => seedObject("about_page", INITIAL_ABOUT_CONTENT));
+  const [pageTexts, setPageTexts] = useState<PageTextsSettings>(() => seedObject("page_texts", INITIAL_PAGE_TEXTS));
+  const [donations, setDonations] = useState<DonationProgram[]>(() => seedArray("donations", INITIAL_DONATIONS));
   const [securityThreats, setSecurityThreats] = useState<SecurityThreatLog[]>(INITIAL_SECURITY_THREATS);
-  const [demaSettings, setDemaSettings] = useState<DemaSettings>(INITIAL_DEMA_SETTINGS);
+  const [demaSettings, setDemaSettings] = useState<DemaSettings>(() => seedObject("dema_settings", INITIAL_DEMA_SETTINGS));
   const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(true);
   // False sampai katalog (masyayikh/kurikulum/sarana) selesai dihidrasi dari server.
   // Dipakai halaman publik untuk menampilkan skeleton rapi alih-alih data mock (anti-flicker).
@@ -358,7 +384,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
         .from("site_content")
         .select("value")
         .eq("key", "activity_logs")
-        .single();
+        .maybeSingle();
       if (logsData?.value && Array.isArray(logsData.value)) {
         setLogs(logsData.value);
         try {
@@ -479,24 +505,24 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
           supabase.from("articles").select("*").order("created_at", { ascending: false }),
           supabase.from("theses").select("*").order("created_at", { ascending: false }),
           supabase.from("categories").select("*").order("urutan", { ascending: true }),
-          supabase.from("site_content").select("value").eq("key", "footer").single(),
+          supabase.from("site_content").select("value").eq("key", "footer").maybeSingle(),
           supabase.from("collections").select("*").order("order_index", { ascending: true }),
-          supabase.from("site_content").select("value").eq("key", "site_settings").single(),
+          supabase.from("site_content").select("value").eq("key", "site_settings").maybeSingle(),
           supabase.from("news").select("*").order("created_at", { ascending: false }),
           supabase.from("media").select("*").order("created_at", { ascending: false }),
           supabase.from("submissions").select("*").order("created_at", { ascending: false }),
-          supabase.from("site_content").select("value").eq("key", "header").single(),
-          supabase.from("site_content").select("value").eq("key", "home.hero").single(),
-          supabase.from("site_content").select("value").eq("key", "home_sections").single(),
-          supabase.from("site_content").select("value").eq("key", "email_templates").single(),
-          supabase.from("site_content").select("value").eq("key", "about_page").single(),
-          supabase.from("site_content").select("value").eq("key", "page_texts").single(),
-          supabase.from("site_content").select("value").eq("key", "dema_settings").single(),
-          supabase.from("site_content").select("value").eq("key", "security_threats").single(),
-          supabase.from("site_content").select("value").eq("key", "masyayikh_list").single(),
-          supabase.from("site_content").select("value").eq("key", "courses_list").single(),
-          supabase.from("site_content").select("value").eq("key", "sarana_list").single(),
-          supabase.from("site_content").select("value").eq("key", "activity_logs").single(),
+          supabase.from("site_content").select("value").eq("key", "header").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "home.hero").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "home_sections").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "email_templates").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "about_page").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "page_texts").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "dema_settings").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "security_threats").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "masyayikh_list").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "courses_list").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "sarana_list").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "activity_logs").maybeSingle(),
           supabase.from("site_content").select("key, value")
         ]);
 
@@ -899,6 +925,16 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
               setDonations(map["donations"]);
               try { localStorage.setItem("mahad_donations", JSON.stringify(map["donations"])); } catch {}
             }
+
+            if (Array.isArray(map["page_seo"]) && map["page_seo"].length > 0) {
+              setPageSeoList(map["page_seo"]);
+              try { localStorage.setItem("mahad_page_seo", JSON.stringify(map["page_seo"])); } catch {}
+            }
+
+            if (Array.isArray(map["coming_soon"]) && map["coming_soon"].length > 0) {
+              setComingSoonPages(map["coming_soon"]);
+              try { localStorage.setItem("mahad_coming_soon", JSON.stringify(map["coming_soon"])); } catch {}
+            }
           }
         }
       } catch (err) {
@@ -960,6 +996,10 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
               setAboutPageContent((prev) => ({ ...prev, ...val }));
             } else if (key === "page_texts") {
               setPageTexts((prev) => ({ ...prev, ...val }));
+            } else if (key === "page_seo") {
+              if (Array.isArray(val)) setPageSeoList(val);
+            } else if (key === "coming_soon") {
+              if (Array.isArray(val)) setComingSoonPages(val);
             }
           }
         }
@@ -1031,6 +1071,9 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const saveLecturers = (data: Lecturer[]) => {
     setLecturers(data);
     localStorage.setItem("mahad_lecturers", JSON.stringify(data));
+    // Wajib sync: sebelumnya hanya localStorage sehingga edit dosen tidak
+    // pernah terlihat oleh admin lain maupun pratinjau publik.
+    syncContentToBackend("masyayikh_list", "profile", "Masyayikh & Dewan Dosen", data);
   };
   const saveFacilities = (data: Facility[]) => {
     setFacilities(data);
@@ -1094,10 +1137,14 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   const saveComingSoonPages = (data: ComingSoonPageSetting[]) => {
     setComingSoonPages(data);
     localStorage.setItem("mahad_coming_soon", JSON.stringify(data));
+    // Wajib sync: konten Coming Soon sebelumnya hanya tersimpan per-browser.
+    syncContentToBackend("coming_soon", "settings", "Konten Halaman Coming Soon", data);
   };
   const savePageSeoList = (data: PageSeoItem[]) => {
     setPageSeoList(data);
     localStorage.setItem("mahad_page_seo", JSON.stringify(data));
+    // Wajib sync: SEO per halaman sebelumnya hanya tersimpan per-browser.
+    syncContentToBackend("page_seo", "settings", "SEO & Meta Tag Per Halaman", data);
   };
   const saveFooterSettings = (data: FooterSettings) => {
     setFooterSettings(data);
@@ -1164,7 +1211,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Article Actions
-  const addArticle = (data: Omit<Article, "id" | "slug">) => {
+  const addArticle = async (data: Omit<Article, "id" | "slug">) => {
     const slugBase = data.title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
@@ -1181,63 +1228,50 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     saveArticles([newArticle, ...articles]);
     addLog("Menerbitkan Artikel", data.title);
 
-    // Sync to Supabase Database
-    try {
-      supabase.from("articles").insert({
-        title: data.title,
-        slug: newArticle.slug,
-        excerpt: data.excerpt,
-        content: data.content,
-        author_name: data.author,
-        author_role: data.authorRole,
-        tags: data.tags || [],
-        status: newArticle.status,
-      }).then(({ error }) => {
-        if (error) console.warn("Supabase insert article notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    // Sync to Supabase Database via server (auth + service role)
+    await dbWriteAlert("articles", "insert", {
+      title: data.title,
+      slug: newArticle.slug,
+      excerpt: data.excerpt,
+      content: data.content,
+      author_name: data.author,
+      author_role: data.authorRole,
+      tags: data.tags || [],
+      status: newArticle.status
+    });
   };
 
-  const updateArticle = (id: string, updatedData: Partial<Article>) => {
+  const updateArticle = async (id: string, updatedData: Partial<Article>) => {
     const target = articles.find((a) => a.id === id);
     const updated = articles.map((a) => (a.id === id ? { ...a, ...updatedData } : a));
     saveArticles(updated);
     addLog("Memperbarui Artikel", updatedData.title || id);
 
     if (target) {
-      try {
-        supabase.from("articles").update({
-          title: updatedData.title !== undefined ? updatedData.title : target.title,
-          excerpt: updatedData.excerpt !== undefined ? updatedData.excerpt : target.excerpt,
-          content: updatedData.content !== undefined ? updatedData.content : target.content,
-          author_name: updatedData.author !== undefined ? updatedData.author : target.author,
-          author_role: updatedData.authorRole !== undefined ? updatedData.authorRole : target.authorRole,
-          tags: updatedData.tags !== undefined ? updatedData.tags : target.tags,
-        }).eq("slug", target.slug).then(({ error }) => {
-          if (error) console.warn("Supabase update article notice:", error.message);
-        });
-      } catch (e) {
-        console.warn("DB notice:", e);
-      }
+      await dbWriteAlert(
+        "articles",
+        "update",
+        {
+          ...(updatedData.title !== undefined ? { title: updatedData.title } : {}),
+          ...(updatedData.excerpt !== undefined ? { excerpt: updatedData.excerpt } : {}),
+          ...(updatedData.content !== undefined ? { content: updatedData.content } : {}),
+          ...(updatedData.author !== undefined ? { author_name: updatedData.author } : {}),
+          ...(updatedData.authorRole !== undefined ? { author_role: updatedData.authorRole } : {}),
+          ...(updatedData.tags !== undefined ? { tags: updatedData.tags } : {})
+        },
+        { slug: target.slug }
+      );
     }
   };
 
-  const deleteArticle = (id: string) => {
+  const deleteArticle = async (id: string) => {
     const target = articles.find((a) => a.id === id);
     const filtered = articles.filter((a) => a.id !== id);
     saveArticles(filtered);
     addLog("Menghapus Artikel", target?.title || id);
 
     if (target) {
-      try {
-        supabase.from("articles").delete().eq("slug", target.slug).then(({ error }) => {
-          if (error) console.warn("Supabase delete article notice:", error.message);
-        });
-      } catch (e) {
-        console.warn("DB notice:", e);
-      }
+      await dbWriteAlert("articles", "delete", undefined, { slug: target.slug });
     }
   };
 
@@ -1249,7 +1283,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Category Actions
-  const addCategory = (data: Omit<CategoryInfo, "id" | "slug">) => {
+  const addCategory = async (data: Omit<CategoryInfo, "id" | "slug">) => {
     let baseSlug = data.name
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
@@ -1267,62 +1301,49 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     saveCategories([...categories, newCat]);
     addLog("Menambah Kategori", data.name);
 
-    try {
-      supabase.from("categories").insert({
-        nama: data.name,
-        slug: newCat.slug,
-        deskripsi: data.description,
-        icon: data.iconName || "book",
-        urutan: categories.length + 1,
-        is_published: true
-      }).then(({ error }) => {
-        if (error) console.warn("Supabase category insert notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    await dbWriteAlert("categories", "insert", {
+      nama: data.name,
+      slug: newCat.slug,
+      deskripsi: data.description,
+      icon: data.iconName || "book",
+      urutan: categories.length + 1,
+      is_published: true
+    });
   };
 
-  const updateCategory = (id: string, updatedData: Partial<CategoryInfo>) => {
+  const updateCategory = async (id: string, updatedData: Partial<CategoryInfo>) => {
     const target = categories.find((c) => c.id === id);
     const updated = categories.map((c) => (c.id === id ? { ...c, ...updatedData } : c));
     saveCategories(updated);
     addLog("Memperbarui Kategori", updatedData.name || id);
 
     if (target) {
-      try {
-        supabase.from("categories").update({
-          nama: updatedData.name !== undefined ? updatedData.name : target.name,
-          deskripsi: updatedData.description !== undefined ? updatedData.description : target.description,
-          icon: updatedData.iconName !== undefined ? updatedData.iconName : target.iconName
-        }).eq("slug", target.slug).then(({ error }) => {
-          if (error) console.warn("Supabase category update notice:", error.message);
-        });
-      } catch (e) {
-        console.warn("DB notice:", e);
-      }
+      await dbWriteAlert(
+        "categories",
+        "update",
+        {
+          ...(updatedData.name !== undefined ? { nama: updatedData.name } : {}),
+          ...(updatedData.description !== undefined ? { deskripsi: updatedData.description } : {}),
+          ...(updatedData.iconName !== undefined ? { icon: updatedData.iconName } : {})
+        },
+        { slug: target.slug }
+      );
     }
   };
 
-  const deleteCategory = (id: string) => {
+  const deleteCategory = async (id: string) => {
     const target = categories.find((c) => c.id === id);
     const filtered = categories.filter((c) => c.id !== id);
     saveCategories(filtered);
     addLog("Menghapus Kategori", target?.name || id);
 
     if (target) {
-      try {
-        supabase.from("categories").delete().eq("slug", target.slug).then(({ error }) => {
-          if (error) console.warn("Supabase category delete notice:", error.message);
-        });
-      } catch (e) {
-        console.warn("DB notice:", e);
-      }
+      await dbWriteAlert("categories", "delete", undefined, { slug: target.slug });
     }
   };
 
   // Thesis Actions
-  const addThesis = (data: Omit<Thesis, "id" | "slug">) => {
+  const addThesis = async (data: Omit<Thesis, "id" | "slug">) => {
     const slugBase = data.title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
@@ -1336,74 +1357,61 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     saveTheses([newThesis, ...theses]);
     addLog("Menambahkan Skripsi", data.title);
 
-    try {
-      supabase.from("theses").insert({
-        judul: data.title,
-        slug: newThesis.slug,
-        penulis: data.author,
-        nim: data.nim,
-        angkatan: data.angkatan,
-        tahun: data.year,
-        pembimbing_1: data.advisor1,
-        pembimbing_2: data.advisor2,
-        abstrak_id: data.abstractId,
-        abstrak_ar: data.abstractAr,
-        keyword: data.keywords || [],
-        pdf_url: data.downloadUrl,
-        pdf_size_mb: data.fileSize,
-        status: "published"
-      }).then(({ error }) => {
-        if (error) console.warn("Supabase thesis insert notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    await dbWriteAlert("theses", "insert", {
+      judul: data.title,
+      slug: newThesis.slug,
+      penulis: data.author,
+      nim: data.nim,
+      angkatan: data.angkatan,
+      tahun: data.year,
+      pembimbing_1: data.advisor1,
+      pembimbing_2: data.advisor2,
+      abstrak_id: data.abstractId,
+      abstrak_ar: data.abstractAr,
+      keyword: data.keywords || [],
+      pdf_url: data.downloadUrl,
+      pdf_size_mb: data.fileSize,
+      status: "published"
+    });
   };
 
-  const updateThesis = (id: string, updatedData: Partial<Thesis>) => {
+  const updateThesis = async (id: string, updatedData: Partial<Thesis>) => {
     const target = theses.find((t) => t.id === id);
     const updated = theses.map((t) => (t.id === id ? { ...t, ...updatedData } : t));
     saveTheses(updated);
     addLog("Memperbarui Skripsi", updatedData.title || id);
 
     if (target) {
-      try {
-        supabase.from("theses").update({
-          judul: updatedData.title !== undefined ? updatedData.title : target.title,
-          penulis: updatedData.author !== undefined ? updatedData.author : target.author,
-          nim: updatedData.nim !== undefined ? updatedData.nim : target.nim,
-          angkatan: updatedData.angkatan !== undefined ? updatedData.angkatan : target.angkatan,
-          tahun: updatedData.year !== undefined ? updatedData.year : target.year,
-          pembimbing_1: updatedData.advisor1 !== undefined ? updatedData.advisor1 : target.advisor1,
-          pembimbing_2: updatedData.advisor2 !== undefined ? updatedData.advisor2 : target.advisor2,
-          abstrak_id: updatedData.abstractId !== undefined ? updatedData.abstractId : target.abstractId,
-          abstrak_ar: updatedData.abstractAr !== undefined ? updatedData.abstractAr : target.abstractAr,
-          keyword: updatedData.keywords !== undefined ? updatedData.keywords : target.keywords,
-          pdf_url: updatedData.downloadUrl !== undefined ? updatedData.downloadUrl : target.downloadUrl,
-          pdf_size_mb: updatedData.fileSize !== undefined ? updatedData.fileSize : target.fileSize
-        }).eq("slug", target.slug).then(({ error }) => {
-          if (error) console.warn("Supabase thesis update notice:", error.message);
-        });
-      } catch (e) {
-        console.warn("DB notice:", e);
-      }
+      await dbWriteAlert(
+        "theses",
+        "update",
+        {
+          ...(updatedData.title !== undefined ? { judul: updatedData.title } : {}),
+          ...(updatedData.author !== undefined ? { penulis: updatedData.author } : {}),
+          ...(updatedData.nim !== undefined ? { nim: updatedData.nim } : {}),
+          ...(updatedData.angkatan !== undefined ? { angkatan: updatedData.angkatan } : {}),
+          ...(updatedData.year !== undefined ? { tahun: updatedData.year } : {}),
+          ...(updatedData.advisor1 !== undefined ? { pembimbing_1: updatedData.advisor1 } : {}),
+          ...(updatedData.advisor2 !== undefined ? { pembimbing_2: updatedData.advisor2 } : {}),
+          ...(updatedData.abstractId !== undefined ? { abstrak_id: updatedData.abstractId } : {}),
+          ...(updatedData.abstractAr !== undefined ? { abstrak_ar: updatedData.abstractAr } : {}),
+          ...(updatedData.keywords !== undefined ? { keyword: updatedData.keywords } : {}),
+          ...(updatedData.downloadUrl !== undefined ? { pdf_url: updatedData.downloadUrl } : {}),
+          ...(updatedData.fileSize !== undefined ? { pdf_size_mb: updatedData.fileSize } : {})
+        },
+        { slug: target.slug }
+      );
     }
   };
 
-  const deleteThesis = (id: string) => {
+  const deleteThesis = async (id: string) => {
     const target = theses.find((t) => t.id === id);
     const filtered = theses.filter((t) => t.id !== id);
     saveTheses(filtered);
     addLog("Menghapus Skripsi", target?.title || id);
 
     if (target) {
-      try {
-        supabase.from("theses").delete().eq("slug", target.slug).then(({ error }) => {
-          if (error) console.warn("Supabase thesis delete notice:", error.message);
-        });
-      } catch (e) {
-        console.warn("DB notice:", e);
-      }
+      await dbWriteAlert("theses", "delete", undefined, { slug: target.slug });
     }
   };
 
@@ -1615,20 +1623,16 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     saveArticles([newArt, ...articles]);
     addLog("Menerbitkan Submission ke Artikel", sub.judul);
 
-    try {
-      await supabase.from("articles").insert({
-        title: newArt.title,
-        slug: newArt.slug,
-        excerpt: newArt.excerpt,
-        content: newArt.content,
-        author_name: newArt.author,
-        author_role: newArt.authorRole,
-        tags: newArt.tags,
-        status: "published"
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    await dbWriteAlert("articles", "insert", {
+      title: newArt.title,
+      slug: newArt.slug,
+      excerpt: newArt.excerpt,
+      content: newArt.content,
+      author_name: newArt.author,
+      author_role: newArt.authorRole,
+      tags: newArt.tags,
+      status: "published"
+    });
 
     const origin = typeof window !== "undefined" ? window.location.origin : "https://mahadalymangkoso.ac.id";
     const pathPrefix = isOpini ? "/opini" : "/artikel";
@@ -1679,21 +1683,17 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     saveTheses([newThesis, ...theses]);
     addLog("Menerbitkan Submission ke Repositori Skripsi", sub.judul);
 
-    try {
-      await supabase.from("theses").insert({
-        judul: newThesis.title,
-        slug: newThesis.slug,
-        penulis: newThesis.author,
-        nim: newThesis.nim,
-        tahun_lulus: parseInt(newThesis.year) || 2024,
-        abstrak: newThesis.abstractId,
-        pembimbing1: newThesis.advisor1,
-        pembimbing2: newThesis.advisor2,
-        file_url: newThesis.downloadUrl
-      });
-    } catch (e) {
-      console.warn("DB notice thesis insert:", e);
-    }
+    await dbWriteAlert("theses", "insert", {
+      judul: newThesis.title,
+      slug: newThesis.slug,
+      penulis: newThesis.author,
+      nim: newThesis.nim,
+      tahun_lulus: parseInt(newThesis.year) || 2024,
+      abstrak: newThesis.abstractId,
+      pembimbing1: newThesis.advisor1,
+      pembimbing2: newThesis.advisor2,
+      file_url: newThesis.downloadUrl
+    });
 
     const origin = typeof window !== "undefined" ? window.location.origin : "https://mahadalymangkoso.ac.id";
     const publishedLink = `${origin}/skripsi/${newThesis.slug}`;
@@ -1708,23 +1708,17 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     return { success: true, thesis: newThesis, emailResult: updateRes.emailResult };
   };
 
-  const deleteSubmission = (id: string) => {
+  const deleteSubmission = async (id: string) => {
     const target = submissions.find((s) => s.id === id);
     const filtered = submissions.filter((s) => s.id !== id);
     saveSubmissions(filtered);
     addLog("Menghapus Submission", target?.judul || id);
 
-    try {
-      supabase.from("submissions").delete().eq("id", id).then(({ error }) => {
-        if (error) console.warn("Supabase delete submission notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    await dbWriteAlert("submissions", "delete", undefined, { id });
   };
 
   // News Actions
-  const addNews = (data: Omit<NewsItem, "id" | "slug">) => {
+  const addNews = async (data: Omit<NewsItem, "id" | "slug">) => {
     const slugBase = data.title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
@@ -1738,60 +1732,47 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     saveNews([newItem, ...news]);
     addLog("Menerbitkan Berita", data.title);
 
-    try {
-      supabase.from("news").insert({
-        judul: data.title,
-        slug: newItem.slug,
-        konten: data.content,
-        tipe: data.category || "Berita",
-        gambar_url: data.imageUrl,
-        tanggal: data.date,
-        status: "published"
-      }).then(({ error }) => {
-        if (error) console.warn("Supabase news insert notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    await dbWriteAlert("news", "insert", {
+      judul: data.title,
+      slug: newItem.slug,
+      konten: data.content,
+      tipe: data.category || "Berita",
+      gambar_url: data.imageUrl,
+      tanggal: data.date,
+      status: "published"
+    });
   };
 
-  const updateNews = (id: string, updatedData: Partial<NewsItem>) => {
+  const updateNews = async (id: string, updatedData: Partial<NewsItem>) => {
     const target = news.find((n) => n.id === id);
     const updated = news.map((n) => (n.id === id ? { ...n, ...updatedData } : n));
     saveNews(updated);
     addLog("Memperbarui Berita", updatedData.title || id);
 
     if (target) {
-      try {
-        supabase.from("news").update({
-          judul: updatedData.title !== undefined ? updatedData.title : target.title,
-          konten: updatedData.content !== undefined ? updatedData.content : target.content,
-          tipe: updatedData.category !== undefined ? updatedData.category : target.category,
-          gambar_url: updatedData.imageUrl !== undefined ? updatedData.imageUrl : target.imageUrl,
-          tanggal: updatedData.date !== undefined ? updatedData.date : target.date
-        }).eq("slug", target.slug).then(({ error }) => {
-          if (error) console.warn("Supabase news update notice:", error.message);
-        });
-      } catch (e) {
-        console.warn("DB notice:", e);
-      }
+      await dbWriteAlert(
+        "news",
+        "update",
+        {
+          ...(updatedData.title !== undefined ? { judul: updatedData.title } : {}),
+          ...(updatedData.content !== undefined ? { konten: updatedData.content } : {}),
+          ...(updatedData.category !== undefined ? { tipe: updatedData.category } : {}),
+          ...(updatedData.imageUrl !== undefined ? { gambar_url: updatedData.imageUrl } : {}),
+          ...(updatedData.date !== undefined ? { tanggal: updatedData.date } : {})
+        },
+        { slug: target.slug }
+      );
     }
   };
 
-  const deleteNews = (id: string) => {
+  const deleteNews = async (id: string) => {
     const target = news.find((n) => n.id === id);
     const filtered = news.filter((n) => n.id !== id);
     saveNews(filtered);
     addLog("Menghapus Berita", target?.title || id);
 
     if (target) {
-      try {
-        supabase.from("news").delete().eq("slug", target.slug).then(({ error }) => {
-          if (error) console.warn("Supabase news delete notice:", error.message);
-        });
-      } catch (e) {
-        console.warn("DB notice:", e);
-      }
+      await dbWriteAlert("news", "delete", undefined, { slug: target.slug });
     }
   };
 
@@ -1858,26 +1839,20 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Lecturer Actions
-  const addLecturer = (data: Omit<Lecturer, "id">) => {
+  const addLecturer = async (data: Omit<Lecturer, "id">) => {
     const newLec: Lecturer = { ...data, id: "lec-" + Date.now().toString() };
     saveLecturers([...lecturers, newLec]);
     addLog("Menambah Dosen", data.name);
 
-    try {
-      supabase.from("collections").insert({
-        collection_type: "masyayikh",
-        data: newLec,
-        order_index: newLec.order || lecturers.length + 1,
-        is_published: true
-      }).then(({ error }) => {
-        if (error) console.warn("Supabase lecturer insert notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    await dbWriteAlert("collections", "insert", {
+      collection_type: "masyayikh",
+      data: newLec,
+      order_index: newLec.order || lecturers.length + 1,
+      is_published: true
+    });
   };
 
-  const updateLecturer = (id: string, updatedData: Partial<Lecturer>) => {
+  const updateLecturer = async (id: string, updatedData: Partial<Lecturer>) => {
     const target = lecturers.find((l) => l.id === id);
     const updated = lecturers.map((l) => (l.id === id ? { ...l, ...updatedData } : l));
     saveLecturers(updated);
@@ -1885,56 +1860,54 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
     if (target) {
       const merged = { ...target, ...updatedData };
-      try {
-        supabase.from("collections").upsert({
+      // Baris dari database punya id UUID: update baris itu langsung agar
+      // tidak menimbulkan duplikat. Baris lokal baru tetap di-insert.
+      const isDbRow = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target.id);
+      if (isDbRow) {
+        await dbWriteAlert(
+          "collections",
+          "update",
+          {
+            data: merged,
+            order_index: merged.order || 1,
+            is_published: merged.isActive !== false
+          },
+          { id: target.id }
+        );
+      } else {
+        await dbWriteAlert("collections", "insert", {
           collection_type: "masyayikh",
           data: merged,
           order_index: merged.order || 1,
           is_published: merged.isActive !== false
-        }).then(({ error }) => {
-          if (error) console.warn("Supabase lecturer update notice:", error.message);
         });
-      } catch (e) {
-        console.warn("DB notice:", e);
       }
     }
   };
 
-  const deleteLecturer = (id: string) => {
+  const deleteLecturer = async (id: string) => {
     const target = lecturers.find((l) => l.id === id);
     saveLecturers(lecturers.filter((l) => l.id !== id));
     addLog("Menghapus Dosen", target?.name || id);
 
-    try {
-      supabase.from("collections").delete().eq("id", id).then(({ error }) => {
-        if (error) console.warn("Supabase lecturer delete notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    await dbWriteAlert("collections", "delete", undefined, { id });
   };
 
   // Facility Actions
-  const addFacility = (data: Omit<Facility, "id">) => {
+  const addFacility = async (data: Omit<Facility, "id">) => {
     const newFac: Facility = { ...data, id: "fac-" + Date.now().toString() };
     saveFacilities([...facilities, newFac]);
     addLog("Menambah Sarana", data.name);
 
-    try {
-      supabase.from("collections").insert({
-        collection_type: "sarana",
-        data: newFac,
-        order_index: facilities.length + 1,
-        is_published: true
-      }).then(({ error }) => {
-        if (error) console.warn("Supabase facility insert notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    await dbWriteAlert("collections", "insert", {
+      collection_type: "sarana",
+      data: newFac,
+      order_index: facilities.length + 1,
+      is_published: true
+    });
   };
 
-  const updateFacility = (id: string, updatedData: Partial<Facility>) => {
+  const updateFacility = async (id: string, updatedData: Partial<Facility>) => {
     const target = facilities.find((f) => f.id === id);
     const updated = facilities.map((f) => (f.id === id ? { ...f, ...updatedData } : f));
     saveFacilities(updated);
@@ -1942,33 +1915,31 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
 
     if (target) {
       const merged = { ...target, ...updatedData };
-      try {
-        supabase.from("collections").upsert({
+      const isDbRow = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target.id);
+      if (isDbRow) {
+        await dbWriteAlert(
+          "collections",
+          "update",
+          { data: merged, order_index: 1, is_published: true },
+          { id: target.id }
+        );
+      } else {
+        await dbWriteAlert("collections", "insert", {
           collection_type: "sarana",
           data: merged,
           order_index: 1,
           is_published: true
-        }).then(({ error }) => {
-          if (error) console.warn("Supabase facility update notice:", error.message);
         });
-      } catch (e) {
-        console.warn("DB notice:", e);
       }
     }
   };
 
-  const deleteFacility = (id: string) => {
+  const deleteFacility = async (id: string) => {
     const target = facilities.find((f) => f.id === id);
     saveFacilities(facilities.filter((f) => f.id !== id));
     addLog("Menghapus Sarana", target?.name || id);
 
-    try {
-      supabase.from("collections").delete().eq("id", id).then(({ error }) => {
-        if (error) console.warn("Supabase facility delete notice:", error.message);
-      });
-    } catch (e) {
-      console.warn("DB notice:", e);
-    }
+    await dbWriteAlert("collections", "delete", undefined, { id });
   };
 
   // Accreditation Actions
@@ -2468,7 +2439,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     syncContentToBackend("email_templates", "email", "Email Templates", INITIAL_EMAIL_TEMPLATES);
   };
 
-  const resetProfileToDefault = (user?: string) => {
+  const resetProfileToDefault = async (user?: string) => {
     const nextSettings: SiteSettings = {
       ...settings,
       institutionName: INITIAL_SETTINGS.institutionName,
@@ -2491,7 +2462,7 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     setSettings(nextSettings);
     localStorage.setItem("mahad_settings", JSON.stringify(nextSettings));
     addLog("Reset Profil Lembaga ke Standar", "Profil & Visi Misi", user);
-    try { supabase.from("site_settings").upsert({ id: "main", ...nextSettings }, { onConflict: "id" }).then(); } catch (e) {}
+    await dbWriteAlert("site_settings", "upsert", { id: "main", ...nextSettings });
   };
 
   const resetAcademicToDefault = (user?: string) => {
@@ -2522,12 +2493,12 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     addLog("Reset Publikasi Fiqh & Skripsi ke Standar", "Artikel, Kategori, & Skripsi", user);
   };
 
-  const resetQuoteToDefault = (user?: string) => {
+  const resetQuoteToDefault = async (user?: string) => {
     const next = { ...settings, quote: INITIAL_SETTINGS.quote };
     setSettings(next);
     localStorage.setItem("mahad_settings", JSON.stringify(next));
     addLog("Reset Kalam Hikmah ke Standar", "Kata Mutiara Anregurutta", user);
-    try { supabase.from("site_settings").upsert({ id: "main", ...next }, { onConflict: "id" }).then(); } catch (e) {}
+    await dbWriteAlert("site_settings", "upsert", { id: "main", ...next });
   };
 
   const resetBahtsulToDefault = (user?: string) => {
@@ -2553,13 +2524,13 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
     addLog("Reset Coming Soon ke Standar", "Placeholder Manager", user);
   };
 
-  const resetSeoToDefault = (user?: string) => {
+  const resetSeoToDefault = async (user?: string) => {
     savePageSeoList(INITIAL_PAGE_SEO);
     const next = { ...settings, seo: INITIAL_SETTINGS.seo };
     setSettings(next);
     localStorage.setItem("mahad_settings", JSON.stringify(next));
     addLog("Reset Pengaturan SEO ke Standar", "SEO & Meta Tags", user);
-    try { supabase.from("site_settings").upsert({ id: "main", ...next }, { onConflict: "id" }).then(); } catch (e) {}
+    await dbWriteAlert("site_settings", "upsert", { id: "main", ...next });
   };
 
   const resetPageTextsToDefault = (user?: string) => {
@@ -2608,6 +2579,61 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       console.warn("Backend sync notice:", e);
       return { success: false, error: e?.message || "Koneksi ke database server terputus." };
     }
+  };
+
+  // Gerbang tulis database terpusat: semua operasi CRUD tabel lewat API server
+  // (service role + autentikasi), BUKAN langsung dari browser dengan anon key.
+  // Ini menutup kegagalan senyap (RLS menolak anon write) yang membuat edit
+  // admin tidak pernah sampai ke database.
+  const dbWrite = async (
+    table: string,
+    op: "insert" | "update" | "delete" | "upsert",
+    payload?: Record<string, unknown>,
+    match?: Record<string, unknown>
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
+      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const res = await fetch("/api/admin/db", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ table, op, payload, match })
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        console.error(`DB write gagal (${op} ${table}):`, errJson);
+        return { success: false, error: errJson.error || "Gagal menyimpan ke database." };
+      }
+
+      return { success: true };
+    } catch (e: any) {
+      console.error("DB write error:", e);
+      return { success: false, error: e?.message || "Koneksi database server terputus." };
+    }
+  };
+
+  // dbWrite + pemberitahuan kegagalan yang TERLIHAT oleh admin (bukan diam-diam
+  // di console) agar edit "tidak tersimpan" tidak pernah terjadi tanpa diketahui.
+  const dbWriteAlert = async (
+    table: string,
+    op: "insert" | "update" | "delete" | "upsert",
+    payload?: Record<string, unknown>,
+    match?: Record<string, unknown>
+  ): Promise<boolean> => {
+    const result = await dbWrite(table, op, payload, match);
+    if (!result.success) {
+      alert(
+        `⚠️ PERUBAHAN BELUM TERSIMPAN KE DATABASE!\n\n${result.error}\n\nPerubahan masih tampil di browser ini saja. Silakan coba simpan ulang atau hubungi Super Admin.`
+      );
+    }
+    return result.success;
   };
 
   const updateNavbarSettings = (updated: Partial<NavbarSettings>) => {
