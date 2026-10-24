@@ -1,5 +1,16 @@
 import type { NextConfig } from "next";
 
+// 'unsafe-eval' hanya untuk dev (React Refresh/Turbopack). Produksi tanpa
+// eval: injeksi skrip yang butuh eval otomatis digagalkan browser.
+const isDev = process.env.NODE_ENV === "development";
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  ...(isDev ? ["'unsafe-eval'"] : []),
+  "https://www.googletagmanager.com",
+  "https://www.google-analytics.com"
+];
+
 // Security headers berlaku untuk SEMUA route (sebelumnya hanya /admin via
 // middleware matcher — halaman publik tidak terlindungi).
 const SECURITY_HEADERS = [
@@ -19,7 +30,7 @@ const SECURITY_HEADERS = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
+      `script-src ${scriptSrc.join(" ")}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' data: https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",

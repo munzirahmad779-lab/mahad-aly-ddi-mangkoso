@@ -111,15 +111,13 @@ create policy "public_read_site_settings"
 drop policy if exists "admin_read_submissions" on public.submissions;
 create policy "admin_read_submissions"
   on public.submissions for select
-  to authenticated
-  using (true);
+  using (public.is_admin());
 
 -- 5b. users: daftar akun admin (email, peran)
 drop policy if exists "admin_read_users" on public.users;
 create policy "admin_read_users"
   on public.users for select
-  to authenticated
-  using (true);
+  using (public.is_admin());
 
 -- 6) TABEL LAIN yang mungkin ada: kunci baca hanya admin (paling aman).
 --    Jika ternyata dipakai halaman publik, pindahkan ke pola 4 di atas.
