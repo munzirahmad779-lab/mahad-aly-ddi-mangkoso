@@ -350,6 +350,26 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
   // Dipakai halaman publik untuk menampilkan skeleton rapi alih-alih data mock (anti-flicker).
   const [isCatalogReady, setIsCatalogReady] = useState<boolean>(false);
 
+  // Sinkronisasi ulang Live Log Aktivitas dari Supabase
+  // (dideklarasikan sebelum efek hydrasi agar listener focus & polling memakai binding yang sama)
+  const refreshLogs = async () => {
+    try {
+      const { data: logsData } = await supabase
+        .from("site_content")
+        .select("value")
+        .eq("key", "activity_logs")
+        .single();
+      if (logsData?.value && Array.isArray(logsData.value)) {
+        setLogs(logsData.value);
+        try {
+          localStorage.setItem("mahad_logs", JSON.stringify(logsData.value));
+        } catch (e) {}
+      }
+    } catch (err) {
+      console.warn("Supabase refreshLogs notice:", err);
+    }
+  };
+
   // Load from Supabase + LocalStorage fallback
   useEffect(() => {
     // 0. Cache Invalidation: Hapus semua cache browser lama agar tidak pernah memunculkan data usang (anti-flicker)
@@ -965,25 +985,6 @@ export function ArticleProvider({ children }: { children: React.ReactNode }) {
       }
     };
   }, []);
-
-  // Sinkronisasi ulang Live Log Aktivitas dari Supabase
-  const refreshLogs = async () => {
-    try {
-      const { data: logsData } = await supabase
-        .from("site_content")
-        .select("value")
-        .eq("key", "activity_logs")
-        .single();
-      if (logsData?.value && Array.isArray(logsData.value)) {
-        setLogs(logsData.value);
-        try {
-          localStorage.setItem("mahad_logs", JSON.stringify(logsData.value));
-        } catch (e) {}
-      }
-    } catch (err) {
-      console.warn("Supabase refreshLogs notice:", err);
-    }
-  };
 
   // Helper savers
   const saveArticles = (data: Article[]) => {

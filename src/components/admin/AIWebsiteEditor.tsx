@@ -686,9 +686,9 @@ export default function AIWebsiteEditor({
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-emerald-900 flex items-center gap-1.5 text-xs">
                     <Folder className="w-4 h-4 text-emerald-600" />
-                    <span>Struktur Folder Google Drive Standar Ma'had Aly:</span>
+                    <span>Struktur Folder Google Drive Standar Ma&apos;had Aly:</span>
                   </span>
-                  <span className="text-[10px] text-slate-400">Pastikan izin diset: 'Siapa saja yang memiliki link'</span>
+                  <span className="text-[10px] text-slate-400">Pastikan izin diset: &apos;Siapa saja yang memiliki link&apos;</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] font-mono">
@@ -1167,7 +1167,7 @@ export default function AIWebsiteEditor({
                     {proposal.proposedData?.arabicQuote || "العِلْمُ بِلَا عَمَلٍ كَالشَّجَرِ بِلَا ثَمَرٍ"}
                   </div>
                   <p className="text-xs text-slate-200 italic max-w-lg mx-auto">
-                    "{proposal.proposedData?.translation || "Ilmu tanpa amal laksana pohon yang rindang namun tanpa buah."}"
+                    &quot;{proposal.proposedData?.translation || "Ilmu tanpa amal laksana pohon yang rindang namun tanpa buah."}&quot;
                   </p>
                   <p className="text-[11px] text-emerald-300 font-serif font-bold">
                     — {proposal.proposedData?.source || "Anregurutta K.H. Abd. Rahman Ambo Dalle"}
@@ -1238,7 +1238,7 @@ export default function AIWebsiteEditor({
                       </div>
                       {bm.reference && (
                         <p className="text-[10px] text-slate-500 italic">
-                          Maraji' / Rujukan: {bm.reference}
+                          Maraji&apos; / Rujukan: {bm.reference}
                         </p>
                       )}
                     </div>
@@ -1336,7 +1336,7 @@ export default function AIWebsiteEditor({
                       </p>
                     )}
                     <p className="text-xs text-slate-200 italic">
-                      "{proposal.proposedData?.leadQuote || "Menghidupkan Khazanah Turats, Menggerakkan Nalar Kontemporer."}"
+                      &quot;{proposal.proposedData?.leadQuote || "Menghidupkan Khazanah Turats, Menggerakkan Nalar Kontemporer."}&quot;
                     </p>
                   </div>
 

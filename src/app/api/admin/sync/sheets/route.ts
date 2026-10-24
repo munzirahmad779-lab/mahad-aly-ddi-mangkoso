@@ -48,14 +48,14 @@ export async function GET(request: Request) {
     const moduleId = searchParams.get("module");
 
     if (moduleId) {
-      const module = getSheetModule(moduleId);
-      if (!module) {
+      const sheetModule = getSheetModule(moduleId);
+      if (!sheetModule) {
         return NextResponse.json(
           { success: false, error: `Modul "${moduleId}" tidak dikenal.` },
           { status: 400 }
         );
       }
-      const status = await getModuleStatus(module);
+      const status = await getModuleStatus(sheetModule);
       return NextResponse.json({
         success: true,
         data: status,
@@ -117,8 +117,8 @@ export async function POST(request: Request) {
     }
 
     const action = (body.action || "sync").toLowerCase();
-    const module = getSheetModule(body.module);
-    if (!module) {
+    const sheetModule = getSheetModule(body.module);
+    if (!sheetModule) {
       return NextResponse.json(
         {
           success: false,
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
 
     // ── Rollback 1 klik ────────────────────────────────────────────────────
     if (action === "rollback") {
-      const result = await rollbackModule(module, auth.email);
+      const result = await rollbackModule(sheetModule, auth.email);
       return NextResponse.json({ success: true, ...result });
     }
 
@@ -180,7 +180,7 @@ export async function POST(request: Request) {
     }
 
     const result = await executeSheetSync({
-      module,
+      module: sheetModule,
       csvText,
       sourceLabel,
       actorEmail: auth.email,

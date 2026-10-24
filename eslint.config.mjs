@@ -25,6 +25,16 @@ const eslintConfig = defineConfig([
       "prefer-const": "warn",
     },
   },
+  {
+    // Aturan React Compiler menyasar Date.now()/Math.random() di fungsi komponen.
+    // Di dua file ini seluruh penandaan berada di dalam event handler / aksi admin
+    // (dipanggil setelah render, bukan selama render), sehingga false positive.
+    // React Compiler tidak diaktifkan di next.config.ts — cukup peringatan.
+    files: ["src/context/ArticleContext.tsx", "src/app/admin/page.tsx"],
+    rules: {
+      "react-hooks/purity": "warn",
+    },
+  },
   globalIgnores([
     ".next/**",
     "out/**",
@@ -32,6 +42,9 @@ const eslintConfig = defineConfig([
     ".open-next/**",
     "node_modules/**",
     "next-env.d.ts",
+    // Skrip utilitas Node.js (CommonJS) & folder eksperimen — bukan bagian app Next.js
+    "scripts/**",
+    "scratch/**",
   ]),
 ]);
 
