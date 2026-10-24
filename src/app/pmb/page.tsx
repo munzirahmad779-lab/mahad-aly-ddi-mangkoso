@@ -40,8 +40,25 @@ export default function PmbPage() {
 
   const pmb = pmbSettings;
 
+  // Structured data FAQ untuk Google (rich snippet tanya-jawab PMB)
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: (pmbFAQs || []).map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer }
+    }))
+  };
+
   return (
     <main className="pt-32 md:pt-36 pb-20 bg-slate-50 min-h-screen">
+      {(pmbFAQs || []).length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       {/* Hero Section Brosur PMB */}
       <section className="bg-mahad-green-dark text-white py-16 bg-islamic-pattern relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">

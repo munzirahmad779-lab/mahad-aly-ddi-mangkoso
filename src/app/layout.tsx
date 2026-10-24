@@ -170,6 +170,9 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://mahadaly-ddimangkoso.my.id",
+    types: {
+      "application/rss+xml": "/feed.xml"
+    }
   },
 };
 

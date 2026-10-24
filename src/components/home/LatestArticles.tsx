@@ -10,6 +10,12 @@ export default function LatestArticles() {
   const [selectedCategory, setSelectedCategory] = useState<string>("semua");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
+  // Paling banyak dibaca (data views riil dari pembaca)
+  const palingDibaca = [...articles]
+    .sort((a, b) => (b.views || 0) - (a.views || 0))
+    .slice(0, 5)
+    .filter((a) => (a.views || 0) > 0);
+
   const filteredArticles = articles.filter((art) => {
     const matchesCategory =
       selectedCategory === "semua" || art.category === selectedCategory;
@@ -49,6 +55,43 @@ export default function LatestArticles() {
             <span>Kirim Naskah Anda</span>
           </Link>
         </div>
+
+        {/* Paling Dibaca: peringkat berdasarkan pembaca riil */}
+        {palingDibaca.length >= 3 && (
+          <div className="mt-8 bg-white rounded-2xl border border-emerald-100 shadow-sm p-5 sm:p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-lg">📈</span>
+              <h3 className="font-serif font-bold text-lg text-emerald-950">Paling Dibaca</h3>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                berdasarkan pembaca riil
+              </span>
+            </div>
+            <ol className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
+              {palingDibaca.map((art, idx) => (
+                <li key={art.id}>
+                  <Link
+                    href={`/artikel/${art.slug}`}
+                    className="group flex gap-3 items-start p-3 rounded-xl hover:bg-emerald-50 transition h-full"
+                  >
+                    <span className={`font-serif font-bold text-xl leading-none mt-0.5 ${
+                      idx === 0 ? "text-mahad-gold" : "text-slate-300 group-hover:text-emerald-700"
+                    }`}>
+                      {idx + 1}
+                    </span>
+                    <span>
+                      <span className="block text-xs font-bold text-slate-800 group-hover:text-emerald-900 leading-snug line-clamp-2">
+                        {art.title}
+                      </span>
+                      <span className="block text-[10px] text-slate-400 mt-1">
+                        {art.author} · {art.views} pembaca
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
 
         {/* Filter Tombol & Input Pencarian */}
         <div className="mt-10 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">

@@ -62,8 +62,29 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareTitle = encodeURIComponent(article.title);
 
+  // Structured data untuk Google (rich snippet: penulis, tanggal, artikel)
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.excerpt,
+    author: { "@type": "Person", name: article.author },
+    datePublished: article.date,
+    inLanguage: "id",
+    mainEntityOfPage: `https://mahadaly-ddimangkoso.my.id/artikel/${article.slug}`,
+    publisher: {
+      "@type": "EducationalOrganization",
+      name: "Ma'had Aly DDI Mangkoso",
+      url: "https://mahadaly-ddimangkoso.my.id"
+    }
+  };
+
   return (
     <main className="pt-24 md:pt-[134px] pb-20 bg-slate-50 min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       
       {/* Header Artikel */}
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">

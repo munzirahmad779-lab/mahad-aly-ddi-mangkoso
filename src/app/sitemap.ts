@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
-import { INITIAL_ARTICLES, INITIAL_NEWS } from "@/lib/mock-data";
-import { supabase } from "@/lib/supabase/client";
+import { INITIAL_ARTICLES, INITIAL_NEWS, INITIAL_THESES, INITIAL_CATEGORIES } from "@/lib/mock-data";
+import { supabaseAnon } from "@/lib/supabase/server";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://mahadaly-ddimangkoso.my.id";
@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Try fetching latest articles from Supabase, fallback to INITIAL_ARTICLES
   let articles = INITIAL_ARTICLES;
   try {
-    const { data } = await supabase
+    const { data } = await supabaseAnon
       .from("articles")
       .select("slug, updated_at, created_at, status")
       .eq("status", "published");
@@ -57,7 +57,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Try fetching latest news from Supabase, fallback to INITIAL_NEWS
   let newsList = INITIAL_NEWS;
   try {
-    const { data } = await supabase
+    const { data } = await supabaseAnon
       .from("news")
       .select("slug, updated_at, created_at, status")
       .eq("status", "published");
@@ -79,5 +79,53 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...articleRoutes, ...newsRoutes];
+  // Skripsi (repositori)
+  let theses = INITIAL_THESES;
+  try {
+    const { data } = await supabaseAnon
+      .from("theses")
+      .select("slug, updated_at, created_at, status")
+      .eq("status", "published");
+    if (data && data.length > 0) {
+      theses = data.map((item: any) => ({
+        slug: item.slug,
+        updatedAt: item.updated_at,
+        createdAt: item.created_at,
+      })) as any;
+    }
+  } catch (error) {
+    console.error("Error fetching theses for sitemap:", error);
+  }
+
+  const thesisRoutes: MetadataRoute.Sitemap = theses.map((t: any) => ({
+    url: `${baseUrl}/skripsi/${t.slug}`,
+    lastModified: new Date(t.updatedAt || t.createdAt || new Date()),
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
+  // Kategori kajian
+  let cats = INITIAL_CATEGORIES;
+  try {
+    const { data } = await supabaseAnon
+      .from("categories")
+      .select("slug, updated_at, is_published");
+    if (data && data.length > 0) {
+      cats = data.filter((c: any) => c.is_published !== false).map((item: any) => ({
+        slug: item.slug,
+        updatedAt: item.updated_at,
+      })) as any;
+    }
+  } catch (error) {
+    console.error("Error fetching categories for sitemap:", error);
+  }
+
+  const categoryRoutes: MetadataRoute.Sitemap = cats.map((c: any) => ({
+    url: `${baseUrl}/kategori/${c.slug}`,
+    lastModified: new Date(c.updatedAt || new Date()),
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...articleRoutes, ...newsRoutes, ...thesisRoutes, ...categoryRoutes];
 }
