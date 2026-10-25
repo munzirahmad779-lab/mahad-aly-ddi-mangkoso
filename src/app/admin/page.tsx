@@ -243,6 +243,7 @@ export default function AdminPage() {
     addSecurityThreat,
     clearSecurityThreats,
     grantDonationPermission,
+    adminPermissions,
     demaSettings,
     updateDemaSettings,
     resetDemaToDefault,
@@ -289,6 +290,8 @@ export default function AdminPage() {
   // ── Donation Access & Form State ──
   const hasDonationAccess =
     isSuperAdmin ||
+    Boolean(currentUser?.id && adminPermissions?.[currentUser.id]?.canManageDonations) ||
+    Boolean(currentUser?.email && adminPermissions?.[currentUser.email.toLowerCase()]?.canManageDonations) ||
     Boolean(userProfile?.permissions?.canManageDonations) ||
     Boolean(users.find((u) => u.email === currentUser?.email)?.permissions?.canManageDonations);
 
@@ -14159,7 +14162,11 @@ export default function AdminPage() {
                         <tbody className="divide-y divide-slate-100">
                           {dbUsers.map((u) => {
                             const isSuper = u.role === "super_admin" || u.email === "munzirahmad779@gmail.com";
-                            const hasPerm = isSuper || Boolean(u.permissions?.canManageDonations);
+                            const hasPerm =
+                              isSuper ||
+                              Boolean(adminPermissions?.[u.id]?.canManageDonations) ||
+                              Boolean(u.email && adminPermissions?.[u.email.toLowerCase()]?.canManageDonations) ||
+                              Boolean(u.permissions?.canManageDonations);
 
                             return (
                               <tr key={u.id} className="hover:bg-slate-50 transition">
@@ -14185,8 +14192,8 @@ export default function AdminPage() {
                                   ) : (
                                     <button
                                       type="button"
-                                      onClick={() => {
-                                        grantDonationPermission(u.id, !hasPerm, currentUserName);
+                                      onClick={async () => {
+                                        const res = await grantDonationPermission(u.id, !hasPerm, currentUserName, u.email);
                                         // Update local state if needed
                                         const updatedUsers = dbUsers.map((item) =>
                                           item.id === u.id
@@ -14194,7 +14201,11 @@ export default function AdminPage() {
                                             : item
                                         );
                                         setDbUsers(updatedUsers);
-                                        alert(`✓ Izin kelola donasi untuk ${u.email} berhasil ${!hasPerm ? "diberikan" : "dicabut"}!`);
+                                        if (res && res.success === false) {
+                                          alert(`⚠️ Izin tersimpan lokal, namun server database menolak: ${res.error}`);
+                                        } else {
+                                          alert(`✓ Izin kelola donasi untuk ${u.email} berhasil ${!hasPerm ? "diberikan" : "dicabut"} dan disimpan permanen!`);
+                                        }
                                       }}
                                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
                                         hasPerm

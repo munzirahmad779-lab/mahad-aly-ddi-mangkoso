@@ -285,8 +285,9 @@ interface DataContextType {
   addSecurityThreat: (threat: Omit<SecurityThreatLog, "id" | "timestamp">) => void;
   clearSecurityThreats: (user?: string) => void;
 
-  // Hak Akses Khusus Donasi
-  grantDonationPermission: (userId: string, granted: boolean, adminName?: string) => void;
+  // Hak Akses Khusus Donasi & Delegasi
+  adminPermissions: Record<string, { canManageDonations?: boolean; canPublishDirect?: boolean }>;
+  grantDonationPermission: (userId: string, granted: boolean, adminName?: string, email?: string) => Promise<{ success: boolean; error?: string }> | void;
 
   // Dewan Mahasantri (DeMa)
   demaSettings: DemaSettings;
@@ -369,6 +370,15 @@ export function ArticleProvider({
   const [aboutPageContent, setAboutPageContent] = useState<AboutPageContent>(() => seedObject("about_page", INITIAL_ABOUT_CONTENT));
   const [pageTexts, setPageTexts] = useState<PageTextsSettings>(() => seedObject("page_texts", INITIAL_PAGE_TEXTS));
   const [donations, setDonations] = useState<DonationProgram[]>(() => seedArray("donations", INITIAL_DONATIONS));
+  const [adminPermissions, setAdminPermissions] = useState<Record<string, { canManageDonations?: boolean; canPublishDirect?: boolean }>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("mahad_admin_permissions");
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+    }
+    return {};
+  });
   const [securityThreats, setSecurityThreats] = useState<SecurityThreatLog[]>(INITIAL_SECURITY_THREATS);
   const [demaSettings, setDemaSettings] = useState<DemaSettings>(() => seedObject("dema_settings", INITIAL_DEMA_SETTINGS));
   const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(true);
@@ -926,6 +936,11 @@ export function ArticleProvider({
               try { localStorage.setItem("mahad_donations", JSON.stringify(map["donations"])); } catch {}
             }
 
+            if (map["admin_permissions"] && typeof map["admin_permissions"] === "object") {
+              setAdminPermissions(map["admin_permissions"]);
+              try { localStorage.setItem("mahad_admin_permissions", JSON.stringify(map["admin_permissions"])); } catch {}
+            }
+
             if (Array.isArray(map["page_seo"]) && map["page_seo"].length > 0) {
               setPageSeoList(map["page_seo"]);
               try { localStorage.setItem("mahad_page_seo", JSON.stringify(map["page_seo"])); } catch {}
@@ -986,6 +1001,11 @@ export function ArticleProvider({
               if (Array.isArray(val)) setGalleryAlbums(val);
             } else if (key === "donations") {
               if (Array.isArray(val)) setDonations(val);
+            } else if (key === "admin_permissions") {
+              if (val && typeof val === "object") {
+                setAdminPermissions(val);
+                try { localStorage.setItem("mahad_admin_permissions", JSON.stringify(val)); } catch {}
+              }
             } else if (key === "sarana_list") {
               if (Array.isArray(val)) setFacilities(val);
             } else if (key === "masyayikh_list") {
@@ -2754,9 +2774,26 @@ export function ArticleProvider({
   };
 
   // â”€â”€ Izin Khusus Kelola Donasi â”€â”€
-  const grantDonationPermission = (userId: string, granted: boolean, adminName: string = "Super Admin") => {
+  const grantDonationPermission = async (
+    userId: string,
+    granted: boolean,
+    adminName: string = "Super Admin",
+    email?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const nextPerms = {
+      ...adminPermissions,
+      [userId]: { ...(adminPermissions[userId] || {}), canManageDonations: granted },
+      ...(email ? { [email.toLowerCase()]: { ...(adminPermissions[email.toLowerCase()] || {}), canManageDonations: granted } } : {})
+    };
+    setAdminPermissions(nextPerms);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("mahad_admin_permissions", JSON.stringify(nextPerms));
+      } catch (e) {}
+    }
+
     const updatedUsers = users.map((u) => {
-      if (u.id === userId) {
+      if (u.id === userId || (email && u.email?.toLowerCase() === email.toLowerCase())) {
         return {
           ...u,
           permissions: {
@@ -2768,12 +2805,20 @@ export function ArticleProvider({
       return u;
     });
     saveUsers(updatedUsers);
-    const targetUser = users.find((u) => u.id === userId);
+    const targetUser = users.find((u) => u.id === userId || (email && u.email?.toLowerCase() === email.toLowerCase()));
     addLog(
       granted ? "Memberikan Izin Akses Donasi" : "Mencabut Izin Akses Donasi",
-      targetUser?.name || targetUser?.email || userId,
+      targetUser?.name || email || userId,
       adminName
     );
+
+    const syncRes = await syncContentToBackend(
+      "admin_permissions",
+      "security",
+      "Hak Akses & Delegasi Admin",
+      nextPerms
+    );
+    return syncRes;
   };
 
   // â”€â”€ Dewan Mahasantri (DeMa) Handlers â”€â”€
@@ -2950,6 +2995,7 @@ export function ArticleProvider({
         securityThreats,
         addSecurityThreat,
         clearSecurityThreats,
+        adminPermissions,
         grantDonationPermission,
         demaSettings,
         updateDemaSettings,
