@@ -1,4 +1,5 @@
 "use client";
+import Reveal from "@/components/common/Reveal";
 
 import { useState, useEffect, useMemo } from "react";
 import { useArticles } from "@/context/ArticleContext";
@@ -621,6 +622,7 @@ export default function ProfilPage() {
           if (!currentCustom) return null;
 
           return (
+            <Reveal key={currentCustom.slug}>
             <div id={currentCustom.slug} className="bg-white rounded-2xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-6">
               <div className="flex items-center gap-3">
                 <span className="w-2.5 h-8 bg-mahad-gold rounded-full inline-block"></span>
@@ -671,7 +673,8 @@ export default function ProfilPage() {
                     {currentCustom.section.items.map((item, idx) => (
                       <div
                         key={idx}
-                        className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-start gap-3 hover:bg-emerald-50 transition"
+                        className="animate-reveal-up p-4 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-start gap-3 hover:bg-emerald-50 transition"
+                        style={{ animationDelay: `${Math.min(idx, 8) * 70}ms` }}
                       >
                         <span className="w-6 h-6 rounded-full bg-emerald-800 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                           {idx + 1}
@@ -685,6 +688,7 @@ export default function ProfilPage() {
                 </div>
               )}
             </div>
+            </Reveal>
           );
         })()}
 
