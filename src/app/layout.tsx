@@ -169,7 +169,11 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    canonical: "https://mahadaly-ddimangkoso.my.id",
+    // PENTING: JANGAN set canonical global di sini. Canonical di root layout
+    // mewarisi ke SEMUA halaman sehingga setiap artikel/berita/PMb mengklaim
+    // "saya duplikat beranda" — Google menolak mengindeksnya (bug yang lama
+    // membuat situs tidak naik). Halaman utama & detail menata canonical
+    // masing-masing.
     types: {
       "application/rss+xml": "/feed.xml"
     }
