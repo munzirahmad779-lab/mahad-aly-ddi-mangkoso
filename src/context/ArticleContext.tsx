@@ -371,6 +371,8 @@ export function ArticleProvider({
   const [pageTexts, setPageTexts] = useState<PageTextsSettings>(() => seedObject("page_texts", INITIAL_PAGE_TEXTS));
   const [donations, setDonations] = useState<DonationProgram[]>(() => seedArray("donations", INITIAL_DONATIONS));
   const [adminPermissions, setAdminPermissions] = useState<Record<string, { canManageDonations?: boolean; canPublishDirect?: boolean }>>(() => {
+    const fromSeed = seedObject("admin_permissions", null as any);
+    if (fromSeed && typeof fromSeed === "object") return fromSeed;
     if (typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem("mahad_admin_permissions");

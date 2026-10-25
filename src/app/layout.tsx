@@ -34,7 +34,7 @@ async function fetchInitialContent(): Promise<Record<string, unknown>> {
     "home_sections", "about_page", "page_texts", "dema_settings", "masyayikh_list",
     "courses_list", "sarana_list", "accreditations", "calendar_events",
     "bahtsul_masail", "pmb_settings", "pmb_waves", "pmb_faqs",
-    "gallery_albums", "donations", "email_templates"
+    "gallery_albums", "donations", "email_templates", "admin_permissions"
   ];
 
   // 1. Cache segar → instan
