@@ -1,4 +1,5 @@
 "use client";
+import ProgramSectionView from "@/components/profil/ProgramSectionView";
 import Reveal from "@/components/common/Reveal";
 
 import { useState, useEffect, useMemo } from "react";
@@ -652,41 +653,20 @@ export default function ProfilPage() {
                 </div>
               )}
 
-              {currentCustom.section?.content ? (
+              {currentCustom.section?.content && (
                 <div className="text-slate-700 leading-relaxed space-y-4 text-sm sm:text-base whitespace-pre-line">
                   {currentCustom.section.content}
                 </div>
-              ) : !currentCustom.section?.items || currentCustom.section.items.length === 0 ? (
+              )}
+
+              {currentCustom.section?.items && currentCustom.section.items.length > 0 ? (
+                <ProgramSectionView items={currentCustom.section.items} />
+              ) : !currentCustom.section?.content ? (
                 <div className="p-8 text-center text-slate-500 bg-slate-50 rounded-2xl border text-sm">
                   <p className="font-semibold text-slate-700">Konten Program Sedang Disiapkan</p>
                   <p className="text-xs text-slate-500 mt-1">Uraian rincian program lembaga ini dapat dilengkapi melalui Panel Admin.</p>
                 </div>
               ) : null}
-
-              {currentCustom.section?.items && currentCustom.section.items.length > 0 && (
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
-                    <span>📋</span>
-                    <span>Rincian Program &amp; Agenda</span>
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    {currentCustom.section.items.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="animate-reveal-up p-4 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-start gap-3 hover:bg-emerald-50 transition"
-                        style={{ animationDelay: `${Math.min(idx, 8) * 70}ms` }}
-                      >
-                        <span className="w-6 h-6 rounded-full bg-emerald-800 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
-                          {idx + 1}
-                        </span>
-                        <p className="text-xs sm:text-sm font-medium text-slate-800 leading-relaxed">
-                          {item}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
             </Reveal>
           );
