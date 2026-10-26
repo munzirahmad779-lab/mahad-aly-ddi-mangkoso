@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendRawEmail } from "@/lib/email/service";
 import { requireRole } from "@/lib/supabase/admin-guard";
+import { SUPER_ADMIN_EMAIL } from "@/lib/admin-constants";
 
 export async function POST(req: NextRequest) {
   const auth = await requireRole(req, ["super_admin", "editor"]);
@@ -10,7 +11,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const targetEmail = body?.to || process.env.ADMIN_NOTIFICATION_EMAIL || "munzirahmad779@gmail.com";
+    const targetEmail = body?.to || process.env.ADMIN_NOTIFICATION_EMAIL || SUPER_ADMIN_EMAIL;
 
     const testTime = new Date().toLocaleString("id-ID", {
       timeZone: "Asia/Makassar",

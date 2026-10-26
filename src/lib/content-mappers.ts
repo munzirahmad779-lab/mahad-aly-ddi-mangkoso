@@ -1,3 +1,5 @@
+import { formatHijriShort } from "@/lib/hijri-calendar";
+
 // Mapper data dari tabel Supabase → tipe aplikasi.
 // Dipakai RootLayout (SSR seed agar tidak ada kedipan konten) — murni fungsi,
 // tanpa akses browser. Tanggal memakai timezone Asia/Makassar secara eksplisit
@@ -29,7 +31,7 @@ export function mapDbArticles(rows: any[]): any[] {
     category: a.category_id || "fiqh-muamalah-kontemporer",
     categoryLabel: "Fiqh Mu'asarah",
     date: tanggalIndoId(a.created_at),
-    hijriDate: "1448 H",
+    hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),
     readTime: "5 menit",
     views: a.views || 0,
     tags: a.tags || []

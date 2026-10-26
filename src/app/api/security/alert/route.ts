@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendSecurityAlertEmailToAdmins } from "@/lib/email/service";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { SUPER_ADMIN_EMAIL } from "@/lib/admin-constants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
       console.warn("Gagal mengambil email admin dari database:", fetchErr);
     }
 
-    const defaultAdminEmail = (process.env.ADMIN_NOTIFICATION_EMAIL || "munzirahmad779@gmail.com").trim().toLowerCase();
+    const defaultAdminEmail = (process.env.ADMIN_NOTIFICATION_EMAIL || SUPER_ADMIN_EMAIL).trim().toLowerCase();
     if (!verifiedAdminEmails.includes(defaultAdminEmail)) {
       verifiedAdminEmails.push(defaultAdminEmail);
     }

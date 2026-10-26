@@ -5,7 +5,7 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit
 
 // Gerbang tulis database terpusat. Semua operasi tulis admin harus lewat sini
 // memakai Service Role di server — BUKAN langsung dari browser dengan anon key.
-// - Autentikasi: wajib super_admin / editor (guest token hanya berlaku localhost).
+// - Autentikasi: wajib super_admin / editor dengan sesi Supabase asli (mode tamu sudah dihapus).
 // - Allowlist tabel: menutup akses ke tabel di luar daftar (auth, storage, dsb).
 // - Operasi & kolom match tervalidasi untuk mencegah injection pola query.
 

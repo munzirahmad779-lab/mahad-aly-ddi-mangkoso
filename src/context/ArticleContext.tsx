@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { formatHijriShort } from "@/lib/hijri-calendar";
 import {
   Article,
   CategoryInfo,
@@ -554,7 +555,7 @@ export function ArticleProvider({
               category: a.category_id || "fiqh-muamalah-kontemporer",
               categoryLabel: "Fiqh Mu'asarah",
               date: new Date(a.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
-              hijriDate: "1448 H",
+              hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),
               readTime: "5 menit",
               views: a.views || 0,
               tags: a.tags || []
@@ -1218,13 +1219,26 @@ export function ArticleProvider({
     const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
     const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
     const newLog: ActivityLog = {
-      id: "log-" + Date.now().toString(),
+      id: "log-" + Date.now().toString() + "-" + Math.random().toString(36).slice(2, 6),
       user: actor,
       action,
       target,
       timestamp: `${formattedDate}, ${formattedTime}`
     };
-    saveLogs([newLog, ...logs.slice(0, 249)]);
+    // Pembaruan FUNGSIONAL (sebelumnya membaca `logs` dari closure):
+    // dua aksi admin berurutan dalam satu batch render tidak lagi saling
+    // menimpa — log pertama tidak hilang. Persistensi mengikuti pola
+    // saveLogs (localStorage + sinkron backend).
+    setLogs((prev) => {
+      const next = [newLog, ...prev.slice(0, 249)];
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("mahad_logs", JSON.stringify(next));
+        } catch (e) {}
+      }
+      syncContentToBackend("activity_logs", "system", "Log Aktivitas Admin", next);
+      return next;
+    });
   };
 
   const clearActivityLogs = (user: string = "Super Admin") => {
@@ -1632,7 +1646,7 @@ export function ArticleProvider({
       category: sub.kategori || (isOpini ? "opini-santri" : "fiqh-muamalah-kontemporer"),
       categoryLabel: sub.kategori || (isOpini ? "Opini Santri" : "Fiqh Mu'asarah"),
       date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
-      hijriDate: "1448 H",
+      hijriDate: formatHijriShort(new Date()),
       readTime: "5 menit",
       views: 0,
       tags: Array.isArray(sub.keyword)
@@ -1842,8 +1856,7 @@ export function ArticleProvider({
     saveMedia(filtered);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
-      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+      const token = session?.access_token;
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (token) {
         headers.Authorization = `Bearer ${token}`;
@@ -2104,8 +2117,7 @@ export function ArticleProvider({
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
-      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+      const token = session?.access_token;
       const res = await fetch("/api/admin/email/send", {
         method: "POST",
         headers: {
@@ -2166,8 +2178,7 @@ export function ArticleProvider({
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
-      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+      const token = session?.access_token;
       const res = await fetch("/api/admin/email/send", {
         method: "POST",
         headers: {
@@ -2577,8 +2588,7 @@ export function ArticleProvider({
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
-      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+      const token = session?.access_token;
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (token) {
         headers.Authorization = `Bearer ${token}`;
@@ -2615,8 +2625,7 @@ export function ArticleProvider({
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
-      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+      const token = session?.access_token;
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (token) {
         headers.Authorization = `Bearer ${token}`;

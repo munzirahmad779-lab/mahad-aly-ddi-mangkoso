@@ -44,6 +44,8 @@ import {
   OrganizationMember
 } from "@/lib/types";
 import { INITIAL_PAGE_TEXTS, INITIAL_NAVBAR_SETTINGS, INITIAL_MAINTENANCE_CONFIG, INITIAL_ORGANIZATION_MEMBERS } from "@/lib/mock-data";
+import { formatHijriShort } from "@/lib/hijri-calendar";
+import { SUPER_ADMIN_EMAIL } from "@/lib/admin-constants";
 
 const SYSTEM_NAV_PAGES = [
   { label: "🏠 Beranda", url: "/" },
@@ -81,7 +83,7 @@ export default function AdminPage() {
   } | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  const isSuperAdmin = userProfile?.role === "super_admin" || currentUser?.email === "munzirahmad779@gmail.com";
+  const isSuperAdmin = userProfile?.role === "super_admin" || currentUser?.email === SUPER_ADMIN_EMAIL;
 
   // User Management State (Username, Email, Kata Sandi & Role)
   const [userTab, setUserTab] = useState<"list" | "create" | "mypassword" | "locked">("list");
@@ -657,7 +659,7 @@ export default function AdminPage() {
           ip: "103.145.22.4",
           endpoint: "/admin/login",
           details: "Simulasi Uji Pertahanan: Percobaan akses liar berulang kali diblokir oleh sistem rate-limit.",
-          adminEmails: activeAdminEmails.length > 0 ? activeAdminEmails : ["munzirahmad779@gmail.com"]
+          adminEmails: activeAdminEmails.length > 0 ? activeAdminEmails : [SUPER_ADMIN_EMAIL]
         })
       });
       const data = await res.json();
@@ -686,37 +688,6 @@ export default function AdminPage() {
   useEffect(() => {
     async function checkAuth() {
       try {
-        if (typeof window !== "undefined" && window.location.search.includes("guest=true")) {
-          localStorage.setItem("mahad_guest_mode", "super_admin");
-        }
-        const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
-        if (isGuest) {
-          setCurrentUser({
-            id: "guest-admin-dev",
-            email: "munzirahmad779@gmail.com"
-          });
-          setUserProfile({
-            role: "super_admin",
-            nama_lengkap: "Tamu Administrator (Localhost Dev)",
-            email: "munzirahmad779@gmail.com"
-          });
-          const { data: userList } = await supabase.from("users").select("*").order("created_at", { ascending: false });
-          if (userList && userList.length > 0) {
-            setDbUsers(userList);
-          } else {
-            setDbUsers([{
-              id: "guest-admin-dev",
-              email: "munzirahmad779@gmail.com",
-              nama_lengkap: "Tamu Administrator (Localhost Dev)",
-              role: "super_admin",
-              is_active: true,
-              created_at: new Date().toISOString()
-            }]);
-          }
-          setAuthLoading(false);
-          return;
-        }
-
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) {
           router.push("/admin/login");
@@ -741,7 +712,7 @@ export default function AdminPage() {
           // Fallback if not in users table yet
           const fallbackName = session.user.email?.split("@")[0] || "Admin";
           setUserProfile({
-            role: session.user.email === "munzirahmad779@gmail.com" ? "super_admin" : "editor",
+            role: session.user.email === SUPER_ADMIN_EMAIL ? "super_admin" : "editor",
             nama_lengkap: fallbackName,
             email: session.user.email || ""
           });
@@ -761,8 +732,7 @@ export default function AdminPage() {
     checkAuth();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
-      if (!session && !isGuest) {
+      if (!session) {
         router.push("/admin/login");
       }
     });
@@ -781,13 +751,6 @@ export default function AdminPage() {
   };
 
   const getAdminApiHeaders = async (): Promise<Record<string, string>> => {
-    const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
-    if (isGuest) {
-      return {
-        "Content-Type": "application/json",
-        Authorization: "Bearer guest-local-token"
-      };
-    }
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error || !session?.access_token) {
       throw new Error("Sesi admin tidak ditemukan. Silakan keluar dan masuk kembali.");
@@ -1090,7 +1053,7 @@ export default function AdminPage() {
 
   // Email Management States (Super Admin)
   const [emailSubTab, setEmailSubTab] = useState<"settings" | "templates" | "logs" | "subscribers">("settings");
-  const [testEmailTo, setTestEmailTo] = useState("munzirahmad779@gmail.com");
+  const [testEmailTo, setTestEmailTo] = useState(SUPER_ADMIN_EMAIL);
   const [testEmailSubject, setTestEmailSubject] = useState("");
   const [testEmailMessage, setTestEmailMessage] = useState("");
   const [testEmailLoading, setTestEmailLoading] = useState(false);
@@ -1187,8 +1150,7 @@ export default function AdminPage() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         const headers: Record<string, string> = { "Content-Type": "application/json" };
-        const isGuest = localStorage.getItem("mahad_guest_mode");
-        const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+        const token = session?.access_token;
         if (token) headers.Authorization = `Bearer ${token}`;
         await fetch("/api/admin/content", {
           method: "POST",
@@ -1294,7 +1256,7 @@ export default function AdminPage() {
     status: "published" as "published" | "draft",
     featuredImage: "",
     date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
-    hijriDate: "1448 H",
+    hijriDate: formatHijriShort(new Date()),
     readTime: "5 menit",
     isSpecial: false,
     tags: "",
@@ -1760,7 +1722,7 @@ export default function AdminPage() {
       status: "published",
       featuredImage: "",
       date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
-      hijriDate: "1448 H",
+      hijriDate: formatHijriShort(new Date()),
       readTime: "5 menit",
       isSpecial: false,
       tags: "",
@@ -2255,22 +2217,6 @@ export default function AdminPage() {
       {/* 📊 MAIN CONTENT PANEL */}
       <main className="flex-1 p-4 sm:p-8 overflow-y-auto max-w-7xl">
         
-        {/* Banner Mode Tamu (Pengujian Lokal) */}
-        {typeof window !== "undefined" && Boolean(localStorage.getItem("mahad_guest_mode")) && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-amber-900 shadow-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-base">🧪</span>
-              <span><strong>Mode Tamu Aktif (Localhost Testing):</strong> Anda masuk sebagai Super Admin untuk menguji website di localhost tanpa memerlukan password.</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="px-3 py-1 bg-amber-200 hover:bg-amber-300 text-amber-900 rounded-lg font-bold transition shrink-0"
-            >
-              Keluar Mode Tamu
-            </button>
-          </div>
-        )}
 
         {/* Header Bar */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
@@ -12414,8 +12360,7 @@ export default function AdminPage() {
                             setTestEmailResult(null);
                             try {
                               const { data: { session } } = await supabase.auth.getSession();
-                              const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
-                              const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+                              const token = session?.access_token;
                               const res = await fetch("/api/admin/email/test", {
                                 method: "POST",
                                 headers: {
@@ -14161,7 +14106,7 @@ export default function AdminPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {dbUsers.map((u) => {
-                            const isSuper = u.role === "super_admin" || u.email === "munzirahmad779@gmail.com";
+                            const isSuper = u.role === "super_admin" || u.email === SUPER_ADMIN_EMAIL;
                             const hasPerm =
                               isSuper ||
                               Boolean(adminPermissions?.[u.id]?.canManageDonations) ||
@@ -14663,7 +14608,7 @@ export default function AdminPage() {
                       {(dbUsers.length > 0 ? dbUsers : [
                         {
                           id: "usr-admin",
-                          email: currentUser?.email || "munzirahmad779@gmail.com",
+                          email: currentUser?.email || SUPER_ADMIN_EMAIL,
                           nama_lengkap: userProfile?.nama_lengkap || "Ahmad Yusuf Mubarak",
                           role: "super_admin",
                           is_active: true,
@@ -14750,8 +14695,7 @@ export default function AdminPage() {
                                   try {
                                     const { data: { session } } = await supabase.auth.getSession();
                                     const headers: Record<string, string> = { "Content-Type": "application/json" };
-                                    const isGuest = localStorage.getItem("mahad_guest_mode");
-                                    const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+                                    const token = session?.access_token;
                                     if (token) headers.Authorization = `Bearer ${token}`;
                                     const res = await fetch("/api/admin/db", {
                                       method: "POST",

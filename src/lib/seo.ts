@@ -18,6 +18,37 @@ interface ArticleRow {
   updated_at: string | null;
 }
 
+/**
+ * Cek keberadaan slug di tabel konten (sisi server, untuk status 404
+ * sungguhan pada halaman detail). Mengembalikan:
+ *  - true  → slug ditemukan
+ *  - false → kueri BERHASIL dan slug pasti tidak ada
+ *  - null  → tidak bisa dipastikan (DB error) — pemanggil JANGAN 404-kan,
+ *            biarkan komponen klien yang memutuskan seperti sebelumnya.
+ */
+export async function slugExistsInTable(
+  table: "articles" | "news" | "theses" | "categories",
+  slug: string
+): Promise<boolean | null> {
+  try {
+    const bySlug = await supabaseAnon.from(table).select("slug").ilike("slug", slug).maybeSingle();
+    if (bySlug.error) return null;
+    if (bySlug.data) return true;
+    // Halaman klien juga menerima kecocokan via id langsung — tetapi kolom
+    // id bertipe uuid: menanyakannya dengan string bukan-uuid membuat
+    // PostgREST membalas error (yang akan terbaca sebagai "tidak pasti").
+    // Jadi kueri id hanya dijalankan bila slug memang berbentuk uuid;
+    // selain itu ketiadaan slug sudah pasti.
+    const looksUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    if (!looksUuid) return false;
+    const byId = await supabaseAnon.from(table).select("slug").eq("id", slug).maybeSingle();
+    if (byId.error) return null;
+    return Boolean(byId.data);
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchArticleMeta(slug: string) {
   try {
     const { data } = await supabaseAnon

@@ -89,8 +89,7 @@ export default function ImageUploader({
       formData.append("folder", folder);
 
       const { data: { session } } = await supabase.auth.getSession();
-      const isGuest = typeof window !== "undefined" && localStorage.getItem("mahad_guest_mode");
-      const token = session?.access_token || (isGuest ? "guest-local-token" : undefined);
+      const token = session?.access_token;
       const headers: Record<string, string> = {};
       if (token) {
         headers.Authorization = `Bearer ${token}`;

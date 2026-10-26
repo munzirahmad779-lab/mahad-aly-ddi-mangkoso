@@ -1,3 +1,4 @@
+import { SUPER_ADMIN_EMAIL } from "@/lib/admin-constants";
 import { Resend } from "resend";
 import { INITIAL_EMAIL_TEMPLATES } from "@/lib/mock-data";
 import { EmailTemplateItem } from "@/lib/types";
@@ -7,7 +8,7 @@ const isResendConfigured = Boolean(resendApiKey && resendApiKey !== "ISI_DISINI"
 const resend = isResendConfigured ? new Resend(resendApiKey) : null;
 
 const SENDER_EMAIL = process.env.SENDER_EMAIL || "Ma'had Aly DDI Mangkoso <onboarding@resend.dev>";
-const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || "munzirahmad779@gmail.com";
+const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || SUPER_ADMIN_EMAIL;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 function replaceVariables(template: string, vars: Record<string, string>): string {

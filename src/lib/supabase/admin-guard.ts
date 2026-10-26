@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
-const BOOTSTRAP_SUPER_ADMIN_EMAIL = "munzirahmad779@gmail.com";
+import { SUPER_ADMIN_EMAIL } from "@/lib/admin-constants";
+
+// Email bootstrap super admin: env server menang bila diset, selain itu
+// konstanta bersama (dulu literal tersalin di sini).
+const BOOTSTRAP_SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || SUPER_ADMIN_EMAIL;
 
 type AuthorizationResult =
   | { ok: true; userId: string; email: string }
@@ -11,12 +15,8 @@ export async function requireSuperAdmin(request: Request): Promise<Authorization
   const authorization = request.headers.get("authorization");
   const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
 
-  // Dukungan Mode Tamu Khusus Localhost (untuk pengujian lokal dev)
-  const host = request.headers.get("host") || "";
-  const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
-  if (isLocalhost && token === "guest-local-token") {
-    return { ok: true, userId: "guest-admin-dev", email: BOOTSTRAP_SUPER_ADMIN_EMAIL };
-  }
+  // Mode tamu/localhost SUDAH DIHAPUS (atas perintah pemilik situs):
+  // tidak ada lagi token pintas — semua akses admin wajib sesi Supabase asli.
 
   if (!token) {
     return {
@@ -89,12 +89,7 @@ export async function requireRole(
   const authorization = request.headers.get("authorization");
   const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
 
-  // Dukungan Mode Tamu Khusus Localhost (untuk pengujian lokal dev)
-  const host = request.headers.get("host") || "";
-  const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
-  if (isLocalhost && token === "guest-local-token") {
-    return { ok: true, userId: "guest-admin-dev", email: BOOTSTRAP_SUPER_ADMIN_EMAIL, role: "super_admin" };
-  }
+  // Mode tamu/localhost SUDAH DIHAPUS — lihat requireSuperAdmin di atas.
 
   if (!token) {
     return {
