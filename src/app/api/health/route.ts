@@ -9,16 +9,15 @@ export async function GET() {
   const resendApiKey = process.env.RESEND_API_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
+    // Detail lingkungan TIDAK ditampilkan ke publik (temuan audit E8):
+    // cukup status umum; rincian hanya untuk log server.
+    console.error("Health check: environment Supabase belum lengkap.", {
+      hasSupabaseUrl: Boolean(supabaseUrl),
+      hasSupabaseAnonKey: Boolean(supabaseAnonKey),
+      hasResendKey: Boolean(resendApiKey)
+    });
     return NextResponse.json(
-      {
-        status: "ERROR",
-        message: "Environment variables Supabase belum lengkap.",
-        details: {
-          hasSupabaseUrl: Boolean(supabaseUrl),
-          hasSupabaseAnonKey: Boolean(supabaseAnonKey),
-          hasResendKey: Boolean(resendApiKey)
-        }
-      },
+      { status: "ERROR", message: "Konfigurasi server belum lengkap." },
       { status: 500 }
     );
   }
@@ -41,27 +40,22 @@ export async function GET() {
     // yang membuktikan koneksi handshake SSL & otentikasi API Key ke server Supabase berhasil 100%.
     const isConnected = !authError && (!restError || restError.code === "PGRST205" || restError.code === "42P01" || restError.message.includes("does not exist") || restError.message.includes("relation"));
 
+    if (authError) console.error("Health check auth:", authError.message);
+    if (restError) console.error("Health check REST:", restError.message);
+    // Respons publik dibuat ramping (audit E8): tanpa URL proyek, format
+    // kunci, atau status environment — cukup status & latensi.
     return NextResponse.json({
-      status: "SUCCESS",
+      status: isConnected ? "SUCCESS" : "ERROR",
       timestamp: new Date().toISOString(),
       latency: `${latencyMs}ms`,
-      projectUrl: supabaseUrl,
-      apiKeyFormat: supabaseAnonKey.startsWith("sb_publishable_") ? "Format Baru (sb_publishable_...)" : "Format Standar",
-      authService: authError ? "Auth Error: " + authError.message : "Terhubung (Auth Ready)",
-      databaseConnection: isConnected ? "Terhubung ke Supabase PostgreSQL" : "Status: " + restError?.message,
-      environmentCheck: {
-        supabaseUrl: "✅ Terdeteksi",
-        supabaseAnonKey: "✅ Terdeteksi",
-        resendApiKey: resendApiKey ? "✅ Terdeteksi" : "⚠️ Belum diisi (opsional untuk fase 1)"
-      },
-      nextStepReady: "Siap lanjut ke FASE 2 (Pembuatan Tabel SQL Schema & Migrasi Data)"
+      databaseConnection: isConnected ? "Terhubung" : "Gangguan"
     });
   } catch (err: any) {
+    console.error("Health check exception:", err?.message || String(err));
     return NextResponse.json(
       {
         status: "EXCEPTION",
-        message: "Gagal menghubungkan ke Supabase.",
-        error: err?.message || String(err)
+        message: "Gagal menghubungkan ke database."
       },
       { status: 500 }
     );
