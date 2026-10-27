@@ -15,7 +15,7 @@ export default function Footer() {
   const address = footerSettings?.address || "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752";
   const kanalDescription = footerSettings?.kanalDescription || "Ikuti kabar pengajian, kajian halaqah, dan penerbitan jurnal resmi Ma'had Aly DDI Mangkoso:";
   const email = footerSettings?.email || "mahadaly@ddimangkoso.ac.id";
-  const whatsapp = footerSettings?.whatsapp || "+62 812-3456-7890";
+  const whatsapp = footerSettings?.whatsapp || "+62 857-5479-5186";
   const showAdminLink = footerSettings?.showAdminLink !== false;
   const adminLinkLabel = footerSettings?.adminLinkLabel || "🔒 Masuk Panel Redaksi (Admin)";
   const copyrightText = footerSettings?.copyrightText || "© 2026 Ma'had Aly DDI Mangkoso. Hak Cipta Dilindungi.";

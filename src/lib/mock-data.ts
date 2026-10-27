@@ -79,7 +79,7 @@ export const INITIAL_SOCIAL_MEDIA: SocialMediaSettings = {
   facebook: "https://facebook.com/mahadalyddimangkoso",
   instagram: "https://instagram.com/mahadalyddimangkoso",
   youtube: "https://youtube.com/@mahadalyddimangkoso",
-  whatsapp: "+62 812-3456-7890",
+  whatsapp: "+62 857-5479-5186",
   emailOfficial: "mahadaly@ddimangkoso.ac.id",
   fullAddress: "Kompleks Pondok Pesantren DDI Mangkoso, Kel. Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulawesi Selatan 90752"
 };
@@ -92,7 +92,7 @@ export const INITIAL_FOOTER_SETTINGS: FooterSettings = {
   address: "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
   kanalDescription: "Ikuti kabar pengajian, kajian halaqah, dan penerbitan jurnal resmi Ma'had Aly DDI Mangkoso:",
   email: "mahadaly@ddimangkoso.ac.id",
-  whatsapp: "+62 812-3456-7890",
+  whatsapp: "+62 857-5479-5186",
   facebookUrl: "https://facebook.com/mahadalyddimangkoso",
   instagramUrl: "https://instagram.com/mahadalyddimangkoso",
   youtubeUrl: "https://youtube.com/@mahadalyddimangkoso",
@@ -197,7 +197,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
   establishedDate: "10 Ramadhani 1439 H / 25 Mei 2018 M",
   location: "Kab. Barru, Sulawesi Selatan",
   address: "Kompleks Pondok Pesantren DDI Mangkoso, Kel. Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulawesi Selatan 90752",
-  phone: "+62 812-3456-7890",
+  phone: "+62 857-5479-5186",
   emailSubmission: "munzirahmad779@gmail.com",
   targetSubmissionEmails: ["munzirahmad779@gmail.com"],
   visi: "Mencetak ulama yang berkarakter, yang mampu mengintegrasikan nilai-nilai khuluqiyyah, ilmiah dan amaliah serta memiliki reputasi keulamaan sebagai ahli waris para nabi.",

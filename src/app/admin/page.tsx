@@ -16076,7 +16076,7 @@ export default function AdminPage() {
                       value={footerForm.whatsapp}
                       onChange={(e) => setFooterForm({ ...footerForm, whatsapp: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border rounded-lg text-xs"
-                      placeholder="+62 812-3456-7890"
+                      placeholder="+62 857-5479-5186"
                     />
                   </div>
 
