@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
+import HistoryTimeline, { entriesFromText } from "@/components/common/HistoryTimeline";
 
 export default function TentangPage() {
   const { aboutPageContent } = useArticles();
@@ -40,9 +41,13 @@ export default function TentangPage() {
               {c.historyArabic}
             </p>
           )}
-          <div className="text-slate-700 leading-relaxed space-y-3 whitespace-pre-line">
-            {c?.historyNarrative}
-          </div>
+          {c?.historyNarrative ? (
+            <HistoryTimeline entries={entriesFromText(c.historyNarrative)} />
+          ) : (
+            <div className="text-slate-700 leading-relaxed whitespace-pre-line">
+              {c?.historyNarrative}
+            </div>
+          )}
         </section>
 
         {/* Visi & Misi */}

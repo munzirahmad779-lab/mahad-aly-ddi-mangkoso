@@ -1,10 +1,11 @@
 "use client";
 
-import { use } from "react";
+import { use, useRef } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
 import ThesisCard from "@/components/theses/ThesisCard";
+import ReadingBeam from "@/components/common/ReadingBeam";
 
 interface ThesisDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -12,6 +13,7 @@ interface ThesisDetailPageProps {
 
 export default function ThesisDetailPage({ params }: ThesisDetailPageProps) {
   const { slug } = use(params);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const { theses, isCatalogReady } = useArticles();
 
   const cleanSlug = decodeURIComponent(slug || "").toLowerCase().trim();
@@ -91,8 +93,9 @@ export default function ThesisDetailPage({ params }: ThesisDetailPageProps) {
         </div>
       </section>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-        
+      <div ref={bodyRef} className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+        <ReadingBeam targetRef={bodyRef} />
+
         {/* Metadata Card */}
         <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs sm:text-sm">
           <div className="space-y-3">

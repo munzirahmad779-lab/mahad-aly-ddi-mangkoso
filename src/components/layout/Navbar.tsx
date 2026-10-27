@@ -19,6 +19,16 @@ export default function Navbar() {
   const [desktopDropdown, setDesktopDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+
+  // Header blur (Fase 3): setelah halaman di-scroll, latar navbar lebih
+  // tembus cahaya + blur lebih kuat + bayangan lebih dalam.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   const headerRef = useRef<HTMLElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -135,7 +145,7 @@ export default function Navbar() {
   );
 
   return (
-    <header ref={headerRef} className="fixed top-0 inset-x-0 z-50 transition-all duration-200 shadow-md">
+    <header ref={headerRef} className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? "shadow-2xl" : "shadow-md"}`}>
       {/* ══════════════════════════════════════════════════════════════
           TIER 1: TOP UTILITY BAR (Kalender Hijriah & Hotline Kontak)
          ══════════════════════════════════════════════════════════════ */}
@@ -196,7 +206,7 @@ export default function Navbar() {
       {/* ══════════════════════════════════════════════════════════════
           TIER 2: MAIN EMERALD NAVBAR
          ══════════════════════════════════════════════════════════════ */}
-      <nav className="bg-mahad-green-dark/98 backdrop-blur-md text-white border-b border-emerald-900 transition-shadow relative z-40">
+      <nav className={`${scrolled ? "bg-mahad-green-dark/85 backdrop-blur-xl" : "bg-mahad-green-dark/98 backdrop-blur-md"} text-white border-b border-emerald-900 transition-all duration-300 relative z-40`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-4 overflow-visible">
           
           {/* BRAND & LOGO (Prominent Official Emblem) */}

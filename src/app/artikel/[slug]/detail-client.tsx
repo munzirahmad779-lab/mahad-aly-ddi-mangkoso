@@ -1,10 +1,11 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { use, useEffect, useRef } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
+import ReadingBeam from "@/components/common/ReadingBeam";
 
 interface ArticleDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -13,6 +14,7 @@ interface ArticleDetailPageProps {
 export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
   const { slug } = use(params);
   const { articles, incrementArticleViews, isCatalogReady } = useArticles();
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   const cleanSlug = decodeURIComponent(slug || "").toLowerCase().trim();
   const article = (articles || []).find(
@@ -133,7 +135,8 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
       </section>
 
       {/* Badan Tulisan & Sidebar */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+      <div ref={bodyRef} className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+        <ReadingBeam targetRef={bodyRef} />
         
         {/* Konten Utama */}
         <article className="bg-white rounded-2xl p-8 sm:p-12 border border-slate-200 shadow-sm space-y-6">
