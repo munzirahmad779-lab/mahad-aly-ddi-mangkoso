@@ -1,28 +1,51 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import Reveal from "@/components/common/Reveal";
 
-// Pola bentang bento untuk 6 kartu pertama: lebar–sempit berselang-seling
-// (2+1 / 1+2 / 1+2 kolom) agar grid terasa hidup tapi tetap rapi.
-const BENTO_SPANS = [
-  "lg:col-span-2",
-  "",
-  "",
-  "lg:col-span-2",
-  "",
-  "lg:col-span-2",
-];
-
+// Seksi kategori model Marquee Strip (desain G, dipilih user 27 Okt 2026):
+// kartu kategori berjalan menyamping dalam beberapa baris berlawanan arah.
+// Jumlah baris diatur admin dari panel Kategori (kunci "category_rows").
+// Versi lite: animasi murni CSS transform, berhenti saat kursor di atasnya
+// dan saat seksi berada di luar layar.
 export default function StudyCategories() {
-  const { categories } = useArticles();
-  const shown = categories.slice(0, 6);
+  const { categories, categoryRows } = useArticles();
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Animasi hanya berjalan selama seksi terlihat di layar (hemat CPU/baterai)
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) =>
+        el.setAttribute("data-paused", entry.isIntersecting ? "false" : "true"),
+      { threshold: 0.02 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const items = categories || [];
+  if (items.length === 0) return null;
+
+  const jumlahBaris = Math.max(
+    1,
+    Math.min(categoryRows || 2, 4, items.length)
+  );
+
+  // Bagi kategori bergiliran ke baris-baris (seperti membagi kartu) agar
+  // tiap baris berisi campuran kategori, bukan potongan urutan yang sama.
+  const baris: (typeof items)[] = Array.from({ length: jumlahBaris }, () => []);
+  items.forEach((cat, i) => baris[i % jumlahBaris].push(cat));
 
   return (
-    <section className="py-20 bg-slate-50 border-t border-slate-200">
+    <section
+      ref={sectionRef}
+      className="py-20 bg-slate-50 border-t border-slate-200 overflow-hidden"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
         <Reveal>
           <div className="text-center max-w-3xl mx-auto mb-14">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3.5 py-1 rounded-full">
@@ -37,71 +60,55 @@ export default function StudyCategories() {
             </p>
           </div>
         </Reveal>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {shown.map((cat, idx) => {
-            const wide = BENTO_SPANS[idx]?.includes("col-span-2");
-            return (
-              <Reveal
-                key={cat.id}
-                delay={(idx % 3) * 0.08}
-                className={`${BENTO_SPANS[idx] || ""} h-full`}
+      <div className="marquee-wrap space-y-6 [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
+        {baris.map((isiBaris, r) => {
+          // Isi separuh trek digandakan sampai cukup lebar, lalu separuh itu
+          // digandakan sekali lagi — putaran -50% jadi mulus tanpa lompatan.
+          const separuh = [...isiBaris];
+          while (separuh.length < 4) separuh.push(...isiBaris);
+          const trek = [...separuh, ...separuh];
+          return (
+            <div key={r} className="overflow-hidden">
+              <div
+                className="marquee-track"
+                style={{
+                  animationDuration: `${Math.max(22, separuh.length * 8)}s`,
+                  animationDirection: r % 2 === 1 ? "reverse" : "normal",
+                }}
               >
-                <Link
-                  href={`/kategori/${cat.slug}`}
-                  className={`relative overflow-hidden rounded-2xl p-7 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between h-full hover:-translate-y-1 ${
-                    wide
-                      ? "bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white border border-emerald-700"
-                      : "bg-white border border-slate-200 hover:border-emerald-700"
-                  }`}
-                >
-                  {wide && (
-                    <span
-                      aria-hidden
-                      className="absolute -right-3 -bottom-7 font-display font-bold text-[7rem] leading-none text-white/10 select-none pointer-events-none"
+                {trek.map((cat, i) => {
+                  const duplikat = i >= separuh.length;
+                  return (
+                    <Link
+                      key={`${cat.id}-${i}`}
+                      href={`/kategori/${cat.slug}`}
+                      aria-hidden={duplikat}
+                      tabIndex={duplikat ? -1 : undefined}
+                      className="w-[380px] max-w-[85vw] shrink-0 mr-6 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:border-mahad-gold/60 transition flex items-start gap-4 group"
                     >
-                      {String(idx + 1).padStart(2, "0")}
-                    </span>
-                  )}
-                  <div className="relative">
-                    <span className="text-xs font-bold uppercase tracking-wider text-mahad-gold">
-                      Kajian Takhassus
-                    </span>
-                    <h3
-                      className={`font-serif font-bold mt-1 mb-2 transition-colors ${
-                        wide
-                          ? "text-2xl text-white group-hover:text-mahad-gold-light"
-                          : "text-xl text-slate-900 group-hover:text-emerald-800"
-                      }`}
-                    >
-                      {cat.name}
-                    </h3>
-                    <p
-                      className={`text-xs sm:text-sm leading-relaxed ${
-                        wide ? "text-emerald-50/90 line-clamp-3" : "text-slate-600 line-clamp-2"
-                      }`}
-                    >
-                      {cat.description}
-                    </p>
-                  </div>
-                  <div
-                    className={`relative mt-5 pt-3 text-xs font-bold flex items-center gap-1 ${
-                      wide
-                        ? "border-t border-white/15 text-mahad-gold-light"
-                        : "border-t border-slate-100 text-emerald-700"
-                    }`}
-                  >
-                    <span>Jelajahi Kajian</span>
-                    <svg className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </Link>
-              </Reveal>
-            );
-          })}
-        </div>
-
+                      <span className="font-display font-bold text-lg text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-xl px-2.5 py-1.5 shrink-0">
+                        {String(items.indexOf(cat) + 1).padStart(2, "0")}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-mahad-gold">
+                          Kajian Takhassus
+                        </span>
+                        <span className="block font-serif font-bold text-lg text-slate-900 leading-snug mt-0.5 group-hover:text-emerald-800 transition-colors">
+                          {cat.name}
+                        </span>
+                        <span className="block text-slate-600 text-xs leading-relaxed line-clamp-2 mt-1">
+                          {cat.description}
+                        </span>
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

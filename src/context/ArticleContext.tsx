@@ -235,6 +235,10 @@ interface DataContextType {
   homePriorities: HomePriorities;
   updateHomePriorities: (updated: HomePriorities) => void;
 
+  // Jumlah baris marquee kategori di beranda (diatur dari panel Kategori)
+  categoryRows: number;
+  updateCategoryRows: (n: number) => void;
+
   // Email Templates
   emailTemplates: EmailTemplateItem[];
   updateEmailTemplates: (updated: EmailTemplateItem[]) => void;
@@ -375,6 +379,10 @@ export function ArticleProvider({
   const [homePriorities, setHomePriorities] = useState<HomePriorities>(() =>
     seedObject("home_priorities", { articles: [], news: [], theses: [] })
   );
+  const [categoryRows, setCategoryRows] = useState<number>(() => {
+    const v = (initialContent as Record<string, unknown> | null)?.["category_rows"];
+    return typeof v === "number" && v >= 1 && v <= 4 ? Math.round(v) : 2;
+  });
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplateItem[]>(() => seedArray("email_templates", INITIAL_EMAIL_TEMPLATES));
   const [aboutPageContent, setAboutPageContent] = useState<AboutPageContent>(() => seedObject("about_page", INITIAL_ABOUT_CONTENT));
   const [pageTexts, setPageTexts] = useState<PageTextsSettings>(() => seedObject("page_texts", INITIAL_PAGE_TEXTS));
@@ -513,6 +521,7 @@ export function ArticleProvider({
           heroRes,
           homeSectionsRes,
           homePrioritiesRes,
+          categoryRowsRes,
           emailTemplatesRes,
           aboutRes,
           pageTextsRes,
@@ -537,6 +546,7 @@ export function ArticleProvider({
           supabase.from("site_content").select("value").eq("key", "home.hero").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "home_sections").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "home_priorities").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "category_rows").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "email_templates").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "about_page").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "page_texts").maybeSingle(),
@@ -828,6 +838,14 @@ export function ArticleProvider({
               news: Array.isArray(val.news) ? val.news : [],
               theses: Array.isArray(val.theses) ? val.theses : [],
             });
+          }
+        }
+
+        // Process Category Rows (jumlah baris marquee kategori)
+        if (categoryRowsRes.status === "fulfilled") {
+          const val = (categoryRowsRes.value as any)?.data?.value;
+          if (typeof val === "number" && val >= 1 && val <= 4) {
+            setCategoryRows(Math.round(val));
           }
         }
 
@@ -2719,6 +2737,14 @@ export function ArticleProvider({
     syncContentToBackend("home_priorities", "home", "Prioritas Tampil Beranda", updated);
   };
 
+  const updateCategoryRows = (n: number) => {
+    const v = Math.min(4, Math.max(1, Math.round(n) || 2));
+    setCategoryRows(v);
+    localStorage.setItem("mahad_category_rows", String(v));
+    addLog("Memperbarui Jumlah Baris Marquee Kategori", "Kategori Beranda");
+    syncContentToBackend("category_rows", "home", "Jumlah Baris Marquee Kategori", v);
+  };
+
   const updateEmailTemplates = (updated: EmailTemplateItem[]) => {
     setEmailTemplates(updated);
     localStorage.setItem("mahad_email_templates", JSON.stringify(updated));
@@ -2995,6 +3021,8 @@ export function ArticleProvider({
         updateHomeSections,
         homePriorities,
         updateHomePriorities,
+        categoryRows,
+        updateCategoryRows,
         emailTemplates,
         updateEmailTemplates,
         aboutPageContent,

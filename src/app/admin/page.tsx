@@ -203,6 +203,8 @@ export default function AdminPage() {
     updateHomeSections,
     homePriorities,
     updateHomePriorities,
+    categoryRows,
+    updateCategoryRows,
     emailTemplates,
     updateEmailTemplates,
     aboutPageContent,
@@ -6831,6 +6833,39 @@ export default function AdminPage() {
             {/* Sub: Kategori */}
             {activeSubMenu === "categories" && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Pengaturan baris marquee kategori di beranda (redesign Fase 2).
+                    Setiap klik langsung tersimpan lewat updateCategoryRows. */}
+                <div className="lg:col-span-12 bg-emerald-950 text-white p-5 rounded-2xl shadow-sm flex flex-wrap items-center justify-between gap-4">
+                  <div className="min-w-56">
+                    <h4 className="font-serif font-bold text-base">🎠 Baris Marquee Kategori di Beranda</h4>
+                    <p className="text-[11px] text-emerald-200/80 mt-0.5 leading-relaxed">
+                      Di beranda, kartu kategori berjalan menyamping dalam baris-baris. Tambah atau kurangi
+                      jumlah barisnya di sini — tersimpan otomatis dan langsung tampil di web.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => updateCategoryRows(categoryRows - 1)}
+                      disabled={categoryRows <= 1}
+                      className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed font-bold text-lg transition"
+                      aria-label="Kurangi baris"
+                    >
+                      −
+                    </button>
+                    <span className="font-bold text-base w-20 text-center">{categoryRows} baris</span>
+                    <button
+                      type="button"
+                      onClick={() => updateCategoryRows(categoryRows + 1)}
+                      disabled={categoryRows >= 4}
+                      className="w-10 h-10 rounded-xl bg-mahad-gold text-mahad-green-dark hover:bg-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed font-bold text-lg transition"
+                      aria-label="Tambah baris"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
                 <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-xs">
                   <h3 className="font-serif font-bold text-lg text-emerald-950 pb-2 border-b">
                     {isEditingCat ? "✏️ Edit Kategori" : "➕ Tambah Kategori Baru (Tanpa Batas)"}

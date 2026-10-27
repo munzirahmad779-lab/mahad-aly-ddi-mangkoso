@@ -53,6 +53,23 @@
   animation-play-state: paused;
 }
 
+/* Marquee baris kategori (desain G): durasi & arah diatur per baris dari
+   komponen; berhenti saat kursor di atas area atau seksi di luar layar */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee linear infinite;
+  will-change: transform;
+}
+
+.marquee-wrap:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+[data-paused="true"] .marquee-track {
+  animation-play-state: paused;
+}
+
 /* Pola garis grid halus untuk latar seksi PMB */
 .bg-grid-lines {
   background-image:
@@ -102,7 +119,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee,
-  .marquee-cards {
+  .marquee-cards,
+  .marquee-track {
     animation: none;
   }
   .beam-border::before {
