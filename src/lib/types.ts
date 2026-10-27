@@ -596,6 +596,12 @@ export interface HeroSectionSettings {
   autoPlayInterval?: number;
 }
 
+export interface HomePriorities {
+  articles: string[];
+  news: string[];
+  theses: string[];
+}
+
 export interface HomeSectionConfigItem {
   id: string;
   name: string;

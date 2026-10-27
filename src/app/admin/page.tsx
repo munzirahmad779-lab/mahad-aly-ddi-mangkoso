@@ -201,6 +201,8 @@ export default function AdminPage() {
     updateHeroSettings,
     homeSections,
     updateHomeSections,
+    homePriorities,
+    updateHomePriorities,
     emailTemplates,
     updateEmailTemplates,
     aboutPageContent,
@@ -6624,6 +6626,101 @@ export default function AdminPage() {
 
                 {activeSubMenu !== "write" && (
                   <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    {/* Panel Prioritas Beranda (tambahan redesign Fase 1).
+                        Panel & menu lama tidak diubah; panel ini hanya MENAMBAH
+                        cara admin menyusun konten yang tampil lebih dulu di
+                        beranda. Setiap perubahan langsung tersimpan ke
+                        site_content (kunci home_priorities) dan terbaca UI baru. */}
+                    <div className="border border-emerald-200 bg-emerald-50/40 rounded-xl p-4 space-y-4">
+                      <div>
+                        <h4 className="font-serif font-bold text-base text-emerald-950">⭐ Prioritas Beranda</h4>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                          Konten yang dipilih di sini tampil lebih dulu di beranda, mengikuti urutan susunannya.
+                          Di luar daftar ini urutan tetap terbaru dulu. Hanya konten terbit yang tampil ke pengunjung.
+                          Setiap perubahan langsung tersimpan &amp; tampil di web.
+                        </p>
+                      </div>
+                      {([
+                        { key: "articles", label: "Artikel — Mimbar Kajian", items: articles },
+                        { key: "news", label: "Berita — Kabar Pesantren", items: news },
+                        { key: "theses", label: "Skripsi — Repositori", items: theses },
+                      ] as const).map((grup) => {
+                        const dipilih: string[] = homePriorities?.[grup.key] || [];
+                        const byId = new Map(grup.items.map((it: any) => [it.id, it]));
+                        const belumDipilih = grup.items.filter((it: any) => !dipilih.includes(it.id));
+                        const gerak = (idx: number, arah: number) => {
+                          const next = [...dipilih];
+                          const j = idx + arah;
+                          if (j < 0 || j >= next.length) return;
+                          [next[idx], next[j]] = [next[j], next[idx]];
+                          updateHomePriorities({ ...homePriorities, [grup.key]: next });
+                        };
+                        return (
+                          <div key={grup.key} className="bg-white border border-slate-200 rounded-lg p-3 space-y-2.5">
+                            <div className="flex items-center justify-between">
+                              <h5 className="font-bold text-xs text-slate-800">{grup.label}</h5>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                {dipilih.length} diprioritaskan
+                              </span>
+                            </div>
+                            {dipilih.length === 0 ? (
+                              <p className="text-[11px] text-slate-400 italic">Belum ada — beranda memakai urutan terbaru.</p>
+                            ) : (
+                              <ol className="space-y-1.5">
+                                {dipilih.map((id, idx) => {
+                                  const item: any = byId.get(id);
+                                  return (
+                                    <li key={id} className="flex items-center gap-1.5 bg-emerald-50/70 border border-emerald-100 rounded-lg px-2.5 py-1.5">
+                                      <span className="font-serif font-bold text-emerald-800 w-5 text-center text-xs">{idx + 1}</span>
+                                      <span className="flex-1 text-[11px] font-semibold text-slate-800 truncate">
+                                        {item ? item.title : <span className="text-red-500">(konten sudah dihapus)</span>}
+                                      </span>
+                                      <button type="button" disabled={idx === 0} onClick={() => gerak(idx, -1)} className="px-1.5 py-0.5 text-[11px] font-bold bg-white border rounded disabled:opacity-30 hover:bg-emerald-100">↑</button>
+                                      <button type="button" disabled={idx === dipilih.length - 1} onClick={() => gerak(idx, 1)} className="px-1.5 py-0.5 text-[11px] font-bold bg-white border rounded disabled:opacity-30 hover:bg-emerald-100">↓</button>
+                                      <button
+                                        type="button"
+                                        onClick={() => updateHomePriorities({ ...homePriorities, [grup.key]: dipilih.filter((x) => x !== id) })}
+                                        className="px-1.5 py-0.5 text-[11px] font-bold bg-white border border-red-200 text-red-600 rounded hover:bg-red-50"
+                                      >
+                                        ✕
+                                      </button>
+                                    </li>
+                                  );
+                                })}
+                              </ol>
+                            )}
+                            {belumDipilih.length > 0 && (
+                              <div className="flex gap-1.5">
+                                <select id={`prioritas-add-${grup.key}`} className="flex-1 min-w-0 p-1.5 text-[11px] bg-slate-50 border rounded-lg font-medium" defaultValue="">
+                                  <option value="" disabled>
+                                    Pilih konten untuk diprioritaskan…
+                                  </option>
+                                  {belumDipilih.map((it: any) => (
+                                    <option key={it.id} value={it.id}>
+                                      {it.title}
+                                    </option>
+                                  ))}
+                                </select>
+                                <button
+                                  type="button"
+                                  className="px-2.5 py-1.5 text-[11px] font-bold bg-emerald-800 text-white rounded-lg hover:bg-emerald-900 shrink-0"
+                                  onClick={() => {
+                                    const sel = document.getElementById(`prioritas-add-${grup.key}`) as HTMLSelectElement | null;
+                                    if (sel && sel.value) {
+                                      updateHomePriorities({ ...homePriorities, [grup.key]: [...dipilih, sel.value] });
+                                      sel.value = "";
+                                    }
+                                  }}
+                                >
+                                  + Tambah
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
                     <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b">
                       <h3 className="font-serif font-bold text-lg text-emerald-950">
                         Daftar Artikel ({articles.length})

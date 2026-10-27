@@ -3,6 +3,7 @@ import { Inter, Amiri, Cinzel } from "next/font/google";
 import MaintenanceGate from "@/components/common/MaintenanceGate";
 import GoogleAnalytics from "@/components/common/GoogleAnalytics";
 import { ArticleProvider } from "@/context/ArticleContext";
+import SmoothScroll from "@/components/layout/SmoothScroll";
 import { supabaseAnon } from "@/lib/supabase/server";
 import {
   mapDbArticles,
@@ -31,7 +32,7 @@ const SEED_FETCH_TIMEOUT_MS = 6_000;
 async function fetchInitialContent(): Promise<Record<string, unknown>> {
   const KEYS = [
     "footer", "footer_nav", "footer_focus", "header", "home.hero", "site_settings",
-    "home_sections", "about_page", "page_texts", "dema_settings", "masyayikh_list",
+    "home_sections", "home_priorities", "about_page", "page_texts", "dema_settings", "masyayikh_list",
     "courses_list", "sarana_list", "accreditations", "calendar_events",
     "bahtsul_masail", "pmb_settings", "pmb_waves", "pmb_faqs",
     "gallery_albums", "donations", "email_templates", "admin_permissions"
@@ -266,6 +267,7 @@ export default async function RootLayout({
       </head>
       <body className="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-mahad-gold selection:text-mahad-green-dark flex flex-col min-h-screen">
         <ArticleProvider initialContent={initialContent}>
+          <SmoothScroll />
           <GoogleAnalytics />
           <MaintenanceGate>{children}</MaintenanceGate>
         </ArticleProvider>

@@ -32,6 +32,7 @@ import {
   NavbarSettings,
   HeroSectionSettings,
   HomeSectionConfigItem,
+  HomePriorities,
   EmailTemplateItem,
   AboutPageContent,
   SubmissionTimelineEvent,
@@ -230,6 +231,10 @@ interface DataContextType {
   homeSections: HomeSectionConfigItem[];
   updateHomeSections: (updated: HomeSectionConfigItem[]) => void;
 
+  // Prioritas tampil di beranda (panel Prioritas Beranda di admin)
+  homePriorities: HomePriorities;
+  updateHomePriorities: (updated: HomePriorities) => void;
+
   // Email Templates
   emailTemplates: EmailTemplateItem[];
   updateEmailTemplates: (updated: EmailTemplateItem[]) => void;
@@ -367,6 +372,9 @@ export function ArticleProvider({
   const [navbarSettings, setNavbarSettings] = useState<NavbarSettings>(() => seedObject("header", INITIAL_NAVBAR_SETTINGS));
   const [heroSettings, setHeroSettings] = useState<HeroSectionSettings>(() => seedObject("home.hero", INITIAL_HERO_SETTINGS));
   const [homeSections, setHomeSections] = useState<HomeSectionConfigItem[]>(() => seedArray("home_sections", INITIAL_HOME_SECTIONS));
+  const [homePriorities, setHomePriorities] = useState<HomePriorities>(() =>
+    seedObject("home_priorities", { articles: [], news: [], theses: [] })
+  );
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplateItem[]>(() => seedArray("email_templates", INITIAL_EMAIL_TEMPLATES));
   const [aboutPageContent, setAboutPageContent] = useState<AboutPageContent>(() => seedObject("about_page", INITIAL_ABOUT_CONTENT));
   const [pageTexts, setPageTexts] = useState<PageTextsSettings>(() => seedObject("page_texts", INITIAL_PAGE_TEXTS));
@@ -504,6 +512,7 @@ export function ArticleProvider({
           headerRes,
           heroRes,
           homeSectionsRes,
+          homePrioritiesRes,
           emailTemplatesRes,
           aboutRes,
           pageTextsRes,
@@ -527,6 +536,7 @@ export function ArticleProvider({
           supabase.from("site_content").select("value").eq("key", "header").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "home.hero").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "home_sections").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "home_priorities").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "email_templates").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "about_page").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "page_texts").maybeSingle(),
@@ -807,6 +817,18 @@ export function ArticleProvider({
         if (homeSectionsRes.status === "fulfilled") {
           const val = (homeSectionsRes.value as any)?.data?.value;
           if (Array.isArray(val)) setHomeSections(val);
+        }
+
+        // Process Home Priorities
+        if (homePrioritiesRes.status === "fulfilled") {
+          const val = (homePrioritiesRes.value as any)?.data?.value;
+          if (val && typeof val === "object") {
+            setHomePriorities({
+              articles: Array.isArray(val.articles) ? val.articles : [],
+              news: Array.isArray(val.news) ? val.news : [],
+              theses: Array.isArray(val.theses) ? val.theses : [],
+            });
+          }
         }
 
         // Process Email Templates
@@ -2690,6 +2712,13 @@ export function ArticleProvider({
     syncContentToBackend("home_sections", "home", "Pengaturan Urutan Section Beranda", updated);
   };
 
+  const updateHomePriorities = (updated: HomePriorities) => {
+    setHomePriorities(updated);
+    localStorage.setItem("mahad_home_priorities", JSON.stringify(updated));
+    addLog("Memperbarui Prioritas Beranda", "Prioritas Homepage");
+    syncContentToBackend("home_priorities", "home", "Prioritas Tampil Beranda", updated);
+  };
+
   const updateEmailTemplates = (updated: EmailTemplateItem[]) => {
     setEmailTemplates(updated);
     localStorage.setItem("mahad_email_templates", JSON.stringify(updated));
@@ -2964,6 +2993,8 @@ export function ArticleProvider({
         updateHeroSettings,
         homeSections,
         updateHomeSections,
+        homePriorities,
+        updateHomePriorities,
         emailTemplates,
         updateEmailTemplates,
         aboutPageContent,

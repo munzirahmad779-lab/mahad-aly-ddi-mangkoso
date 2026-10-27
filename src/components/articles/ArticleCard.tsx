@@ -10,7 +10,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
 
   return (
     <article
-      className={`bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden border ${
+      className={`bg-white rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden border ${
         isAnregurutta
           ? "border-2 border-mahad-gold shadow-md"
           : "border-slate-200 hover:border-emerald-700"

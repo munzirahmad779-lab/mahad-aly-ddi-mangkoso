@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, useScroll, useTransform } from "motion/react";
+import NumberTicker from "@/components/common/NumberTicker";
 import Image from "next/image";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
@@ -58,22 +60,42 @@ export default function Hero() {
 
   const currentSlide = activeSlides[currentIndex] || defaultSlide;
 
+  // Parallax latar hero (redesign Fase 1): lapisan latar bergeser lebih
+  // lambat daripada scroll. Hanya transform yang dianimasikan Motion.
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "16%"]);
+
+  // Judul tampil per kata (efek SplitText ala Magic UI/React Bits)
+  const titleWords = (currentSlide.title || "").split(/\s+/).filter(Boolean);
+  const highlightWords = (currentSlide.titleHighlight || "")
+    .split(/\s+/)
+    .filter(Boolean);
+  const wordReveal = (delay: number) => ({
+    initial: { y: "110%" },
+    animate: { y: 0 },
+    transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
+  });
+
   return (
-    <section className="relative pt-40 pb-20 md:pt-48 md:pb-28 bg-mahad-green-dark text-white overflow-hidden flex items-center min-h-[90vh] select-none">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-islamic-pattern opacity-60 pointer-events-none"></div>
+    <section ref={heroRef} className="relative pt-40 pb-20 md:pt-48 md:pb-28 bg-mahad-green-dark text-white overflow-hidden flex items-center min-h-[90vh] select-none">
+      {/* Lapisan latar parallax: pola Islami + gambar slide aktif */}
+      <motion.div style={{ y: bgY }} className="absolute inset-0 scale-[1.15] pointer-events-none">
+        <div className="absolute inset-0 bg-islamic-pattern opacity-60"></div>
+        {currentSlide.bgImageUrl && (
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-25 transition-opacity duration-700"
+            style={{ backgroundImage: `url('${currentSlide.bgImageUrl}')` }}
+          ></div>
+        )}
+      </motion.div>
 
       {/* Ambient Glow Effects */}
       <div className="absolute top-1/4 -right-20 w-96 h-96 rounded-full bg-emerald-600/20 blur-3xl pointer-events-none"></div>
       <div className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full bg-mahad-gold/15 blur-3xl pointer-events-none"></div>
-
-      {/* Optional Custom Background Image for active slide */}
-      {currentSlide.bgImageUrl && (
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-25 transition-opacity duration-700 pointer-events-none"
-          style={{ backgroundImage: `url('${currentSlide.bgImageUrl}')` }}
-        ></div>
-      )}
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 w-full">
         {/* Logo Ma'had Aly DDI Mangkoso (Clean Original View) */}
@@ -92,32 +114,63 @@ export default function Hero() {
 
         {/* Kaligrafi Basmalah / Motto */}
         {currentSlide.arabicBismillah && (
-          <div
-            className="font-serif text-mahad-gold text-2xl sm:text-3xl mb-5 tracking-wide transition-all duration-500"
+          <motion.div
+            key={`basmalah-${currentSlide.id}`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.05, ease: "easeOut" }}
+            className="font-serif text-mahad-gold text-2xl sm:text-3xl mb-5 tracking-wide"
             dir="rtl"
           >
             {currentSlide.arabicBismillah}
-          </div>
+          </motion.div>
         )}
 
         {/* Judul Slide Utama & Subtitle */}
-        <div key={currentSlide.id} className="animate-fadeIn">
+        <div key={currentSlide.id}>
           <h1 className="font-serif font-bold text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight sm:leading-snug max-w-4xl mx-auto">
-            {currentSlide.title}{" "}
-            {currentSlide.titleHighlight && (
+            {titleWords.map((word, i) => (
+              <span key={`t-${i}`} className="inline-block overflow-hidden align-bottom pb-2 -mb-2">
+                <motion.span className="inline-block will-change-transform" {...wordReveal(0.15 + i * 0.05)}>
+                  {word}
+                  {"\u00A0"}
+                </motion.span>
+              </span>
+            ))}
+            {highlightWords.length > 0 && (
               <span className="text-mahad-gold block sm:inline-block mt-1 sm:mt-0">
-                {currentSlide.titleHighlight}
+                {highlightWords.map((word, i) => (
+                  <span key={`h-${i}`} className="inline-block overflow-hidden align-bottom pb-2 -mb-2">
+                    <motion.span
+                      className="inline-block will-change-transform"
+                      {...wordReveal(0.15 + (titleWords.length + i) * 0.05)}
+                    >
+                      {word}
+                      {"\u00A0"}
+                    </motion.span>
+                  </span>
+                ))}
               </span>
             )}
           </h1>
 
           {/* Deskripsi Subtitle */}
-          <p className="mt-5 max-w-3xl mx-auto text-base sm:text-lg lg:text-xl text-emerald-100/90 font-normal leading-relaxed">
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.45, ease: "easeOut" }}
+            className="mt-5 max-w-3xl mx-auto text-base sm:text-lg lg:text-xl text-emerald-100/90 font-normal leading-relaxed"
+          >
             {currentSlide.subtitle}
-          </p>
+          </motion.p>
 
           {/* CTA Buttons */}
-          <div className="mt-9 flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.6, ease: "easeOut" }}
+            className="mt-9 flex flex-col sm:flex-row gap-4 justify-center items-center"
+          >
             {currentSlide.cta1Text && (
               <Link
                 href={currentSlide.cta1Url || "/artikel"}
@@ -137,7 +190,7 @@ export default function Hero() {
                 <span>{currentSlide.cta2Text}</span>
               </Link>
             )}
-          </div>
+          </motion.div>
         </div>
 
         {/* Dynamic Metrics Grid */}
@@ -145,7 +198,9 @@ export default function Hero() {
           <div className="mt-14 pt-8 border-t border-emerald-800/80 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             {metrics.map((m) => (
               <div key={m.id} className="p-3">
-                <div className="font-serif font-bold text-2xl sm:text-3xl text-mahad-gold">{m.value}</div>
+                <div className="font-serif font-bold text-2xl sm:text-3xl text-mahad-gold">
+                  <NumberTicker value={m.value} />
+                </div>
                 <div className="text-xs text-emerald-200/80 mt-1 uppercase tracking-wider font-medium">
                   {m.label}
                 </div>

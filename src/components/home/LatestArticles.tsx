@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
+import Reveal from "@/components/common/Reveal";
+import { urutkanPrioritas } from "@/lib/priorities";
 
 export default function LatestArticles() {
-  const { articles } = useArticles();
+  const { articles, homePriorities } = useArticles();
   const [selectedCategory, setSelectedCategory] = useState<string>("semua");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -16,7 +18,10 @@ export default function LatestArticles() {
     .slice(0, 5)
     .filter((a) => (a.views || 0) > 0);
 
-  const filteredArticles = articles.filter((art) => {
+  // Prioritas admin (panel Prioritas Beranda) tampil lebih dulu;
+  // sisanya mengikuti urutan asal (terbaru dulu).
+  const orderedArticles = urutkanPrioritas(articles, homePriorities?.articles);
+  const filteredArticles = orderedArticles.filter((art) => {
     const matchesCategory =
       selectedCategory === "semua" || art.category === selectedCategory;
     const matchesSearch =
@@ -31,6 +36,7 @@ export default function LatestArticles() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header Bagian Artikel */}
+        <Reveal>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-200/80 px-3 py-1 rounded-full">
@@ -55,6 +61,7 @@ export default function LatestArticles() {
             <span>Kirim Naskah Anda</span>
           </Link>
         </div>
+        </Reveal>
 
         {/* Paling Dibaca: peringkat berdasarkan pembaca riil */}
         {palingDibaca.length >= 3 && (
@@ -166,8 +173,17 @@ export default function LatestArticles() {
         {/* Grid Artikel */}
         {filteredArticles.length > 0 ? (
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredArticles.map((article) => (
-              <ArticleCard key={article.id} article={article} />
+            {filteredArticles.map((article, idx) => (
+              <Reveal key={article.id} delay={(idx % 3) * 0.08} className="h-full">
+                <div className="relative h-full [&>article]:h-full">
+                  {homePriorities?.articles?.includes(article.id) && (
+                    <span className="absolute -top-2.5 left-4 z-10 bg-mahad-gold text-mahad-green-dark text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow">
+                      Pilihan Redaksi
+                    </span>
+                  )}
+                  <ArticleCard article={article} />
+                </div>
+              </Reveal>
             ))}
           </div>
         ) : (

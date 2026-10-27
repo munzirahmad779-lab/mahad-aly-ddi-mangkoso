@@ -2,14 +2,19 @@
 
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
+import Reveal from "@/components/common/Reveal";
+import { urutkanPrioritas } from "@/lib/priorities";
 
 export default function LatestNews() {
-  const { news } = useArticles();
+  const { news, homePriorities } = useArticles();
+  // Prioritas admin tampil lebih dulu; sisanya terbaru dulu.
+  const tampil = urutkanPrioritas(news, homePriorities?.news).slice(0, 2);
 
   return (
     <section className="py-20 bg-slate-50 border-t border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        <Reveal>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
@@ -31,12 +36,13 @@ export default function LatestNews() {
             </svg>
           </Link>
         </div>
+        </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {news.slice(0, 2).map((item) => (
+          {tampil.map((item, idx) => (
+            <Reveal key={item.id} delay={idx * 0.1} className="h-full">
             <article
-              key={item.id}
-              className="bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-emerald-700 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
+              className="h-full bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-emerald-700 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group"
             >
               <div>
                 {item.imageUrl && (
@@ -85,6 +91,7 @@ export default function LatestNews() {
                 </div>
               </div>
             </article>
+            </Reveal>
           ))}
         </div>
 

@@ -3,9 +3,13 @@
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import ThesisCard from "@/components/theses/ThesisCard";
+import Reveal from "@/components/common/Reveal";
+import { urutkanPrioritas } from "@/lib/priorities";
 
 export default function LatestTheses() {
-  const { theses } = useArticles();
+  const { theses, homePriorities } = useArticles();
+  // Prioritas admin tampil lebih dulu; sisanya terbaru dulu.
+  const tampil = urutkanPrioritas(theses, homePriorities?.theses).slice(0, 3);
 
   return (
     <section className="py-24 bg-white border-t border-slate-200">
@@ -37,8 +41,12 @@ export default function LatestTheses() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {theses.slice(0, 3).map((thesis) => (
-            <ThesisCard key={thesis.id} thesis={thesis} />
+          {tampil.map((thesis, idx) => (
+            <Reveal key={thesis.id} delay={idx * 0.08} className="h-full">
+              <div className="h-full [&>*]:h-full">
+                <ThesisCard thesis={thesis} />
+              </div>
+            </Reveal>
           ))}
         </div>
 
