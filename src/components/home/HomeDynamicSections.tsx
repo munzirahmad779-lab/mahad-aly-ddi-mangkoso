@@ -107,10 +107,13 @@ export function HomeDonationSection({ section }: { section: HomeSectionConfigIte
                         />
                       </div>
                       <div className="w-full bg-emerald-950 h-2.5 rounded-full overflow-hidden">
+                        {/* Animasi lewat transform scaleX (GPU), BUKAN width —
+                            animasi width memaksa hitung ulang layout tiap frame
+                            dan itulah penyebab lag saat scroll ke seksi ini. */}
                         <motion.div
-                          className="bg-gradient-to-r from-yellow-400 to-mahad-gold h-full rounded-full"
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${percent}%` }}
+                          className="bg-gradient-to-r from-yellow-400 to-mahad-gold h-full w-full rounded-full origin-left"
+                          initial={{ scaleX: 0 }}
+                          whileInView={{ scaleX: Math.min(percent, 100) / 100 }}
                           viewport={{ once: true, margin: "-40px" }}
                           transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
                         />
