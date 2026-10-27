@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useArticles } from "@/context/ArticleContext";
+import Reveal from "@/components/common/Reveal";
 
 export default function QuoteSection() {
   const { settings } = useArticles();
@@ -20,6 +21,7 @@ export default function QuoteSection() {
       <div className="absolute inset-0 opacity-10 bg-islamic-pattern pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto px-6">
+        <Reveal>
         {hasImage ? (
           <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
             {/* Foto Tokoh / Kaligrafi Berbingkai Elegan */}
@@ -90,6 +92,7 @@ export default function QuoteSection() {
             </div>
           </div>
         )}
+        </Reveal>
       </div>
     </section>
   );

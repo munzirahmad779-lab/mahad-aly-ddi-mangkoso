@@ -3,8 +3,11 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "motion/react";
 import { useArticles } from "@/context/ArticleContext";
 import { HomeSectionConfigItem } from "@/lib/types";
+import Reveal from "@/components/common/Reveal";
+import RupiahTicker from "@/components/common/RupiahTicker";
 
 // ══════════════════════════════════════════════════════════════
 // 1. HOME DONATION SECTION (Program Infaq & Donasi Pilihan)
@@ -33,32 +36,34 @@ export function HomeDonationSection({ section }: { section: HomeSectionConfigIte
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-mahad-gold/20 border border-mahad-gold/40 rounded-full text-mahad-gold text-xs font-bold tracking-wide">
-            <span>🤲</span>
-            <span>{section.badge || "Amal Jariyah & Infaq Mahasantri"}</span>
+        <Reveal>
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-mahad-gold/20 border border-mahad-gold/40 rounded-full text-mahad-gold text-xs font-bold tracking-wide">
+              <span>🤲</span>
+              <span>{section.badge || "Amal Jariyah & Infaq Mahasantri"}</span>
+            </div>
+            <h2 className="font-serif font-bold text-2xl sm:text-4xl text-white">
+              {section.title || section.label || "Dukung Kaderisasi Ulama Ahli Fiqh"}
+            </h2>
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+              {section.subtitle ||
+                "Salurkan infaq dan sedekah terbaik Anda untuk riset mahasantri, orang tua asuh kader ulama, dan sarana Ma'had Aly DDI Mangkoso."}
+            </p>
           </div>
-          <h2 className="font-serif font-bold text-2xl sm:text-4xl text-white">
-            {section.title || section.label || "Dukung Kaderisasi Ulama Ahli Fiqh"}
-          </h2>
-          <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-            {section.subtitle ||
-              "Salurkan infaq dan sedekah terbaik Anda untuk riset mahasantri, orang tua asuh kader ulama, dan sarana Ma'had Aly DDI Mangkoso."}
-          </p>
-        </div>
+        </Reveal>
 
         {/* Donation Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {activeDonations.map((item) => {
+          {activeDonations.map((item, idx) => {
             const percent =
               item.targetAmount && item.targetAmount > 0
                 ? Math.min(100, Math.round(((item.collectedAmount || 0) / item.targetAmount) * 100))
                 : null;
 
             return (
+              <Reveal key={item.id} delay={(idx % 3) * 0.08} className="h-full">
               <div
-                key={item.id}
-                className="bg-emerald-900/60 backdrop-blur-md border border-emerald-700/50 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:border-mahad-gold/50 transition-all duration-300 flex flex-col group"
+                className="bg-emerald-900/60 backdrop-blur-md border border-emerald-700/50 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:border-mahad-gold/50 transition-all duration-300 flex flex-col group h-full"
               >
                 {/* Banner Image */}
                 <div className="relative h-48 w-full overflow-hidden bg-emerald-950">
@@ -96,14 +101,18 @@ export function HomeDonationSection({ section }: { section: HomeSectionConfigIte
                     <div className="space-y-2 pt-2 border-t border-emerald-800/60">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-slate-400">Terkumpul:</span>
-                        <span className="font-bold text-mahad-gold">
-                          Rp {(item.collectedAmount || 0).toLocaleString("id-ID")}
-                        </span>
+                        <RupiahTicker
+                          value={item.collectedAmount || 0}
+                          className="font-bold text-mahad-gold"
+                        />
                       </div>
                       <div className="w-full bg-emerald-950 h-2.5 rounded-full overflow-hidden">
-                        <div
-                          className="bg-gradient-to-r from-yellow-400 to-mahad-gold h-full rounded-full transition-all duration-500"
-                          style={{ width: `${percent}%` }}
+                        <motion.div
+                          className="bg-gradient-to-r from-yellow-400 to-mahad-gold h-full rounded-full"
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${percent}%` }}
+                          viewport={{ once: true, margin: "-40px" }}
+                          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
                         />
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-slate-400">
@@ -153,6 +162,7 @@ export function HomeDonationSection({ section }: { section: HomeSectionConfigIte
                   </div>
                 </div>
               </div>
+              </Reveal>
             );
           })}
         </div>
@@ -184,25 +194,27 @@ export function HomeBahtsulSection({ section }: { section: HomeSectionConfigItem
   return (
     <section className="py-20 bg-slate-900 text-white relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-800/40 border border-emerald-700/60 rounded-full text-emerald-300 text-xs font-bold">
-            <span>🕌</span>
-            <span>{section.badge || "Fiqh Mu'asarah & Turats"}</span>
+        <Reveal>
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-800/40 border border-emerald-700/60 rounded-full text-emerald-300 text-xs font-bold">
+              <span>🕌</span>
+              <span>{section.badge || "Fiqh Mu'asarah & Turats"}</span>
+            </div>
+            <h2 className="font-serif font-bold text-2xl sm:text-4xl text-white">
+              {section.title || section.label || "Bahtsul Masail & Tanya Jawab Fiqh"}
+            </h2>
+            <p className="text-slate-400 text-sm sm:text-base">
+              {section.subtitle ||
+                "Hasil musyawarah fatwa dan telaah hukum syar'i mahasantri serta dewan masyayikh berlandaskan kitab-kitab muktabarah."}
+            </p>
           </div>
-          <h2 className="font-serif font-bold text-2xl sm:text-4xl text-white">
-            {section.title || section.label || "Bahtsul Masail & Tanya Jawab Fiqh"}
-          </h2>
-          <p className="text-slate-400 text-sm sm:text-base">
-            {section.subtitle ||
-              "Hasil musyawarah fatwa dan telaah hukum syar'i mahasantri serta dewan masyayikh berlandaskan kitab-kitab muktabarah."}
-          </p>
-        </div>
+        </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {list.map((item) => (
+          {list.map((item, idx) => (
+            <Reveal key={item.id} delay={(idx % 3) * 0.08} className="h-full">
             <div
-              key={item.id}
-              className="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-6 flex flex-col justify-between space-y-4 hover:border-mahad-gold/60 transition shadow-lg"
+              className="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-6 flex flex-col justify-between space-y-4 hover:border-mahad-gold/60 transition shadow-lg h-full"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-[11px]">
@@ -226,6 +238,7 @@ export function HomeBahtsulSection({ section }: { section: HomeSectionConfigItem
                 </span>
               </div>
             </div>
+            </Reveal>
           ))}
         </div>
 
@@ -252,9 +265,14 @@ export function HomePMBSection({ section }: { section: HomeSectionConfigItem }) 
 
   return (
     <section className="py-20 bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 text-white relative overflow-hidden">
+      {/* Pola grid halus + cahaya lembut (Fase 2) */}
+      <div className="absolute inset-0 bg-grid-lines [mask-image:radial-gradient(ellipse_65%_65%_at_50%_40%,black,transparent)] pointer-events-none" />
+      <div className="absolute -top-24 right-0 w-96 h-96 bg-mahad-gold/10 rounded-full blur-3xl pointer-events-none" />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-8 space-y-4">
+          <div className="lg:col-span-8">
+            <Reveal className="space-y-4">
             <span className="inline-block px-3 py-1 bg-mahad-gold text-mahad-green-dark text-xs font-bold rounded-full shadow">
               {section.badge || "Penerimaan Mahasantri Baru (PMB)"}
             </span>
@@ -277,21 +295,26 @@ export function HomePMBSection({ section }: { section: HomeSectionConfigItem }) 
                 </div>
               </div>
             )}
+            </Reveal>
           </div>
 
-          <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3">
-            <Link
-              href="/pmb"
-              className="px-6 py-4 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-center rounded-2xl shadow-xl transition transform hover:-translate-y-1"
-            >
-              Daftar PMB Online Sekarang
-            </Link>
-            <Link
-              href="/pmb#syarat"
-              className="px-6 py-3.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-center rounded-2xl transition"
-            >
-              Lihat Brosur &amp; Persyaratan
-            </Link>
+          <div className="lg:col-span-4">
+            <Reveal delay={0.12}>
+              <div className="beam-border rounded-3xl bg-black/25 backdrop-blur-sm p-5 flex flex-col gap-3">
+                <Link
+                  href="/pmb"
+                  className="px-6 py-4 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-center rounded-2xl shadow-xl transition transform hover:-translate-y-1"
+                >
+                  Daftar PMB Online Sekarang
+                </Link>
+                <Link
+                  href="/pmb#syarat"
+                  className="px-6 py-3.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-center rounded-2xl transition"
+                >
+                  Lihat Brosur &amp; Persyaratan
+                </Link>
+              </div>
+            </Reveal>
           </div>
         </div>
       </div>
@@ -305,7 +328,8 @@ export function HomePMBSection({ section }: { section: HomeSectionConfigItem }) 
 export function HomeSubmissionSection({ section }: { section: HomeSectionConfigItem }) {
   return (
     <section className="py-16 bg-emerald-950 text-white border-t border-emerald-900">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-5">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Reveal className="text-center space-y-5">
         <span className="inline-block px-3 py-1 bg-mahad-gold/20 text-mahad-gold border border-mahad-gold/40 rounded-full text-xs font-bold">
           ✍️ {section.badge || "Mimbar Penulis Santri & Alumni"}
         </span>
@@ -330,6 +354,7 @@ export function HomeSubmissionSection({ section }: { section: HomeSectionConfigI
             Lacak Status Naskah
           </Link>
         </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -340,49 +365,81 @@ export function HomeSubmissionSection({ section }: { section: HomeSectionConfigI
 // ══════════════════════════════════════════════════════════════
 export function HomeMasyayikhSection({ section }: { section: HomeSectionConfigItem }) {
   const { lecturers } = useArticles();
-  const list = (lecturers || []).slice(0, section.maxItems || 4);
+  const list = (lecturers || []).slice(0, section.maxItems || 8);
 
   if (list.length === 0) return null;
 
   return (
     <section className="py-20 bg-slate-50 text-slate-900 border-y border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 border border-emerald-300 rounded-full text-emerald-900 text-xs font-bold">
-            <span>👳</span>
-            <span>{section.badge || "Sanad & Masyayikh"}</span>
-          </div>
-          <h2 className="font-serif font-bold text-2xl sm:text-4xl text-emerald-950">
-            {section.title || section.label || "Dewan Masyayikh & Dosen Pengajar"}
-          </h2>
-          <p className="text-slate-600 text-sm sm:text-base">
-            {section.subtitle ||
-              "Dibimbing langsung oleh para masyaikh dan pakar fiqh yang bersambung sanad keilmuannya."}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {list.map((lec) => (
-            <div
-              key={lec.id}
-              className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition text-center space-y-3"
-            >
-              <div className="w-24 h-24 mx-auto relative rounded-full overflow-hidden border-2 border-mahad-gold shadow">
-                <Image
-                  src={lec.photoUrl || "/image_067524.png"}
-                  alt={lec.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div>
-                <h3 className="font-bold text-sm text-slate-900 line-clamp-1">{lec.name}</h3>
-                <p className="text-[11px] text-emerald-800 font-semibold">{lec.title}</p>
-                <p className="text-[10px] text-slate-500 line-clamp-2 mt-1">{lec.expertise}</p>
-              </div>
+        <Reveal>
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 border border-emerald-300 rounded-full text-emerald-900 text-xs font-bold">
+              <span>👳</span>
+              <span>{section.badge || "Sanad & Masyayikh"}</span>
             </div>
-          ))}
-        </div>
+            <h2 className="font-serif font-bold text-2xl sm:text-4xl text-emerald-950">
+              {section.title || section.label || "Dewan Masyayikh & Dosen Pengajar"}
+            </h2>
+            <p className="text-slate-600 text-sm sm:text-base">
+              {section.subtitle ||
+                "Dibimbing langsung oleh para masyaikh dan pakar fiqh yang bersambung sanad keilmuannya."}
+            </p>
+          </div>
+        </Reveal>
+
+        {list.length >= 4 ? (
+          /* Marquee berjalan (Fase 2): kartu digandakan agar putaran mulus,
+             berhenti saat kursor di atasnya */
+          <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
+            <div className="marquee-cards py-2">
+              {[...list, ...list].map((lec, i) => (
+                <article
+                  key={`${lec.id}-${i}`}
+                  aria-hidden={i >= list.length}
+                  className="w-[320px] max-w-[85vw] shrink-0 mr-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-mahad-gold/60 transition flex items-center gap-4 text-left"
+                >
+                  <div className="w-20 h-20 shrink-0 relative rounded-full overflow-hidden border-2 border-mahad-gold shadow">
+                    <Image
+                      src={lec.photoUrl || "/image_067524.png"}
+                      alt={lec.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-sm text-slate-900 line-clamp-1">{lec.name}</h3>
+                    <p className="text-[11px] text-emerald-800 font-semibold line-clamp-1">{lec.title}</p>
+                    <p className="text-[10px] text-slate-500 line-clamp-2 mt-1">{lec.expertise}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {list.map((lec) => (
+              <div
+                key={lec.id}
+                className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition text-center space-y-3"
+              >
+                <div className="w-24 h-24 mx-auto relative rounded-full overflow-hidden border-2 border-mahad-gold shadow">
+                  <Image
+                    src={lec.photoUrl || "/image_067524.png"}
+                    alt={lec.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900 line-clamp-1">{lec.name}</h3>
+                  <p className="text-[11px] text-emerald-800 font-semibold">{lec.title}</p>
+                  <p className="text-[10px] text-slate-500 line-clamp-2 mt-1">{lec.expertise}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="text-center mt-10">
           <Link
@@ -409,6 +466,7 @@ export function HomeCustomSection({ section }: { section: HomeSectionConfigItem 
       } border-b border-slate-200 text-slate-900`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Reveal>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
           {section.imageUrl && (
             <div className="md:col-span-5 relative h-72 rounded-2xl overflow-hidden shadow-lg border border-slate-200">
@@ -451,6 +509,7 @@ export function HomeCustomSection({ section }: { section: HomeSectionConfigItem 
             )}
           </div>
         </div>
+        </Reveal>
       </div>
     </section>
   );
