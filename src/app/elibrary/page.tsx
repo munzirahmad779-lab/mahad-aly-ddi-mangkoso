@@ -1,8 +1,9 @@
 import ComingSoon from "@/components/common/ComingSoon";
 
 export const metadata = {
-  title: "e-Library Turats Digital — Ma'had Aly DDI Mangkoso",
-  description: "Perpustakaan digital kitab kuning dan manuskrip Islam klasik."
+  title: "e-Library Turats Digital",
+  description: "Perpustakaan digital kitab kuning dan manuskrip Islam klasik.",
+  alternates: { canonical: "/elibrary" }
 };
 
 export default function ELibraryPage() {

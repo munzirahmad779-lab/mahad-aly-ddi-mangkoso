@@ -169,11 +169,12 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    // PENTING: JANGAN set canonical global di sini. Canonical di root layout
-    // mewarisi ke SEMUA halaman sehingga setiap artikel/berita/PMb mengklaim
-    // "saya duplikat beranda" — Google menolak mengindeksnya (bug yang lama
-    // membuat situs tidak naik). Halaman utama & detail menata canonical
-    // masing-masing.
+    // Canonical beranda saja. Dulu canonical global di sini adalah bug
+    // (semua halaman mengaku duplikat beranda), tetapi sejak audit 27 Okt
+    // 2026 SETIAP halaman publik punya canonical sendiri (layout per bagian
+    // + generateMetadata halaman detail), jadi nilai root ini hanya berlaku
+    // untuk beranda dan halaman tanpa metadata sendiri (admin/404).
+    canonical: "/",
     types: {
       "application/rss+xml": "/feed.xml"
     }

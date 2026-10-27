@@ -1,7 +1,7 @@
 import ComingSoon from "@/components/common/ComingSoon";
 
 export const metadata = {
-  title: "Penerbitan Buku & Risalah — Ma'had Aly DDI Mangkoso",
+  title: "Penerbitan Buku & Risalah",
   description: "Katalog buku, manuskrip turats, dan risalah fatwa karya masyaikh dan mahasantri."
 };
 

@@ -1,8 +1,9 @@
 import ComingSoon from "@/components/common/ComingSoon";
 
 export const metadata = {
-  title: "Jurnal Ilmiah Fiqh Mu'asarah — Ma'had Aly DDI Mangkoso",
-  description: "Jurnal ilmiah berkala kajian fiqh kontemporer dan ushul fikih."
+  title: "Jurnal Ilmiah Fiqh Mu'asarah",
+  description: "Jurnal ilmiah berkala kajian fiqh kontemporer dan ushul fikih.",
+  alternates: { canonical: "/jurnal" }
 };
 
 export default function JurnalPage() {

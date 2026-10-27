@@ -91,3 +91,31 @@ export function articleMetadata(
     }
   };
 }
+
+/** Ambil judul baris konten apa pun berdasarkan slug (untuk metadata). */
+export async function fetchRowTitle(
+  table: "news" | "theses" | "categories",
+  slug: string
+): Promise<string | null> {
+  try {
+    // Skema memakai nama kolom Bahasa Indonesia untuk dua tabel ini.
+    const field = table === "categories" ? "nama" : "judul";
+    const { data } = await supabaseAnon
+      .from(table)
+      .select(field)
+      .ilike("slug", slug)
+      .maybeSingle();
+    const row = data as unknown as Record<string, string> | null;
+    return row?.[field] || null;
+  } catch {
+    return null;
+  }
+}
+
+/** Metadata sederhana berisi judul + canonical untuk halaman detail. */
+export function simpleDetailMetadata(title: string | null, path: string, fallbackTitle: string): Metadata {
+  if (!title) {
+    return { title: fallbackTitle, alternates: { canonical: `${BASE}${path}` } };
+  }
+  return { title, alternates: { canonical: `${BASE}${path}` } };
+}

@@ -44,6 +44,11 @@ export default function ImageUploader({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mode, setMode] = useState<"upload" | "url">("upload");
   const [copied, setCopied] = useState(false);
+  // Teks format mengikuti prop accept: kolom PDF jangan lagi dilabeli
+  // format gambar (temuan audit panel admin 27 Okt 2026).
+  const formatHint = accept.includes("pdf") && !accept.includes("image")
+    ? (accept.includes("doc") ? "PDF, DOC, DOCX" : "PDF")
+    : "PNG, JPG, WebP, SVG";
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -252,7 +257,7 @@ export default function ImageUploader({
                 Klik untuk upload atau drag & drop file
               </p>
               <p className="text-[11px] text-stone-500 mt-0.5">
-                PNG, JPG, WebP, SVG (Maks. {maxSizeMB} MB) • Folder: /{folder}
+                {formatHint} (Maks. {maxSizeMB} MB) • Folder: /{folder}
               </p>
             </div>
           )}

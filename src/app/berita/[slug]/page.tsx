@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { slugExistsInTable } from "@/lib/seo";
+import type { Metadata } from "next";
+import { slugExistsInTable, fetchRowTitle, simpleDetailMetadata } from "@/lib/seo";
 import DetailClient from "./detail-client";
 
 interface Props {
@@ -10,6 +11,13 @@ interface Props {
 // merender komponen klien, agar URL berita yang tidak ada membalas
 // HTTP 404 sungguhan (bukan soft-404 berstatus 200). Bila DB tidak bisa
 // dipastikan (error), halaman tetap dirender dan klien yang memutuskan.
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const cleanSlug = decodeURIComponent(slug || "").toLowerCase().trim();
+  const title = await fetchRowTitle("news", cleanSlug);
+  return simpleDetailMetadata(title, `/berita/${cleanSlug}`, "Berita Tidak Ditemukan");
+}
+
 export default async function BeritaDetailPage({ params }: Props) {
   const { slug } = await params;
   const cleanSlug = decodeURIComponent(slug || "").toLowerCase().trim();
