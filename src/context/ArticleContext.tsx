@@ -239,6 +239,11 @@ interface DataContextType {
   categoryRows: number;
   updateCategoryRows: (n: number) => void;
 
+  // Mode linimasa sejarah: "paragraf" = satu titik per paragraf,
+  // "satu" = seluruh uraian dalam satu titik (diatur dari panel Profil)
+  historyTimelineMode: "paragraf" | "satu";
+  updateHistoryTimelineMode: (m: "paragraf" | "satu") => void;
+
   // Email Templates
   emailTemplates: EmailTemplateItem[];
   updateEmailTemplates: (updated: EmailTemplateItem[]) => void;
@@ -383,6 +388,10 @@ export function ArticleProvider({
     const v = (initialContent as Record<string, unknown> | null)?.["category_rows"];
     return typeof v === "number" && v >= 1 && v <= 4 ? Math.round(v) : 2;
   });
+  const [historyTimelineMode, setHistoryTimelineMode] = useState<"paragraf" | "satu">(() => {
+    const v = (initialContent as Record<string, unknown> | null)?.["history_timeline_mode"];
+    return v === "satu" ? "satu" : "paragraf";
+  });
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplateItem[]>(() => seedArray("email_templates", INITIAL_EMAIL_TEMPLATES));
   const [aboutPageContent, setAboutPageContent] = useState<AboutPageContent>(() => seedObject("about_page", INITIAL_ABOUT_CONTENT));
   const [pageTexts, setPageTexts] = useState<PageTextsSettings>(() => seedObject("page_texts", INITIAL_PAGE_TEXTS));
@@ -522,6 +531,7 @@ export function ArticleProvider({
           homeSectionsRes,
           homePrioritiesRes,
           categoryRowsRes,
+          historyTimelineModeRes,
           emailTemplatesRes,
           aboutRes,
           pageTextsRes,
@@ -547,6 +557,7 @@ export function ArticleProvider({
           supabase.from("site_content").select("value").eq("key", "home_sections").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "home_priorities").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "category_rows").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "history_timeline_mode").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "email_templates").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "about_page").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "page_texts").maybeSingle(),
@@ -846,6 +857,14 @@ export function ArticleProvider({
           const val = (categoryRowsRes.value as any)?.data?.value;
           if (typeof val === "number" && val >= 1 && val <= 4) {
             setCategoryRows(Math.round(val));
+          }
+        }
+
+        // Process History Timeline Mode
+        if (historyTimelineModeRes.status === "fulfilled") {
+          const val = (historyTimelineModeRes.value as any)?.data?.value;
+          if (val === "satu" || val === "paragraf") {
+            setHistoryTimelineMode(val);
           }
         }
 
@@ -2745,6 +2764,13 @@ export function ArticleProvider({
     syncContentToBackend("category_rows", "home", "Jumlah Baris Marquee Kategori", v);
   };
 
+  const updateHistoryTimelineMode = (m: "paragraf" | "satu") => {
+    setHistoryTimelineMode(m);
+    localStorage.setItem("mahad_history_timeline_mode", m);
+    addLog("Memperbarui Mode Linimasa Sejarah", "Sejarah Lembaga");
+    syncContentToBackend("history_timeline_mode", "home", "Mode Linimasa Sejarah", m);
+  };
+
   const updateEmailTemplates = (updated: EmailTemplateItem[]) => {
     setEmailTemplates(updated);
     localStorage.setItem("mahad_email_templates", JSON.stringify(updated));
@@ -3023,6 +3049,8 @@ export function ArticleProvider({
         updateHomePriorities,
         categoryRows,
         updateCategoryRows,
+        historyTimelineMode,
+        updateHistoryTimelineMode,
         emailTemplates,
         updateEmailTemplates,
         aboutPageContent,

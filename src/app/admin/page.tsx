@@ -205,6 +205,8 @@ export default function AdminPage() {
     updateHomePriorities,
     categoryRows,
     updateCategoryRows,
+    historyTimelineMode,
+    updateHistoryTimelineMode,
     emailTemplates,
     updateEmailTemplates,
     aboutPageContent,
@@ -3069,6 +3071,20 @@ export default function AdminPage() {
                       onChange={(e) => setSettingsForm({ ...settingsForm, historyContent: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border rounded-lg leading-relaxed"
                     />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Mode Linimasa Sejarah (Halaman Profil &amp; Tentang)</label>
+                    <select
+                      value={historyTimelineMode}
+                      onChange={(e) => updateHistoryTimelineMode(e.target.value as "paragraf" | "satu")}
+                      className="w-full p-2.5 bg-slate-50 border rounded-lg font-medium"
+                    >
+                      <option value="paragraf">🧵 Satu titik per paragraf — tambah paragraf, tambah titik (otomatis)</option>
+                      <option value="satu">🔘 Seluruh uraian jadi satu titik saja</option>
+                    </select>
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Pilihan ini tersimpan otomatis begitu diganti (tidak perlu klik Simpan Sejarah) dan langsung berlaku di web.
+                    </p>
                   </div>
                   <button
                     type="submit"

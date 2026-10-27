@@ -5,7 +5,7 @@ import { useArticles } from "@/context/ArticleContext";
 import HistoryTimeline, { entriesFromText } from "@/components/common/HistoryTimeline";
 
 export default function TentangPage() {
-  const { aboutPageContent } = useArticles();
+  const { aboutPageContent, historyTimelineMode } = useArticles();
   const c = aboutPageContent;
 
   return (
@@ -42,7 +42,7 @@ export default function TentangPage() {
             </p>
           )}
           {c?.historyNarrative ? (
-            <HistoryTimeline entries={entriesFromText(c.historyNarrative)} />
+            <HistoryTimeline entries={entriesFromText(c.historyNarrative, historyTimelineMode)} />
           ) : (
             <div className="text-slate-700 leading-relaxed whitespace-pre-line">
               {c?.historyNarrative}

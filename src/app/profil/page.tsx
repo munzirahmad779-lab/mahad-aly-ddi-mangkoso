@@ -40,7 +40,7 @@ function CatalogSkeleton({ variant, count = 3 }: { variant: "masyayikh" | "saran
 }
 
 export default function ProfilPage() {
-  const { settings, lecturers, facilities, accreditations, pageTexts, isCatalogReady, navbarSettings } = useArticles();
+  const { settings, lecturers, facilities, accreditations, pageTexts, isCatalogReady, navbarSettings, historyTimelineMode } = useArticles();
   const [activeTab, setActiveTab] = useState<string>("sejarah");
 
   const safeLecturers = Array.isArray(lecturers) ? lecturers : [];
@@ -226,7 +226,7 @@ export default function ProfilPage() {
                 persis sama, hanya penyajiannya yang berubah. */}
             <div className="text-sm sm:text-base">
               {settings?.historyContent ? (
-                <HistoryTimeline entries={entriesFromText(settings.historyContent)} />
+                <HistoryTimeline entries={entriesFromText(settings.historyContent, historyTimelineMode)} />
               ) : (
                 <HistoryTimeline
                   entries={[

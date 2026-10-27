@@ -11,7 +11,15 @@ export interface HistoryEntry {
 // Pisahkan teks sejarah menjadi entri linimasa. Paragraf dipisah baris
 // kosong; paragraf yang diawali tahun (mis. "2013 M — ...") mendapat
 // lencana tahun. Isi teksnya sendiri tidak diubah sama sekali.
-export function entriesFromText(text: string): HistoryEntry[] {
+// Mode "satu" (pilihan admin): seluruh uraian jadi satu entri/titik.
+export function entriesFromText(
+  text: string,
+  mode: "paragraf" | "satu" = "paragraf"
+): HistoryEntry[] {
+  if (mode === "satu") {
+    const t = text.trim();
+    return t ? [{ body: t }] : [];
+  }
   const blocks = text
     .split(/\n\s*\n/)
     .map((s) => s.trim())
