@@ -81,8 +81,27 @@ async function fetchInitialContent(): Promise<Record<string, unknown>> {
     ]);
 
     if (hasil && Object.keys(hasil).length > 0) {
-      seedCache = { data: hasil, at: Date.now() };
-      return hasil;
+      // Normalisasi nomor lama: kolom phone & footer.whatsapp di baris
+      // site_settings masih menyimpan nomor contoh bawaan dan tidak punya
+      // kolom edit di panel, tetapi ikut terkirim ke browser pengunjung
+      // sebagai data seed. Samakan dengan nomor resmi di sini (hanya nilai
+      // yang PERSIS sama dengan nomor contoh; nilai lain tidak disentuh).
+      // Hapus blok ini setelah DB dibersihkan permanen via skrip service-role.
+      const NOMOR_CONTOH = "+62 812-3456-7890";
+      const NOMOR_RESMA = "+62 857-5479-5186";
+      const samakanNomor = (v: unknown): unknown => {
+        if (v === NOMOR_CONTOH) return NOMOR_RESMA;
+        if (Array.isArray(v)) return v.map(samakanNomor);
+        if (v && typeof v === "object") {
+          const o: Record<string, unknown> = {};
+          for (const [k, val] of Object.entries(v as Record<string, unknown>)) o[k] = samakanNomor(val);
+          return o;
+        }
+        return v;
+      };
+      const bersih = samakanNomor(hasil) as Record<string, unknown>;
+      seedCache = { data: bersih, at: Date.now() };
+      return bersih;
     }
     // Kueri timeout/kosong → pakai cache lama bila ada
     return seedCache?.data ?? {};
