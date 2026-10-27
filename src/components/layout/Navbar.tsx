@@ -150,8 +150,10 @@ export default function Navbar() {
           TIER 1: TOP UTILITY BAR (Kalender Hijriah & Hotline Kontak)
          ══════════════════════════════════════════════════════════════ */}
       {isTopBarActive && (
-        <div className="bg-[#032e22] text-emerald-200 border-b border-emerald-900/60 text-[11px] py-1 px-3 sm:px-6 lg:px-8 select-none relative z-30">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <div className="bg-[#032e22] text-emerald-200 border-b border-emerald-900/60 text-[11px] py-1 select-none relative z-30">
+          {/* Padding di DALAM wadah max-w-7xl (bukan di luarnya) agar tepi
+              konten sejajar persis dengan navbar & ticker di bawahnya */}
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
             {/* Kiri: Tanggal Hijriah & Masehi */}
             <div className="flex items-center gap-2 truncate">
               <span className="inline-flex items-center gap-1.5 text-mahad-gold font-medium">
@@ -514,28 +516,11 @@ export default function Navbar() {
             {/* Desktop Live Search Pill / Icon */}
             {showSearch && (
               <div className="hidden lg:flex items-center">
-                {/* Compact Search Form for 2XL screens */}
-                <form onSubmit={handleSearchSubmit} className="relative hidden 2xl:block w-40">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Cari kajian..."
-                    className="w-full bg-[#032e22]/90 border border-emerald-700/60 rounded-full py-1.5 pl-3 pr-8 text-xs text-white placeholder-emerald-300/60 focus:outline-none focus:border-mahad-gold focus:ring-1 focus:ring-mahad-gold transition"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-emerald-300 hover:text-mahad-gold transition"
-                    title="Cari"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </button>
-                </form>
-
-                {/* Search Toggle Icon for LG/XL screens */}
-                <div className="2xl:hidden relative">
+                {/* Ikon pencarian + formulir mengembang — dipakai di SEMUA lebar
+                    desktop. Dulu di layar 2XL ada formulir sebaris w-40 yang
+                    membuat baris navbar meluber keluar wadahnya (~125px),
+                    sehingga tombol Kirim Tulisan terdorong keluar jalur. */}
+                <div className="relative">
                   <button
                     type="button"
                     onClick={(e) => {
@@ -614,8 +599,8 @@ export default function Navbar() {
           TIER 3: KAJIAN & WARTA TICKER BAR (Infinite Moving Marquee!)
          ══════════════════════════════════════════════════════════════ */}
       {isTickerActive && (
-        <div className="bg-[#043d2e] text-emerald-100 border-b border-emerald-800/80 text-xs py-1.5 px-3 sm:px-6 lg:px-8 shadow-inner hidden md:block relative z-30 overflow-hidden">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <div className="bg-[#043d2e] text-emerald-100 border-b border-emerald-800/80 text-xs py-1.5 shadow-inner hidden md:block relative z-30 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
             {/* Ticker Badge */}
             <span className="bg-mahad-gold text-mahad-green-dark text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-sm z-20">
               <span>⚡</span>
