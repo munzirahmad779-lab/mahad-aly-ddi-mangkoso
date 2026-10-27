@@ -206,7 +206,10 @@ export default function Navbar() {
       {/* ══════════════════════════════════════════════════════════════
           TIER 2: MAIN EMERALD NAVBAR
          ══════════════════════════════════════════════════════════════ */}
-      <nav className={`${scrolled ? "bg-mahad-green-dark/85 backdrop-blur-xl" : "bg-mahad-green-dark/98 backdrop-blur-md"} text-white border-b border-emerald-900 transition-all duration-300 relative z-40`}>
+      {/* TANPA backdrop-blur (perbaikan lag): blur di belakang header lengket
+          memaksa browser menggambar ulang area itu di SETIAP frame scroll —
+          penyebab lag halaman penuh di HP. Warna solid nyaris sama tampilannya. */}
+      <nav className={`${scrolled ? "bg-mahad-green-dark/95" : "bg-mahad-green-dark/98"} text-white border-b border-emerald-900 transition-all duration-300 relative z-40`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-4 overflow-visible">
           
           {/* BRAND & LOGO (Prominent Official Emblem) */}

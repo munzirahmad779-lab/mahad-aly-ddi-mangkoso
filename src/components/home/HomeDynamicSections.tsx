@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "motion/react";
@@ -369,6 +369,21 @@ export function HomeSubmissionSection({ section }: { section: HomeSectionConfigI
 export function HomeMasyayikhSection({ section }: { section: HomeSectionConfigItem }) {
   const { lecturers } = useArticles();
   const list = (lecturers || []).slice(0, section.maxItems || 8);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Marquee hanya berjalan selama seksinya terlihat (hemat CPU/baterai &
+  // kurangi lag scroll — pola sama seperti marquee kategori)
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) =>
+        el.setAttribute("data-paused", entry.isIntersecting ? "false" : "true"),
+      { threshold: 0.02 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   if (list.length === 0) return null;
 
@@ -394,7 +409,7 @@ export function HomeMasyayikhSection({ section }: { section: HomeSectionConfigIt
         {list.length >= 4 ? (
           /* Marquee berjalan (Fase 2): kartu digandakan agar putaran mulus,
              berhenti saat kursor di atasnya */
-          <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
+          <div ref={wrapRef} className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
             <div className="marquee-cards py-2">
               {[...list, ...list].map((lec, i) => (
                 <article

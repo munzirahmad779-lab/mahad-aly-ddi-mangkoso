@@ -70,6 +70,19 @@
   animation-play-state: paused;
 }
 
+[data-paused="true"] .marquee-cards {
+  animation-play-state: paused;
+}
+
+/* Perbaikan lag scroll HP: animasi berkas cahaya berputar (beam) memaksa
+   gambar ulang tiap frame — di layar kecil dimatikan, bingkai emasnya
+   tetap tampil diam. */
+@media (max-width: 768px) {
+  .beam-border::before {
+    animation: none;
+  }
+}
+
 /* Pola garis grid halus untuk latar seksi PMB */
 .bg-grid-lines {
   background-image:
