@@ -34,6 +34,7 @@ import {
   HomeSectionConfigItem,
   HomePriorities,
   EmailTemplateItem,
+  HistoryTimelineEntry,
   AboutPageContent,
   SubmissionTimelineEvent,
   PageTextsSettings,
@@ -239,10 +240,11 @@ interface DataContextType {
   categoryRows: number;
   updateCategoryRows: (n: number) => void;
 
-  // Mode linimasa sejarah: "paragraf" = satu titik per paragraf,
-  // "satu" = seluruh uraian dalam satu titik (diatur dari panel Profil)
-  historyTimelineMode: "paragraf" | "satu";
-  updateHistoryTimelineMode: (m: "paragraf" | "satu") => void;
+  // Titik linimasa sejarah yang diatur MANUAL dari panel Profil:
+  // admin bebas tambah/hapus/edit/urutkan tiap titik. Daftar kosong =
+  // titik diturunkan otomatis dari paragraf teks uraian (perilaku lama).
+  historyTimelineEntries: HistoryTimelineEntry[];
+  updateHistoryTimelineEntries: (entries: HistoryTimelineEntry[]) => void;
 
   // Email Templates
   emailTemplates: EmailTemplateItem[];
@@ -344,6 +346,18 @@ export function ArticleProvider({
       ? (initialContent[key] as T)
       : fallback) as T;
 
+  // Saring & rapikan daftar titik linimasa dari sumber mana pun
+  // (seed server, respons DB, atau kiriman panel admin).
+  const parseHistoryEntries = (v: unknown): HistoryTimelineEntry[] =>
+    Array.isArray(v)
+      ? v
+          .filter((e: any) => e && typeof e.text === "string" && e.text.trim())
+          .map((e: any) => ({
+            year: typeof e.year === "string" ? e.year : "",
+            text: e.text,
+          }))
+      : [];
+
   const [articles, setArticles] = useState<Article[]>(() => seedArray("__articles", INITIAL_ARTICLES));
   const [categories, setCategories] = useState<CategoryInfo[]>(() => seedArray("__categories", INITIAL_CATEGORIES));
   const [theses, setTheses] = useState<Thesis[]>(() => seedArray("__theses", INITIAL_THESES));
@@ -388,9 +402,9 @@ export function ArticleProvider({
     const v = (initialContent as Record<string, unknown> | null)?.["category_rows"];
     return typeof v === "number" && v >= 1 && v <= 4 ? Math.round(v) : 2;
   });
-  const [historyTimelineMode, setHistoryTimelineMode] = useState<"paragraf" | "satu">(() => {
-    const v = (initialContent as Record<string, unknown> | null)?.["history_timeline_mode"];
-    return v === "satu" ? "satu" : "paragraf";
+  const [historyTimelineEntries, setHistoryTimelineEntries] = useState<HistoryTimelineEntry[]>(() => {
+    const v = (initialContent as Record<string, unknown> | null)?.["history_timeline_entries"];
+    return parseHistoryEntries(v);
   });
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplateItem[]>(() => seedArray("email_templates", INITIAL_EMAIL_TEMPLATES));
   const [aboutPageContent, setAboutPageContent] = useState<AboutPageContent>(() => seedObject("about_page", INITIAL_ABOUT_CONTENT));
@@ -531,7 +545,7 @@ export function ArticleProvider({
           homeSectionsRes,
           homePrioritiesRes,
           categoryRowsRes,
-          historyTimelineModeRes,
+          historyTimelineEntriesRes,
           emailTemplatesRes,
           aboutRes,
           pageTextsRes,
@@ -557,7 +571,7 @@ export function ArticleProvider({
           supabase.from("site_content").select("value").eq("key", "home_sections").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "home_priorities").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "category_rows").maybeSingle(),
-          supabase.from("site_content").select("value").eq("key", "history_timeline_mode").maybeSingle(),
+          supabase.from("site_content").select("value").eq("key", "history_timeline_entries").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "email_templates").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "about_page").maybeSingle(),
           supabase.from("site_content").select("value").eq("key", "page_texts").maybeSingle(),
@@ -860,11 +874,11 @@ export function ArticleProvider({
           }
         }
 
-        // Process History Timeline Mode
-        if (historyTimelineModeRes.status === "fulfilled") {
-          const val = (historyTimelineModeRes.value as any)?.data?.value;
-          if (val === "satu" || val === "paragraf") {
-            setHistoryTimelineMode(val);
+        // Process History Timeline Entries (titik linimasa manual dari panel)
+        if (historyTimelineEntriesRes.status === "fulfilled") {
+          const val = (historyTimelineEntriesRes.value as any)?.data?.value;
+          if (Array.isArray(val)) {
+            setHistoryTimelineEntries(parseHistoryEntries(val));
           }
         }
 
@@ -2764,11 +2778,12 @@ export function ArticleProvider({
     syncContentToBackend("category_rows", "home", "Jumlah Baris Marquee Kategori", v);
   };
 
-  const updateHistoryTimelineMode = (m: "paragraf" | "satu") => {
-    setHistoryTimelineMode(m);
-    localStorage.setItem("mahad_history_timeline_mode", m);
-    addLog("Memperbarui Mode Linimasa Sejarah", "Sejarah Lembaga");
-    syncContentToBackend("history_timeline_mode", "home", "Mode Linimasa Sejarah", m);
+  const updateHistoryTimelineEntries = (entries: HistoryTimelineEntry[]) => {
+    const clean = parseHistoryEntries(entries);
+    setHistoryTimelineEntries(clean);
+    localStorage.setItem("mahad_history_timeline_entries", JSON.stringify(clean));
+    addLog("Memperbarui Titik Linimasa Sejarah", "Sejarah Lembaga");
+    syncContentToBackend("history_timeline_entries", "home", "Titik Linimasa Sejarah", clean);
   };
 
   const updateEmailTemplates = (updated: EmailTemplateItem[]) => {
@@ -3049,8 +3064,8 @@ export function ArticleProvider({
         updateHomePriorities,
         categoryRows,
         updateCategoryRows,
-        historyTimelineMode,
-        updateHistoryTimelineMode,
+        historyTimelineEntries,
+        updateHistoryTimelineEntries,
         emailTemplates,
         updateEmailTemplates,
         aboutPageContent,

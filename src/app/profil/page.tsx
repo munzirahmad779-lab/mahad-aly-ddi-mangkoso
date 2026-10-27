@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useArticles } from "@/context/ArticleContext";
 import EntityPhoto from "@/components/common/EntityPhoto";
-import HistoryTimeline, { entriesFromText, HistoryEntry } from "@/components/common/HistoryTimeline";
+import HistoryTimeline, { entriesFromText, entriesFromStored, HistoryEntry } from "@/components/common/HistoryTimeline";
 import { CustomProfileSection } from "@/lib/types";
 
 /** Kerangka kartu katalog selama data server dimuat — mencegah kedipan data contoh/mock. */
@@ -40,7 +40,7 @@ function CatalogSkeleton({ variant, count = 3 }: { variant: "masyayikh" | "saran
 }
 
 export default function ProfilPage() {
-  const { settings, lecturers, facilities, accreditations, pageTexts, isCatalogReady, navbarSettings, historyTimelineMode } = useArticles();
+  const { settings, lecturers, facilities, accreditations, pageTexts, isCatalogReady, navbarSettings, historyTimelineEntries } = useArticles();
   const [activeTab, setActiveTab] = useState<string>("sejarah");
 
   const safeLecturers = Array.isArray(lecturers) ? lecturers : [];
@@ -226,7 +226,13 @@ export default function ProfilPage() {
                 persis sama, hanya penyajiannya yang berubah. */}
             <div className="text-sm sm:text-base">
               {settings?.historyContent ? (
-                <HistoryTimeline entries={entriesFromText(settings.historyContent, historyTimelineMode)} />
+                <HistoryTimeline
+                  entries={
+                    entriesFromStored(historyTimelineEntries).length
+                      ? entriesFromStored(historyTimelineEntries)
+                      : entriesFromText(settings.historyContent)
+                  }
+                />
               ) : (
                 <HistoryTimeline
                   entries={[

@@ -11,15 +11,9 @@ export interface HistoryEntry {
 // Pisahkan teks sejarah menjadi entri linimasa. Paragraf dipisah baris
 // kosong; paragraf yang diawali tahun (mis. "2013 M — ...") mendapat
 // lencana tahun. Isi teksnya sendiri tidak diubah sama sekali.
-// Mode "satu" (pilihan admin): seluruh uraian jadi satu entri/titik.
-export function entriesFromText(
-  text: string,
-  mode: "paragraf" | "satu" = "paragraf"
-): HistoryEntry[] {
-  if (mode === "satu") {
-    const t = text.trim();
-    return t ? [{ body: t }] : [];
-  }
+// Ini jalur OTOMATIS — dipakai hanya bila admin belum mengatur titik
+// secara manual dari panel (lihat entriesFromStored).
+export function entriesFromText(text: string): HistoryEntry[] {
   const blocks = text
     .split(/\n\s*\n/)
     .map((s) => s.trim())
@@ -38,6 +32,19 @@ export function entriesFromText(
     }
     return { body: p };
   });
+}
+
+// Ubah daftar titik yang diatur manual dari panel admin (kunci
+// history_timeline_entries) menjadi entri linimasa. Daftar kosong /
+// tidak ada = admin belum mengatur titik manual → pemanggil memakai
+// entriesFromText sebagai cadangan otomatis.
+export function entriesFromStored(
+  stored: { year?: string; text: string }[] | undefined | null
+): HistoryEntry[] {
+  if (!Array.isArray(stored)) return [];
+  return stored
+    .filter((e) => e && typeof e.text === "string" && e.text.trim())
+    .map((e) => ({ year: e.year?.trim() || undefined, body: e.text }));
 }
 
 // Linimasa vertikal (Fase 3, ala Timeline Aceternity): garis gradasi

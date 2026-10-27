@@ -627,6 +627,11 @@ export interface EmailTemplateItem {
   body: string; // supports {nama}, {judul}, {kode}, {catatan}, {link}
 }
 
+export interface HistoryTimelineEntry {
+  year: string; // label tahun opsional, mis. "2013 M" — kosong = tanpa lencana
+  text: string; // isi teks satu titik linimasa sejarah
+}
+
 export interface AboutPageContent {
   title: string;
   subtitle: string;

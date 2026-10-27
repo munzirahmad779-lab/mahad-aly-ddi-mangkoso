@@ -6,6 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { useArticles } from "@/context/ArticleContext";
 import ImageUploader from "@/components/common/ImageUploader";
+import { entriesFromText } from "@/components/common/HistoryTimeline";
 import AIWebsiteEditor from "@/components/admin/AIWebsiteEditor";
 import SpreadsheetSyncPanel from "@/components/admin/SpreadsheetSyncPanel";
 import {
@@ -205,8 +206,8 @@ export default function AdminPage() {
     updateHomePriorities,
     categoryRows,
     updateCategoryRows,
-    historyTimelineMode,
-    updateHistoryTimelineMode,
+    historyTimelineEntries,
+    updateHistoryTimelineEntries,
     emailTemplates,
     updateEmailTemplates,
     aboutPageContent,
@@ -1521,6 +1522,23 @@ export default function AdminPage() {
 
   // 16. Settings Form State & Auto-sync with Supabase/Context
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(settings);
+
+  // ── Editor titik linimasa sejarah (diatur manual dari panel Profil) ──
+  // Draf lokal; null = belum disentuh → tampilkan titik tersimpan, atau
+  // turunkan otomatis dari paragraf uraian bila belum ada titik manual.
+  const [tlDraft, setTlDraft] = useState<{ year: string; text: string }[] | null>(null);
+  const [tlMsg, setTlMsg] = useState("");
+  const tlList: { year: string; text: string }[] =
+    tlDraft ??
+    (historyTimelineEntries.length
+      ? historyTimelineEntries.map((e) => ({ year: e.year, text: e.text }))
+      : entriesFromText(settingsForm.historyContent || "").map((e) => ({
+          year: e.year ?? "",
+          text: typeof e.body === "string" ? e.body : "",
+        })));
+  const editTl = (
+    fn: (list: { year: string; text: string }[]) => { year: string; text: string }[]
+  ) => setTlDraft(fn(tlList.map((e) => ({ ...e }))));
 
   useEffect(() => {
     if (settings) {
@@ -3072,19 +3090,138 @@ export default function AdminPage() {
                       className="w-full p-2.5 bg-slate-50 border rounded-lg leading-relaxed"
                     />
                   </div>
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Mode Linimasa Sejarah (Halaman Profil &amp; Tentang)</label>
-                    <select
-                      value={historyTimelineMode}
-                      onChange={(e) => updateHistoryTimelineMode(e.target.value as "paragraf" | "satu")}
-                      className="w-full p-2.5 bg-slate-50 border rounded-lg font-medium"
-                    >
-                      <option value="paragraf">🧵 Satu titik per paragraf — tambah paragraf, tambah titik (otomatis)</option>
-                      <option value="satu">🔘 Seluruh uraian jadi satu titik saja</option>
-                    </select>
-                    <p className="text-[10px] text-slate-500 mt-1">
-                      Pilihan ini tersimpan otomatis begitu diganti (tidak perlu klik Simpan Sejarah) dan langsung berlaku di web.
-                    </p>
+                  <div data-testid="tl-editor" className="border border-emerald-100 bg-emerald-50/40 rounded-xl p-3.5 space-y-3">
+                    <div>
+                      <label className="block font-bold text-slate-700">Titik Linimasa Sejarah (Halaman Profil &amp; Tentang)</label>
+                      <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">
+                        Inilah titik-titik yang tampil sebagai linimasa. Kamu bebas <b>menambah</b>, <b>menghapus</b>,
+                        mengedit isi, memberi label tahun, dan menggeser urutannya — titik tidak lagi ditentukan
+                        oleh paragraf teks.
+                      </p>
+                      {historyTimelineEntries.length === 0 && tlDraft === null && (
+                        <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 mt-1.5">
+                          Saat ini titik masih <b>otomatis</b> dari paragraf Uraian Sejarah Lengkap di atas.
+                          Mengubah daftar di bawah ini lalu klik <b>Simpan Titik Linimasa</b> akan menjadikannya titik manual.
+                        </p>
+                      )}
+                    </div>
+                    {tlList.map((e, i) => (
+                      <div key={i} data-testid="tl-row" className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-slate-700">Titik {i + 1}</span>
+                          <div className="flex gap-1">
+                            <button
+                              type="button"
+                              data-testid="tl-up"
+                              title="Geser ke atas"
+                              disabled={i === 0}
+                              onClick={() =>
+                                editTl((list) => {
+                                  const t = list[i - 1];
+                                  list[i - 1] = list[i];
+                                  list[i] = t;
+                                  return list;
+                                })
+                              }
+                              className="px-2 py-1 rounded-lg border bg-slate-50 hover:bg-slate-100 disabled:opacity-40"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              data-testid="tl-down"
+                              title="Geser ke bawah"
+                              disabled={i === tlList.length - 1}
+                              onClick={() =>
+                                editTl((list) => {
+                                  const t = list[i + 1];
+                                  list[i + 1] = list[i];
+                                  list[i] = t;
+                                  return list;
+                                })
+                              }
+                              className="px-2 py-1 rounded-lg border bg-slate-50 hover:bg-slate-100 disabled:opacity-40"
+                            >
+                              ↓
+                            </button>
+                            <button
+                              type="button"
+                              data-testid="tl-del"
+                              title="Hapus titik ini"
+                              onClick={() => editTl((list) => list.filter((_, xi) => xi !== i))}
+                              className="px-2 py-1 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                            >
+                              🗑 Hapus
+                            </button>
+                          </div>
+                        </div>
+                        <input
+                          type="text"
+                          data-testid="tl-year"
+                          value={e.year}
+                          onChange={(ev) =>
+                            editTl((list) =>
+                              list.map((x, xi) => (xi === i ? { ...x, year: ev.target.value } : x))
+                            )
+                          }
+                          placeholder="Label tahun (opsional) — mis. 2013 M"
+                          className="w-full p-2 bg-slate-50 border rounded-lg"
+                        />
+                        <textarea
+                          rows={3}
+                          data-testid="tl-text"
+                          value={e.text}
+                          onChange={(ev) =>
+                            editTl((list) =>
+                              list.map((x, xi) => (xi === i ? { ...x, text: ev.target.value } : x))
+                            )
+                          }
+                          placeholder="Isi teks titik ini…"
+                          className="w-full p-2.5 bg-slate-50 border rounded-lg leading-relaxed"
+                        />
+                      </div>
+                    ))}
+                    {tlList.length === 0 && (
+                      <p className="text-[11px] text-slate-500 italic">
+                        Belum ada titik manual. Klik Tambah Titik untuk membuat titik pertama, atau biarkan kosong
+                        agar titik tampil otomatis dari paragraf uraian.
+                      </p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        data-testid="tl-add"
+                        onClick={() => editTl((list) => [...list, { year: "", text: "" }])}
+                        className="px-4 py-2 rounded-xl border border-emerald-700 text-emerald-800 font-bold bg-white hover:bg-emerald-50"
+                      >
+                        + Tambah Titik
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="tl-save"
+                        onClick={() => {
+                          updateHistoryTimelineEntries(tlList);
+                          setTlDraft(null);
+                          setTlMsg("Titik linimasa tersimpan ✓ — silakan cek halaman Profil / Tentang.");
+                        }}
+                        className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold shadow"
+                      >
+                        💾 Simpan Titik Linimasa
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="tl-reset"
+                        onClick={() => {
+                          updateHistoryTimelineEntries([]);
+                          setTlDraft(null);
+                          setTlMsg("Daftar titik dikosongkan — titik kembali otomatis dari paragraf uraian.");
+                        }}
+                        className="px-3 py-2 rounded-xl border text-slate-600 font-medium bg-white hover:bg-slate-50"
+                      >
+                        ↺ Kembali ke Otomatis
+                      </button>
+                      {tlMsg && <span className="text-[11px] font-medium text-emerald-700">{tlMsg}</span>}
+                    </div>
                   </div>
                   <button
                     type="submit"

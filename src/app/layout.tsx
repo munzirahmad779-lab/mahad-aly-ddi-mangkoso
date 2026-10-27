@@ -32,7 +32,7 @@ const SEED_FETCH_TIMEOUT_MS = 6_000;
 async function fetchInitialContent(): Promise<Record<string, unknown>> {
   const KEYS = [
     "footer", "footer_nav", "footer_focus", "header", "home.hero", "site_settings",
-    "home_sections", "home_priorities", "category_rows", "history_timeline_mode", "about_page", "page_texts", "dema_settings", "masyayikh_list",
+    "home_sections", "home_priorities", "category_rows", "history_timeline_entries", "about_page", "page_texts", "dema_settings", "masyayikh_list",
     "courses_list", "sarana_list", "accreditations", "calendar_events",
     "bahtsul_masail", "pmb_settings", "pmb_waves", "pmb_faqs",
     "gallery_albums", "donations", "email_templates", "admin_permissions"

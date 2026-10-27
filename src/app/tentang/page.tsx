@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
-import HistoryTimeline, { entriesFromText } from "@/components/common/HistoryTimeline";
+import HistoryTimeline, { entriesFromText, entriesFromStored } from "@/components/common/HistoryTimeline";
 
 export default function TentangPage() {
-  const { aboutPageContent, historyTimelineMode } = useArticles();
+  const { aboutPageContent, historyTimelineEntries } = useArticles();
   const c = aboutPageContent;
 
   return (
@@ -42,7 +42,13 @@ export default function TentangPage() {
             </p>
           )}
           {c?.historyNarrative ? (
-            <HistoryTimeline entries={entriesFromText(c.historyNarrative, historyTimelineMode)} />
+            <HistoryTimeline
+              entries={
+                entriesFromStored(historyTimelineEntries).length
+                  ? entriesFromStored(historyTimelineEntries)
+                  : entriesFromText(c.historyNarrative)
+              }
+            />
           ) : (
             <div className="text-slate-700 leading-relaxed whitespace-pre-line">
               {c?.historyNarrative}
