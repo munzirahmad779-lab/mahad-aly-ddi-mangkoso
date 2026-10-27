@@ -1586,7 +1586,7 @@ export const INITIAL_DONATIONS: DonationProgram[] = [
     ],
     contactPerson: {
       name: "Ust. Ahmad Yusuf Mubarak, M.H.",
-      phone: "6281234567890"
+      phone: "6285754795186"
     },
     isActive: true,
     isFeatured: true,
@@ -1618,7 +1618,7 @@ export const INITIAL_DONATIONS: DonationProgram[] = [
     ],
     contactPerson: {
       name: "Admin IT Portal Ma'had Aly",
-      phone: "6281234567890"
+      phone: "6285754795186"
     },
     isActive: true,
     isFeatured: true,
@@ -1656,7 +1656,7 @@ export const INITIAL_DONATIONS: DonationProgram[] = [
     ],
     contactPerson: {
       name: "Lajnah Beasiswa & Kesejahteraan Santri",
-      phone: "6281234567890"
+      phone: "6285754795186"
     },
     isActive: true,
     isFeatured: true,
@@ -1694,7 +1694,7 @@ export const INITIAL_DONATIONS: DonationProgram[] = [
     ],
     contactPerson: {
       name: "Bendahara Umum Ma'had Aly",
-      phone: "6281234567890"
+      phone: "6285754795186"
     },
     isActive: true,
     isFeatured: true,

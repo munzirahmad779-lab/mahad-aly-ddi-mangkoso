@@ -556,7 +556,7 @@ export default function AdminPage() {
       { id: "b1", bankName: "Bank Syariah Indonesia (BSI)", accountNumber: "", accountHolder: "Ma'had Aly DDI Mangkoso" }
     ],
     contactPersonName: "Bendahara / Admin Donasi",
-    contactPersonPhone: "6281234567890",
+    contactPersonPhone: "6285754795186",
     isActive: true,
     isFeatured: false
   });
@@ -581,7 +581,7 @@ export default function AdminPage() {
         { id: "b1", bankName: "Bank Syariah Indonesia (BSI)", accountNumber: "", accountHolder: "Ma'had Aly DDI Mangkoso" }
       ],
       contactPersonName: item.contactPerson?.name || "Admin Donasi",
-      contactPersonPhone: item.contactPerson?.phone || "6281234567890",
+      contactPersonPhone: item.contactPerson?.phone || "6285754795186",
       isActive: item.isActive,
       isFeatured: Boolean(item.isFeatured)
     });
@@ -13608,7 +13608,7 @@ export default function AdminPage() {
                             { id: "b1", bankName: "Bank Syariah Indonesia (BSI)", accountNumber: "", accountHolder: "Ma'had Aly DDI Mangkoso" }
                           ],
                           contactPersonName: "Bendahara / Admin Donasi",
-                          contactPersonPhone: "6281234567890",
+                          contactPersonPhone: "6285754795186",
                           isActive: true,
                           isFeatured: false
                         });
@@ -13893,7 +13893,7 @@ export default function AdminPage() {
                             type="text"
                             value={donationForm.contactPersonPhone}
                             onChange={(e) => setDonationForm({ ...donationForm, contactPersonPhone: e.target.value })}
-                            placeholder="6281234567890"
+                            placeholder="6285754795186"
                             className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-700 outline-none"
                           />
                         </div>

@@ -89,8 +89,12 @@ async function fetchInitialContent(): Promise<Record<string, unknown>> {
       // Hapus blok ini setelah DB dibersihkan permanen via skrip service-role.
       const NOMOR_CONTOH = "+62 812-3456-7890";
       const NOMOR_RESMA = "+62 857-5479-5186";
+      // Bentuk tanpa strip (dipakai nomor WA penanggung jawab donasi dsb.)
+      const NOMOR_CONTOH_TANPA_STRIP = "6281234567890";
+      const NOMOR_RESMA_TANPA_STRIP = "6285754795186";
       const samakanNomor = (v: unknown): unknown => {
         if (v === NOMOR_CONTOH) return NOMOR_RESMA;
+        if (v === NOMOR_CONTOH_TANPA_STRIP) return NOMOR_RESMA_TANPA_STRIP;
         if (Array.isArray(v)) return v.map(samakanNomor);
         if (v && typeof v === "object") {
           const o: Record<string, unknown> = {};
