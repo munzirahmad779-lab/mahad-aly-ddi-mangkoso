@@ -80,8 +80,11 @@ export default function Hero() {
     transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
   });
 
+  // pt desktop dinaikkan 48→56: sejak header Opsi C dua baris (lebih tinggi
+  // ±48px), lambang hero terlalu rapat ke header — kini ada ruang napas di
+  // atasnya (permintaan user 28 Okt 2026).
   return (
-    <section ref={heroRef} className="relative pt-40 pb-20 md:pt-48 md:pb-28 bg-mahad-green-dark text-white overflow-hidden flex items-center min-h-[90vh] select-none">
+    <section ref={heroRef} className="relative pt-40 pb-20 md:pt-56 md:pb-28 bg-mahad-green-dark text-white overflow-hidden flex items-center min-h-[90vh] select-none">
       {/* Lapisan latar parallax: pola Islami + gambar slide aktif */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 scale-[1.15] pointer-events-none">
         <div className="absolute inset-0 bg-islamic-pattern opacity-60"></div>
