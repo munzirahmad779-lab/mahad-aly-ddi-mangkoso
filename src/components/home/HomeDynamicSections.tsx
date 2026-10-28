@@ -63,7 +63,7 @@ export function HomeDonationSection({ section }: { section: HomeSectionConfigIte
             return (
               <Reveal key={item.id} delay={(idx % 3) * 0.08} className="h-full">
               <div
-                className="bg-emerald-900/60 backdrop-blur-md border border-emerald-700/50 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:border-mahad-gold/50 transition-all duration-300 flex flex-col group h-full"
+                className="bg-emerald-900/85 border border-emerald-700/50 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:border-mahad-gold/50 transition-all duration-300 flex flex-col group h-full"
               >
                 {/* Banner Image */}
                 <div className="relative h-48 w-full overflow-hidden bg-emerald-950">
@@ -288,11 +288,11 @@ export function HomePMBSection({ section }: { section: HomeSectionConfigItem }) 
             </p>
             {activeWave && (
               <div className="flex flex-wrap gap-4 pt-2 text-xs">
-                <div className="bg-black/30 backdrop-blur-sm px-4 py-2.5 rounded-xl border border-white/10">
+                <div className="bg-black/50 px-4 py-2.5 rounded-xl border border-white/10">
                   <span className="text-slate-300 block text-[10px]">Gelombang Aktif:</span>
                   <span className="font-bold text-mahad-gold text-sm">{activeWave.name}</span>
                 </div>
-                <div className="bg-black/30 backdrop-blur-sm px-4 py-2.5 rounded-xl border border-white/10">
+                <div className="bg-black/50 px-4 py-2.5 rounded-xl border border-white/10">
                   <span className="text-slate-300 block text-[10px]">Jadwal Pendaftaran:</span>
                   <span className="font-bold text-white text-sm">{activeWave.startDate} s/d {activeWave.endDate}</span>
                 </div>
@@ -303,7 +303,7 @@ export function HomePMBSection({ section }: { section: HomeSectionConfigItem }) 
 
           <div className="lg:col-span-4">
             <Reveal delay={0.12}>
-              <div className="beam-border rounded-3xl bg-black/25 backdrop-blur-sm p-5 flex flex-col gap-3">
+              <div className="beam-border rounded-3xl bg-black/40 p-5 flex flex-col gap-3">
                 <Link
                   href="/pmb"
                   className="px-6 py-4 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-center rounded-2xl shadow-xl transition transform hover:-translate-y-1"
