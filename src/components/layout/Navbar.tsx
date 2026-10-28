@@ -18,7 +18,6 @@ export default function Navbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [desktopDropdown, setDesktopDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
   // Header blur (Fase 3): setelah halaman di-scroll, latar navbar lebih
   // tembus cahaya + blur lebih kuat + bayangan lebih dalam.
@@ -30,7 +29,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
   const headerRef = useRef<HTMLElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const safeCategories = Array.isArray(categories) ? categories : [];
   const fiqhCategories = safeCategories.filter((c) => c.type !== "opini");
@@ -41,7 +39,6 @@ export default function Navbar() {
     setIsOpen(false);
     setActiveDropdown(null);
     setDesktopDropdown(null);
-    setIsSearchExpanded(false);
   };
 
   const toggleDropdown = (id: string) => {
@@ -57,7 +54,6 @@ export default function Navbar() {
     const handleClickOutside = (e: MouseEvent) => {
       if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
         setDesktopDropdown(null);
-        setIsSearchExpanded(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -71,13 +67,6 @@ export default function Navbar() {
       closeMenu();
     }
   };
-
-  // Focus search input when expanded on lg screens
-  useEffect(() => {
-    if (isSearchExpanded && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isSearchExpanded]);
 
   // Automatic Real-Time Hijri Date (NU & Kemenag RI MABIMS Hisab/Rukyat)
   const [autoHijriDate, setAutoHijriDate] = useState<string>(() => {
@@ -134,11 +123,14 @@ export default function Navbar() {
     return pathname.startsWith(url.split("#")[0]);
   };
 
-  // Smart Desktop Standalone Logic:
-  // All active links up to 8 items will ALWAYS render as primary standalone buttons on xl screens!
-  const MAX_DESKTOP_PRIMARY = 8;
-  const primaryLinks = navLinks.slice(0, MAX_DESKTOP_PRIMARY);
-  const overflowLinks = navLinks.slice(MAX_DESKTOP_PRIMARY);
+  // Tata letak Opsi C — dua baris (pilihan user, 28 Okt 2026):
+  // SEMUA menu aktif tampil di baris kedua navbar; tidak lagi dipotong 8 +
+  // dilipat ke "Lainnya", karena baris kedua luas. Baris kedua diatur
+  // justify-center + flex-wrap, jadi setiap menu yang ditambah admin lewat
+  // panel membuat SELURUH baris bergeser dan tetap persis di tengah
+  // (menu paling kiri ikut bergeser ke kiri) — bukan menumpuk di satu sisi.
+  const primaryLinks = navLinks;
+  const overflowLinks: typeof navLinks = [];
   const hasOverflow = overflowLinks.length > 0;
   const isAnyOverflowActive = overflowLinks.some(
     (l) => isLinkActive(l.url) || l.children?.some((c) => isLinkActive(c.url))
@@ -212,7 +204,7 @@ export default function Navbar() {
           memaksa browser menggambar ulang area itu di SETIAP frame scroll —
           penyebab lag halaman penuh di HP. Warna solid nyaris sama tampilannya. */}
       <nav className={`${scrolled ? "bg-mahad-green-dark/95" : "bg-mahad-green-dark/98"} text-white border-b border-emerald-900 transition-all duration-300 relative z-40`}>
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-4 overflow-visible">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 lg:h-auto lg:py-2.5 lg:flex-wrap flex items-center justify-between gap-2 sm:gap-4 overflow-visible">
           
           {/* BRAND & LOGO (Prominent Official Emblem) */}
           <Link
@@ -241,7 +233,7 @@ export default function Navbar() {
           </Link>
 
           {/* DESKTOP NAVIGATION (Primary standalone links: Beranda -> ... -> DeMa) */}
-          <div className="hidden lg:flex items-center justify-end gap-1 xl:gap-2.5 2xl:gap-3 text-xs xl:text-[13px] font-medium flex-1">
+          <div className="hidden lg:flex items-center justify-center flex-wrap gap-1 xl:gap-2.5 2xl:gap-3 text-xs xl:text-[13px] font-medium order-3 basis-full border-t border-emerald-800/50 pt-2 mt-1">
             {primaryLinks.map((link) => {
               const hasChildren = link.children && link.children.length > 0;
               const isKajianMenu =
@@ -513,51 +505,28 @@ export default function Navbar() {
 
           {/* ACTION BUTTON & SEARCH */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-            {/* Desktop Live Search Pill / Icon */}
+            {/* Kotak pencarian selalu tampil di baris pertama (Opsi C):
+                menggantikan ikon cari mengembang, karena baris pertama kini
+                lega — menu sudah turun ke baris kedua. */}
             {showSearch && (
-              <div className="hidden lg:flex items-center">
-                {/* Ikon pencarian + formulir mengembang — dipakai di SEMUA lebar
-                    desktop. Dulu di layar 2XL ada formulir sebaris w-40 yang
-                    membuat baris navbar meluber keluar wadahnya (~125px),
-                    sehingga tombol Kirim Tulisan terdorong keluar jalur. */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsSearchExpanded(!isSearchExpanded);
-                    }}
-                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-emerald-200 hover:text-mahad-gold transition"
-                    title="Cari Kajian & Artikel"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </button>
-                  {isSearchExpanded && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-[#064e3b] border border-emerald-700/80 rounded-2xl shadow-2xl p-2.5 z-[70] animate-fadeIn">
-                      <form onSubmit={handleSearchSubmit} className="relative">
-                        <input
-                          ref={searchInputRef}
-                          type="text"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="Cari kajian, fatwa, artikel..."
-                          className="w-full bg-[#032e22] border border-emerald-600/70 rounded-xl py-2 pl-3 pr-8 text-xs text-white placeholder-emerald-300/60 focus:outline-none focus:border-mahad-gold"
-                        />
-                        <button
-                          type="submit"
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mahad-gold"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                          </svg>
-                        </button>
-                      </form>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <form onSubmit={handleSearchSubmit} className="relative hidden lg:block w-56 xl:w-72">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari kajian, fatwa, artikel..."
+                  className="w-full bg-[#032e22]/90 border border-emerald-700/60 rounded-full py-2 pl-4 pr-9 text-xs text-white placeholder-emerald-300/60 focus:outline-none focus:border-mahad-gold focus:ring-1 focus:ring-mahad-gold transition"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-300 hover:text-mahad-gold transition"
+                  title="Cari"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+              </form>
             )}
 
             {/* High-Contrast Action Button (Kirim Tulisan / PMB Online) */}
