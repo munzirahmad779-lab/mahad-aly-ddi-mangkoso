@@ -17,7 +17,7 @@ import { supabase } from "@/lib/supabase/client";
 interface ImageUploaderProps {
   value: string;
   onChange: (url: string) => void;
-  folder?: "logo" | "masyayikh" | "sarana" | "artikel" | "berita" | "galeri" | "skripsi-cover" | "umum" | string;
+  folder?: "logo" | "masyayikh" | "sarana" | "artikel" | "berita" | "galeri" | "pmb" | "skripsi-cover" | "skripsi" | "donasi" | "dema" | "umum" | string;
   label?: string;
   helperText?: string;
   accept?: string;

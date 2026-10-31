@@ -22,6 +22,7 @@ const ALLOWED_FOLDERS = [
   "artikel",
   "berita",
   "galeri",
+  "pmb",
   "skripsi-cover",
   "skripsi",
   "donasi",
