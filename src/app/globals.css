@@ -23,6 +23,17 @@
   font-size: 14pt;
   line-height: 2;
   unicode-bidi: isolate;
+  padding: 0 0.12em;
+}
+
+/* Blok kutipan Arab (ayat/hadis satu baris penuh): panel krem terpisah
+   dari kalimat Latin di sebelum dan sesudahnya. */
+.blok-arab {
+  display: block;
+  padding: 1.4rem 1.25rem;
+  background-color: #faf6ea;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 0.9rem;
 }
 
 /* Pola Geometris Halus untuk Background */

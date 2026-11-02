@@ -141,8 +141,8 @@ function IsiArtikel({ content }: { content: string }) {
         elemen.push(
           <h2
             key={kunci}
-            className={`font-serif font-bold text-emerald-900 text-xl sm:text-2xl leading-snug ${
-              elemen.length > 0 ? "mt-10" : ""
+            className={`font-serif font-bold text-emerald-900 text-xl sm:text-2xl leading-snug border-l-4 border-amber-500 pl-3 sm:pl-4 ${
+              elemen.length > 0 ? "mt-12" : ""
             }`}
           >
             {renderCampuran(baris, kunci)}
@@ -150,7 +150,12 @@ function IsiArtikel({ content }: { content: string }) {
         );
       } else if (arabicRatio(bersihUntukUji(baris)) > 0.7) {
         elemen.push(
-          <p key={kunci} dir="rtl" className="teks-arab text-right">
+          <p
+            key={kunci}
+            dir="rtl"
+            className="teks-arab blok-arab text-right"
+            style={{ marginTop: "2rem", marginBottom: "2rem" }}
+          >
             {baris}
           </p>
         );
