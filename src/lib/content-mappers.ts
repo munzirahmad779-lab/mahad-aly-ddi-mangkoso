@@ -68,6 +68,7 @@ export function mapDbArticles(rows: any[]): any[] {
     authorBio: "",
     category: a.category_id || "fiqh-muamalah-kontemporer",
     kolom: kolomDariSlug(a.category_id),
+    status: a.status || "published",
     categoryLabel: "Fiqh Mu'asarah",
     date: tanggalIndoId(a.created_at),
     hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),

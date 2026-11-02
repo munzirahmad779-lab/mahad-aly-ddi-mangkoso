@@ -34,8 +34,11 @@ export default function AllArticlesPage() {
   };
   const slugKategoriArtikel = (a: Article): string =>
     kategoriArtikel(a)?.slug ?? a.category;
+  // Sisi publik hanya menampilkan artikel terbit; draf tidak dihitung
+  // di lencana tab dan tidak ditampilkan sebagai kartu.
+  const publicArticles = articles.filter((a) => a.status !== "draft");
   const hitungKolom = (k: KolomArtikel) =>
-    articles.filter((a) => kolomArtikel(a) === k).length;
+    publicArticles.filter((a) => kolomArtikel(a) === k).length;
 
   const TABS: {
     key: KolomArtikel;
@@ -80,7 +83,7 @@ export default function AllArticlesPage() {
   ];
   const tabAktif = TABS.find((t) => t.key === activeTab) ?? TABS[0];
 
-  const activeArticles = articles.filter((a) => kolomArtikel(a) === activeTab);
+  const activeArticles = publicArticles.filter((a) => kolomArtikel(a) === activeTab);
   const activeCategories = categories.filter((c) => kolomKategori(c) === activeTab);
 
   const filtered = activeArticles

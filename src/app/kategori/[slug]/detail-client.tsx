@@ -21,9 +21,10 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
   const categoryArticles = (articles || []).filter(
     (a) =>
-      a.category?.toLowerCase() === cleanSlug ||
-      a.category === categoryInfo?.id ||
-      a.category === categoryInfo?.slug
+      a.status !== "draft" &&
+      (a.category?.toLowerCase() === cleanSlug ||
+        a.category === categoryInfo?.id ||
+        a.category === categoryInfo?.slug)
   );
 
   // Katalog sudah terkonfirmasi dari server tapi kategori tetap tidak ada

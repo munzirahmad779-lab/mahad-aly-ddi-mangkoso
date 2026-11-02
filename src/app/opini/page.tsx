@@ -11,8 +11,8 @@ export default function OpiniPage() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
 
-  // Hanya ambil artikel dengan tipe 'opini'
-  const opiniArticles = articles.filter((a) => a.type === "opini");
+  // Hanya ambil artikel terbit dengan tipe 'opini' (draf tidak tampil)
+  const opiniArticles = articles.filter((a) => a.type === "opini" && a.status !== "draft");
   const opiniCategories = categories.filter((c) => c.type === "opini");
 
   const filtered = opiniArticles

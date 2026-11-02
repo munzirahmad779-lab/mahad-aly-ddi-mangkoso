@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useRef } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
@@ -17,9 +17,34 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
 
   const cleanSlug = decodeURIComponent(slug || "").toLowerCase().trim();
-  const article = (articles || []).find(
+  const foundArticle = (articles || []).find(
     (a) => a.slug?.toLowerCase() === cleanSlug || a.id === slug
   );
+
+  // Sinyal pratinjau admin yang sama dengan MaintenanceGate: admin yang
+  // sedang mempratinjau situs (localStorage "mahad_admin_preview" atau
+  // query ?preview=true) tetap boleh membuka draf dari panel admin.
+  const [adminPreviewChecked, setAdminPreviewChecked] = useState(false);
+  const [isAdminPreview, setIsAdminPreview] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const fromQuery = window.location.search.includes("preview=true");
+      if (fromQuery) {
+        try { localStorage.setItem("mahad_admin_preview", "true"); } catch {}
+      }
+      setIsAdminPreview(
+        fromQuery || localStorage.getItem("mahad_admin_preview") === "true"
+      );
+    }
+    setAdminPreviewChecked(true);
+  }, []);
+
+  // Artikel draf tidak terbaca pengunjung: bagi non-admin ia diperlakukan
+  // seolah tidak ada (keadaan tidak ditemukan di bawah).
+  const article =
+    foundArticle && foundArticle.status === "draft" && !isAdminPreview
+      ? undefined
+      : foundArticle;
 
   useEffect(() => {
     if (article && article.slug) {
@@ -29,7 +54,7 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
 
   // Katalog sudah terkonfirmasi dari server tapi artikel tetap tidak ada
   // → 404 sungguhan, bukan soft-404 berstatus 200.
-  if (!article && isCatalogReady) {
+  if (!article && isCatalogReady && adminPreviewChecked) {
     notFound();
   }
 
@@ -64,7 +89,10 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
   }
 
   const relatedArticles = articles
-    .filter((a) => a.category === article.category && a.id !== article.id)
+    .filter(
+      (a) =>
+        a.category === article.category && a.id !== article.id && a.status !== "draft"
+    )
     .slice(0, 2);
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";

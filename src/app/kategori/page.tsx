@@ -31,7 +31,8 @@ export default function KategoriIndexPage() {
   });
 
   const getArticleCount = (slug: string) => {
-    return (articles || []).filter((a) => a.category === slug).length;
+    // Hanya artikel terbit yang terhitung; draf tidak tampil ke publik.
+    return (articles || []).filter((a) => a.category === slug && a.status !== "draft").length;
   };
 
   return (

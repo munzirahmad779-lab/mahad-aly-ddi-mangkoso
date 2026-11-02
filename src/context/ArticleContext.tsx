@@ -600,6 +600,7 @@ export function ArticleProvider({
               authorBio: "",
               category: a.category_id || "fiqh-muamalah-kontemporer",
               kolom: kolomDariKategori(a.category_id, a.type),
+              status: (a.status as Article["status"]) || "published",
               categoryLabel: "Fiqh Mu'asarah",
               date: new Date(a.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
               hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),

@@ -12,15 +12,19 @@ export default function LatestArticles() {
   const [selectedCategory, setSelectedCategory] = useState<string>("semua");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
+  // Beranda hanya menampilkan artikel terbit; draf tidak tampil dan
+  // tidak ikut terhitung di teks jumlah artikel.
+  const publicArticles = articles.filter((a) => a.status !== "draft");
+
   // Paling banyak dibaca (data views riil dari pembaca)
-  const palingDibaca = [...articles]
+  const palingDibaca = [...publicArticles]
     .sort((a, b) => (b.views || 0) - (a.views || 0))
     .slice(0, 5)
     .filter((a) => (a.views || 0) > 0);
 
   // Prioritas admin (panel Prioritas Beranda) tampil lebih dulu;
   // sisanya mengikuti urutan asal (terbaru dulu).
-  const orderedArticles = urutkanPrioritas(articles, homePriorities?.articles);
+  const orderedArticles = urutkanPrioritas(publicArticles, homePriorities?.articles);
   const filteredArticles = orderedArticles.filter((art) => {
     const matchesCategory =
       selectedCategory === "semua" || art.category === selectedCategory;
@@ -47,7 +51,7 @@ export default function LatestArticles() {
             </h2>
             <div className="h-1.5 w-20 bg-mahad-gold mt-4 mb-2 rounded-full"></div>
             <p className="text-slate-600 text-sm sm:text-base">
-              Kumpulan tulisan akademik, telaah usuliyah, dan esai sivitas akademika ({articles.length} artikel terbit).
+              Kumpulan tulisan akademik, telaah usuliyah, dan esai sivitas akademika ({publicArticles.length} artikel terbit).
             </p>
           </div>
 
