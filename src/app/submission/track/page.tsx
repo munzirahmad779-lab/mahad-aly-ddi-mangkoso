@@ -110,7 +110,7 @@ function TrackingContent() {
   const currentStep = result ? getStatusStepIndex(result.status) : 0;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-32 md:pt-40 lg:pt-60 pb-12 space-y-8">
       {/* Header */}
       <div className="text-center space-y-3">
         <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-emerald-950/80 px-3.5 py-1.5 rounded-full inline-block border border-emerald-800">

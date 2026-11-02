@@ -23,7 +23,7 @@ export default function ComingSoon({ title, badge, description, icon }: ComingSo
   };
 
   return (
-    <main className="pt-28 pb-20 bg-slate-50 min-h-[85vh] flex items-center justify-center p-4">
+    <main className="pt-28 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-[85vh] flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-3xl p-8 sm:p-12 border border-slate-200 shadow-xl text-center space-y-6">
         
         {/* Badge */}

@@ -55,7 +55,7 @@ export default function DemaPage() {
   }, [divisions, selectedDivisionId]);
 
   return (
-    <main className="pt-28 sm:pt-32 md:pt-36 pb-24 bg-slate-50 min-h-screen">
+    <main className="pt-28 sm:pt-32 md:pt-40 lg:pt-60 pb-24 bg-slate-50 min-h-screen">
       {/* ══════════════════════════════════════════════════════════════
           1. HERO HEADER: Kabinet DeMa & Motto Arab
          ══════════════════════════════════════════════════════════════ */}

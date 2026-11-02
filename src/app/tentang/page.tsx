@@ -9,7 +9,7 @@ export default function TentangPage() {
   const c = aboutPageContent;
 
   return (
-    <main className="pt-32 md:pt-36 pb-20 bg-slate-50">
+    <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50">
       {/* Header Halaman */}
       <section className="bg-mahad-green-dark text-white py-16 bg-islamic-pattern">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

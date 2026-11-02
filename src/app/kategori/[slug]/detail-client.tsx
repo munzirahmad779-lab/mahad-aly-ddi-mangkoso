@@ -34,7 +34,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
   if (!categoryInfo) {
     return (
-      <main className="pt-28 pb-20 bg-slate-50 min-h-screen">
+      <main className="pt-28 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
         <div className="max-w-2xl mx-auto px-4 text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
           <div className="text-5xl mb-4">📚</div>
           <h1 className="font-serif font-bold text-2xl text-slate-800">
@@ -63,7 +63,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   }
 
   return (
-    <main className="pt-24 pb-20 bg-slate-50 min-h-screen">
+    <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
           <div className="mb-4">

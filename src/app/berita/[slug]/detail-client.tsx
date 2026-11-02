@@ -26,7 +26,7 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
 
   if (!item) {
     return (
-      <main className="pt-24 md:pt-[134px] pb-20 bg-slate-50 min-h-screen">
+      <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
         <div className="max-w-2xl mx-auto px-4 text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
           <div className="text-5xl mb-4">📰</div>
           <h1 className="font-serif font-bold text-2xl text-slate-800">
@@ -55,7 +55,7 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
   }
 
   return (
-    <main className="pt-24 md:pt-[134px] pb-20 bg-slate-50 min-h-screen">
+    <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
       <section className="bg-mahad-green-dark text-white py-12 bg-islamic-pattern">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link

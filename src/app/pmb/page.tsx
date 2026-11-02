@@ -52,7 +52,7 @@ export default function PmbPage() {
   };
 
   return (
-    <main className="pt-32 md:pt-36 pb-20 bg-slate-50 min-h-screen">
+    <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
       {(pmbFAQs || []).length > 0 && (
         <script
           type="application/ld+json"
