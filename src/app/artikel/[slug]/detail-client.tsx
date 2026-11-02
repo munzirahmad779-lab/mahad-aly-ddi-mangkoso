@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useRef, useState } from "react";
+import { Fragment, use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
@@ -9,6 +9,157 @@ import ReadingBeam from "@/components/common/ReadingBeam";
 
 interface ArticleDetailPageProps {
   params: Promise<{ slug: string }>;
+}
+
+/* ── Render terstruktur isi artikel ──────────────────────────────────
+   Isi artikel di database adalah teks polos. Di sini ia dipecah per
+   baris: baris subbab dirender sebagai heading, baris yang mayoritas
+   aksara Arab dirender sebagai paragraf Arab (RTL), sisanya paragraf
+   biasa dengan rentang Arab di dalamnya dibungkus span.teks-arab.
+   Teks artikelnya sendiri TIDAK diubah. */
+
+const ARABIC_CHAR_RE =
+  /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+const ARABIC_RUN_RE =
+  /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+(?:[ \t.,;:!?'"()\-\u2013\u2014\u060C\u061B\u061F]+[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)*/g;
+
+function arabicRatio(text: string): number {
+  let arab = 0;
+  let total = 0;
+  for (const ch of text) {
+    if (/\s/.test(ch)) continue;
+    total++;
+    if (ARABIC_CHAR_RE.test(ch)) arab++;
+  }
+  return total === 0 ? 0 : arab / total;
+}
+
+const KATA_BAB = [
+  "pendahuluan",
+  "latar belakang",
+  "pembahasan",
+  "kesimpulan",
+  "penutup",
+  "abstrak",
+  "metode",
+  "rumusan masalah",
+  "daftar pustaka",
+  "sumber referensi",
+  "kata pengantar",
+  "saran",
+];
+
+// Entitas HTML pada naskah sumber (&apos;, &quot;, dsb.) dinetralkan
+// HANYA untuk keperluan uji pola; teks yang dirender tetap aslinya.
+function bersihUntukUji(line: string): string {
+  return line
+    .replace(/&[a-zA-Z]+;/g, "'")
+    .replace(/&#\d+;/g, "'")
+    .trim();
+}
+
+// Aturan heading yang konservatif, dari pola nyata naskah mahasiswa.
+function isHeading(rawLine: string): boolean {
+  const line = bersihUntukUji(rawLine);
+  if (!line) return false;
+  // Baris Arab tidak pernah jadi heading.
+  if (arabicRatio(line) > 0.5) return false;
+
+  // "BAB I" / "Bab 2"
+  if (/^(BAB|Bab)\s+([IVXLC]{1,6}|\d{1,3})\b/.test(line)) return true;
+
+  // Pola "A. Judul": maks 80 karakter; satu titik di akhir ditoleransi
+  // (mahasiswa kerap mengakhiri judul subbab dengan titik,
+  // mis. "C. Hanya Berharap kepada Allah SWT.")
+  if (/^[A-Z]\.\s+\S/.test(line) && line.length <= 80 && !/[,;]$/.test(line))
+    return true;
+
+  // Pola "1. Judul": maks 80 karakter, tidak diakhiri . , ;
+  if (
+    /^\d{1,2}\.\s+\S/.test(line) &&
+    line.length <= 80 &&
+    !/[.,;]$/.test(line)
+  )
+    return true;
+
+  // Kata pembuka bab persis sebagai baris tersendiri
+  const lower = line
+    .toLowerCase()
+    .replace(/[:.]$/, "")
+    .trim();
+  if (KATA_BAB.includes(lower)) return true;
+
+  // Kata pembuka bab diikuti subjudul singkat
+  for (const k of KATA_BAB) {
+    if (lower.startsWith(k)) {
+      const rest = lower.slice(k.length);
+      if (
+        (rest.startsWith(":") || rest.startsWith(" ")) &&
+        line.length <= 60 &&
+        !/[.,;]$/.test(line)
+      )
+        return true;
+    }
+  }
+
+  // Seluruhnya HURUF KAPITAL: minimal 2 kata, atau kata kunci bab
+  const huruf = line.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, "");
+  if (
+    huruf.length >= 3 &&
+    /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(line) &&
+    line === line.toUpperCase()
+  ) {
+    const kata = line.split(/\s+/).filter(Boolean);
+    if (kata.length >= 2 || KATA_BAB.includes(lower)) return true;
+  }
+
+  return false;
+}
+
+// Bungkus rentang aksara Arab di dalam teks Latin dengan span.teks-arab.
+function renderCampuran(text: string, kunci: string) {
+  const potongan = text.split(new RegExp(`(${ARABIC_RUN_RE.source})`, "g"));
+  return potongan.map((bagian, i) =>
+    bagian && ARABIC_CHAR_RE.test(bagian) ? (
+      <span key={`${kunci}-${i}`} className="teks-arab">
+        {bagian}
+      </span>
+    ) : (
+      <Fragment key={`${kunci}-${i}`}>{bagian}</Fragment>
+    )
+  );
+}
+
+function IsiArtikel({ content }: { content: string }) {
+  const elemen: React.ReactNode[] = [];
+  (content || "").split(/\n\s*\n/).forEach((blok) => {
+    blok.split(/\r?\n/).forEach((mentah) => {
+      const baris = mentah.trim();
+      if (!baris) return;
+      const kunci = `isi-${elemen.length}`;
+      if (isHeading(baris)) {
+        elemen.push(
+          <h2
+            key={kunci}
+            className={`font-serif font-bold text-emerald-900 text-xl sm:text-2xl leading-snug ${
+              elemen.length > 0 ? "mt-10" : ""
+            }`}
+          >
+            {renderCampuran(baris, kunci)}
+          </h2>
+        );
+      } else if (arabicRatio(bersihUntukUji(baris)) > 0.7) {
+        elemen.push(
+          <p key={kunci} dir="rtl" className="teks-arab text-right">
+            {baris}
+          </p>
+        );
+      } else {
+        elemen.push(<p key={kunci}>{renderCampuran(baris, kunci)}</p>);
+      }
+    });
+  });
+  return <>{elemen}</>;
 }
 
 export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
@@ -180,8 +331,8 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
           </div>
 
           {/* Isi Teks Lengkap */}
-          <div className="text-slate-800 leading-relaxed text-base sm:text-lg space-y-5 whitespace-pre-line font-sans">
-            {article.content}
+          <div className="text-slate-800 leading-relaxed text-base sm:text-lg space-y-5 font-sans">
+            <IsiArtikel content={article.content} />
           </div>
 
           {/* Tags */}

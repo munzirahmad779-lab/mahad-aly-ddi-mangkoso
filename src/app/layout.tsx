@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Amiri, Cinzel } from "next/font/google";
+import { Inter, Amiri, Cinzel, Scheherazade_New } from "next/font/google";
 import MaintenanceGate from "@/components/common/MaintenanceGate";
 import GoogleAnalytics from "@/components/common/GoogleAnalytics";
 import { ArticleProvider } from "@/context/ArticleContext";
@@ -135,6 +135,15 @@ const cinzel = Cinzel({
   display: "swap",
 });
 
+// Cadangan font Arab untuk kelas .teks-arab (globals.css): perangkat yang
+// tidak memiliki Traditional Arabic (umumnya HP) memakai Scheherazade New.
+const scheherazade = Scheherazade_New({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  variable: "--font-scheherazade",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://mahadaly-ddimangkoso.my.id"),
   title: {
@@ -255,7 +264,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="id" className={`scroll-smooth ${inter.variable} ${amiri.variable} ${cinzel.variable}`}>
+    <html lang="id" className={`scroll-smooth ${inter.variable} ${amiri.variable} ${cinzel.variable} ${scheherazade.variable}`}>
       <head>
         <script
           type="application/ld+json"

@@ -13,6 +13,18 @@
   --font-display: var(--font-cinzel), serif;
 }
 
+/* Teks Arab di badan artikel: standar user Traditional Arabic 14pt.
+   Scheherazade New (webfont cadangan untuk perangkat tanpa Traditional
+   Arabic, umumnya HP) dan Amiri dimuat lewat next/font di layout.tsx;
+   var(--font-...) wajib dipakai karena next/font mendaftarkan font
+   dengan nama ter-hash — nama polosnya saja tidak akan terhubung. */
+.teks-arab {
+  font-family: "Traditional Arabic", var(--font-scheherazade, "Scheherazade New"), "Scheherazade New", var(--font-amiri, "Amiri"), serif;
+  font-size: 14pt;
+  line-height: 2;
+  unicode-bidi: isolate;
+}
+
 /* Pola Geometris Halus untuk Background */
 .bg-islamic-pattern {
   background-image: radial-gradient(rgba(212, 175, 55, 0.15) 1.5px, transparent 1.5px);
