@@ -1,3 +1,8 @@
+// Kolom halaman artikel (4 kolom sejajar): fiqh = Kajian Fiqh Mu'asarah,
+// kitab = Kajian Kitab dan Pengajian, tematik = Kajian Tematik,
+// esai = Esai dan Refleksi (termasuk kategori bertipe opini).
+export type KolomArtikel = "fiqh" | "kitab" | "tematik" | "esai";
+
 export interface Article {
   id: string;
   slug: string;
@@ -17,6 +22,7 @@ export interface Article {
   tags?: string[];
   arabicSnippet?: string;
   type?: "artikel" | "opini"; // "artikel" untuk Kajian Fikih Ilmiah, "opini" untuk Opini/Refleksi
+  kolom?: KolomArtikel; // kolom halaman artikel, diturunkan dari slug kategori
   imageUrl?: string;
   featuredImage?: string;
   source?: "admin" | "submission"; // 🟢 "Admin" | 🔵 "Kiriman"
@@ -36,6 +42,7 @@ export interface CategoryInfo {
   description: string;
   iconName: string;
   type?: "artikel" | "opini"; // "artikel" (Fiqh) atau "opini" (Opini/Refleksi)
+  kolom?: KolomArtikel; // kolom halaman artikel, diturunkan dari slug kategori
 }
 
 export interface Thesis {
@@ -91,6 +98,7 @@ export interface Submission {
   tipeNaskah?: "Artikel Ilmiah" | "Opini/Refleksi" | string;
   kategori: string;
   kategoriId?: string;
+  kategoriUsulan?: string; // nama kategori usulan pengirim dari pilihan "Lain-lain"
   judul: string;
   abstrak: string;
   keywords?: string;

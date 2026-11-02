@@ -4,25 +4,88 @@ import { useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
+import { kolomDariKategori } from "@/lib/content-mappers";
+import type { Article, CategoryInfo, KolomArtikel } from "@/lib/types";
+
+const KOLOM_LABEL_KOSONG: Record<KolomArtikel, string> = {
+  fiqh: "kajian fikih",
+  kitab: "kajian kitab",
+  tematik: "kajian tematik",
+  esai: "tulisan opini"
+};
 
 export default function AllArticlesPage() {
   const { articles, categories, pageTexts } = useArticles();
-  const [activeTab, setActiveTab] = useState<"fiqh" | "opini">("fiqh");
+  const [activeTab, setActiveTab] = useState<KolomArtikel>("fiqh");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
 
-  const fiqhArticles = articles.filter((a) => a.type !== "opini");
-  const opiniArticles = articles.filter((a) => a.type === "opini");
+  // Kolom kategori: pakai field kolom bila ada, selain itu turunkan dari slug.
+  const kolomKategori = (c: CategoryInfo): KolomArtikel =>
+    c.kolom ?? kolomDariKategori(c.slug, c.type);
+  // Kolom artikel diselesaikan lewat kategorinya (cocok slug atau id), agar
+  // artikel basis data yang category-nya berupa id tetap tergolong benar.
+  const kategoriArtikel = (a: Article): CategoryInfo | undefined =>
+    categories.find((c) => c.slug === a.category || c.id === a.category);
+  const kolomArtikel = (a: Article): KolomArtikel => {
+    const cat = kategoriArtikel(a);
+    return cat ? kolomKategori(cat) : (a.kolom ?? kolomDariKategori(a.category, a.type));
+  };
+  const slugKategoriArtikel = (a: Article): string =>
+    kategoriArtikel(a)?.slug ?? a.category;
+  const hitungKolom = (k: KolomArtikel) =>
+    articles.filter((a) => kolomArtikel(a) === k).length;
 
-  const activeArticles = activeTab === "fiqh" ? fiqhArticles : opiniArticles;
-  const activeCategories = categories.filter((c) =>
-    activeTab === "opini" ? c.type === "opini" : c.type !== "opini"
-  );
+  const TABS: {
+    key: KolomArtikel;
+    label: string;
+    icon: string;
+    semuaLabel: string;
+    aktifClass: string;
+    badgeAktifClass: string;
+  }[] = [
+    {
+      key: "fiqh",
+      label: pageTexts?.artikelFiqhTabLabel || "Kajian Fiqh Mu'asarah",
+      icon: "🏛️",
+      semuaLabel: "Semua Gugus Fiqh",
+      aktifClass: "bg-emerald-800",
+      badgeAktifClass: "bg-emerald-950 text-emerald-200"
+    },
+    {
+      key: "kitab",
+      label: "Kajian Kitab dan Pengajian",
+      icon: "📖",
+      semuaLabel: "Semua Kategori Kitab",
+      aktifClass: "bg-emerald-700",
+      badgeAktifClass: "bg-emerald-950 text-emerald-200"
+    },
+    {
+      key: "tematik",
+      label: "Kajian Tematik",
+      icon: "📚",
+      semuaLabel: "Semua Kategori Tematik",
+      aktifClass: "bg-teal-700",
+      badgeAktifClass: "bg-teal-950 text-teal-200"
+    },
+    {
+      key: "esai",
+      label: pageTexts?.artikelOpiniTabLabel || "Opini & Refleksi Santri",
+      icon: "✍️",
+      semuaLabel: "Semua Tema Esai",
+      aktifClass: "bg-amber-600",
+      badgeAktifClass: "bg-amber-800 text-amber-200"
+    }
+  ];
+  const tabAktif = TABS.find((t) => t.key === activeTab) ?? TABS[0];
+
+  const activeArticles = articles.filter((a) => kolomArtikel(a) === activeTab);
+  const activeCategories = categories.filter((c) => kolomKategori(c) === activeTab);
 
   const filtered = activeArticles
     .filter((a) => {
-      const matchCat = selectedCategory === "all" || a.category === selectedCategory;
+      const matchCat = selectedCategory === "all" || slugKategoriArtikel(a) === selectedCategory;
       const matchSearch =
         a.title.toLowerCase().includes(search.toLowerCase()) ||
         a.author.toLowerCase().includes(search.toLowerCase()) ||
@@ -42,17 +105,17 @@ export default function AllArticlesPage() {
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-3.5 py-1 rounded-full">
-            {activeTab === "fiqh"
+            {activeTab !== "esai"
               ? (pageTexts?.artikelBadge || "Publikasi Ilmiah Takhassus")
               : (pageTexts?.opiniBadge || "Ruang Gagasan Santri & Esai")}
           </span>
           <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white mt-3">
-            {activeTab === "fiqh"
+            {activeTab !== "esai"
               ? (pageTexts?.artikelTitle || "Mimbar Kajian Fiqh Mu'asarah")
               : (pageTexts?.opiniTitle || "Mimbar Opini & Refleksi Santri")}
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-2">
-            {activeTab === "fiqh"
+            {activeTab !== "esai"
               ? (pageTexts?.artikelDesc ||
                   "Kumpulan artikel telaah hukum Islam kontemporer, kajian ushul fikih, dan risalah pemikiran ulama DDI Mangkoso.")
               : (pageTexts?.opiniDesc ||
@@ -63,45 +126,30 @@ export default function AllArticlesPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         
-        {/* Tab Switcher Fiqh vs Opini */}
+        {/* Tab Switcher 4 Kolom */}
         <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("fiqh");
-                setSelectedCategory("all");
-              }}
-              className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 ${
-                activeTab === "fiqh"
-                  ? "bg-emerald-800 text-white shadow"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              <span>🏛️</span>
-              <span>{pageTexts?.artikelFiqhTabLabel || "Kajian Fiqh Mu'asarah"}</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === "fiqh" ? "bg-emerald-950 text-emerald-200" : "bg-slate-200 text-slate-600"}`}>
-                {fiqhArticles.length}
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("opini");
-                setSelectedCategory("all");
-              }}
-              className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 ${
-                activeTab === "opini"
-                  ? "bg-amber-600 text-white shadow"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              <span>✍️</span>
-              <span>{pageTexts?.artikelOpiniTabLabel || "Opini & Refleksi Santri"}</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === "opini" ? "bg-amber-800 text-amber-200" : "bg-slate-200 text-slate-600"}`}>
-                {opiniArticles.length}
-              </span>
-            </button>
+          <div className="flex flex-wrap gap-2">
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  setSelectedCategory("all");
+                }}
+                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 ${
+                  activeTab === tab.key
+                    ? `${tab.aktifClass} text-white shadow`
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === tab.key ? tab.badgeAktifClass : "bg-slate-200 text-slate-600"}`}>
+                  {hitungKolom(tab.key)}
+                </span>
+              </button>
+            ))}
           </div>
 
           <Link
@@ -121,7 +169,7 @@ export default function AllArticlesPage() {
             </svg>
             <input
               type="search"
-              placeholder={activeTab === "fiqh" ? "Cari judul kajian fikih atau penulis..." : "Cari judul opini atau nama santri..."}
+              placeholder={activeTab === "esai" ? "Cari judul opini atau nama santri..." : "Cari judul kajian fikih atau penulis..."}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
@@ -135,7 +183,7 @@ export default function AllArticlesPage() {
               className="w-full px-3 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-mahad-gold"
             >
               <option value="all">
-                {activeTab === "fiqh" ? "Semua Gugus Fiqh" : "Semua Tema Opini"}
+                {tabAktif.semuaLabel}
               </option>
               {activeCategories.map((c) => (
                 <option key={c.id} value={c.slug}>{c.name}</option>
@@ -165,7 +213,7 @@ export default function AllArticlesPage() {
         ) : (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
             <p className="text-slate-600 font-medium">
-              Tidak ada {activeTab === "fiqh" ? "kajian fikih" : "tulisan opini"} yang cocok dengan pencarian Anda.
+              Tidak ada {KOLOM_LABEL_KOSONG[activeTab]} yang cocok dengan pencarian Anda.
             </p>
             <button
               type="button"

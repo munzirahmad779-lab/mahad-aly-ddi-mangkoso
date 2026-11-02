@@ -1,4 +1,42 @@
 import { formatHijriShort } from "@/lib/hijri-calendar";
+import type { KolomArtikel } from "@/lib/types";
+
+// Penurunan kolom halaman artikel dari slug kategori (struktur 4 kolom):
+// - slug diawali "kajian-kitab"   -> kitab (Kajian Kitab dan Pengajian)
+// - slug diawali "pengajian"      -> kitab (subkategori Pengajian, dipisah
+//   dari Kajian Kitab atas perintah user 2 Nov 2026)
+// - slug diawali "kajian-tematik" -> tematik (Kajian Tematik)
+// - slug diawali "esai-" atau awalan bertipe opini
+//   ("opini-", "refleksi-", "kolom-", "sosial-") -> esai (Esai dan Refleksi)
+// - selain itu (enam gugus fikih lama dan kategori artikel lain) -> fiqh
+//   (Kajian Fiqh Mu'asarah)
+export function kolomDariSlug(slug?: string | null): KolomArtikel {
+  const s = slug || "";
+  if (s.startsWith("kajian-kitab")) return "kitab";
+  if (s.startsWith("pengajian")) return "kitab";
+  if (s.startsWith("kajian-tematik")) return "tematik";
+  if (
+    s.startsWith("esai-") ||
+    s.startsWith("opini-") ||
+    s.startsWith("refleksi-") ||
+    s.startsWith("kolom-") ||
+    s.startsWith("sosial-")
+  ) {
+    return "esai";
+  }
+  return "fiqh";
+}
+
+// Kolom dari slug + tipe kategori/artikel: kategori bertipe "opini" yang
+// slug-nya tidak berawalan khusus tetap masuk kolom esai.
+export function kolomDariKategori(
+  slug?: string | null,
+  type?: string | null
+): KolomArtikel {
+  const dasar = kolomDariSlug(slug);
+  if (dasar === "fiqh" && type === "opini") return "esai";
+  return dasar;
+}
 
 // Mapper data dari tabel Supabase → tipe aplikasi.
 // Dipakai RootLayout (SSR seed agar tidak ada kedipan konten) — murni fungsi,
@@ -29,6 +67,7 @@ export function mapDbArticles(rows: any[]): any[] {
     authorRole: a.author_role || "Mahasantri Marhalah Ula",
     authorBio: "",
     category: a.category_id || "fiqh-muamalah-kontemporer",
+    kolom: kolomDariSlug(a.category_id),
     categoryLabel: "Fiqh Mu'asarah",
     date: tanggalIndoId(a.created_at),
     hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),
@@ -73,7 +112,8 @@ export function mapDbCategories(rows: any[]): any[] {
       name: c.nama,
       description: c.deskripsi || "",
       iconName: c.icon || "book",
-      type: isOpini ? ("opini" as const) : ("artikel" as const)
+      type: isOpini ? ("opini" as const) : ("artikel" as const),
+      kolom: kolomDariKategori(c.slug, isOpini ? "opini" : "artikel")
     };
   });
 }

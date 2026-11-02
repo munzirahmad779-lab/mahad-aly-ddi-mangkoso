@@ -29,6 +29,16 @@ export async function POST(req: NextRequest) {
     const tipeNaskah = (formData.get("tipeNaskah") as string)?.trim() || "Artikel Ilmiah";
     const kategori = (formData.get("kategori") as string)?.trim() || "Fiqh Mu'asarah";
     const kategoriId = (formData.get("kategoriId") as string)?.trim() || null;
+    // Usulan kategori baru dari pilihan "Lain-lain" di formulir Kirim Tulisan.
+    const kategoriUsulan = (formData.get("kategoriUsulan") as string)?.trim() || "";
+    const isUsulanKategori = Boolean(kategoriUsulan);
+    // Bentuk tampilan kategori yang disimpan & dikirim ke admin: selalu
+    // berpenanda jelas bila berasal dari usulan Lain-lain.
+    const kategoriFinal = isUsulanKategori
+      ? kategori.toLowerCase().startsWith("lain-lain") && !kategori.includes(kategoriUsulan)
+        ? `Lain-lain (Usulan kategori baru: ${kategoriUsulan})`
+        : kategori
+      : kategori;
     const judul = (formData.get("judul") as string)?.trim();
     const abstrak = (formData.get("abstrak") as string)?.trim();
     const keyword = (formData.get("keyword") as string)?.trim();
@@ -54,6 +64,14 @@ export async function POST(req: NextRequest) {
     if (!originalitas || originalitas === "false") {
       return NextResponse.json(
         { error: "Anda wajib mencentang pernyataan keaslian/originalitas naskah." },
+        { status: 400 }
+      );
+    }
+
+    // Kategori Lain-lain wajib disertai nama kategori usulannya.
+    if (kategori.toLowerCase().startsWith("lain-lain") && !kategoriUsulan) {
+      return NextResponse.json(
+        { error: "Anda memilih kategori Lain-lain. Nama kategori usulan wajib diisi." },
         { status: 400 }
       );
     }
@@ -173,7 +191,7 @@ export async function POST(req: NextRequest) {
         hp,
         afiliasi,
         tipeNaskah,
-        kategori,
+        kategori: kategoriFinal,
         judul,
         abstrak,
         keywords: keywordsList.join(", "),
@@ -210,7 +228,9 @@ export async function POST(req: NextRequest) {
       driveUrl,
       fileName: file.name,
       fileSize: fileSizeStr,
-      kategoriNama: kategori,
+      kategoriNama: kategoriFinal,
+      kategoriUsulan: kategoriUsulan || null,
+      isUsulanKategori,
       adminEmailSent: adminEmailResult.success,
       adminEmailError: adminEmailResult.success ? null : adminEmailResult.error,
       authorEmailSent: authorEmailResult.success,

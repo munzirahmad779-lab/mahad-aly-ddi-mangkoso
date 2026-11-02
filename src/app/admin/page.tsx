@@ -10283,6 +10283,9 @@ export default function AdminPage() {
                   })
                   .map((sub) => {
                     const trackingCode = sub.trackingCode || `MAD-2026-${sub.id.slice(-4)}`;
+                    const usulanKategori =
+                      sub.kategoriUsulan ||
+                      sub.kategori?.match(/Usulan kategori baru:\s*([^)]+)\)?/i)?.[1]?.trim();
                     const isOpiniType = sub.tipeNaskah?.toLowerCase().includes("opini");
                     const isSkripsiType = sub.tipeNaskah?.toLowerCase().includes("skripsi") || Boolean(sub.nim);
                     return (
@@ -10296,6 +10299,11 @@ export default function AdminPage() {
                             <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg font-semibold">
                               {sub.kategori}
                             </span>
+                            {usulanKategori && (
+                              <span className="bg-rose-100 text-rose-900 border border-rose-300 px-2.5 py-1 rounded-lg font-bold">
+                                🏷️ Usulan kategori baru: {usulanKategori}
+                              </span>
+                            )}
                             <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
                               isSkripsiType
                                 ? "bg-blue-100 text-blue-900 border border-blue-200"
@@ -10354,6 +10362,18 @@ export default function AdminPage() {
                               <span>{sub.afiliasi || "-"}</span>
                             </div>
                           </div>
+
+                          {usulanKategori && (
+                            <div className="mt-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-950 flex items-start gap-2">
+                              <span className="text-base">🏷️</span>
+                              <p className="leading-relaxed">
+                                <strong>Usulan kategori baru: {usulanKategori}.</strong>{" "}
+                                Kategori ini diusulkan penulis lewat pilihan Lain-lain pada kolom{" "}
+                                <strong>{sub.tipeNaskah || "tipe naskah terkait"}</strong> dan belum dibuat.
+                                Nilai dulu kelayakannya sebelum ditambahkan dan diletakkan di kolom tersebut.
+                              </p>
+                            </div>
+                          )}
 
                           {isSkripsiType && (
                             <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-slate-700 bg-blue-50/80 p-3 rounded-xl border border-blue-200 text-xs">

@@ -3,6 +3,52 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
+import { kolomDariKategori } from "@/lib/content-mappers";
+import type { KolomArtikel } from "@/lib/types";
+
+// Lima tipe naskah pada formulir Kirim Tulisan (keputusan user 2 Nov 2026):
+// empat kolom sejajar halaman artikel + Skripsi yang sudah ada sebelumnya.
+const TIPE_FIQH = "Kajian Fiqh Mu'asarah";
+const TIPE_KITAB = "Kajian Kitab dan Pengajian";
+const TIPE_TEMATIK = "Kajian Tematik";
+const TIPE_ESAI = "Esai dan Refleksi";
+const TIPE_SKRIPSI = "Skripsi / Risalah Kelulusan (Alumni & Mahasantri)";
+const KATEGORI_LAIN_LAIN = "Lain-lain";
+
+// Nilai lama dipetakan ke tipe baru: "Artikel Ilmiah (Fiqh Mu'asarah)" adalah
+// tipe Fiqh; "Opini & Refleksi Santri" adalah tipe Esai dan Refleksi.
+function normalisasiTipeNaskah(tipe?: string | null): string {
+  const t = (tipe || "").toLowerCase();
+  if (t.includes("skripsi")) return TIPE_SKRIPSI;
+  if (t.includes("kitab")) return TIPE_KITAB;
+  if (t.includes("tematik")) return TIPE_TEMATIK;
+  if (t.includes("opini") || t.includes("esai") || t.includes("refleksi")) return TIPE_ESAI;
+  return TIPE_FIQH;
+}
+
+function kolomDariTipeNaskah(tipe: string): KolomArtikel {
+  const t = normalisasiTipeNaskah(tipe);
+  if (t === TIPE_KITAB) return "kitab";
+  if (t === TIPE_TEMATIK) return "tematik";
+  if (t === TIPE_ESAI) return "esai";
+  return "fiqh";
+}
+
+const LABEL_KATEGORI: Record<KolomArtikel, string> = {
+  fiqh: "Kategori Kajian Fiqh Mu'asarah",
+  kitab: "Kategori Kajian Kitab",
+  tematik: "Kategori Kajian Tematik",
+  esai: "Kategori Esai dan Refleksi"
+};
+
+// Catatan foto wajib dua subkategori kolom Kitab (perintah user 2 Nov 2026:
+// kolom Kajian Kitab dan Pengajian dipisah; Pengajian wajib foto tokohnya,
+// Kajian Kitab wajib foto kitabnya). Catatan cadangan ini selalu ditampilkan
+// untuk dua slug ini, mengalahkan deskripsi kategori dari basis data.
+const CATATAN_KATEGORI_CADANGAN: Record<string, string> = {
+  "kajian-kitab": "Catatan: harus ada foto kitabnya.",
+  pengajian: "Catatan: harus ada foto tokohnya, yaitu pemateri pengajian."
+};
 import { 
   FileText, 
   UploadCloud, 
@@ -30,8 +76,9 @@ export default function KirimTulisanPage() {
     email: "",
     hp: "",
     afiliasi: "",
-    tipeNaskah: "Artikel Ilmiah (Fiqh Mu'asarah)",
+    tipeNaskah: TIPE_FIQH,
     kategori: categories[0]?.name || "Fiqh Mu'asarah",
+    kategoriUsulan: "",
     judul: "",
     abstrak: "",
     keyword: "",
@@ -58,12 +105,17 @@ export default function KirimTulisanPage() {
       if (t === "skripsi") {
         setFormData((prev) => ({
           ...prev,
-          tipeNaskah: "Skripsi / Risalah Kelulusan (Alumni & Mahasantri)"
+          tipeNaskah: TIPE_SKRIPSI
         }));
-      } else if (t === "opini") {
+      } else if (t === "opini" || t === "esai") {
+        // Parameter lama ?type=opini kini berarti tipe Esai dan Refleksi.
+        const esaiCats = categories.filter(
+          (c) => (c.kolom ?? kolomDariKategori(c.slug, c.type)) === "esai"
+        );
         setFormData((prev) => ({
           ...prev,
-          tipeNaskah: "Opini & Refleksi Santri"
+          tipeNaskah: TIPE_ESAI,
+          kategori: esaiCats[0]?.name || prev.kategori
         }));
       }
     }
@@ -80,15 +132,50 @@ export default function KirimTulisanPage() {
   }>({});
   const [copied, setCopied] = useState(false);
 
-  // Filter kategori berdasarkan tipe naskah
-  const isOpiniType = formData.tipeNaskah.includes("Opini");
-  const isSkripsiType = formData.tipeNaskah.includes("Skripsi");
-  const availableCategories = categories.filter((c) => {
-    if (isOpiniType) {
-      return c.type === "opini";
-    }
-    return c.type !== "opini";
-  });
+  // Filter kategori berdasarkan kolom tipe naskah (aturan kolom yang sama
+  // dengan halaman artikel: kolomDariKategori / kolom kategori dari slug).
+  const kolomAktif = kolomDariTipeNaskah(formData.tipeNaskah);
+  const isSkripsiType = formData.tipeNaskah === TIPE_SKRIPSI;
+  const isLainLainKategori = !isSkripsiType && formData.kategori === KATEGORI_LAIN_LAIN;
+  const availableCategories = isSkripsiType
+    ? // Perilaku lama formulir skripsi dipertahankan: semua kategori non-opini.
+      categories.filter((c) => c.type !== "opini")
+    : categories.filter(
+        (c) => (c.kolom ?? kolomDariKategori(c.slug, c.type)) === kolomAktif
+      );
+
+  // Catatan kecil di bawah dropdown kategori: untuk kategori asli (bukan
+  // Lain-lain), tampilkan catatan cadangan foto wajib bila slug-nya termasuk
+  // dua subkategori kolom Kitab; selain itu tampilkan deskripsi kategori
+  // terpilih yang dibawa data kategori (field description dari basis data).
+  const kategoriTerpilih = availableCategories.find((c) => c.name === formData.kategori);
+  const catatanKategori = isLainLainKategori
+    ? ""
+    : kategoriTerpilih
+      ? CATATAN_KATEGORI_CADANGAN[kategoriTerpilih.slug] ||
+        kategoriTerpilih.description ||
+        ""
+      : "";
+
+  // Ganti tipe naskah: kategori terpilih diatur ulang ke kategori pertama
+  // kolom tipe baru (atau Lain-lain bila kolom itu belum punya kategori).
+  const handleTipeChange = (nextTipe: string) => {
+    const tipeBaru = normalisasiTipeNaskah(nextTipe);
+    const skripsi = tipeBaru === TIPE_SKRIPSI;
+    const nextCats = skripsi
+      ? categories.filter((c) => c.type !== "opini")
+      : categories.filter(
+          (c) =>
+            (c.kolom ?? kolomDariKategori(c.slug, c.type)) ===
+            kolomDariTipeNaskah(tipeBaru)
+        );
+    setFormData((prev) => ({
+      ...prev,
+      tipeNaskah: tipeBaru,
+      kategori: nextCats[0]?.name || (skripsi ? prev.kategori : KATEGORI_LAIN_LAIN),
+      kategoriUsulan: ""
+    }));
+  };
 
   // Helper untuk menghitung jumlah kata & karakter
   const abstractCharCount = formData.abstrak.length;
@@ -140,6 +227,18 @@ export default function KirimTulisanPage() {
     if (!emailRegex.test(formData.email.trim())) {
       setStatus("error");
       setErrorMessage("Format alamat email tidak valid. Masukkan email aktif Anda.");
+      return;
+    }
+
+    if (!isSkripsiType && !formData.kategori) {
+      setStatus("error");
+      setErrorMessage("Kategori wajib dipilih sesuai tipe naskah.");
+      return;
+    }
+
+    if (isLainLainKategori && !formData.kategoriUsulan.trim()) {
+      setStatus("error");
+      setErrorMessage("Anda memilih kategori Lain-lain. Nama kategori usulan wajib diisi.");
       return;
     }
 
@@ -198,7 +297,15 @@ export default function KirimTulisanPage() {
       formPayload.append("hp", formData.hp.trim());
       formPayload.append("afiliasi", formData.afiliasi.trim());
       formPayload.append("tipeNaskah", formData.tipeNaskah);
-      formPayload.append("kategori", formData.kategori);
+      // Kategori Lain-lain dikirim dengan penanda usulan yang jelas, plus
+      // field kategoriUsulan tersendiri agar admin mudah menilainya.
+      const kategoriTerkirim = isLainLainKategori
+        ? `Lain-lain (Usulan kategori baru: ${formData.kategoriUsulan.trim()})`
+        : formData.kategori;
+      formPayload.append("kategori", kategoriTerkirim);
+      if (isLainLainKategori) {
+        formPayload.append("kategoriUsulan", formData.kategoriUsulan.trim());
+      }
       formPayload.append("judul", formData.judul.trim());
       formPayload.append("abstrak", formData.abstrak.trim());
       formPayload.append("keyword", kwList.join(", "));
@@ -238,14 +345,17 @@ export default function KirimTulisanPage() {
   };
 
   const resetForm = () => {
-    const defaultCats = categories.filter((c) => c.type !== "opini");
+    const defaultCats = categories.filter(
+      (c) => (c.kolom ?? kolomDariKategori(c.slug, c.type)) === "fiqh"
+    );
     setFormData({
       nama: "",
       email: "",
       hp: "",
       afiliasi: "",
-      tipeNaskah: "Artikel Ilmiah",
-      kategori: defaultCats[0]?.name || "Fiqh Mu'asarah",
+      tipeNaskah: TIPE_FIQH,
+      kategori: defaultCats[0]?.name || "Fiqh Muamalah Kontemporer",
+      kategoriUsulan: "",
       judul: "",
       abstrak: "",
       keyword: "",
@@ -627,61 +737,91 @@ export default function KirimTulisanPage() {
                   </label>
                   <select
                     value={formData.tipeNaskah}
-                    onChange={(e) => {
-                      const nextTipe = e.target.value;
-                      const isOpini = nextTipe === "Opini & Refleksi";
-                      const nextCats = categories.filter((c) =>
-                        isOpini ? c.type === "opini" : c.type !== "opini"
-                      );
-                      setFormData({
-                        ...formData,
-                        tipeNaskah: nextTipe,
-                        kategori: nextCats[0]?.name || (isOpini ? "Opini Santri" : "Fiqh Mu'asarah")
-                      });
-                    }}
+                    onChange={(e) => handleTipeChange(e.target.value)}
                     className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                   >
-                    <option value="Artikel Ilmiah (Fiqh Mu'asarah)">📄 Artikel Ilmiah (Fiqh Mu&apos;asarah)</option>
-                    <option value="Opini & Refleksi Santri">✍️ Opini &amp; Refleksi Santri</option>
-                    <option value="Skripsi / Risalah Kelulusan (Alumni & Mahasantri)">🎓 Skripsi / Risalah Kelulusan (Alumni &amp; Mahasantri)</option>
+                    <option value={TIPE_FIQH}>🏛️ Kajian Fiqh Mu&apos;asarah</option>
+                    <option value={TIPE_KITAB}>📖 Kajian Kitab dan Pengajian</option>
+                    <option value={TIPE_TEMATIK}>🔍 Kajian Tematik</option>
+                    <option value={TIPE_ESAI}>✍️ Esai dan Refleksi</option>
+                    <option value={TIPE_SKRIPSI}>🎓 Skripsi / Risalah Kelulusan (Alumni &amp; Mahasantri)</option>
                   </select>
                   <p className="text-[10px] text-slate-500 mt-1">
-                    {formData.tipeNaskah.includes("Skripsi")
+                    {isSkripsiType
                       ? "Khusus alumni & mahasantri tingkat akhir untuk diterbitkan ke Repositori Skripsi Ma'had Aly."
-                      : formData.tipeNaskah.includes("Opini")
+                      : kolomAktif === "kitab"
+                      ? "Ringkasan, telaah kitab, dan catatan pengajian majelis ilmu beserta pematerinya."
+                      : kolomAktif === "tematik"
+                      ? "Telaah satu tema atau persoalan keislaman yang dirujuk dari beberapa sumber."
+                      : kolomAktif === "esai"
                       ? "Esai populer, refleksi santri, pemikiran kemasyarakatan."
                       : "Kajian hukum Islam kontemporer, Fiqh Mu'asarah, turats, atau ushul fikih."}
                   </p>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    {formData.tipeNaskah === "Opini & Refleksi" ? "Kategori Opini & Refleksi" : "Kategori Kajian Fikih"}{" "}
+                    {isSkripsiType ? "Kategori Kajian Fikih" : LABEL_KATEGORI[kolomAktif]}{" "}
                     <span className="text-rose-500">*</span>
                   </label>
                   <select
                     value={formData.kategori}
-                    onChange={(e) => setFormData({ ...formData, kategori: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        kategori: e.target.value,
+                        kategoriUsulan:
+                          e.target.value === KATEGORI_LAIN_LAIN ? formData.kategoriUsulan : ""
+                      })
+                    }
                     className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                   >
-                    {availableCategories.length > 0 ? (
-                      availableCategories.map((cat) => (
-                        <option key={cat.id} value={cat.name}>
-                          {cat.name}
-                        </option>
-                      ))
-                    ) : (
-                      <option value={formData.tipeNaskah === "Opini/Refleksi" ? "Opini Santri" : "Fiqh Mu'asarah"}>
-                        {formData.tipeNaskah === "Opini/Refleksi" ? "Opini Santri" : "Fiqh Mu'asarah"}
+                    {availableCategories.map((cat) => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))}
+                    {!isSkripsiType && (
+                      <option value={KATEGORI_LAIN_LAIN}>Lain-lain</option>
+                    )}
+                    {availableCategories.length === 0 && isSkripsiType && (
+                      <option value={formData.kategori || "Fiqh Mu'asarah"}>
+                        {formData.kategori || "Fiqh Mu'asarah"}
                       </option>
                     )}
                   </select>
                   <p className="text-[10px] text-emerald-700 mt-1 font-medium">
-                    {formData.tipeNaskah === "Opini/Refleksi"
-                      ? "✓ Kategori dinamis khusus naskah opini & refleksi"
-                      : "✓ Kategori kajian ilmiah & fikih kontemporer"}
+                    {isLainLainKategori
+                      ? "✓ Usulan kategori barumu akan ditandai agar dinilai admin"
+                      : `✓ Daftar kategori mengikuti tipe: ${formData.tipeNaskah}`}
                   </p>
+                  {catatanKategori && (
+                    <p className="text-[10px] text-amber-700 mt-1 font-semibold">
+                      {catatanKategori}
+                    </p>
+                  )}
                 </div>
               </div>
+
+              {/* Usulan Kategori Baru (pilihan Lain-lain) */}
+              {isLainLainKategori && (
+                <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-2 animate-fadeIn">
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Usulkan kategori baru <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.kategoriUsulan}
+                    onChange={(e) => setFormData({ ...formData, kategoriUsulan: e.target.value })}
+                    placeholder="Tuliskan nama kategori yang Anda usulkan"
+                    className="w-full p-3 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                  />
+                  <p className="text-[10px] text-slate-500">
+                    Kategori ini belum resmi. Admin akan menilai apakah kategori usulan Anda layak
+                    ditambahkan dan diletakkan di kolom {formData.tipeNaskah}.
+                  </p>
+                </div>
+              )}
 
               {/* Form Khusus Skripsi Alumni / Mahasantri */}
               {isSkripsiType && (

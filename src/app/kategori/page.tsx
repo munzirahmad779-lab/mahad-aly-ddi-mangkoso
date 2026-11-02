@@ -3,26 +3,31 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
+import { kolomDariKategori } from "@/lib/content-mappers";
+import type { CategoryInfo, KolomArtikel } from "@/lib/types";
 
 export default function KategoriIndexPage() {
   const { categories, articles } = useArticles();
   const [search, setSearch] = useState("");
-  const [selectedType, setSelectedType] = useState<"all" | "fiqh" | "opini">("all");
+  const [selectedType, setSelectedType] = useState<"all" | KolomArtikel>("all");
 
   const safeCategories = Array.isArray(categories) ? categories : [];
+
+  // Kolom kategori: pakai field kolom bila ada, selain itu turunkan dari slug.
+  const kolomKategori = (cat: CategoryInfo): KolomArtikel =>
+    cat.kolom ?? kolomDariKategori(cat.slug, cat.type);
+  const hitungKolom = (k: KolomArtikel) =>
+    safeCategories.filter((cat) => kolomKategori(cat) === k).length;
 
   const filteredCategories = safeCategories.filter((cat) => {
     const matchesSearch =
       cat.name.toLowerCase().includes(search.toLowerCase()) ||
       cat.description.toLowerCase().includes(search.toLowerCase());
-    
-    if (selectedType === "fiqh") {
-      return matchesSearch && cat.type !== "opini";
+
+    if (selectedType === "all") {
+      return matchesSearch;
     }
-    if (selectedType === "opini") {
-      return matchesSearch && cat.type === "opini";
-    }
-    return matchesSearch;
+    return matchesSearch && kolomKategori(cat) === selectedType;
   });
 
   const getArticleCount = (slug: string) => {
@@ -64,7 +69,7 @@ export default function KategoriIndexPage() {
           </div>
 
           {/* Filter Pills */}
-          <div className="flex items-center gap-2 mt-6">
+          <div className="flex flex-wrap items-center gap-2 mt-6">
             <button
               type="button"
               onClick={() => setSelectedType("all")}
@@ -76,28 +81,27 @@ export default function KategoriIndexPage() {
             >
               Semua ({safeCategories.length})
             </button>
-            <button
-              type="button"
-              onClick={() => setSelectedType("fiqh")}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${
-                selectedType === "fiqh"
-                  ? "bg-mahad-gold text-mahad-green-dark shadow"
-                  : "bg-white/10 text-emerald-100 hover:bg-white/20"
-              }`}
-            >
-              Kajian Fiqh Mu&apos;asarah ({safeCategories.filter((c) => c.type !== "opini").length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedType("opini")}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${
-                selectedType === "opini"
-                  ? "bg-mahad-gold text-mahad-green-dark shadow"
-                  : "bg-white/10 text-emerald-100 hover:bg-white/20"
-              }`}
-            >
-              Opini &amp; Refleksi ({safeCategories.filter((c) => c.type === "opini").length})
-            </button>
+            {(
+              [
+                { key: "fiqh", label: "Kajian Fiqh Mu'asarah" },
+                { key: "kitab", label: "Kajian Kitab dan Pengajian" },
+                { key: "tematik", label: "Kajian Tematik" },
+                { key: "esai", label: "Esai dan Refleksi" }
+              ] as { key: KolomArtikel; label: string }[]
+            ).map((pill) => (
+              <button
+                key={pill.key}
+                type="button"
+                onClick={() => setSelectedType(pill.key)}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${
+                  selectedType === pill.key
+                    ? "bg-mahad-gold text-mahad-green-dark shadow"
+                    : "bg-white/10 text-emerald-100 hover:bg-white/20"
+                }`}
+              >
+                {pill.label} ({hitungKolom(pill.key)})
+              </button>
+            ))}
           </div>
         </div>
       </section>

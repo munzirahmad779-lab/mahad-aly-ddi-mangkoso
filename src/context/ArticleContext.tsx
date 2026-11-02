@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { formatHijriShort } from "@/lib/hijri-calendar";
+import { kolomDariKategori } from "@/lib/content-mappers";
 import {
   Article,
   CategoryInfo,
@@ -598,6 +599,7 @@ export function ArticleProvider({
               authorRole: a.author_role || "Mahasantri Marhalah Ula",
               authorBio: "",
               category: a.category_id || "fiqh-muamalah-kontemporer",
+              kolom: kolomDariKategori(a.category_id, a.type),
               categoryLabel: "Fiqh Mu'asarah",
               date: new Date(a.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
               hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),
@@ -653,7 +655,8 @@ export function ArticleProvider({
                   name: c.nama,
                   description: c.deskripsi || "",
                   iconName: c.icon || "book",
-                  type: isOpini ? ("opini" as const) : ("artikel" as const)
+                  type: isOpini ? ("opini" as const) : ("artikel" as const),
+                  kolom: kolomDariKategori(c.slug, isOpini ? "opini" : "artikel")
                 };
               })
             );
@@ -795,7 +798,13 @@ export function ArticleProvider({
                 afiliasi: s.afiliasi || "",
                 tipeNaskah: extraMeta.tipeNaskah || "Artikel Fikih Kontemporer",
                 judul: s.judul,
-                kategori: s.kategori_id || "Fiqh Mu'asarah",
+                kategori: extraMeta.kategoriNama || s.kategori_id || "Fiqh Mu'asarah",
+                kategoriUsulan:
+                  extraMeta.kategoriUsulan ||
+                  (typeof extraMeta.kategoriNama === "string"
+                    ? extraMeta.kategoriNama.match(/Usulan kategori baru:\s*([^)]+)\)?/i)?.[1]?.trim()
+                    : undefined) ||
+                  undefined,
                 abstrak: s.abstrak,
                 keyword: s.keyword || [],
                 fileUrl: s.file_url || "",
@@ -1328,6 +1337,7 @@ export function ArticleProvider({
       .replace(/\s+/g, "-");
     const newArticle: Article = {
       ...data,
+      kolom: data.kolom ?? kolomDariKategori(data.category, data.type),
       id: "art-" + Date.now().toString(),
       slug: `${slugBase}-${Date.now().toString().slice(-4)}`,
       views: 0,
@@ -1352,7 +1362,17 @@ export function ArticleProvider({
 
   const updateArticle = async (id: string, updatedData: Partial<Article>) => {
     const target = articles.find((a) => a.id === id);
-    const updated = articles.map((a) => (a.id === id ? { ...a, ...updatedData } : a));
+    const updated = articles.map((a) => {
+      if (a.id !== id) return a;
+      const merged = { ...a, ...updatedData };
+      if (
+        updatedData.kolom === undefined &&
+        (updatedData.category !== undefined || updatedData.type !== undefined)
+      ) {
+        merged.kolom = kolomDariKategori(merged.category, merged.type);
+      }
+      return merged;
+    });
     saveArticles(updated);
     addLog("Memperbarui Artikel", updatedData.title || id);
 
@@ -1401,11 +1421,13 @@ export function ArticleProvider({
     if (data.type === "opini" && !baseSlug.startsWith("opini-")) {
       baseSlug = `opini-${baseSlug}`;
     }
+    const newSlug = `${baseSlug}-${Date.now().toString().slice(-3)}`;
     const newCat: CategoryInfo = {
       ...data,
       type: data.type || "artikel",
+      kolom: kolomDariKategori(newSlug, data.type || "artikel"),
       id: "cat-" + Date.now().toString(),
-      slug: `${baseSlug}-${Date.now().toString().slice(-3)}`
+      slug: newSlug
     };
     saveCategories([...categories, newCat]);
     addLog("Menambah Kategori", data.name);
@@ -1422,7 +1444,14 @@ export function ArticleProvider({
 
   const updateCategory = async (id: string, updatedData: Partial<CategoryInfo>) => {
     const target = categories.find((c) => c.id === id);
-    const updated = categories.map((c) => (c.id === id ? { ...c, ...updatedData } : c));
+    const updated = categories.map((c) => {
+      if (c.id !== id) return c;
+      const merged = { ...c, ...updatedData };
+      if (updatedData.kolom === undefined && updatedData.type !== undefined) {
+        merged.kolom = kolomDariKategori(merged.slug, merged.type);
+      }
+      return merged;
+    });
     saveCategories(updated);
     addLog("Memperbarui Kategori", updatedData.name || id);
 
@@ -1584,6 +1613,9 @@ export function ArticleProvider({
         accessCode: updatedSub.accessCode,
         hp: target.hp,
         tipeNaskah: target.tipeNaskah,
+        kategoriNama: target.kategori,
+        kategoriUsulan: target.kategoriUsulan || null,
+        isUsulanKategori: Boolean(target.kategoriUsulan),
         fileName: target.fileName,
         fileSize: target.fileSize,
         timeline: updatedTimeline,
@@ -1657,6 +1689,9 @@ export function ArticleProvider({
         accessCode: target.accessCode,
         hp: target.hp,
         tipeNaskah: target.tipeNaskah,
+        kategoriNama: target.kategori,
+        kategoriUsulan: target.kategoriUsulan || null,
+        isUsulanKategori: Boolean(target.kategoriUsulan),
         fileName: target.fileName,
         fileSize: target.fileSize,
         timeline: updatedTimeline,
@@ -1708,6 +1743,10 @@ export function ArticleProvider({
       slug: articleSlug,
       title: sub.judul,
       type: isOpini ? "opini" : "artikel",
+      kolom: kolomDariKategori(
+        sub.kategori || (isOpini ? "opini-santri" : "fiqh-muamalah-kontemporer"),
+        isOpini ? "opini" : "artikel"
+      ),
       source: "submission",
       submission_id: submissionId,
       status: "published",
