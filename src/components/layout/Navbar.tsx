@@ -19,8 +19,10 @@ export default function Navbar() {
   const [desktopDropdown, setDesktopDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Header blur (Fase 3): setelah halaman di-scroll, latar navbar lebih
-  // tembus cahaya + blur lebih kuat + bayangan lebih dalam.
+  // Header mengecil saat scroll (pilihan user 2 Nov 2026): begitu halaman
+  // digeser, topbar dan ticker dilipat sampai nol agar zona header yang
+  // menutupi konten jauh lebih ramping; yang tetap menempel hanya navbar
+  // (logo, cari, Kirim Tulisan, dan baris menu). Bayangan juga diperdalam.
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -142,6 +144,7 @@ export default function Navbar() {
           TIER 1: TOP UTILITY BAR (Kalender Hijriah & Hotline Kontak)
          ══════════════════════════════════════════════════════════════ */}
       {isTopBarActive && (
+        <div className={`overflow-hidden transition-all duration-300 ${scrolled ? "max-h-0 opacity-0" : "max-h-12 opacity-100"}`}>
         <div className="bg-[#032e22] text-emerald-200 border-b border-emerald-900/60 text-[11px] py-1 select-none relative z-30">
           {/* Padding di DALAM wadah max-w-7xl (bukan di luarnya) agar tepi
               konten sejajar persis dengan navbar & ticker di bawahnya */}
@@ -194,6 +197,7 @@ export default function Navbar() {
               )}
             </div>
           </div>
+        </div>
         </div>
       )}
 
@@ -568,6 +572,7 @@ export default function Navbar() {
           TIER 3: KAJIAN & WARTA TICKER BAR (Infinite Moving Marquee!)
          ══════════════════════════════════════════════════════════════ */}
       {isTickerActive && (
+        <div className={`overflow-hidden transition-all duration-300 ${scrolled ? "max-h-0 opacity-0" : "max-h-12 opacity-100"}`}>
         <div className="bg-[#043d2e] text-emerald-100 border-b border-emerald-800/80 text-xs py-1.5 shadow-inner hidden md:block relative z-30 overflow-hidden">
           <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
             {/* Ticker Badge */}
@@ -601,6 +606,7 @@ export default function Navbar() {
               <span>→</span>
             </Link>
           </div>
+        </div>
         </div>
       )}
 
