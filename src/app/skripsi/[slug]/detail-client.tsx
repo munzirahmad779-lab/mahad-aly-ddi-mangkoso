@@ -6,7 +6,6 @@ import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
 import ThesisCard from "@/components/theses/ThesisCard";
 import ReadingBeam from "@/components/common/ReadingBeam";
-import ViewCount from "@/components/common/ViewCount";
 
 interface ThesisDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -86,7 +85,6 @@ export default function ThesisDetailPage({ params }: ThesisDetailPageProps) {
             <span className="bg-white/10 text-emerald-200 text-xs px-3 py-0.5 rounded-full">
               Tahun Kelulusan {thesis.year}
             </span>
-            <ViewCount />
           </div>
 
           <h1 className="font-serif font-bold text-2xl sm:text-3xl lg:text-4xl text-white leading-snug">
