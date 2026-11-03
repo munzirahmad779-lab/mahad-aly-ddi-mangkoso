@@ -58,9 +58,9 @@ async function fetchInitialContent(): Promise<Record<string, unknown>> {
           }
           return map;
         }),
-      supabaseAnon.from("articles").select("*").then(r => mapDbArticles((r.data as any[]) || [])),
+      supabaseAnon.from("articles").select("*").then(r => (r.data as any[]) || []),
       supabaseAnon.from("theses").select("*").then(r => mapDbTheses((r.data as any[]) || [])),
-      supabaseAnon.from("categories").select("*").then(r => mapDbCategories((r.data as any[]) || [])),
+      supabaseAnon.from("categories").select("*").then(r => (r.data as any[]) || []),
       supabaseAnon.from("news").select("*").then(r => mapDbNews((r.data as any[]) || [])),
       supabaseAnon.from("collections").select("*").then(r => mapDbCollections((r.data as any[]) || []))
     ]);
@@ -71,9 +71,9 @@ async function fetchInitialContent(): Promise<Record<string, unknown>> {
     const hasil = await Promise.race([
       query.then(([content, articles, theses, categories, news, collections]) => ({
         ...content,
-        __articles: articles,
+        __articles: mapDbArticles(articles, categories),
         __theses: theses,
-        __categories: categories,
+        __categories: mapDbCategories(categories),
         __news: news,
         __lecturers: collections.lecturers,
         __facilities: collections.facilities

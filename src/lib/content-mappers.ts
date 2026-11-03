@@ -56,8 +56,16 @@ export function tanggalIndoId(iso: string): string {
   }
 }
 
-export function mapDbArticles(rows: any[]): any[] {
-  return (rows || []).map((a: any) => ({
+export function mapDbArticles(rows: any[], categoryRows?: any[]): any[] {
+  // category_id di basis data berupa id kategori (UUID), bukan slug.
+  // Selesaikan ke slug + nama kategori aslinya bila baris kategori ikut
+  // diberikan, agar label dan tautan kategori di kartu tidak basi.
+  const catById = new Map<string, any>(
+    (categoryRows || []).map((c: any) => [c.id, c])
+  );
+  return (rows || []).map((a: any) => {
+    const cat = catById.get(a.category_id);
+    return {
     id: a.id,
     slug: a.slug,
     title: a.title,
@@ -66,16 +74,17 @@ export function mapDbArticles(rows: any[]): any[] {
     author: a.author_name || "Redaksi",
     authorRole: a.author_role || "Mahasantri Marhalah Ula",
     authorBio: "",
-    category: a.category_id || "fiqh-muamalah-kontemporer",
-    kolom: kolomDariSlug(a.category_id),
+    category: cat?.slug || a.category_id || "fiqh-muamalah-kontemporer",
+    kolom: kolomDariKategori(cat?.slug || a.category_id, a.type),
     status: a.status || "published",
-    categoryLabel: "Fiqh Mu'asarah",
+    categoryLabel: cat?.nama || "Fiqh Mu'asarah",
     date: tanggalIndoId(a.created_at),
     hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),
     readTime: "5 menit",
     views: a.views || 0,
     tags: a.tags || []
-  }));
+    };
+  });
 }
 
 export function mapDbTheses(rows: any[]): any[] {

@@ -588,8 +588,22 @@ export function ArticleProvider({
         // Process Articles
         if (articlesRes.status === "fulfilled") {
           const dbArticles = (articlesRes.value as any)?.data;
+          // category_id berupa id kategori (UUID); selesaikan ke slug dan
+          // nama kategori aslinya dari hasil kueri kategori pada batch yang
+          // sama, agar label kategori artikel tidak basi.
+          const dbCategoriesForArticles =
+            categoriesRes.status === "fulfilled"
+              ? (categoriesRes.value as any)?.data
+              : null;
+          const catById = new Map<string, any>(
+            (Array.isArray(dbCategoriesForArticles) ? dbCategoriesForArticles : []).map(
+              (c: any) => [c.id, c]
+            )
+          );
           if (Array.isArray(dbArticles) && dbArticles.length > 0) {
-            const mappedArticles: Article[] = dbArticles.map((a: any) => ({
+            const mappedArticles: Article[] = dbArticles.map((a: any) => {
+              const cat = catById.get(a.category_id);
+              return {
               id: a.id,
               slug: a.slug,
               title: a.title,
@@ -598,16 +612,17 @@ export function ArticleProvider({
               author: a.author_name || "Redaksi",
               authorRole: a.author_role || "Mahasantri Marhalah Ula",
               authorBio: "",
-              category: a.category_id || "fiqh-muamalah-kontemporer",
-              kolom: kolomDariKategori(a.category_id, a.type),
+              category: cat?.slug || a.category_id || "fiqh-muamalah-kontemporer",
+              kolom: kolomDariKategori(cat?.slug || a.category_id, a.type),
               status: (a.status as Article["status"]) || "published",
-              categoryLabel: "Fiqh Mu'asarah",
+              categoryLabel: cat?.nama || "Fiqh Mu'asarah",
               date: new Date(a.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
               hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),
               readTime: "5 menit",
               views: a.views || 0,
               tags: a.tags || []
-            }));
+              };
+            });
             setArticles(mappedArticles);
           }
         }

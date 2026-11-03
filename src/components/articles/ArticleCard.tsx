@@ -40,16 +40,24 @@ export default function ArticleCard({ article }: ArticleCardProps) {
               className={`inline-block text-xs font-bold px-3 py-1 rounded-full transition-colors ${
                 isAnregurutta
                   ? "bg-amber-100 text-amber-900 hover:bg-amber-200"
-                  : article.type === "opini"
+                  : article.type === "opini" || article.kolom === "esai"
                   ? "bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300"
                   : "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
               }`}
             >
               {article.categoryLabel}
             </Link>
-            {article.type === "opini" ? (
+            {article.type === "opini" || article.kolom === "esai" ? (
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
                 ✍️ Opini &amp; Refleksi
+              </span>
+            ) : article.kolom === "kitab" ? (
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                📖 Kitab &amp; Pengajian
+              </span>
+            ) : article.kolom === "tematik" ? (
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                📚 Kajian Tematik
               </span>
             ) : (
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
