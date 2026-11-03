@@ -4,6 +4,7 @@ import { use } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
+import ViewCount from "@/components/common/ViewCount";
 
 interface BeritaDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -76,6 +77,9 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
           <p className="text-xs text-emerald-200 mt-4">
             Diterbitkan pada: {item.date} &bull; Oleh: {item.author}
           </p>
+          <div className="mt-3">
+            <ViewCount />
+          </div>
         </div>
       </section>
 

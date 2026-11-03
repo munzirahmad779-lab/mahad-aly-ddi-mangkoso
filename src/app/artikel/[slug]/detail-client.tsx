@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
 import ReadingBeam from "@/components/common/ReadingBeam";
+import ViewCount from "@/components/common/ViewCount";
 
 interface ArticleDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -311,8 +312,11 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
             <div className="text-right">
               <p>{article.date} ({article.hijriDate})</p>
               <p className="text-mahad-gold font-semibold">
-                Waktu baca: &plusmn; {article.readTime} &bull; {article.views || 1}x dibaca
+                Waktu baca: &plusmn; {article.readTime}
               </p>
+              <div className="mt-1.5 flex justify-end">
+                <ViewCount />
+              </div>
             </div>
           </div>
         </div>
