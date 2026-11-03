@@ -1364,6 +1364,11 @@ export function ArticleProvider({
     addLog("Menerbitkan Artikel", data.title);
 
     // Sync to Supabase Database via server (auth + service role)
+    // category_id wajib ikut: tanpa ini artikel baru tersimpan tanpa
+    // kategori di basis data dan tampil dengan label bawaan.
+    const catInsert = categories.find(
+      (c) => c.slug === data.category || c.id === data.category
+    );
     await dbWriteAlert("articles", "insert", {
       title: data.title,
       slug: newArticle.slug,
@@ -1371,6 +1376,7 @@ export function ArticleProvider({
       content: data.content,
       author_name: data.author,
       author_role: data.authorRole,
+      category_id: catInsert?.id ?? null,
       tags: data.tags || [],
       status: newArticle.status
     });
@@ -1402,6 +1408,16 @@ export function ArticleProvider({
           ...(updatedData.content !== undefined ? { content: updatedData.content } : {}),
           ...(updatedData.author !== undefined ? { author_name: updatedData.author } : {}),
           ...(updatedData.authorRole !== undefined ? { author_role: updatedData.authorRole } : {}),
+          // Kategori ikut ditulis: tanpa ini perubahan kategori di panel
+          // admin hanya berubah di tampilan lokal dan hilang di basis data.
+          ...(updatedData.category !== undefined
+            ? {
+                category_id:
+                  categories.find(
+                    (c) => c.slug === updatedData.category || c.id === updatedData.category
+                  )?.id ?? null
+              }
+            : {}),
           ...(updatedData.tags !== undefined ? { tags: updatedData.tags } : {})
         },
         { slug: target.slug }
