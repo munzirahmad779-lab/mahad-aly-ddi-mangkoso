@@ -78,6 +78,7 @@ export function mapDbArticles(rows: any[], categoryRows?: any[]): any[] {
     kolom: kolomDariKategori(cat?.slug || a.category_id, a.type),
     status: a.status || "published",
     categoryLabel: cat?.nama || "Fiqh Mu'asarah",
+    imageUrl: a.thumbnail_url || undefined,
     date: tanggalIndoId(a.created_at),
     hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),
     readTime: "5 menit",

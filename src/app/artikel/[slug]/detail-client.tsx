@@ -325,6 +325,17 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
       {/* Badan Tulisan & Sidebar */}
       <div ref={bodyRef} className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
         <ReadingBeam targetRef={bodyRef} />
+
+        {/* Foto utama artikel dari thumbnail_url basis data, bila ada */}
+        {article.imageUrl && (
+          <figure className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+            <img
+              src={article.imageUrl}
+              alt={article.title}
+              className="w-full max-h-[480px] object-cover"
+            />
+          </figure>
+        )}
         
         {/* Konten Utama */}
         <article className="bg-white rounded-2xl p-8 sm:p-12 border border-slate-200 shadow-sm space-y-6">

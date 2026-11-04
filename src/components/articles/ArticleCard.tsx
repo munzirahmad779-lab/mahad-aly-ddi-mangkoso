@@ -32,6 +32,21 @@ export default function ArticleCard({ article }: ArticleCardProps) {
           </div>
         )}
 
+        {/* Foto artikel (thumbnail_url basis data) bila ada; kartu lama
+            tanpa foto tetap tampil teks seperti sebelumnya. Img biasa
+            karena sumber foto bisa dari Drive (pengalihan) maupun
+            Supabase/R2, dan CSP situs mengizinkan img https mana pun. */}
+        {article.imageUrl && (
+          <Link href={`/artikel/${article.slug}`} className="block overflow-hidden">
+            <img
+              src={article.imageUrl}
+              alt={article.title}
+              loading="lazy"
+              className="w-full aspect-[16/9] object-cover"
+            />
+          </Link>
+        )}
+
         <div className="p-6">
           {/* Badge Kategori & Tipe */}
           <div className="flex flex-wrap items-center gap-2 mb-3">

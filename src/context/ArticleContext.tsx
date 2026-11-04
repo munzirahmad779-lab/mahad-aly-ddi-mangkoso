@@ -616,6 +616,7 @@ export function ArticleProvider({
               kolom: kolomDariKategori(cat?.slug || a.category_id, a.type),
               status: (a.status as Article["status"]) || "published",
               categoryLabel: cat?.nama || "Fiqh Mu'asarah",
+              imageUrl: a.thumbnail_url || undefined,
               date: new Date(a.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
               hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),
               readTime: "5 menit",
