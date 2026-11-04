@@ -332,7 +332,7 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
             <img
               src={article.imageUrl}
               alt={article.title}
-              className="w-full max-h-[480px] object-cover"
+              className="w-full h-auto"
             />
           </figure>
         )}
