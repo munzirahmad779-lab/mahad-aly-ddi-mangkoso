@@ -42,7 +42,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
               src={article.imageUrl}
               alt={article.title}
               loading="lazy"
-              className="w-full aspect-[16/9] object-cover object-top"
+              className="w-full h-auto"
             />
           </Link>
         )}
