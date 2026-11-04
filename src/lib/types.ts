@@ -1,7 +1,8 @@
 // Kolom halaman artikel (4 kolom sejajar): fiqh = Kajian Fiqh Mu'asarah,
 // kitab = Kajian Kitab dan Pengajian, tematik = Kajian Tematik,
-// esai = Esai dan Refleksi (termasuk kategori bertipe opini).
-export type KolomArtikel = "fiqh" | "kitab" | "tematik" | "esai";
+// esai = Esai dan Refleksi (termasuk kategori bertipe opini),
+// berita = Berita (warta kegiatan dan liputan resmi kampus).
+export type KolomArtikel = "fiqh" | "kitab" | "tematik" | "esai" | "berita";
 
 export interface Article {
   id: string;

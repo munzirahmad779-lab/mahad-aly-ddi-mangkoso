@@ -38,7 +38,8 @@ const LABEL_KATEGORI: Record<KolomArtikel, string> = {
   fiqh: "Kategori Kajian Fiqh Mu'asarah",
   kitab: "Kategori Kajian Kitab",
   tematik: "Kategori Kajian Tematik",
-  esai: "Kategori Esai dan Refleksi"
+  esai: "Kategori Esai dan Refleksi",
+  berita: "Kategori Berita"
 };
 
 // Catatan foto wajib dua subkategori kolom Kitab (perintah user 2 Nov 2026:

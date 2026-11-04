@@ -87,7 +87,8 @@ export default function KategoriIndexPage() {
                 { key: "fiqh", label: "Kajian Fiqh Mu'asarah" },
                 { key: "kitab", label: "Kajian Kitab dan Pengajian" },
                 { key: "tematik", label: "Kajian Tematik" },
-                { key: "esai", label: "Esai dan Refleksi" }
+                { key: "esai", label: "Esai dan Refleksi" },
+                { key: "berita", label: "Berita" }
               ] as { key: KolomArtikel; label: string }[]
             ).map((pill) => (
               <button

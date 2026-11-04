@@ -11,7 +11,8 @@ const KOLOM_LABEL_KOSONG: Record<KolomArtikel, string> = {
   fiqh: "kajian fikih",
   kitab: "kajian kitab",
   tematik: "kajian tematik",
-  esai: "tulisan opini"
+  esai: "tulisan opini",
+  berita: "berita kampus"
 };
 
 export default function AllArticlesPage() {
@@ -73,6 +74,14 @@ export default function AllArticlesPage() {
       badgeAktifClass: "bg-teal-950 text-teal-200"
     },
     {
+      key: "berita",
+      label: "Berita",
+      icon: "📰",
+      semuaLabel: "Semua Berita",
+      aktifClass: "bg-sky-700",
+      badgeAktifClass: "bg-sky-950 text-sky-200"
+    },
+    {
       key: "esai",
       label: pageTexts?.artikelOpiniTabLabel || "Opini & Refleksi Santri",
       icon: "✍️",
@@ -108,21 +117,27 @@ export default function AllArticlesPage() {
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-3.5 py-1 rounded-full">
-            {activeTab !== "esai"
-              ? (pageTexts?.artikelBadge || "Publikasi Ilmiah Takhassus")
-              : (pageTexts?.opiniBadge || "Ruang Gagasan Santri & Esai")}
+            {activeTab === "berita"
+              ? "Warta Kampus"
+              : activeTab !== "esai"
+                ? (pageTexts?.artikelBadge || "Publikasi Ilmiah Takhassus")
+                : (pageTexts?.opiniBadge || "Ruang Gagasan Santri & Esai")}
           </span>
           <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white mt-3">
-            {activeTab !== "esai"
-              ? (pageTexts?.artikelTitle || "Mimbar Kajian Fiqh Mu'asarah")
-              : (pageTexts?.opiniTitle || "Mimbar Opini & Refleksi Santri")}
+            {activeTab === "berita"
+              ? "Berita & Kegiatan"
+              : activeTab !== "esai"
+                ? (pageTexts?.artikelTitle || "Mimbar Kajian Fiqh Mu'asarah")
+                : (pageTexts?.opiniTitle || "Mimbar Opini & Refleksi Santri")}
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-2">
-            {activeTab !== "esai"
-              ? (pageTexts?.artikelDesc ||
-                  "Kumpulan artikel telaah hukum Islam kontemporer, kajian ushul fikih, dan risalah pemikiran ulama DDI Mangkoso.")
-              : (pageTexts?.opiniDesc ||
-                  "Refleksi sosial keagamaan, catatan adab santri, dan esai pemikiran mahasantri serta asatidz Ma'had Aly DDI Mangkoso.")}
+            {activeTab === "berita"
+              ? "Kabar kegiatan, pengumuman, dan liputan resmi Ma'had Aly DDI Mangkoso."
+              : activeTab !== "esai"
+                ? (pageTexts?.artikelDesc ||
+                    "Kumpulan artikel telaah hukum Islam kontemporer, kajian ushul fikih, dan risalah pemikiran ulama DDI Mangkoso.")
+                : (pageTexts?.opiniDesc ||
+                    "Refleksi sosial keagamaan, catatan adab santri, dan esai pemikiran mahasantri serta asatidz Ma'had Aly DDI Mangkoso.")}
           </p>
         </div>
       </section>

@@ -24,6 +24,7 @@ export function kolomDariSlug(slug?: string | null): KolomArtikel {
   ) {
     return "esai";
   }
+  if (s.startsWith("berita") || s.startsWith("warta")) return "berita";
   return "fiqh";
 }
 
