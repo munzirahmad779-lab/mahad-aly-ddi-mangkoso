@@ -16,6 +16,7 @@ const SITE = "Ma'had Aly DDI Mangkoso";
 export const OG_LOGO_URL = `${BASE}/og-logo.jpg`;
 export const OG_LOGO_IMAGE = {
   url: OG_LOGO_URL,
+  secureUrl: OG_LOGO_URL,
   width: 1200,
   height: 630,
   alt: SITE

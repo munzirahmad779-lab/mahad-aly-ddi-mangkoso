@@ -189,6 +189,7 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/og-logo.jpg",
+        secureUrl: "https://mahadaly-ddimangkoso.my.id/og-logo.jpg",
         width: 1200,
         height: 630,
         alt: "Logo Ma'had Aly DDI Mangkoso",
@@ -295,6 +296,10 @@ export default async function RootLayout({
             dan memperlambat LCP seluruh halaman. */}
       </head>
       <body className="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-mahad-gold selection:text-mahad-green-dark flex flex-col min-h-screen">
+        {/* Penguat pratinjau tautan untuk perayap lama (termasuk
+            WhatsApp): penunjuk gambar pratinjau versi klasik, pasangan
+            og:image berkas og-logo.jpg pada metadata. */}
+        <link rel="image_src" href="https://mahadaly-ddimangkoso.my.id/og-logo.jpg" />
         <ArticleProvider initialContent={initialContent}>
           <SmoothScroll />
           <GoogleAnalytics />
