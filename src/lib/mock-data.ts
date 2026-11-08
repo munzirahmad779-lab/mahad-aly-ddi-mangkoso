@@ -1259,16 +1259,21 @@ export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
       children: [
         { id: "nav-3-1", label: "Kurikulum & Kitab Turats", url: "/akademik#kurikulum", order: 1, isActive: true },
         { id: "nav-3-2", label: "Kalender Akademik", url: "/akademik#kalender", order: 2, isActive: true },
-        { id: "nav-3-3", label: "Pedoman Skripsi & Akademik", url: "/akademik#pedoman", order: 3, isActive: true }
+        { id: "nav-3-3", label: "Takhassus Fiqh Mu'asarah", url: "/akademik#takhassus", order: 3, isActive: true },
+        { id: "nav-3-4", label: "Muhadhir & Dosen", url: "/profil#masyayikh", order: 4, isActive: true },
+        { id: "nav-3-5", label: "Pedoman Skripsi & Akademik", url: "/akademik#pedoman", order: 5, isActive: true }
       ]
     },
     { id: "nav-4", label: "Informasi", url: "/berita", order: 4, isActive: true, children: [
-        { id: "nav-4-1", label: "Berita Kampus", url: "/berita", order: 1, isActive: true },
-        { id: "nav-4-2", label: "PMB Beasiswa", url: "/pmb", order: 2, isActive: true }
+        { id: "nav-4-1", label: "Pengumuman", url: "/berita", order: 1, isActive: true },
+        { id: "nav-4-2", label: "PMB Beasiswa", url: "/pmb", order: 2, isActive: true },
+        { id: "nav-4-3", label: "Asesmen", url: "/asesmen", order: 3, isActive: true },
+        { id: "nav-4-4", label: "Pengambilan Ijazah", url: "/pengambilan-ijazah", order: 4, isActive: true },
+        { id: "nav-4-5", label: "Testimoni", url: "/testimoni", order: 5, isActive: true }
       ] },
     { id: "nav-5", label: "Kajian / Diskusi", url: "/kategori", order: 5, isActive: true },
-    { id: "nav-6", label: "Artikel", url: "/artikel", order: 6, isActive: true, children: [
-        { id: "nav-6-1", label: "Semua Artikel", url: "/artikel", order: 1, isActive: true },
+    { id: "nav-6", label: "Mimbar Mahad", url: "/artikel", order: 6, isActive: true, children: [
+        { id: "nav-6-1", label: "Semua Tulisan", url: "/artikel", order: 1, isActive: true },
         { id: "nav-6-2", label: "Para Penulis", url: "/penulis", order: 2, isActive: true },
         { id: "nav-6-3", label: "Kirim Tulisan", url: "/kirim-tulisan", order: 3, isActive: true }
       ] },

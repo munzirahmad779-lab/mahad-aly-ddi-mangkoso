@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
+import ArticleCard from "@/components/articles/ArticleCard";
 import { kolomDariKategori } from "@/lib/content-mappers";
-import type { CategoryInfo, KolomArtikel } from "@/lib/types";
+import type { Article, CategoryInfo, KolomArtikel } from "@/lib/types";
 
 export default function KategoriIndexPage() {
   const { categories, articles } = useArticles();
@@ -35,6 +36,22 @@ export default function KategoriIndexPage() {
     return (articles || []).filter((a) => a.category === slug && a.status !== "draft").length;
   };
 
+  // Kolom artikel diselesaikan lewat kategorinya, sama seperti halaman
+  // Mimbar, agar artikel basis data yang category-nya berupa id tetap
+  // tergolong benar.
+  const kategoriArtikel = (a: Article): CategoryInfo | undefined =>
+    safeCategories.find((c) => c.slug === a.category || c.id === a.category);
+  const kolomArtikel = (a: Article): KolomArtikel => {
+    const cat = kategoriArtikel(a);
+    return cat ? kolomKategori(cat) : (a.kolom ?? kolomDariKategori(a.category, a.type));
+  };
+  // Hasil kajian malam Sabtu (ketetapan user 8 Nov 2026): tulisan terbit
+  // terbaru dari kolom Kajian Kitab dan Pengajian tampil di muka bagian
+  // Kajian & Diskusi ini.
+  const hasilKajianTerbaru = (articles || [])
+    .filter((a) => a.status !== "draft" && kolomArtikel(a) === "kitab")
+    .slice(0, 3);
+
   return (
     <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
       {/* Header Banner */}
@@ -44,10 +61,10 @@ export default function KategoriIndexPage() {
             🏛️ Khazanah Keilmuan Ma&apos;had Aly DDI Mangkoso
           </span>
           <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white tracking-tight">
-            Gugus Kajian &amp; Opini Santri
+            Kajian &amp; Diskusi
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-4 leading-relaxed">
-            Eksplorasi seluruh klasifikasi riset hukum Islam kontemporer, ushul fikih, perbandingan madzhab, serta opini santri kader ulama.
+            Ruang kajian kitab, pengajian, dan diskusi keilmuan Ma&apos;had Aly DDI Mangkoso. Hasil kajian rutin setiap malam Sabtu diterbitkan di bagian ini.
           </p>
 
           {/* Search Box */}
@@ -106,6 +123,38 @@ export default function KategoriIndexPage() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* Hasil Kajian Malam Sabtu */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14">
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
+          <div>
+            <h2 className="font-serif font-bold text-2xl text-slate-900">
+              Hasil Kajian Malam Sabtu
+            </h2>
+            <p className="text-slate-600 text-sm mt-1 max-w-2xl">
+              Tulisan terbaru dari kajian kitab dan pengajian rutin. Keputusan
+              dan dokumen bahtsul masail tersimpan di ruang tersendiri.
+            </p>
+          </div>
+          <Link
+            href="/bahtsul-masail"
+            className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold transition"
+          >
+            Ruang Bahtsul Masail &rarr;
+          </Link>
+        </div>
+        {hasilKajianTerbaru.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {hasilKajianTerbaru.map((art) => (
+              <ArticleCard key={art.id} article={art} />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-600 text-sm">
+            Hasil kajian malam Sabtu akan tampil di sini setelah diterbitkan.
+          </div>
+        )}
       </section>
 
       {/* Grid Kategori */}

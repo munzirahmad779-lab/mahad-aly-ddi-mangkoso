@@ -17,7 +17,11 @@ const KOLOM_LABEL_KOSONG: Record<KolomArtikel, string> = {
 
 export default function AllArticlesPage() {
   const { articles, categories, pageTexts } = useArticles();
-  const [activeTab, setActiveTab] = useState<KolomArtikel>("fiqh");
+  // Tab "semua" adalah tampilan awal Mimbar Mahad (ketetapan user 8 Nov
+  // 2026): campuran seluruh tulisan terbit (artikel, kajian tematik,
+  // opini, karya ilmiah fiqh kontemporer, kitab, dan berita), bukan
+  // membuka pada satu kolom yang bisa jadi hanya berisi satu tulisan.
+  const [activeTab, setActiveTab] = useState<KolomArtikel | "semua">("semua");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
@@ -42,13 +46,21 @@ export default function AllArticlesPage() {
     publicArticles.filter((a) => kolomArtikel(a) === k).length;
 
   const TABS: {
-    key: KolomArtikel;
+    key: KolomArtikel | "semua";
     label: string;
     icon: string;
     semuaLabel: string;
     aktifClass: string;
     badgeAktifClass: string;
   }[] = [
+    {
+      key: "semua",
+      label: "Semua",
+      icon: "🕌",
+      semuaLabel: "Semua Kategori",
+      aktifClass: "bg-emerald-900",
+      badgeAktifClass: "bg-emerald-950 text-emerald-200"
+    },
     {
       key: "fiqh",
       label: pageTexts?.artikelFiqhTabLabel || "Kajian Fiqh Mu'asarah",
@@ -92,8 +104,14 @@ export default function AllArticlesPage() {
   ];
   const tabAktif = TABS.find((t) => t.key === activeTab) ?? TABS[0];
 
-  const activeArticles = publicArticles.filter((a) => kolomArtikel(a) === activeTab);
-  const activeCategories = categories.filter((c) => kolomKategori(c) === activeTab);
+  const activeArticles =
+    activeTab === "semua"
+      ? publicArticles
+      : publicArticles.filter((a) => kolomArtikel(a) === activeTab);
+  const activeCategories =
+    activeTab === "semua"
+      ? categories
+      : categories.filter((c) => kolomKategori(c) === activeTab);
 
   const filtered = activeArticles
     .filter((a) => {
@@ -117,27 +135,33 @@ export default function AllArticlesPage() {
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-3.5 py-1 rounded-full">
-            {activeTab === "berita"
-              ? "Warta Kampus"
-              : activeTab !== "esai"
-                ? (pageTexts?.artikelBadge || "Publikasi Ilmiah Takhassus")
-                : (pageTexts?.opiniBadge || "Ruang Gagasan Santri & Esai")}
+            {activeTab === "semua"
+              ? "Mimbar Mahad"
+              : activeTab === "berita"
+                ? "Warta Kampus"
+                : activeTab !== "esai"
+                  ? (pageTexts?.artikelBadge || "Publikasi Ilmiah Takhassus")
+                  : (pageTexts?.opiniBadge || "Ruang Gagasan Santri & Esai")}
           </span>
           <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white mt-3">
-            {activeTab === "berita"
-              ? "Berita & Kegiatan"
-              : activeTab !== "esai"
-                ? (pageTexts?.artikelTitle || "Mimbar Kajian Fiqh Mu'asarah")
-                : (pageTexts?.opiniTitle || "Mimbar Opini & Refleksi Santri")}
+            {activeTab === "semua"
+              ? "Mimbar Mahad"
+              : activeTab === "berita"
+                ? "Berita & Kegiatan"
+                : activeTab !== "esai"
+                  ? (pageTexts?.artikelTitle || "Mimbar Kajian Fiqh Mu'asarah")
+                  : (pageTexts?.opiniTitle || "Mimbar Opini & Refleksi Santri")}
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-2">
-            {activeTab === "berita"
-              ? "Kabar kegiatan, pengumuman, dan liputan resmi Ma'had Aly DDI Mangkoso."
-              : activeTab !== "esai"
-                ? (pageTexts?.artikelDesc ||
-                    "Kumpulan artikel telaah hukum Islam kontemporer, kajian ushul fikih, dan risalah pemikiran ulama DDI Mangkoso.")
-                : (pageTexts?.opiniDesc ||
-                    "Refleksi sosial keagamaan, catatan adab santri, dan esai pemikiran mahasantri serta asatidz Ma'had Aly DDI Mangkoso.")}
+            {activeTab === "semua"
+              ? "Seluruh tulisan terbit Ma'had Aly DDI Mangkoso dalam satu mimbar: artikel, kajian tematik, opini dan refleksi, serta karya ilmiah fiqh kontemporer."
+              : activeTab === "berita"
+                ? "Kabar kegiatan, pengumuman, dan liputan resmi Ma'had Aly DDI Mangkoso."
+                : activeTab !== "esai"
+                  ? (pageTexts?.artikelDesc ||
+                      "Kumpulan artikel telaah hukum Islam kontemporer, kajian ushul fikih, dan risalah pemikiran ulama DDI Mangkoso.")
+                  : (pageTexts?.opiniDesc ||
+                      "Refleksi sosial keagamaan, catatan adab santri, dan esai pemikiran mahasantri serta asatidz Ma'had Aly DDI Mangkoso.")}
           </p>
         </div>
       </section>
@@ -164,7 +188,7 @@ export default function AllArticlesPage() {
                 <span>{tab.icon}</span>
                 <span>{tab.label}</span>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === tab.key ? tab.badgeAktifClass : "bg-slate-200 text-slate-600"}`}>
-                  {hitungKolom(tab.key)}
+                  {tab.key === "semua" ? publicArticles.length : hitungKolom(tab.key)}
                 </span>
               </button>
             ))}
@@ -231,7 +255,7 @@ export default function AllArticlesPage() {
         ) : (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
             <p className="text-slate-600 font-medium">
-              Tidak ada {KOLOM_LABEL_KOSONG[activeTab]} yang cocok dengan pencarian Anda.
+              Tidak ada {activeTab === "semua" ? "tulisan" : KOLOM_LABEL_KOSONG[activeTab]} yang cocok dengan pencarian Anda.
             </p>
             <button
               type="button"
