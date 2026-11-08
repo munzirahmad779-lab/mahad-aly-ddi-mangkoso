@@ -188,9 +188,9 @@ export const metadata: Metadata = {
     description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso (Mahad Aly Mangkoso). Membina kader ulama berakar pada sanad kitab klasik dan berwawasan wasathiyyah.",
     images: [
       {
-        url: "/image_067524.png",
-        width: 800,
-        height: 800,
+        url: "/og-logo.jpg",
+        width: 1200,
+        height: 630,
         alt: "Logo Ma'had Aly DDI Mangkoso",
       },
     ],
@@ -199,7 +199,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
     description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso.",
-    images: ["/image_067524.png"],
+    images: ["/og-logo.jpg"],
   },
   icons: {
     icon: [

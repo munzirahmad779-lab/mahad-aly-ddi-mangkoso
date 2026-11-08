@@ -7,13 +7,17 @@ const SITE = "Ma'had Aly DDI Mangkoso";
 // Gambar pratinjau tautan (og:image) untuk SEMUA halaman baca:
 // logo situs, sesuai ketetapan user 9 Nov 2026 (logo saja, bukan foto
 // sampul tulisan), supaya kartu pratinjau WhatsApp selalu berlogo dan
-// tidak tampak seperti tautan phishing. Berkasnya logo 512x512 yang
-// sama dengan favicon/logo situs.
-export const OG_LOGO_URL = `${BASE}/image_067524.png`;
+// tidak tampak seperti tautan phishing. Berkasnya og-logo.jpg: logo di
+// atas latar putih padat 1200x630 TANPA transparansi. Berkas logo asli
+// (image_067524.png) adalah PNG palet bertransparansi penuh di sudut
+// dan perayap pratinjau WhatsApp mengabaikan gambar seperti itu
+// (terbukti 9 Nov 2026: kartu teks muncul, gambar tidak, bahkan pada
+// tautan segar), jadi pratinjau memakai berkas turunan yang padat ini.
+export const OG_LOGO_URL = `${BASE}/og-logo.jpg`;
 export const OG_LOGO_IMAGE = {
   url: OG_LOGO_URL,
-  width: 512,
-  height: 512,
+  width: 1200,
+  height: 630,
   alt: SITE
 };
 
