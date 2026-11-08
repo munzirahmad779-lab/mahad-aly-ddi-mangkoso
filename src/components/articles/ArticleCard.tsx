@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Article } from "@/lib/types";
+import { CardViewCount } from "@/components/common/ViewCount";
 
 interface ArticleCardProps {
   article: Article;
@@ -98,6 +99,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         <div>
           <p className="font-semibold text-slate-800">{article.author}</p>
           <p className="text-[11px] text-slate-400">{article.date}</p>
+          <CardViewCount slug={article.slug} />
         </div>
         <Link
           href={`/artikel/${article.slug}`}

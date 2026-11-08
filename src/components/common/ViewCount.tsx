@@ -59,3 +59,54 @@ export default function ViewCount({ className = "" }: { className?: string }) {
     </span>
   );
 }
+
+// ── Jumlah dilihat untuk KARTU artikel ────────────────────────────────
+// Perintah user 8 Nov 2026: setiap tampilan awal tulisan (kartu di daftar
+// artikel dan beranda, sebelum diklik) ikut menampilkan sudah berapa kali
+// dilihat. Satu ambilan stats dipakai bersama oleh semua kartu di halaman
+// (janji dimuat sekali di tingkat modul), membaca peta pages yang sama
+// dengan lencana halaman detail. Kartu yang tulisannya belum pernah
+// tercatat dibuka tidak menampilkan apa pun, supaya tidak ada angka 0.
+let petaKunjungan: Promise<Record<string, number>> | null = null;
+
+function muatPetaKunjungan(): Promise<Record<string, number>> {
+  if (!petaKunjungan) {
+    petaKunjungan = fetch("/api/analytics/stats", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) =>
+        d && d.pages && typeof d.pages === "object"
+          ? (d.pages as Record<string, number>)
+          : {}
+      )
+      .catch(() => ({}));
+  }
+  return petaKunjungan;
+}
+
+export function CardViewCount({ slug }: { slug: string }) {
+  const [jumlah, setJumlah] = useState<number | null>(null);
+
+  useEffect(() => {
+    let hidup = true;
+    muatPetaKunjungan().then((pages) => {
+      if (!hidup) return;
+      const n = pages[`/artikel/${slug}`];
+      setJumlah(typeof n === "number" ? n : 0);
+    });
+    return () => {
+      hidup = false;
+    };
+  }, [slug]);
+
+  if (jumlah === null || jumlah < 1) return null;
+
+  return (
+    <p className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-400">
+      <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+      <span>Dilihat {jumlah.toLocaleString("id-ID")} kali</span>
+    </p>
+  );
+}
