@@ -18,13 +18,12 @@ import "./globals.css";
 // pertama sudah memuat nilai dari database — menghilangkan kedipan
 // "teks default → teks admin" saat halaman pertama dibuka.
 // ISR 30 detik: cepat seperti statis, tapi menyegarkan data dari DB.
-// 86400 detik (sebelumnya 30): penampung render saat ini hanya-baca
-// berisi potret saat build (lihat open-next.config.ts), jadi jendela
-// segar dibuat panjang agar worker tidak terus mencoba render ulang
-// di latar. Isi terbaru tetap tampil bagi pengunjung karena
-// ArticleContext menyegarkan data langsung dari Supabase sesudah
-// halaman termuat. Turunkan lagi angka ini bila penampung sudah R2.
-export const revalidate = 86400;
+// 300 detik: penampung render kini R2 (lihat open-next.config.ts),
+// halaman tersimpan disajikan dari penampung dan dirender ulang di
+// latar paling sering 5 menit sekali per halaman. Isi terbaru tetap
+// tampil seketika bagi pengunjung karena ArticleContext menyegarkan
+// data langsung dari Supabase sesudah halaman termuat.
+export const revalidate = 300;
 
 // Ambil nilai site_content dengan pengaman waktu (maks 2 detik) agar
 // lambat/putusnya database tidak pernah menahan render halaman.
