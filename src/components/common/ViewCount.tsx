@@ -65,8 +65,10 @@ export default function ViewCount({ className = "" }: { className?: string }) {
 // artikel dan beranda, sebelum diklik) ikut menampilkan sudah berapa kali
 // dilihat. Satu ambilan stats dipakai bersama oleh semua kartu di halaman
 // (janji dimuat sekali di tingkat modul), membaca peta pages yang sama
-// dengan lencana halaman detail. Kartu yang tulisannya belum pernah
-// tercatat dibuka tidak menampilkan apa pun, supaya tidak ada angka 0.
+// dengan lencana halaman detail. Angka selalu tampil di setiap kartu
+// begitu data termuat, termasuk 0 untuk tulisan yang belum tercatat
+// dibuka pada penghitung berjalan (ketetapan user 8 Nov 2026: masing
+// masing tulisan harus ada angkanya di tampilan awal).
 let petaKunjungan: Promise<Record<string, number>> | null = null;
 
 function muatPetaKunjungan(): Promise<Record<string, number>> {
@@ -98,7 +100,7 @@ export function CardViewCount({ slug }: { slug: string }) {
     };
   }, [slug]);
 
-  if (jumlah === null || jumlah < 1) return null;
+  if (jumlah === null) return null;
 
   return (
     <p className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-400">
