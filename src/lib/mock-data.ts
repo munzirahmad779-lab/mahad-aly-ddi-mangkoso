@@ -1237,7 +1237,7 @@ export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
     { id: "nav-1", label: "Beranda", url: "/", order: 1, isActive: true },
     {
       id: "nav-2",
-      label: "Profil",
+      label: "Tentang",
       url: "/profil",
       order: 2,
       isActive: true,
@@ -1262,11 +1262,25 @@ export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
         { id: "nav-3-3", label: "Pedoman Skripsi & Akademik", url: "/akademik#pedoman", order: 3, isActive: true }
       ]
     },
-    { id: "nav-4", label: "Mimbar Fiqh", url: "/artikel", order: 4, isActive: true },
-    { id: "nav-5", label: "Skripsi", url: "/skripsi", order: 5, isActive: true },
-    { id: "nav-6", label: "Warta", url: "/berita", order: 6, isActive: true },
-    { id: "nav-7", label: "Infaq & Donasi", url: "/donasi", order: 7, isActive: true },
-    { id: "nav-8", label: "DeMa", url: "/dema", order: 8, isActive: true }
+    { id: "nav-4", label: "Informasi", url: "/berita", order: 4, isActive: true, children: [
+        { id: "nav-4-1", label: "Berita Kampus", url: "/berita", order: 1, isActive: true },
+        { id: "nav-4-2", label: "PMB Beasiswa", url: "/pmb", order: 2, isActive: true }
+      ] },
+    { id: "nav-5", label: "Kajian / Diskusi", url: "/kategori", order: 5, isActive: true },
+    { id: "nav-6", label: "Artikel", url: "/artikel", order: 6, isActive: true, children: [
+        { id: "nav-6-1", label: "Semua Artikel", url: "/artikel", order: 1, isActive: true },
+        { id: "nav-6-2", label: "Para Penulis", url: "/penulis", order: 2, isActive: true },
+        { id: "nav-6-3", label: "Kirim Tulisan", url: "/kirim-tulisan", order: 3, isActive: true }
+      ] },
+    { id: "nav-7", label: "Tautan", url: "/elibrary", order: 7, isActive: true, children: [
+        { id: "nav-7-1", label: "Perpustakaan Digital", url: "/elibrary", order: 1, isActive: true },
+        { id: "nav-7-2", label: "Repositori Skripsi", url: "/skripsi", order: 2, isActive: true },
+        { id: "nav-7-3", label: "Jurnal", url: "/jurnal", order: 3, isActive: true },
+        { id: "nav-7-4", label: "Koleksi Buku", url: "/buku", order: 4, isActive: true }
+      ] },
+    { id: "nav-8", label: "Infaq & Donasi", url: "/donasi", order: 8, isActive: true },
+    { id: "nav-9", label: "DeMa", url: "/dema", order: 9, isActive: true },
+    { id: "nav-10", label: "Kontak", url: "/kontak", order: 10, isActive: true }
   ],
   topBar: {
     isActive: true,
