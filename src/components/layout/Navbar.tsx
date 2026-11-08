@@ -252,7 +252,7 @@ export default function Navbar() {
                     <Link
                       href={link.url}
                       onClick={closeMenu}
-                      className={`px-1.5 xl:px-2.5 py-1.5 rounded-l-lg transition-colors whitespace-nowrap ${
+                      className={`pl-1.5 xl:pl-2.5 pr-0.5 py-1.5 rounded-l-lg transition-colors whitespace-nowrap ${
                         isLinkActive(link.url) || link.children?.some((c) => isLinkActive(c.url))
                           ? "text-mahad-gold font-bold bg-white/10 border-y border-l border-mahad-gold/40"
                           : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
@@ -267,7 +267,7 @@ export default function Navbar() {
                         e.stopPropagation();
                         toggleDesktopDropdown(link.id);
                       }}
-                      className={`p-1.5 rounded-r-lg transition-colors cursor-pointer ${
+                      className={`py-1.5 pl-0 pr-1.5 rounded-r-lg transition-colors cursor-pointer ${
                         isLinkActive(link.url) || link.children?.some((c) => isLinkActive(c.url)) || isDropdownOpen
                           ? "text-mahad-gold bg-white/10 border-y border-r border-mahad-gold/40"
                           : "text-emerald-200 hover:text-mahad-gold hover:bg-white/5"
