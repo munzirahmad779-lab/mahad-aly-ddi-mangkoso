@@ -240,9 +240,10 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center justify-center flex-wrap gap-1 xl:gap-2.5 2xl:gap-3 text-xs xl:text-[13px] font-medium order-3 basis-full border-t border-emerald-800/50 pt-2 mt-1">
             {primaryLinks.map((link) => {
               const hasChildren = link.children && link.children.length > 0;
-              const isKajianMenu =
-                !hasChildren &&
-                (link.url === "/kategori" || link.label.toLowerCase().includes("kajian"));
+              // Kajian & Diskusi berstatus Segera Hadir (ketetapan user
+              // 8 Nov 2026): menunya tautan biasa ke /kategori, TANPA
+              // dropdown kategori, sampai hasil kajian pertama terbit.
+              const isKajianMenu: boolean = false;
 
               // 1. Dropdown with custom children from Admin (e.g. Akademik, Profil)
               if (hasChildren) {
@@ -642,9 +643,9 @@ export default function Navbar() {
           {/* Navigation Links */}
           {navLinks.map((link) => {
             const hasChildren = link.children && link.children.length > 0;
-            const isKajianMenu =
-              !hasChildren &&
-              (link.url === "/kategori" || link.label.toLowerCase().includes("kajian"));
+            // Sama seperti navigasi desktop: Kajian & Diskusi tautan
+            // biasa selama halamannya berstatus Segera Hadir.
+            const isKajianMenu: boolean = false;
 
             // Accordion Dropdown with Custom Children
             if (hasChildren) {
