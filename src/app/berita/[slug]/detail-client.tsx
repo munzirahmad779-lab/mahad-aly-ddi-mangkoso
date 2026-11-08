@@ -113,6 +113,21 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
                 </h3>
               );
             }
+            if (i === 0) {
+              const dash = t.indexOf("—");
+              return (
+                <p key={i} className="text-lg sm:text-xl leading-relaxed text-slate-700">
+                  {dash > 0 ? (
+                    <>
+                      <strong className="font-bold text-mahad-green-dark">{t.slice(0, dash + 1)}</strong>
+                      {t.slice(dash + 1)}
+                    </>
+                  ) : (
+                    t
+                  )}
+                </p>
+              );
+            }
             return <p key={i}>{t}</p>;
           })}
         </article>
