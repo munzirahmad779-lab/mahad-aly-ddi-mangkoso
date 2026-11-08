@@ -74,8 +74,8 @@ function muatPetaKunjungan(): Promise<Record<string, number>> {
     petaKunjungan = fetch("/api/analytics/stats", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) =>
-        d && d.pages && typeof d.pages === "object"
-          ? (d.pages as Record<string, number>)
+        d && d.stats && d.stats.pages && typeof d.stats.pages === "object"
+          ? (d.stats.pages as Record<string, number>)
           : {}
       )
       .catch(() => ({}));
