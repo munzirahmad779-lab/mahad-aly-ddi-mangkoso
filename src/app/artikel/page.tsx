@@ -25,6 +25,31 @@ export default function AllArticlesPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
+  // Saringan kelompok penulis (ketetapan user 8 Nov 2026): Dosen,
+  // Alumni, Mahasiswa. Kelompok dibaca dari peran penulis (authorRole);
+  // peran yang tidak menyebut dosen/alumni tergolong mahasiswa, sesuai
+  // keadaan data saat ini yang seluruhnya mahasantri.
+  const [kelompok, setKelompok] = useState<"semua" | "dosen" | "alumni" | "mahasiswa">("semua");
+  const kelompokPenulis = (a: Article): "dosen" | "alumni" | "mahasiswa" => {
+    const r = (a.authorRole || "").toLowerCase();
+    if (
+      r.includes("dosen") ||
+      r.includes("masyayikh") ||
+      r.includes("pimpinan") ||
+      r.includes("mudir") ||
+      r.includes("rektor")
+    ) {
+      return "dosen";
+    }
+    if (r.includes("alumni")) return "alumni";
+    return "mahasiswa";
+  };
+  const KELOMPOK_LABEL: Record<string, string> = {
+    semua: "Semua Penulis",
+    dosen: "Dosen",
+    alumni: "Alumni",
+    mahasiswa: "Mahasiswa"
+  };
 
   // Kolom kategori: pakai field kolom bila ada, selain itu turunkan dari slug.
   const kolomKategori = (c: CategoryInfo): KolomArtikel =>
@@ -116,11 +141,12 @@ export default function AllArticlesPage() {
   const filtered = activeArticles
     .filter((a) => {
       const matchCat = selectedCategory === "all" || slugKategoriArtikel(a) === selectedCategory;
+      const matchKelompok = kelompok === "semua" || kelompokPenulis(a) === kelompok;
       const matchSearch =
         a.title.toLowerCase().includes(search.toLowerCase()) ||
         a.author.toLowerCase().includes(search.toLowerCase()) ||
         a.excerpt.toLowerCase().includes(search.toLowerCase());
-      return matchCat && matchSearch;
+      return matchCat && matchSearch && matchKelompok;
     })
     .sort((a, b) => {
       if (sortBy === "popular") {
@@ -205,6 +231,32 @@ export default function AllArticlesPage() {
 
         {/* Controls */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div className="md:col-span-12 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold text-slate-500 mr-1">
+              Kelompok Penulis:
+            </span>
+            {(["semua", "dosen", "alumni", "mahasiswa"] as const).map((k) => {
+              const jumlah =
+                k === "semua"
+                  ? activeArticles.length
+                  : activeArticles.filter((a) => kelompokPenulis(a) === k).length;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setKelompok(k)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${
+                    kelompok === k
+                      ? "bg-emerald-800 text-white shadow"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  {KELOMPOK_LABEL[k]} ({jumlah})
+                </button>
+              );
+            })}
+          </div>
+
           <div className="md:col-span-6 relative">
             <svg className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -255,7 +307,7 @@ export default function AllArticlesPage() {
         ) : (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
             <p className="text-slate-600 font-medium">
-              Tidak ada {activeTab === "semua" ? "tulisan" : KOLOM_LABEL_KOSONG[activeTab]} yang cocok dengan pencarian Anda.
+              Tidak ada {kelompok !== "semua" ? `tulisan ${KELOMPOK_LABEL[kelompok].toLowerCase()}` : activeTab === "semua" ? "tulisan" : KOLOM_LABEL_KOSONG[activeTab]} yang cocok dengan pencarian Anda.
             </p>
             <button
               type="button"
