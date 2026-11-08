@@ -5,8 +5,17 @@ import { usePathname } from "next/navigation";
 
 // Lencana jumlah pembaca untuk publik. Angkanya diambil dari catatan
 // kunjungan server (GET /api/analytics/stats, peta pages[pathname]) yang
-// ditulis pelacak trafik global setiap kali halaman publik dibuka, jadi
-// angka yang dilihat pengunjung sama dengan yang tercatat di server.
+// ditulis pelacak trafik global setiap kali halaman publik dibuka.
+//
+// ATURAN KESESUAIAN (ketetapan user 8 Nov 2026): angka di dalam tulisan
+// HARUS sama dengan angka di kartu tulisannya pada tampilan awal. Karena
+// itu lencana ini membaca potret data yang SAMA dengan kartu, lewat
+// muatPetaKunjungan() yang dimuat sekali per sesi halaman: kartu yang
+// menampilkan 5 akan membuka tulisan yang juga menampilkan 5 pada
+// kunjungan yang sama. Kunjungan yang sedang berjalan ikut terhitung
+// mulai pemuatan halaman berikutnya. Versi lama menunggu 900ms agar
+// klik sendiri ikut terhitung, dan justru membuat angka di dalam selalu
+// lebih besar satu daripada di kartu.
 // Angka ditampilkan diam sebagai angka akhir, tanpa animasi hitung naik
 // (aturan tetap web kampus).
 export default function ViewCount({ className = "" }: { className?: string }) {
@@ -15,22 +24,12 @@ export default function ViewCount({ className = "" }: { className?: string }) {
 
   useEffect(() => {
     let alive = true;
-    // Jeda singkat agar hit kunjungan halaman ini sendiri, yang dikirim
-    // pelacak global lewat sendBeacon, sempat tercatat sebelum dibaca.
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch("/api/analytics/stats", { cache: "no-store" });
-        const data = await res.json();
-        if (!alive) return;
-        const pages = data?.stats?.pages || {};
-        setCount(typeof pages[pathname] === "number" ? pages[pathname] : 0);
-      } catch {
-        if (alive) setCount(null);
-      }
-    }, 900);
+    muatPetaKunjungan().then((pages) => {
+      if (!alive) return;
+      setCount(typeof pages[pathname] === "number" ? pages[pathname] : 0);
+    });
     return () => {
       alive = false;
-      clearTimeout(timer);
     };
   }, [pathname]);
 
