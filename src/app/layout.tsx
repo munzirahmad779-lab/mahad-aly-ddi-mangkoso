@@ -18,7 +18,13 @@ import "./globals.css";
 // pertama sudah memuat nilai dari database — menghilangkan kedipan
 // "teks default → teks admin" saat halaman pertama dibuka.
 // ISR 30 detik: cepat seperti statis, tapi menyegarkan data dari DB.
-export const revalidate = 30;
+// 86400 detik (sebelumnya 30): penampung render saat ini hanya-baca
+// berisi potret saat build (lihat open-next.config.ts), jadi jendela
+// segar dibuat panjang agar worker tidak terus mencoba render ulang
+// di latar. Isi terbaru tetap tampil bagi pengunjung karena
+// ArticleContext menyegarkan data langsung dari Supabase sesudah
+// halaman termuat. Turunkan lagi angka ini bila penampung sudah R2.
+export const revalidate = 86400;
 
 // Ambil nilai site_content dengan pengaman waktu (maks 2 detik) agar
 // lambat/putusnya database tidak pernah menahan render halaman.
@@ -26,7 +32,7 @@ export const revalidate = 30;
 // berikutnya instan; kalau kueri gagal/lambat, pakai data terakhir yang
 // berhasil (stale-while-error) sehingga seed TIDAK PERNAH kosong mendadak.
 let seedCache: { data: Record<string, unknown>; at: number } | null = null;
-const SEED_TTL_MS = 30_000;
+const SEED_TTL_MS = 300_000;
 const SEED_FETCH_TIMEOUT_MS = 6_000;
 
 async function fetchInitialContent(): Promise<Record<string, unknown>> {

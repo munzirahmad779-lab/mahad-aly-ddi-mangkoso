@@ -7,7 +7,7 @@
     "nodejs_compat"
   ],
   "build": {
-    "command": "npm run build:worker"
+    "command": "npm run build:worker && mkdir -p .open-next/assets/cdn-cgi && cp -r .open-next/cache .open-next/assets/cdn-cgi/_next_cache"
   },
   "assets": {
     "directory": ".open-next/assets",
