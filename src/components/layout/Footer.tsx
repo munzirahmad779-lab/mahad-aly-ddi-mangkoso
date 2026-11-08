@@ -177,7 +177,12 @@ export default function Footer() {
 
         {/* Copyright & Tagline Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-emerald-300/70 gap-4 text-center sm:text-left">
-          <p>{copyrightText}</p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <p>{copyrightText}</p>
+            <Link href="/kebijakan-privasi" className="hover:text-mahad-gold transition-colors underline underline-offset-2">
+              Kebijakan Privasi
+            </Link>
+          </div>
           {tagline && (
             <p className="text-mahad-gold-light">
               {tagline}

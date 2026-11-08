@@ -270,6 +270,12 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Google AdSense: kode verifikasi kepemilikan situs dan pemuat iklan untuk akun penayang Ma'had Aly DDI Mangkoso (ca-pub-8103100253301122), dipasang 8 Nov 2026. */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8103100253301122"
+          crossOrigin="anonymous"
+        />
         {/* GA4 dimuat SEKALI lewat komponen <GoogleAnalytics /> (afterInteractive).
             Duplikat di head dihapus — sebelumnya gtag 353 KiB terunduh dua kali
             dan memperlambat LCP seluruh halaman. */}
