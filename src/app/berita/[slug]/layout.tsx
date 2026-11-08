@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { supabaseAnon } from "@/lib/supabase/server";
+import { OG_LOGO_IMAGE } from "@/lib/seo";
 
 const BASE = "https://mahadaly-ddimangkoso.my.id";
 const SITE = "Ma'had Aly DDI Mangkoso";
@@ -35,7 +36,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "article",
       url: `${BASE}/berita/${slug}`,
-      siteName: SITE
+      siteName: SITE,
+      images: [OG_LOGO_IMAGE]
     }
   };
 }

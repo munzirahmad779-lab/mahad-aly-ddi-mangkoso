@@ -4,6 +4,19 @@ import { supabaseAnon } from "@/lib/supabase/server";
 const BASE = "https://mahadaly-ddimangkoso.my.id";
 const SITE = "Ma'had Aly DDI Mangkoso";
 
+// Gambar pratinjau tautan (og:image) untuk SEMUA halaman baca:
+// logo situs, sesuai ketetapan user 9 Nov 2026 (logo saja, bukan foto
+// sampul tulisan), supaya kartu pratinjau WhatsApp selalu berlogo dan
+// tidak tampak seperti tautan phishing. Berkasnya logo 512x512 yang
+// sama dengan favicon/logo situs.
+export const OG_LOGO_URL = `${BASE}/image_067524.png`;
+export const OG_LOGO_IMAGE = {
+  url: OG_LOGO_URL,
+  width: 512,
+  height: 512,
+  alt: SITE
+};
+
 export function stripHtml(s: string | null | undefined, max = 160): string {
   const plain = (s || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   return plain.length > max ? plain.slice(0, max - 1) + "…" : plain;
@@ -87,7 +100,8 @@ export function articleMetadata(
       publishedTime: a.created_at,
       modifiedTime: a.updated_at || a.created_at,
       authors: [a.author_name || "Redaksi"],
-      siteName: SITE
+      siteName: SITE,
+      images: [OG_LOGO_IMAGE]
     }
   };
 }
