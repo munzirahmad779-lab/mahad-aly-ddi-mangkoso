@@ -58,7 +58,16 @@ async function fetchInitialContent(): Promise<Record<string, unknown>> {
           }
           return map;
         }),
-      supabaseAnon.from("articles").select("*").then(r => (r.data as any[]) || []),
+      // Isi artikel (kolom content) SENGAJA tidak diambil untuk seed:
+      // seluruh badan 61 artikel pernah tertanam di HTML setiap halaman
+      // (berkas 1,3 MB) dan membuat Worker Cloudflare kehabisan sumber
+      // daya (galat 1102). Kartu dan daftar hanya butuh ringkasan; isi
+      // lengkap tiba lewat sinkronisasi klien dan halaman detail memuat
+      // isinya sendiri dari basis data.
+      supabaseAnon
+        .from("articles")
+        .select("id, slug, title, excerpt, author_name, author_role, category_id, type, status, thumbnail_url, created_at, views, tags")
+        .then(r => (r.data as any[]) || []),
       supabaseAnon.from("theses").select("*").then(r => mapDbTheses((r.data as any[]) || [])),
       supabaseAnon.from("categories").select("*").then(r => (r.data as any[]) || []),
       supabaseAnon.from("news").select("*").then(r => mapDbNews((r.data as any[]) || [])),

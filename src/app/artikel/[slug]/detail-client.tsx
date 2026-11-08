@@ -4,6 +4,7 @@ import { Fragment, use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
+import { supabase } from "@/lib/supabase/client";
 import ArticleCard from "@/components/articles/ArticleCard";
 import ReadingBeam from "@/components/common/ReadingBeam";
 import ViewCount from "@/components/common/ViewCount";
@@ -209,6 +210,28 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
     }
   }, [article?.slug]);
 
+  // Isi lengkap tidak lagi ikut di data awal halaman (demi meringankan
+  // muatan server); sinkronisasi katalog biasanya mengisinya sesaat
+  // sesudah halaman dimuat. Bila isi dari katalog masih kosong, muat
+  // langsung dari basis data berdasarkan slug agar badan tulisan selalu
+  // tampil utuh.
+  const [isiLokal, setIsiLokal] = useState("");
+  useEffect(() => {
+    if (!article || article.content) return;
+    let batal = false;
+    supabase
+      .from("articles")
+      .select("content")
+      .eq("slug", cleanSlug)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!batal && data?.content) setIsiLokal(data.content as string);
+      });
+    return () => {
+      batal = true;
+    };
+  }, [article?.slug, article?.content, cleanSlug]);
+
   // Katalog sudah terkonfirmasi dari server tapi artikel tetap tidak ada
   // → 404 sungguhan, bukan soft-404 berstatus 200.
   if (!article && isCatalogReady && adminPreviewChecked) {
@@ -352,7 +375,7 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
 
           {/* Isi Teks Lengkap */}
           <div className="text-slate-800 leading-relaxed text-base sm:text-lg space-y-5 font-sans">
-            <IsiArtikel content={article.content} />
+            <IsiArtikel content={article.content || isiLokal} />
           </div>
 
           {/* Tags */}
