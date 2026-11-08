@@ -95,8 +95,26 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
           </div>
         )}
 
-        <article className="bg-white rounded-2xl p-8 sm:p-12 border border-slate-200 shadow-sm space-y-6 text-slate-800 leading-relaxed text-base sm:text-lg whitespace-pre-line">
-          {item.content}
+        <article className="bg-white rounded-2xl p-8 sm:p-12 border border-slate-200 shadow-sm space-y-6 text-slate-800 leading-relaxed text-base sm:text-lg">
+          {(item.content || "").split(/\n\s*\n/).map((block: string, i: number) => {
+            const t = block.trim();
+            if (!t) return null;
+            if (t.startsWith("## ")) {
+              return (
+                <h2 key={i} className="font-serif font-bold text-xl sm:text-2xl text-mahad-green-dark pt-2">
+                  {t.slice(3)}
+                </h2>
+              );
+            }
+            if (t.startsWith("### ")) {
+              return (
+                <h3 key={i} className="font-serif font-bold text-lg sm:text-xl text-mahad-green-dark pt-1">
+                  {t.slice(4)}
+                </h3>
+              );
+            }
+            return <p key={i}>{t}</p>;
+          })}
         </article>
 
         {/* Berkas Lampiran / File Unduhan Resmi (Opsional) */}
