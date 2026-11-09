@@ -7,8 +7,11 @@ import { urutkanPrioritas } from "@/lib/priorities";
 
 export default function LatestNews() {
   const { news, homePriorities } = useArticles();
-  // Prioritas admin tampil lebih dulu; sisanya terbaru dulu.
-  const tampil = urutkanPrioritas(news, homePriorities?.news).slice(0, 2);
+  // Panel Warta & Berita berdiri sendiri, terpisah dari panel Mimbar
+  // (perintah user 10 Nov 2026). Prioritas admin tampil lebih dulu;
+  // sisanya terbaru dulu. Empat kartu supaya dua warta terbaru tidak
+  // tersisih dari panel hanya karena urutan data awal.
+  const tampil = urutkanPrioritas(news, homePriorities?.news).slice(0, 4);
 
   return (
     <section className="py-20 bg-slate-50 border-t border-slate-200">
@@ -18,10 +21,10 @@ export default function LatestNews() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
-              Warta &amp; Pengumuman
+              Warta &amp; Berita
             </span>
             <h2 className="font-serif font-bold text-3xl sm:text-4xl text-slate-900 mt-3">
-              Kabar Pesantren &amp; Halaqah
+              Warta &amp; Berita Ma&apos;had Aly
             </h2>
             <div className="h-1.5 w-16 bg-mahad-gold mt-3 mb-2 rounded-full"></div>
           </div>
@@ -30,7 +33,7 @@ export default function LatestNews() {
             href="/berita"
             className="text-xs sm:text-sm font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1"
           >
-            <span>Lihat Semua Kabar</span>
+            <span>Lihat Semua Warta &amp; Berita</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>

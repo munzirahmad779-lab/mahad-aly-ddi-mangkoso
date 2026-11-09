@@ -69,13 +69,20 @@ async function fetchInitialContent(): Promise<Record<string, unknown>> {
       // daya (galat 1102). Kartu dan daftar hanya butuh ringkasan; isi
       // lengkap tiba lewat sinkronisasi klien dan halaman detail memuat
       // isinya sendiri dari basis data.
+      // URUTAN WAJIB terbaru dulu (perbaikan 10 Nov 2026): tanpa order,
+      // basis data mengembalikan baris sesuai urutan fisiknya dan panel
+      // beranda yang memotong N teratas menampilkan kabar LAMA di
+      // tampilan awal, sementara warta terbaru tersisih (kasus dua warta
+      // IESCO yang dilaporkan tidak tampil pada pagi 10 Nov 2026;
+      // urutan benar baru masuk sesudah sinkronisasi klien berjalan).
       supabaseAnon
         .from("articles")
         .select("id, slug, title, excerpt, author_name, author_role, category_id, type, status, thumbnail_url, created_at, views, tags")
+        .order("created_at", { ascending: false })
         .then(r => (r.data as any[]) || []),
-      supabaseAnon.from("theses").select("*").then(r => mapDbTheses((r.data as any[]) || [])),
+      supabaseAnon.from("theses").select("*").order("created_at", { ascending: false }).then(r => mapDbTheses((r.data as any[]) || [])),
       supabaseAnon.from("categories").select("*").then(r => (r.data as any[]) || []),
-      supabaseAnon.from("news").select("*").then(r => mapDbNews((r.data as any[]) || [])),
+      supabaseAnon.from("news").select("*").order("created_at", { ascending: false }).then(r => mapDbNews((r.data as any[]) || [])),
       supabaseAnon.from("collections").select("*").then(r => mapDbCollections((r.data as any[]) || []))
     ]);
 
@@ -245,6 +252,8 @@ export default async function RootLayout({
         "@id": "https://mahadaly-ddimangkoso.my.id/#organization",
         "name": "Ma'had Aly DDI Mangkoso",
         "alternateName": [
+          "Ma'had Mangkoso",
+          "Mahad Mangkoso",
           "Mahad Aly Mangkoso",
           "Mahad Aly DDI Mangkoso",
           "Ma'had Aly Pendidikan Kader Ulama DDI Mangkoso",
