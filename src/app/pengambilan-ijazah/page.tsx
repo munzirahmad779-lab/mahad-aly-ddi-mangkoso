@@ -4,6 +4,10 @@ export const metadata: Metadata = {
   title: "Pengambilan Ijazah — Ma'had Aly DDI Mangkoso",
   description:
     "Tata cara dan jadwal pengambilan ijazah Ma'had Aly DDI Mangkoso melalui Bagian Akademik.",
+  // Canonical sendiri wajib ada: tanpa ini halaman mewarisi canonical
+  // beranda dari root layout dan dianggap Google sebagai duplikat
+  // beranda (temuan audit 9 Nov 2026).
+  alternates: { canonical: "/pengambilan-ijazah" },
 };
 
 export default function PengambilanIjazahPage() {

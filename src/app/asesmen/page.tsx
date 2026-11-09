@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "Asesmen — Ma'had Aly DDI Mangkoso",
   description:
     "Asesmen dan pemeringkatan Ma'had Aly DDI Mangkoso oleh Majelis Masyayikh, dasar hukum pendirian, dan asesmen seleksi mahasantri baru.",
+  // Canonical sendiri wajib ada: tanpa ini halaman mewarisi canonical
+  // beranda dari root layout dan dianggap Google sebagai duplikat
+  // beranda (temuan audit 9 Nov 2026, pola bug yang sama dengan
+  // /kontak sebelum perbaikan 27 Okt 2026).
+  alternates: { canonical: "/asesmen" },
 };
 
 export default function AsesmenPage() {

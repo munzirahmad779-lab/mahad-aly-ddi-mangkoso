@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   title: "Kebijakan Privasi — Ma'had Aly DDI Mangkoso",
   description:
     "Kebijakan privasi situs resmi Ma'had Aly DDI Mangkoso: data yang dikumpulkan, penggunaan cookie, dan iklan Google AdSense.",
+  // Canonical sendiri wajib ada: tanpa ini halaman mewarisi canonical
+  // beranda dari root layout dan dianggap Google sebagai duplikat
+  // beranda (temuan audit 9 Nov 2026).
+  alternates: { canonical: "/kebijakan-privasi" },
 };
 
 export default function KebijakanPrivasiPage() {

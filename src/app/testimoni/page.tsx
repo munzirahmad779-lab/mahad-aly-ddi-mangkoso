@@ -4,6 +4,10 @@ export const metadata: Metadata = {
   title: "Testimoni — Ma'had Aly DDI Mangkoso",
   description:
     "Testimoni alumni, mahasantri, dan wali mahasantri tentang Ma'had Aly DDI Mangkoso.",
+  // Canonical sendiri wajib ada: tanpa ini halaman mewarisi canonical
+  // beranda dari root layout dan dianggap Google sebagai duplikat
+  // beranda (temuan audit 9 Nov 2026).
+  alternates: { canonical: "/testimoni" },
 };
 
 export default function TestimoniPage() {

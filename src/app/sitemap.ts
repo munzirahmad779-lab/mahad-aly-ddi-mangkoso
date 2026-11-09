@@ -24,8 +24,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/dema`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/kirim-tulisan`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${baseUrl}/kontak`, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${baseUrl}/warta`, changeFrequency: "daily", priority: 0.8 },
     { url: `${baseUrl}/opini`, changeFrequency: "weekly", priority: 0.8 },
+    // Halaman publik yang sebelumnya hilang dari sitemap (temuan audit
+    // 9 Nov 2026): tiga halaman adopsi Parappe 8 Nov (asesmen,
+    // pengambilan-ijazah, testimoni) dan halaman lama (buku, penulis,
+    // tentang, unit-pelaksana, kebijakan-privasi). /warta SENGAJA tidak
+    // dimuat lagi: rutenya hanya redirect 307 ke /berita, dan sitemap
+    // tidak boleh mengiklankan URL yang mengalihkan.
+    { url: `${baseUrl}/asesmen`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${baseUrl}/pengambilan-ijazah`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${baseUrl}/testimoni`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${baseUrl}/buku`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${baseUrl}/penulis`, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${baseUrl}/tentang`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${baseUrl}/unit-pelaksana`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${baseUrl}/kebijakan-privasi`, changeFrequency: "yearly", priority: 0.4 },
   ];
 
   // Ambil artikel dari Supabase. Bila kueri gagal, seksi ini KOSONG —
