@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import Reveal from "@/components/common/Reveal";
 import { urutkanPrioritas } from "@/lib/priorities";
+import { CardViewCount } from "@/components/common/ViewCount";
 
 export default function LatestNews() {
   const { news, homePriorities } = useArticles();
@@ -81,7 +82,10 @@ export default function LatestNews() {
 
               <div className="p-6 sm:p-8 pt-0">
                 <div className="pt-4 mt-6 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-slate-500">Oleh: <strong>{item.author}</strong></span>
+                  <div>
+                    <span className="text-slate-500">Oleh: <strong>{item.author}</strong></span>
+                    <CardViewCount slug={item.slug} basePath="/berita" />
+                  </div>
                   <Link
                     href={`/berita/${item.slug}`}
                     className="font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"

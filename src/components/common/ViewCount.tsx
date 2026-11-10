@@ -59,10 +59,12 @@ export default function ViewCount({ className = "" }: { className?: string }) {
   );
 }
 
-// ── Jumlah dilihat untuk KARTU artikel ────────────────────────────────
+// ── Jumlah dilihat untuk KARTU (artikel dan warta) ────────────────────
 // Perintah user 8 Nov 2026: setiap tampilan awal tulisan (kartu di daftar
 // artikel dan beranda, sebelum diklik) ikut menampilkan sudah berapa kali
-// dilihat. Satu ambilan stats dipakai bersama oleh semua kartu di halaman
+// dilihat. Perintah user 10 Nov 2026: kartu warta memakai tampilan yang
+// sama, membaca peta yang sama untuk jalurnya sendiri (basePath "/berita").
+// Satu ambilan stats dipakai bersama oleh semua kartu di halaman
 // (janji dimuat sekali di tingkat modul), membaca peta pages yang sama
 // dengan lencana halaman detail. Angka selalu tampil di setiap kartu
 // begitu data termuat, termasuk 0 untuk tulisan yang belum tercatat
@@ -84,20 +86,20 @@ function muatPetaKunjungan(): Promise<Record<string, number>> {
   return petaKunjungan;
 }
 
-export function CardViewCount({ slug }: { slug: string }) {
+export function CardViewCount({ slug, basePath = "/artikel" }: { slug: string; basePath?: string }) {
   const [jumlah, setJumlah] = useState<number | null>(null);
 
   useEffect(() => {
     let hidup = true;
     muatPetaKunjungan().then((pages) => {
       if (!hidup) return;
-      const n = pages[`/artikel/${slug}`];
+      const n = pages[`${basePath}/${slug}`];
       setJumlah(typeof n === "number" ? n : 0);
     });
     return () => {
       hidup = false;
     };
-  }, [slug]);
+  }, [slug, basePath]);
 
   if (jumlah === null) return null;
 

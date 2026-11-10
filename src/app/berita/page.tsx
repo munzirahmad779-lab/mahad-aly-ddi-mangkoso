@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
+import { CardViewCount } from "@/components/common/ViewCount";
 
 export default function BeritaPage() {
   const { news, pageTexts } = useArticles();
@@ -85,7 +86,10 @@ export default function BeritaPage() {
 
               <div className="p-6 pt-0 mt-2">
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                  <span>Oleh: <strong>{item.author}</strong></span>
+                  <div>
+                    <span>Oleh: <strong>{item.author}</strong></span>
+                    <CardViewCount slug={item.slug} basePath="/berita" />
+                  </div>
                   <Link
                     href={`/berita/${item.slug}`}
                     className="font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 group-hover:translate-x-1 transition-transform"
