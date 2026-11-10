@@ -453,7 +453,7 @@ export function ArticleProvider({
   useEffect(() => {
     // 0. Cache Invalidation: Hapus semua cache browser lama agar tidak pernah memunculkan data usang (anti-flicker)
     try {
-      const CURRENT_CACHE_VERSION = "2026-10-20-v6-sheets-cloud-sync";
+      const CURRENT_CACHE_VERSION = "2026-11-10-v7-news-mock-purge";
       const storedVersion = localStorage.getItem("mahad_cache_version");
       if (storedVersion !== CURRENT_CACHE_VERSION) {
         [
@@ -462,6 +462,7 @@ export function ArticleProvider({
           "mahad_hero_settings",
           "mahad_home_sections",
           "mahad_articles",
+          "mahad_news",
           "mahad_categories",
           "mahad_theses",
           "mahad_about_page_content",

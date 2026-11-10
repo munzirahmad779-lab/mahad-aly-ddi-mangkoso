@@ -1188,37 +1188,13 @@ export const INITIAL_THESES: Thesis[] = [
   }
 ];
 
-export const INITIAL_NEWS: NewsItem[] = [
-  {
-    id: "news-1",
-    slug: "seminar-nasional-fiqh-muasarah-ai-2026",
-    title: "Ma'had Aly DDI Mangkoso Gelar Simposium Nasional Fiqh Mu'asarah dan Kecerdasan Buatan",
-    date: "06 Oktober 2026",
-    excerpt: "Menghadirkan pakar hukum Islam Nusantara dan praktisi teknologi untuk merumuskan fatwa etika digital berbasis turats.",
-    content: `Ma'had Aly DDI Mangkoso menyelenggarakan Simposium Nasional Fiqh Mu'asarah dengan tajuk "Mendudukkan Nalar Ushul Fikih di Era Disrupsi Artificial Intelligence". 
-
-Acara dibuka langsung oleh Mudir Ma'had Aly, AGH. Prof. Dr. M. Faried Wadjedy, MA, dan dihadiri oleh ratusan mahasantri serta delegasi Ma'had Aly se-Indonesia. Hasil rumusan forum ini akan diterbitkan dalam bentuk buku rekomendasi fatwa digital.`,
-    category: "Berita",
-    author: "Humas Ma'had Aly",
-    imageUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "news-2",
-    slug: "jadwal-sidang-munaqasyah-skripsi-marhalah-ula-2026",
-    title: "Pengumuman: Jadwal Sidang Munaqasyah Risalah Skripsi Semester Genap 2026",
-    date: "01 Oktober 2026",
-    excerpt: "Informasi jadwal pendaftaran, verifikasi berkas, dan dewan penguji munaqasyah bagi mahasantri tingkat akhir.",
-    content: `Diberitahukan kepada seluruh mahasantri tingkat akhir (Semester VIII) bahwa pendaftaran Sidang Munaqasyah Risalah Skripsi telah dibuka hingga tanggal 25 Oktober 2026. 
-
-Setiap peserta wajib mengunggah naskah lengkap skripsi berformat PDF yang telah disetujui Pembimbing 1 dan 2 ke link repository Google Drive resmi Ma'had Aly.`,
-    category: "Pengumuman",
-    author: "Biro Akademik",
-    imageUrl: "",
-    attachmentUrl: "/docs/panduan-munaqasyah-2026.pdf",
-    attachmentName: "Panduan_Munaqasyah_Skripsi_2026.pdf",
-    attachmentSize: "1.8 MB"
-  }
-];
+// Warta publik TIDAK memakai data contoh. Fallback ini sengaja kosong:
+// dua item contoh lama di sini (Simposium Fiqh Mu'asarah dan pengumuman
+// Munaqasyah) sempat tampil sekejap di halaman publik setiap kali seed
+// server belum tiba, bahkan sesudah baris aslinya dihapus dari basis data
+// (dilaporkan user 10 Nov 2026). Berita hanya boleh datang dari basis
+// data; sebelum data asli tiba, panel warta tampil kosong.
+export const INITIAL_NEWS: NewsItem[] = [];
 
 export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
   logoUrl: "/image_067524.png",
