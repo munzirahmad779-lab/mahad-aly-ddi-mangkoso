@@ -36,7 +36,7 @@ export default function KebijakanPrivasiPage() {
               Pengelola Situs
             </h2>
             <p>
-              Situs mahadaly-ddimangkoso.my.id adalah situs resmi Ma&apos;had Aly
+              Situs mahadaly-ddimangkoso.ac.id adalah situs resmi Ma&apos;had Aly
               DDI Mangkoso, Mangkoso, Kabupaten Barru, Sulawesi Selatan. Kebijakan
               ini menjelaskan data apa saja yang diterima saat Anda mengunjungi
               situs ini dan bagaimana data itu digunakan.
@@ -102,7 +102,7 @@ export default function KebijakanPrivasiPage() {
             <p>
               Sebagian halaman di situs ini memuat tautan ke situs lain, misalnya
               kanal media sosial resmi dan layanan Google. Kebijakan privasi ini
-              hanya berlaku untuk situs mahadaly-ddimangkoso.my.id; situs lain
+              hanya berlaku untuk situs mahadaly-ddimangkoso.ac.id; situs lain
               mempunyai kebijakannya sendiri.
             </p>
           </section>

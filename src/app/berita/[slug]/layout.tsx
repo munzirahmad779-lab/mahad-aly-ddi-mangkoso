@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { supabaseAnon } from "@/lib/supabase/server";
 import { OG_LOGO_IMAGE } from "@/lib/seo";
 
-const BASE = "https://mahadaly-ddimangkoso.my.id";
+const BASE = "https://mahadaly-ddimangkoso.ac.id";
 const SITE = "Ma'had Aly DDI Mangkoso";
 
 interface Props {

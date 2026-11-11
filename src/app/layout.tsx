@@ -166,7 +166,7 @@ const scheherazade = Scheherazade_New({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://mahadaly-ddimangkoso.my.id"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://mahadaly-ddimangkoso.ac.id"),
   title: {
     default: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
     template: "%s | Ma'had Aly DDI Mangkoso"
@@ -189,14 +189,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "id_ID",
-    url: "https://mahadaly-ddimangkoso.my.id",
+    url: "https://mahadaly-ddimangkoso.ac.id",
     siteName: "Ma'had Aly DDI Mangkoso",
     title: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
     description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso (Mahad Aly Mangkoso). Membina kader ulama berakar pada sanad kitab klasik dan berwawasan wasathiyyah.",
     images: [
       {
         url: "/og-logo.jpg",
-        secureUrl: "https://mahadaly-ddimangkoso.my.id/og-logo.jpg",
+        secureUrl: "https://mahadaly-ddimangkoso.ac.id/og-logo.jpg",
         width: 1200,
         height: 630,
         alt: "Logo Ma'had Aly DDI Mangkoso",
@@ -249,7 +249,7 @@ export default async function RootLayout({
     "@graph": [
       {
         "@type": "EducationalOrganization",
-        "@id": "https://mahadaly-ddimangkoso.my.id/#organization",
+        "@id": "https://mahadaly-ddimangkoso.ac.id/#organization",
         "name": "Ma'had Aly DDI Mangkoso",
         "alternateName": [
           "Ma'had Mangkoso",
@@ -259,8 +259,8 @@ export default async function RootLayout({
           "Ma'had Aly Pendidikan Kader Ulama DDI Mangkoso",
           "Pondok Pesantren DDI Mangkoso Mahad Aly"
         ],
-        "url": "https://mahadaly-ddimangkoso.my.id",
-        "logo": "https://mahadaly-ddimangkoso.my.id/image_067524.png",
+        "url": "https://mahadaly-ddimangkoso.ac.id",
+        "logo": "https://mahadaly-ddimangkoso.ac.id/image_067524.png",
         "sameAs": [
           "https://www.instagram.com/mahadalyddimangkoso"
         ],
@@ -275,12 +275,12 @@ export default async function RootLayout({
       },
       {
         "@type": "WebSite",
-        "@id": "https://mahadaly-ddimangkoso.my.id/#website",
-        "url": "https://mahadaly-ddimangkoso.my.id",
+        "@id": "https://mahadaly-ddimangkoso.ac.id/#website",
+        "url": "https://mahadaly-ddimangkoso.ac.id",
         "name": "Ma'had Aly DDI Mangkoso",
         "alternateName": "Mahad Aly Mangkoso",
         "publisher": {
-          "@id": "https://mahadaly-ddimangkoso.my.id/#organization"
+          "@id": "https://mahadaly-ddimangkoso.ac.id/#organization"
         },
         "inLanguage": "id-ID"
       }
@@ -308,7 +308,7 @@ export default async function RootLayout({
         {/* Penguat pratinjau tautan untuk perayap lama (termasuk
             WhatsApp): penunjuk gambar pratinjau versi klasik, pasangan
             og:image berkas og-logo.jpg pada metadata. */}
-        <link rel="image_src" href="https://mahadaly-ddimangkoso.my.id/og-logo.jpg" />
+        <link rel="image_src" href="https://mahadaly-ddimangkoso.ac.id/og-logo.jpg" />
         <ArticleProvider initialContent={initialContent}>
           <SmoothScroll />
           <GoogleAnalytics />

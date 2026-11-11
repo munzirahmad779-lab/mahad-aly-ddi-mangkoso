@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { supabaseAnon } from "@/lib/supabase/server";
 
-const BASE = "https://mahadaly-ddimangkoso.my.id";
+const BASE = "https://mahadaly-ddimangkoso.ac.id";
 const SITE = "Ma'had Aly DDI Mangkoso";
 
 // Gambar pratinjau tautan (og:image) untuk SEMUA halaman baca:

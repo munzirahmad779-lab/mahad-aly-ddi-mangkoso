@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { supabaseAnon } from "@/lib/supabase/server";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://mahadaly-ddimangkoso.my.id";
+  const baseUrl = "https://mahadaly-ddimangkoso.ac.id";
 
   // Halaman statis SENGAJA tanpa lastModified: dulu diisi new Date()
   // sehingga semua URL mengaku "baru saja diubah" setiap sitemap dibuka —

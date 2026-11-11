@@ -287,11 +287,11 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
     author: { "@type": "Person", name: article.author },
     datePublished: article.date,
     inLanguage: "id",
-    mainEntityOfPage: `https://mahadaly-ddimangkoso.my.id/artikel/${article.slug}`,
+    mainEntityOfPage: `https://mahadaly-ddimangkoso.ac.id/artikel/${article.slug}`,
     publisher: {
       "@type": "EducationalOrganization",
       name: "Ma'had Aly DDI Mangkoso",
-      url: "https://mahadaly-ddimangkoso.my.id"
+      url: "https://mahadaly-ddimangkoso.ac.id"
     }
   };
 

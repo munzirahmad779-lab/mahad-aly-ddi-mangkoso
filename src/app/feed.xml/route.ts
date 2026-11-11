@@ -12,7 +12,7 @@ function escapeXml(s: string): string {
 }
 
 export async function GET(request: Request) {
-  const baseUrl = "https://mahadaly-ddimangkoso.my.id";
+  const baseUrl = "https://mahadaly-ddimangkoso.ac.id";
   const siteName = "Ma'had Aly DDI Mangkoso";
 
   let items = "";
