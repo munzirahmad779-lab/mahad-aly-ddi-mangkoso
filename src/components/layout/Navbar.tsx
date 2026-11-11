@@ -283,30 +283,28 @@ export default function Navbar() {
                       if (dipaksaTutup === link.id) setDipaksaTutup(null);
                     }}
                   >
-                    <Link
-                      href={link.url}
-                      onClick={closeMenu}
-                      className={`pl-1.5 xl:pl-2.5 pr-0.5 py-1.5 rounded-l-lg transition-colors whitespace-nowrap ${
-                        isLinkActive(link.url) || link.children?.some((c) => isLinkActive(c.url)) || isDropdownOpen
-                          ? "text-mahad-gold font-bold bg-white/10 border-y border-l border-mahad-gold/40"
-                          : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
-                      }`}
-                    >
-                      {link.label}
-                    </Link>
+                    {/* SATU tombol utuh untuk kata menu + panahnya (ketetapan
+                        user 11 Nov 2026). Dulu keduanya dua tombol terpisah:
+                        labelnya tautan, panahnya tombol sendiri, sehingga
+                        yang tertekan dan terpilih bisa dua sekaligus dan
+                        menekannya bersamaan membuat dropdown macet. Halaman
+                        induk tetap terjangkau lewat item pertama dropdown,
+                        "Halaman Utama ...". */}
                     <button
                       type="button"
                       aria-label={`Buka submenu ${link.label}`}
+                      aria-expanded={isDropdownOpen}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleDesktopDropdown(link.id);
                       }}
-                      className={`py-1.5 pl-0 pr-1.5 rounded-r-lg transition-colors cursor-pointer ${
+                      className={`flex items-center gap-1 pl-1.5 xl:pl-2.5 pr-1.5 py-1.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
                         isLinkActive(link.url) || link.children?.some((c) => isLinkActive(c.url)) || isDropdownOpen
-                          ? "text-mahad-gold bg-white/10 border-y border-r border-mahad-gold/40"
-                          : "text-emerald-200 hover:text-mahad-gold hover:bg-white/5"
+                          ? "text-mahad-gold font-bold bg-white/10 border border-mahad-gold/40"
+                          : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5 border border-transparent"
                       }`}
                     >
+                      <span>{link.label}</span>
                       <svg
                         className={kelasPanahDesktop(link.id, isDropdownOpen)}
                         fill="none"
@@ -693,36 +691,34 @@ export default function Navbar() {
               const isExpanded = activeDropdown === link.id;
               return (
                 <div key={link.id} className="rounded-lg overflow-hidden bg-white/5 border border-emerald-900/60">
-                  <div className="flex items-center justify-between">
-                    <Link
-                      href={link.url}
-                      onClick={closeMenu}
-                      className={`flex-1 py-2.5 px-3 font-semibold transition ${
-                        isLinkActive(link.url)
-                          ? "text-mahad-gold font-bold"
-                          : "text-emerald-100 hover:text-mahad-gold"
+                  {/* Satu tombol utuh juga di HP (ketetapan user 11 Nov
+                      2026, sama seperti desktop): kata menu dan panahnya
+                      satu tombol yang membuka akordeon; halaman induk
+                      tetap terjangkau lewat "Halaman Utama ..." di dalam
+                      akordeonnya. */}
+                  <button
+                    type="button"
+                    aria-label={`Buka submenu ${link.label}`}
+                    aria-expanded={isExpanded}
+                    onClick={() => toggleDropdown(link.id)}
+                    className={`w-full flex items-center justify-between py-2.5 px-3 font-semibold transition cursor-pointer ${
+                      isLinkActive(link.url) || link.children?.some((c) => isLinkActive(c.url))
+                        ? "text-mahad-gold font-bold"
+                        : "text-emerald-100 hover:text-mahad-gold"
+                    }`}
+                  >
+                    <span>{link.label}</span>
+                    <svg
+                      className={`w-4 h-4 transform transition-transform duration-200 ${
+                        isExpanded ? "rotate-180 text-mahad-gold" : ""
                       }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      {link.label}
-                    </Link>
-                    <button
-                      type="button"
-                      aria-label={`Buka submenu ${link.label}`}
-                      onClick={() => toggleDropdown(link.id)}
-                      className="p-2.5 text-emerald-300 hover:text-mahad-gold transition"
-                    >
-                      <svg
-                        className={`w-4 h-4 transform transition-transform duration-200 ${
-                          isExpanded ? "rotate-180 text-mahad-gold" : ""
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                  </div>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
                   {isExpanded && (
                     <div className="pl-6 pr-3 py-2 space-y-1 bg-black/30 border-t border-emerald-900/80 text-xs">
                       <Link
