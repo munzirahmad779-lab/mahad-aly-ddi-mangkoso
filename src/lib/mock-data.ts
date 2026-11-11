@@ -136,7 +136,7 @@ export const INITIAL_MAINTENANCE_CONFIG: MaintenanceConfig = {
   noticeNote: "Insya Allah, portal resmi ini akan segera diluncurkan secara penuh untuk masyarakat luas. Bagi mahasantri, alumni, dan calon pendaftar yang membutuhkan informasi resmi, silakan menghubungi narahubung sekretariat di bawah ini.",
   whatsappNumber: "+62 812-4234-xxxx",
   whatsappLabel: "Hubungi WhatsApp Sekretariat",
-  email: "redaksi@mahadaly-ddimangkoso.my.id",
+  email: "redaksi@mahadaly-ddimangkoso.ac.id",
   address: "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
   pillars: [
     { value: "M.1", label: "Jenjang Marhalah Ula" },
@@ -1267,7 +1267,7 @@ export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
     isActive: true,
     hijriDateText: "Jum'at, 27 Rabi'ul Awwal 1448 H / 9 Oktober 2026",
     phone: "(0421) 510-123 • WA: 0812-4234-xxxx",
-    email: "redaksi@mahadaly-ddimangkoso.my.id",
+    email: "redaksi@mahadaly-ddimangkoso.ac.id",
     announcementText: "Penerimaan Mahasantri Baru (PMB) Marhalah Ula (M.1) Dibuka",
     quickLinkText: "E-Library Turats",
     quickLinkUrl: "/elibrary"

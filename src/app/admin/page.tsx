@@ -1570,7 +1570,7 @@ export default function AdminPage() {
         noticeNote: "Insya Allah, portal resmi ini akan segera diluncurkan secara penuh untuk masyarakat luas. Bagi mahasantri, alumni, dan calon pendaftar yang membutuhkan informasi resmi, silakan menghubungi narahubung sekretariat di bawah ini.",
         whatsappNumber: maintenanceForm.whatsappNumber || "+62 812-4234-xxxx",
         whatsappLabel: "Hubungi WhatsApp Sekretariat",
-        email: maintenanceForm.email || "redaksi@mahadaly-ddimangkoso.my.id",
+        email: maintenanceForm.email || "redaksi@mahadaly-ddimangkoso.ac.id",
         address: maintenanceForm.address || "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
         pillars: [
           { value: "M.1", label: "Jenjang Marhalah Ula" },
@@ -1591,7 +1591,7 @@ export default function AdminPage() {
         noticeNote: "Layanan website akan segera kembali normal setelah proses pemeliharaan selesai. Untuk keperluan mendesak atau konfirmasi akademik, silakan hubungi kontak sekretariat.",
         whatsappNumber: maintenanceForm.whatsappNumber || "+62 812-4234-xxxx",
         whatsappLabel: "Hubungi Hotline Sekretariat",
-        email: maintenanceForm.email || "redaksi@mahadaly-ddimangkoso.my.id",
+        email: maintenanceForm.email || "redaksi@mahadaly-ddimangkoso.ac.id",
         address: maintenanceForm.address || "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
         pillars: [
           { value: "Server", label: "Optimalisasi Sistem" },
@@ -1612,7 +1612,7 @@ export default function AdminPage() {
         noticeNote: "Seluruh fitur akan dapat diakses kembali dalam waktu dekat. Terima kasih atas pengertian dan kesabaran Anda.",
         whatsappNumber: maintenanceForm.whatsappNumber || "+62 812-4234-xxxx",
         whatsappLabel: "Tanya PMB via WhatsApp",
-        email: maintenanceForm.email || "redaksi@mahadaly-ddimangkoso.my.id",
+        email: maintenanceForm.email || "redaksi@mahadaly-ddimangkoso.ac.id",
         address: maintenanceForm.address || "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
         pillars: [
           { value: "PMB", label: "Beasiswa 100%" },
@@ -10846,7 +10846,7 @@ export default function AdminPage() {
                                 topBar: { ...headerForm.topBar, email: e.target.value }
                               })
                             }
-                            placeholder="redaksi@mahadaly-ddimangkoso.my.id"
+                            placeholder="redaksi@mahadaly-ddimangkoso.ac.id"
                             className="w-full p-2 bg-white border rounded-lg text-xs font-mono"
                           />
                         </div>
@@ -13359,7 +13359,7 @@ export default function AdminPage() {
                         onChange={(e) =>
                           setMaintenanceForm({ ...maintenanceForm, email: e.target.value })
                         }
-                        placeholder="redaksi@mahadaly-ddimangkoso.my.id"
+                        placeholder="redaksi@mahadaly-ddimangkoso.ac.id"
                         className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-mono"
                         required
                       />

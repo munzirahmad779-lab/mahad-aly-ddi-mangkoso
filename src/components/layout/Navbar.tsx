@@ -116,7 +116,7 @@ export default function Navbar() {
   const topBarConfig = navbarSettings?.topBar ?? INITIAL_NAVBAR_SETTINGS.topBar;
   const isTopBarActive = topBarConfig?.isActive !== false;
   const hotlinePhone = topBarConfig?.phone || "(0421) 510-123 • WA: 0812-4234-xxxx";
-  const hotlineEmail = topBarConfig?.email || "redaksi@mahadaly-ddimangkoso.my.id";
+  const hotlineEmail = topBarConfig?.email || "redaksi@mahadaly-ddimangkoso.ac.id";
   const quickLinkText = topBarConfig?.quickLinkText || "E-Library Turats";
   const quickLinkUrl = topBarConfig?.quickLinkUrl || "/elibrary";
 

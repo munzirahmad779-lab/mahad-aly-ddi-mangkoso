@@ -166,7 +166,7 @@ export default function OfficialComingSoon() {
         <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-emerald-300/80">
           <span>📍 {cfg.address || settings.address || "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752"}</span>
           <span>•</span>
-          <span>✉️ {cfg.email || settings.emailSubmission || "redaksi@mahadaly-ddimangkoso.my.id"}</span>
+          <span>✉️ {cfg.email || settings.emailSubmission || "redaksi@mahadaly-ddimangkoso.ac.id"}</span>
           <span>•</span>
           <a
             href="https://www.instagram.com/mahadalyddimangkoso"
