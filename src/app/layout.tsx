@@ -77,7 +77,7 @@ async function fetchInitialContent(): Promise<Record<string, unknown>> {
       // urutan benar baru masuk sesudah sinkronisasi klien berjalan).
       supabaseAnon
         .from("articles")
-        .select("id, slug, title, excerpt, author_name, author_role, category_id, type, status, thumbnail_url, created_at, views, tags")
+        .select("id, slug, title, excerpt, author_name, author_role, category_id, status, thumbnail_url, created_at, views, tags")
         .order("created_at", { ascending: false })
         .then(r => (r.data as any[]) || []),
       supabaseAnon.from("theses").select("*").order("created_at", { ascending: false }).then(r => mapDbTheses((r.data as any[]) || [])),
