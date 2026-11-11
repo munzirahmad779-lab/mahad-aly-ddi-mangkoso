@@ -6,8 +6,23 @@ interface ArticleCardProps {
   article: Article;
 }
 
+// Kutipan kartu dibersihkan dari sisa format naskah sumber: tanda petik
+// pembungkus dan kata judul subbab yang ikut terambil sebagai kutipan
+// (kasus kartu artikel 65 yang kutipannya hanya "'A. Pendahuluan'",
+// dilaporkan user 11 Nov 2026). Kutipan yang sesudah dibersihkan terlalu
+// pendek tidak ditampilkan sama sekali.
+function bersihkanKutipan(teks: string): string {
+  let t = (teks || "").trim();
+  t = t.replace(/^['"“”‘’\s]+/, "").replace(/['"“”‘’\s]+$/, "").trim();
+  if (/^([A-Z]\.\s*)?(pendahuluan)$/i.test(t) || /^\d+\.$/.test(t)) return "";
+  const tanpaJudul = t.replace(/^([A-Z]\.\s*)?(pendahuluan)\s+/i, "");
+  if (tanpaJudul.length >= 40) t = tanpaJudul;
+  return t.length >= 40 ? t : "";
+}
+
 export default function ArticleCard({ article }: ArticleCardProps) {
   const isAnregurutta = article.category === "karya-anregurutta";
+  const kutipan = bersihkanKutipan(article.excerpt);
 
   return (
     <article
@@ -91,9 +106,11 @@ export default function ArticleCard({ article }: ArticleCardProps) {
           </h3>
 
           {/* Ringkasan Abstrak */}
-          <p className="text-slate-600 text-sm leading-relaxed mb-4 line-clamp-3">
-            {article.excerpt}
-          </p>
+          {kutipan && (
+            <p className="text-slate-600 text-sm leading-relaxed mb-4 line-clamp-3">
+              {kutipan}
+            </p>
+          )}
         </div>
       </div>
 

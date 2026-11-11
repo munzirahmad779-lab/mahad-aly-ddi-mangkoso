@@ -17,6 +17,10 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [desktopDropdown, setDesktopDropdown] = useState<string | null>(null);
+  // Penahan hover sesudah panah diklik untuk menutup: tanpa ini dropdown
+  // tidak pernah tertutup selama kursor masih di atas menu, karena
+  // group-hover terus memaksanya tampil (bug panah Informasi, 11 Nov 2026).
+  const [dipaksaTutup, setDipaksaTutup] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Header mengecil saat scroll (pilihan user 2 Nov 2026): begitu halaman
@@ -41,6 +45,7 @@ export default function Navbar() {
     setIsOpen(false);
     setActiveDropdown(null);
     setDesktopDropdown(null);
+    setDipaksaTutup(null);
   };
 
   const toggleDropdown = (id: string) => {
@@ -48,8 +53,30 @@ export default function Navbar() {
   };
 
   const toggleDesktopDropdown = (id: string) => {
-    setDesktopDropdown((prev) => (prev === id ? null : id));
+    if (desktopDropdown === id) {
+      setDesktopDropdown(null);
+      setDipaksaTutup(id);
+    } else {
+      setDesktopDropdown(id);
+      setDipaksaTutup(null);
+    }
   };
+
+  // Kelas tampil dropdown desktop: bila baru ditutup lewat klik panah,
+  // hover tidak boleh membukanya lagi sampai kursor keluar dari menu.
+  const kelasDropdownDesktop = (id: string, terbuka: boolean) =>
+    dipaksaTutup === id
+      ? terbuka
+        ? "block"
+        : "hidden"
+      : terbuka
+        ? "block"
+        : "hidden group-hover:block";
+
+  const kelasPanahDesktop = (id: string, terbuka: boolean) =>
+    `w-3.5 h-3.5 transition-transform duration-200 ${
+      terbuka ? "rotate-180" : dipaksaTutup === id ? "" : "group-hover:rotate-180"
+    }`;
 
   // Close desktop dropdowns when clicking outside
   useEffect(() => {
@@ -249,12 +276,18 @@ export default function Navbar() {
               if (hasChildren) {
                 const isDropdownOpen = desktopDropdown === link.id;
                 return (
-                  <div key={link.id} className="relative group shrink-0 flex items-center">
+                  <div
+                    key={link.id}
+                    className="relative group shrink-0 flex items-center"
+                    onMouseLeave={() => {
+                      if (dipaksaTutup === link.id) setDipaksaTutup(null);
+                    }}
+                  >
                     <Link
                       href={link.url}
                       onClick={closeMenu}
                       className={`pl-1.5 xl:pl-2.5 pr-0.5 py-1.5 rounded-l-lg transition-colors whitespace-nowrap ${
-                        isLinkActive(link.url) || link.children?.some((c) => isLinkActive(c.url))
+                        isLinkActive(link.url) || link.children?.some((c) => isLinkActive(c.url)) || isDropdownOpen
                           ? "text-mahad-gold font-bold bg-white/10 border-y border-l border-mahad-gold/40"
                           : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
                       }`}
@@ -275,9 +308,7 @@ export default function Navbar() {
                       }`}
                     >
                       <svg
-                        className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                          isDropdownOpen ? "rotate-180" : "group-hover:rotate-180"
-                        }`}
+                        className={kelasPanahDesktop(link.id, isDropdownOpen)}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -286,9 +317,10 @@ export default function Navbar() {
                       </svg>
                     </button>
                     <div
-                      className={`absolute left-0 top-full mt-1.5 ${
-                        isDropdownOpen ? "block" : "hidden group-hover:block"
-                      } w-60 bg-[#064e3b] border border-emerald-700/80 rounded-xl shadow-2xl py-2 z-[70] backdrop-blur-md animate-fadeIn`}
+                      className={`absolute left-0 top-full mt-1.5 ${kelasDropdownDesktop(
+                        link.id,
+                        isDropdownOpen
+                      )} w-60 bg-[#064e3b] border border-emerald-700/80 rounded-xl shadow-2xl py-2 z-[70] backdrop-blur-md animate-fadeIn`}
                     >
                       {/* Parent Link Direct Shortcut inside Dropdown */}
                       <Link
@@ -328,7 +360,13 @@ export default function Navbar() {
               if (isKajianMenu) {
                 const isKajianOpen = desktopDropdown === "kajian";
                 return (
-                  <div key={link.id} className="relative group shrink-0">
+                  <div
+                    key={link.id}
+                    className="relative group shrink-0"
+                    onMouseLeave={() => {
+                      if (dipaksaTutup === "kajian") setDipaksaTutup(null);
+                    }}
+                  >
                     <button
                       type="button"
                       onClick={(e) => {
@@ -343,9 +381,7 @@ export default function Navbar() {
                     >
                       <span>{link.label}</span>
                       <svg
-                        className={`w-3.5 h-3.5 transition-transform ${
-                          isKajianOpen ? "rotate-180" : "group-hover:rotate-180"
-                        }`}
+                        className={kelasPanahDesktop("kajian", isKajianOpen)}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -354,9 +390,10 @@ export default function Navbar() {
                       </svg>
                     </button>
                     <div
-                      className={`absolute left-0 top-full mt-1.5 ${
-                        isKajianOpen ? "block" : "hidden group-hover:block"
-                      } w-72 bg-[#064e3b] border border-emerald-700/80 rounded-xl shadow-2xl py-2 z-[70] max-h-96 overflow-y-auto divide-y divide-emerald-800/60 backdrop-blur-md animate-fadeIn`}
+                      className={`absolute left-0 top-full mt-1.5 ${kelasDropdownDesktop(
+                        "kajian",
+                        isKajianOpen
+                      )} w-72 bg-[#064e3b] border border-emerald-700/80 rounded-xl shadow-2xl py-2 z-[70] max-h-96 overflow-y-auto divide-y divide-emerald-800/60 backdrop-blur-md animate-fadeIn`}
                     >
                       <div className="py-1">
                         <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold flex items-center justify-between">
@@ -428,7 +465,12 @@ export default function Navbar() {
 
             {/* 4. Sleek "Lainnya ▾" Dropdown (Only appears if active links exceed 8!) */}
             {hasOverflow && (
-              <div className="relative group shrink-0">
+              <div
+                className="relative group shrink-0"
+                onMouseLeave={() => {
+                  if (dipaksaTutup === "overflow") setDipaksaTutup(null);
+                }}
+              >
                 <button
                   type="button"
                   onClick={(e) => {
@@ -446,9 +488,7 @@ export default function Navbar() {
                     +{overflowLinks.length}
                   </span>
                   <svg
-                    className={`w-3.5 h-3.5 transition-transform ${
-                      desktopDropdown === "overflow" ? "rotate-180" : "group-hover:rotate-180"
-                    }`}
+                    className={kelasPanahDesktop("overflow", desktopDropdown === "overflow")}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -458,9 +498,10 @@ export default function Navbar() {
                 </button>
 
                 <div
-                  className={`absolute right-0 top-full mt-1.5 ${
-                    desktopDropdown === "overflow" ? "block" : "hidden group-hover:block"
-                  } w-64 bg-[#064e3b] border border-emerald-700/80 rounded-2xl shadow-2xl py-2 z-[70] backdrop-blur-md animate-fadeIn`}
+                  className={`absolute right-0 top-full mt-1.5 ${kelasDropdownDesktop(
+                    "overflow",
+                    desktopDropdown === "overflow"
+                  )} w-64 bg-[#064e3b] border border-emerald-700/80 rounded-2xl shadow-2xl py-2 z-[70] backdrop-blur-md animate-fadeIn`}
                 >
                   <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold border-b border-emerald-800/80 mb-1">
                     Menu Tambahan

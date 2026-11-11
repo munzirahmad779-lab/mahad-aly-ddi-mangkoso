@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
@@ -25,6 +25,31 @@ export default function AllArticlesPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
+  // Peta jumlah dilihat dari catatan kunjungan server, sumber yang sama
+  // dengan angka "Dilihat X kali" di kartu. Urutan "Paling Populer" wajib
+  // membaca peta ini: kolom views di tabel artikel hampir semuanya 0,
+  // jadi mengurutkan berdasar kolom itu tidak mengubah urutan apa pun
+  // (bug yang dilaporkan user 11 Nov 2026).
+  const [petaPopuler, setPetaPopuler] = useState<Record<string, number>>({});
+  useEffect(() => {
+    let hidup = true;
+    fetch("/api/analytics/stats", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!hidup) return;
+        if (d && d.stats && d.stats.pages && typeof d.stats.pages === "object") {
+          setPetaPopuler(d.stats.pages as Record<string, number>);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      hidup = false;
+    };
+  }, []);
+  const jumlahDilihat = (a: Article): number => {
+    const dariServer = petaPopuler[`/artikel/${a.slug}`];
+    return typeof dariServer === "number" ? dariServer : a.views || 0;
+  };
   // Saringan kelompok penulis (ketetapan user 8 Nov 2026): Dosen,
   // Alumni, Mahasiswa. Kelompok dibaca dari peran penulis (authorRole);
   // peran yang tidak menyebut dosen/alumni tergolong mahasiswa, sesuai
@@ -142,7 +167,7 @@ export default function AllArticlesPage() {
     })
     .sort((a, b) => {
       if (sortBy === "popular") {
-        return (b.views || 0) - (a.views || 0);
+        return jumlahDilihat(b) - jumlahDilihat(a);
       }
       return 0; // default order is newest
     });
