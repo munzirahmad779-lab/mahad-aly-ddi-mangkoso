@@ -481,7 +481,7 @@ export function ArticleProvider({
 
       // Pastikan dema_settings lokal langsung selaras dengan 24 anggota asli
       const savedDema = localStorage.getItem("mahad_dema_settings");
-      if (savedDema) {
+      if (savedDema && !initialContent?.["dema_settings"]) {
         try {
           const parsedDema = JSON.parse(savedDema);
           const hasRealData = Array.isArray(parsedDema?.members) &&
@@ -497,7 +497,7 @@ export function ArticleProvider({
           localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS));
           setDemaSettings(INITIAL_DEMA_SETTINGS);
         }
-      } else {
+      } else if (!initialContent?.["dema_settings"]) {
         localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS));
         setDemaSettings(INITIAL_DEMA_SETTINGS);
       }
@@ -506,23 +506,23 @@ export function ArticleProvider({
       if (savedLogs) setLogs(JSON.parse(savedLogs));
 
       const savedPmbSettings = localStorage.getItem("mahad_pmb_settings");
-      if (savedPmbSettings) {
+      if (savedPmbSettings && !initialContent?.["pmb_settings"]) {
         try { setPmbSettings((prev) => ({ ...prev, ...JSON.parse(savedPmbSettings) })); } catch {}
       }
       const savedPmbWaves = localStorage.getItem("mahad_pmb_waves");
-      if (savedPmbWaves) {
+      if (savedPmbWaves && !initialContent?.["pmb_waves"]) {
         try { setPmbWaves(JSON.parse(savedPmbWaves)); } catch {}
       }
       const savedPmbFAQs = localStorage.getItem("mahad_pmb_faqs");
-      if (savedPmbFAQs) {
+      if (savedPmbFAQs && !initialContent?.["pmb_faqs"]) {
         try { setPmbFAQs(JSON.parse(savedPmbFAQs)); } catch {}
       }
       const savedFooterNav = localStorage.getItem("mahad_footer_nav");
-      if (savedFooterNav) {
+      if (savedFooterNav && !initialContent?.["footer_nav"]) {
         try { setFooterNav(JSON.parse(savedFooterNav)); } catch {}
       }
       const savedFooterFocus = localStorage.getItem("mahad_footer_focus");
-      if (savedFooterFocus) {
+      if (savedFooterFocus && !initialContent?.["footer_focus"]) {
         try { setFooterFocus(JSON.parse(savedFooterFocus)); } catch {}
       }
     } catch (e) {

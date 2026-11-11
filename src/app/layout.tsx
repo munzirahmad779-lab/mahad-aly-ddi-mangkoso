@@ -23,7 +23,7 @@ import "./globals.css";
 // latar paling sering 5 menit sekali per halaman. Isi terbaru tetap
 // tampil seketika bagi pengunjung karena ArticleContext menyegarkan
 // data langsung dari Supabase sesudah halaman termuat.
-export const revalidate = 300;
+export const revalidate = 60;
 
 // Ambil nilai site_content dengan pengaman waktu (maks 2 detik) agar
 // lambat/putusnya database tidak pernah menahan render halaman.
@@ -31,7 +31,7 @@ export const revalidate = 300;
 // berikutnya instan; kalau kueri gagal/lambat, pakai data terakhir yang
 // berhasil (stale-while-error) sehingga seed TIDAK PERNAH kosong mendadak.
 let seedCache: { data: Record<string, unknown>; at: number } | null = null;
-const SEED_TTL_MS = 300_000;
+const SEED_TTL_MS = 60_000;
 const SEED_FETCH_TIMEOUT_MS = 6_000;
 
 async function fetchInitialContent(): Promise<Record<string, unknown>> {

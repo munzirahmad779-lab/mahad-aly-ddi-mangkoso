@@ -111,14 +111,6 @@ export default function AllArticlesPage() {
       badgeAktifClass: "bg-teal-950 text-teal-200"
     },
     {
-      key: "berita",
-      label: "Berita",
-      icon: "📰",
-      semuaLabel: "Semua Berita",
-      aktifClass: "bg-sky-700",
-      badgeAktifClass: "bg-sky-950 text-sky-200"
-    },
-    {
       key: "esai",
       label: pageTexts?.artikelOpiniTabLabel || "Opini & Refleksi Santri",
       icon: "✍️",
