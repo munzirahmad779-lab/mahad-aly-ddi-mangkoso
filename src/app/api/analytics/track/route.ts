@@ -117,6 +117,31 @@ export async function POST(req: NextRequest) {
       { onConflict: "key" }
     );
 
+    // 3. Naikkan penghitung views artikel (kolom articles.views) untuk
+    // kunjungan halaman artikel, agar panel "Paling banyak dibaca" dan
+    // urutan populer membaca angka sungguhan. Sebelumnya kolom ini tidak
+    // pernah ditulis jalur pembaca sehingga selalu 0. Kegagalan di sini
+    // tidak menggagalkan pencatatan statistik utama di atas.
+    const cocokArtikel = pathname.match(/^\/artikel\/([^/]+)$/);
+    if (cocokArtikel) {
+      try {
+        const slugArtikel = decodeURIComponent(cocokArtikel[1]);
+        const { data: barisArtikel } = await supabaseAdmin
+          .from("articles")
+          .select("views")
+          .eq("slug", slugArtikel)
+          .maybeSingle();
+        if (barisArtikel) {
+          await supabaseAdmin
+            .from("articles")
+            .update({ views: (barisArtikel.views || 0) + 1 })
+            .eq("slug", slugArtikel);
+        }
+      } catch (e) {
+        console.warn("Increment views artikel gagal:", e);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       totalViews,

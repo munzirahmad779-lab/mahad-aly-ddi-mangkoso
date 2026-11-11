@@ -38,12 +38,15 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             karena sumber foto bisa dari Drive (pengalihan) maupun
             Supabase/R2, dan CSP situs mengizinkan img https mana pun. */}
         {article.imageUrl && (
-          <Link href={`/artikel/${article.slug}`} className="block overflow-hidden">
+          <Link
+            href={`/artikel/${article.slug}`}
+            className="block relative aspect-video w-full overflow-hidden bg-slate-100"
+          >
             <img
               src={article.imageUrl}
               alt={article.title}
               loading="lazy"
-              className="w-full h-auto"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           </Link>
         )}
