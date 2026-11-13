@@ -72,7 +72,7 @@ export default function ViewCount({ className = "" }: { className?: string }) {
 // masing tulisan harus ada angkanya di tampilan awal).
 let petaKunjungan: Promise<Record<string, number>> | null = null;
 
-function muatPetaKunjungan(): Promise<Record<string, number>> {
+export function muatPetaKunjungan(): Promise<Record<string, number>> {
   if (!petaKunjungan) {
     petaKunjungan = fetch("/api/analytics/stats", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))

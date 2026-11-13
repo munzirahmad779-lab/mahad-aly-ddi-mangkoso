@@ -123,7 +123,7 @@ export default function Navbar() {
   // Tier 3: Ticker Bar Config
   const tickerConfig = navbarSettings?.tickerBar ?? INITIAL_NAVBAR_SETTINGS.tickerBar;
   const isTickerActive = tickerConfig?.isActive !== false;
-  const tickerBadge = tickerConfig?.badgeLabel || "Kajian Hangat";
+  const tickerBadge = tickerConfig?.badgeLabel || "Paling Populer";
   const tickerItems =
     tickerConfig?.tickerItems && tickerConfig.tickerItems.length > 0
       ? tickerConfig.tickerItems

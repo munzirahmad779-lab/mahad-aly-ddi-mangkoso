@@ -1274,13 +1274,13 @@ export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
   },
   tickerBar: {
     isActive: true,
-    badgeLabel: "Kajian Hangat",
+    badgeLabel: "Paling Populer",
     showSearch: true,
     tickerItems: [
-      { id: "t-1", label: "Tinjauan Fiqh Mu'asarah terhadap Transaksi Digital & AI", url: "/kategori/fiqh-muamalah" },
-      { id: "t-2", label: "Hukum Wakaf Uang Produktif dalam Mazhab Syafi'i", url: "/kategori/ushul-fiqh" },
-      { id: "t-3", label: "Halaqah Bahtsul Masail: Fiqh Lingkungan Hidup", url: "/bahtsul-masail" },
-      { id: "t-4", label: "Pendaftaran Beasiswa Penuh Kader Ulama Marhalah Ula", url: "/pmb" }
+      { id: "t-1", label: "Sesi Kedua Kuliah Umum Internasional IESCO Berlanjut di Maktabah Ma'had Aly: Di Mana Kalian, Wahai Orang Beriman, untuk Gaza?", url: "/berita/sesi-kedua-kuliah-umum-internasional-iesco-berlanjut-di-maktabah-mahad-aly-di-mana-kalian-wahai-orang-beriman-untuk-gaza-7561" },
+      { id: "t-2", label: "Ma'had Aly DDI Mangkoso Gelar Kuliah Umum Internasional Bersama IESCO Malaysia, Ditandai Penandatanganan Kerja Sama", url: "/berita/mahad-aly-ddi-mangkoso-gelar-kuliah-umum-internasional-bersama-iesco-malaysia-ditandai-penandatanganan-kerja-sama-7308" },
+      { id: "t-3", label: "Pesan Ulama di Balik Doa yang Belum Terkabul", url: "/artikel/pesan-ulama-di-balik-doa-yang-belum-terkabul-24" },
+      { id: "t-4", label: "Pertemanan dalam Pandangan Islam: Membangun Hubungan Sosial Berlandaskan Iman dan Akhlak", url: "/artikel/pertemanan-dalam-pandangan-islam-membangun-hubungan-sosial-berlandaskan-iman-dan-akhlak-65" }
     ]
   }
 };

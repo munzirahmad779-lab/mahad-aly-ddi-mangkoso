@@ -1,18 +1,38 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import Reveal from "@/components/common/Reveal";
-import { urutkanPrioritas } from "@/lib/priorities";
-import { CardViewCount } from "@/components/common/ViewCount";
+import { CardViewCount, muatPetaKunjungan } from "@/components/common/ViewCount";
 
 export default function LatestNews() {
-  const { news, homePriorities } = useArticles();
+  const { news } = useArticles();
+  const [pages, setPages] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let alive = true;
+    muatPetaKunjungan().then((p) => {
+      if (alive) setPages(p);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   // Panel Warta & Berita berdiri sendiri, terpisah dari panel Mimbar
-  // (perintah user 10 Nov 2026). Prioritas admin tampil lebih dulu;
-  // sisanya terbaru dulu. Empat kartu supaya dua warta terbaru tidak
-  // tersisih dari panel hanya karena urutan data awal.
-  const tampil = urutkanPrioritas(news, homePriorities?.news).slice(0, 4);
+  // (perintah user 10 Nov 2026). Sejak 13 Nov 2026 panel ini adalah
+  // panel PALING POPULER (perintah user): empat warta dengan pembaca
+  // terbanyak menurut peta kunjungan server yang sama dengan lencana
+  // jumlah pembaca di kartu; bila views seri, urutan data awal yang
+  // dipertahankan (terbaru dulu). Panel ini tampil di beranda SEBELUM
+  // panel Mimbar Kajian (urutan home_sections di basis data).
+  const tampil = [...news]
+    .sort(
+      (a, b) =>
+        (pages[`/berita/${b.slug}`] || 0) - (pages[`/berita/${a.slug}`] || 0)
+    )
+    .slice(0, 4);
 
   return (
     <section className="py-20 bg-slate-50 border-t border-slate-200">
@@ -22,7 +42,7 @@ export default function LatestNews() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
-              Warta &amp; Berita
+              Paling Populer
             </span>
             <h2 className="font-serif font-bold text-3xl sm:text-4xl text-slate-900 mt-3">
               Warta &amp; Berita Ma&apos;had Aly

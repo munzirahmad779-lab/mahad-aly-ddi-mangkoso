@@ -10924,7 +10924,7 @@ export default function AdminPage() {
                               tickerBar: { ...headerForm.tickerBar, badgeLabel: e.target.value }
                             })
                           }
-                          placeholder="Kajian Hangat"
+                          placeholder="Paling Populer"
                           className="w-full p-2 bg-white border rounded-lg text-xs"
                         />
                       </div>
