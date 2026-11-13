@@ -35,6 +35,10 @@ export default function LatestArticles() {
     return matchesCategory && matchesSearch;
   });
 
+  // Beranda dibatasi 6 kajian (perintah user 13 Nov 2026); katalog
+  // lengkapnya tetap di halaman /artikel.
+  const displayedArticles = filteredArticles.slice(0, 6);
+
   return (
     <section id="mimbar-kajian" className="py-24 bg-emerald-50/60 border-t border-emerald-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -175,9 +179,10 @@ export default function LatestArticles() {
         </div>
 
         {/* Grid Artikel */}
-        {filteredArticles.length > 0 ? (
+        {displayedArticles.length > 0 ? (
+          <>
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredArticles.map((article, idx) => (
+            {displayedArticles.map((article, idx) => (
               <Reveal key={article.id} delay={(idx % 3) * 0.08} className="h-full">
                 <div className="relative h-full [&>article]:h-full">
                   {homePriorities?.articles?.includes(article.id) && (
@@ -190,6 +195,20 @@ export default function LatestArticles() {
               </Reveal>
             ))}
           </div>
+          {filteredArticles.length > displayedArticles.length && (
+            <div className="mt-10 text-center">
+              <Link
+                href="/artikel"
+                className="inline-flex items-center gap-2 border-2 border-emerald-800 text-emerald-900 hover:bg-emerald-800 hover:text-white font-bold px-6 py-3 rounded-xl transition"
+              >
+                <span>Lihat Semua {filteredArticles.length} Kajian</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+          )}
+          </>
         ) : (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 mt-8 shadow-sm">
             <p className="text-slate-600 font-medium mb-3">
