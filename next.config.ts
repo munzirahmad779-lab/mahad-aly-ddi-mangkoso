@@ -73,6 +73,27 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Hasil Bahtsul Masa'il Jilid II pindah menjadi cabang Kajian & Diskusi
+  // (15 Nov 2026). Alamat lama dialihkan permanen agar QR yang sudah
+  // terlanjur dicetak dan disebar tetap sampai ke laman yang benar.
+  async redirects() {
+    const lama = "/bahtsul-masail/jilid-ii";
+    const baru = "/kategori/bahtsul-masail-jilid-ii";
+    const slug = [
+      "masalah-1-nisab-zakat-mal",
+      "masalah-2-jual-beli-seafood",
+      "masalah-3-ittihad-al-baldah",
+      "masalah-4-konten-digital-aib"
+    ];
+    return [
+      { source: lama, destination: baru, permanent: true },
+      ...slug.map((s) => ({
+        source: `${lama}/${s}`,
+        destination: `${baru}/${s}`,
+        permanent: true
+      }))
+    ];
+  },
   async headers() {
     return [
       {
