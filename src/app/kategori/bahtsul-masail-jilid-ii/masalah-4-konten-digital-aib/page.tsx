@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   title: `${item.judulSingkat} — Hasil Bahtsul Masa'il Jilid II`,
   description: item.spoiler,
   alternates: {
-    canonical: "/bahtsul-masail/jilid-ii/masalah-4-konten-digital-aib"
+    canonical: "/kategori/bahtsul-masail-jilid-ii/masalah-4-konten-digital-aib"
   }
 };
 
@@ -165,7 +165,7 @@ export default function Masalah4KontenDigitalAibPage() {
         {/* Navigasi Bawah */}
         <nav className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-2">
           <Link
-            href="/bahtsul-masail/jilid-ii"
+            href="/kategori/bahtsul-masail-jilid-ii"
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-bold rounded-lg transition w-fit"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -173,7 +173,7 @@ export default function Masalah4KontenDigitalAibPage() {
           </Link>
           {prev && (
             <Link
-              href={`/bahtsul-masail/jilid-ii/${prev.slug}`}
+              href={`/kategori/bahtsul-masail-jilid-ii/${prev.slug}`}
               title={prev.judulSingkat}
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-100 transition w-fit text-left"
             >

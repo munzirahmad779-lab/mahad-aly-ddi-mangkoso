@@ -18,7 +18,7 @@ const next = MASAIL.find((m) => m.slug === "masalah-4-konten-digital-aib")!;
 export const metadata: Metadata = {
   title: `${item.judulSingkat} — Hasil Bahtsul Masa'il Jilid II`,
   description: item.spoiler,
-  alternates: { canonical: "/bahtsul-masail/jilid-ii/masalah-3-ittihad-al-baldah" }
+  alternates: { canonical: "/kategori/bahtsul-masail-jilid-ii/masalah-3-ittihad-al-baldah" }
 };
 
 export default function Masalah3IttihadAlBaldahPage() {
@@ -168,7 +168,7 @@ export default function Masalah3IttihadAlBaldahPage() {
         {/* Navigasi Bawah */}
         <nav className="space-y-4 pt-2">
           <Link
-            href="/bahtsul-masail/jilid-ii"
+            href="/kategori/bahtsul-masail-jilid-ii"
             className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-800 hover:underline"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -176,7 +176,7 @@ export default function Masalah3IttihadAlBaldahPage() {
           </Link>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link
-              href={`/bahtsul-masail/jilid-ii/${prev.slug}`}
+              href={`/kategori/bahtsul-masail-jilid-ii/${prev.slug}`}
               className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition block"
             >
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 inline-flex items-center gap-1">
@@ -188,7 +188,7 @@ export default function Masalah3IttihadAlBaldahPage() {
               </span>
             </Link>
             <Link
-              href={`/bahtsul-masail/jilid-ii/${next.slug}`}
+              href={`/kategori/bahtsul-masail-jilid-ii/${next.slug}`}
               className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition block sm:text-right"
             >
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 inline-flex items-center gap-1">
