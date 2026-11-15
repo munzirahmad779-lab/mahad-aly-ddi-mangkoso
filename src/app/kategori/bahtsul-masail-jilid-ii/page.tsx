@@ -54,6 +54,15 @@ export default function HasilBahtsulMasailJilidIIPage() {
       </section>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+        {/* Penanda cabang: ruang hasil ini bagian dari Kajian & Diskusi */}
+        <nav aria-label="Jejak ruang" className="text-xs sm:text-sm text-slate-500 -mb-4">
+          <Link href="/kategori" className="text-emerald-800 font-bold hover:underline rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">
+            Kajian &amp; Diskusi
+          </Link>
+          <span className="mx-2" aria-hidden="true">/</span>
+          <span>Hasil Bahtsul Masa&apos;il Jilid II</span>
+        </nav>
+
         {/* Empat Masail */}
         <section>
           <h2 className="font-serif font-bold text-2xl leading-snug text-slate-900">
