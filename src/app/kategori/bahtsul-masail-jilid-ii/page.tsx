@@ -55,7 +55,7 @@ export default function HasilBahtsulMasailJilidIIPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
         {/* Penanda cabang: ruang hasil ini bagian dari Kajian & Diskusi */}
-        <nav aria-label="Jejak ruang" className="text-xs sm:text-sm text-slate-500 -mb-4">
+        <nav aria-label="Jejak ruang" className="text-xs sm:text-sm text-slate-500">
           <Link href="/kategori" className="text-emerald-800 font-bold hover:underline rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">
             Kajian &amp; Diskusi
           </Link>
