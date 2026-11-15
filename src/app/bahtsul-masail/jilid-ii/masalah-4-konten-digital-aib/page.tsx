@@ -103,6 +103,29 @@ export default function Masalah4KontenDigitalAibPage() {
                 </p>
               ))}
             </div>
+            {soal.referensi.length > 0 && (
+              <div className="p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                  Referensi:
+                </span>
+                {soal.referensi.map((paragraf, k) => {
+                  const arab = (paragraf.match(/[؀-ۿ]/g) || []).length;
+                  return arab > paragraf.length * 0.35 ? (
+                    <p
+                      key={k}
+                      dir="rtl"
+                      className="teks-arab text-right text-base sm:text-lg leading-loose text-slate-900"
+                    >
+                      {paragraf}
+                    </p>
+                  ) : (
+                    <p key={k} className="text-sm sm:text-base text-slate-800 leading-relaxed">
+                      {paragraf}
+                    </p>
+                  );
+                })}
+              </div>
+            )}
           </section>
         ))}
 
@@ -113,9 +136,9 @@ export default function Masalah4KontenDigitalAibPage() {
           </h2>
           <p className="text-sm text-slate-600 leading-relaxed mt-4 max-w-3xl">
             Ketetapan di halaman ini ditranskripsikan dari dokumen resmi Bahtsul
-            Masa&apos;il Jilid II. Teks ibarah Arab dari kitab-kitab rujukan
-            tercantum lengkap dalam dokumen resmi (PDF) dan tidak ditampilkan
-            pada halaman web ini. Unduh dokumen resminya melalui tombol berikut.
+            Masa&apos;il Jilid II, dan teks ibarah Arab dari kitab-kitab rujukan
+            ditampilkan pada bagian Referensi tiap soal. Unduh dokumen resminya
+            melalui tombol berikut.
           </p>
           <div className="flex flex-wrap gap-2 mt-5">
             <a

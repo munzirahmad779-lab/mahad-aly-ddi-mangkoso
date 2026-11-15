@@ -105,6 +105,29 @@ export default function Masalah3IttihadAlBaldahPage() {
                 </p>
               ))}
             </div>
+            {soal.referensi.length > 0 && (
+              <div className="p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                  Referensi:
+                </span>
+                {soal.referensi.map((paragraf, k) => {
+                  const arab = (paragraf.match(/[؀-ۿ]/g) || []).length;
+                  return arab > paragraf.length * 0.35 ? (
+                    <p
+                      key={k}
+                      dir="rtl"
+                      className="teks-arab text-right text-base sm:text-lg leading-loose text-slate-900"
+                    >
+                      {paragraf}
+                    </p>
+                  ) : (
+                    <p key={k} className="text-sm sm:text-base text-slate-800 leading-relaxed">
+                      {paragraf}
+                    </p>
+                  );
+                })}
+              </div>
+            )}
           </article>
         ))}
 
@@ -114,8 +137,9 @@ export default function Masalah3IttihadAlBaldahPage() {
             Dokumen Resmi
           </h2>
           <p className="text-sm text-slate-600 leading-relaxed mt-4">
-            Teks ibarah Arab dari kitab-kitab rujukan tercantum lengkap dalam dokumen
-            resmi berbentuk PDF. Unduh ketetapan mas&apos;alah ini atau dokumen SK
+            Teks ibarah Arab dari kitab-kitab rujukan ditampilkan pada bagian
+            Referensi tiap soal di halaman ini, dan dokumen resmi berbentuk PDF
+            tetap menjadi rujukan sahnya. Unduh ketetapan mas&apos;alah ini atau dokumen SK
             lengkap yang memuat seluruh hasil Bahtsul Masa&apos;il Jilid II melalui
             tombol berikut.
           </p>
