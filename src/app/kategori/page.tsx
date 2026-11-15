@@ -89,23 +89,6 @@ export default function KajianDiskusiPage() {
           </div>
         </section>
 
-        {/* Catatan ruang */}
-        <section className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 sm:p-8">
-          <h2 className="font-serif font-bold text-xl text-emerald-950">
-            Hasil Kajian Berikutnya Mendapat Ruang Sendiri
-          </h2>
-          <p className="text-sm sm:text-base text-emerald-900/80 leading-relaxed mt-2 max-w-3xl">
-            Setiap hasil kajian dan diskusi keilmuan yang selesai
-            dilaksanakan dan dicatat akan diterbitkan sebagai ruang
-            tersendiri di dalam Kajian &amp; Diskusi ini, dan pintu
-            masuknya ditambahkan ke daftar di atas. Adapun tulisan
-            mahasantri dan dosen yang sudah terbit dapat dibaca di{" "}
-            <Link href="/artikel" className="font-bold underline">
-              Mimbar Mahad
-            </Link>
-            .
-          </p>
-        </section>
       </div>
     </main>
   );
