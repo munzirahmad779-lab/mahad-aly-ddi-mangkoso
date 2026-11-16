@@ -363,10 +363,10 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
         {/* Konten Utama */}
         <article className="bg-white rounded-2xl p-8 sm:p-12 border border-slate-200 shadow-sm space-y-6">
           
-          {/* Kotak Abstrak */}
+          {/* Kotak Pokok Pikiran */}
           <div className="bg-emerald-50 border-l-4 border-emerald-700 p-5 rounded-r-xl">
             <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1 font-bold">
-              Pokok Pikiran &amp; Abstrak
+              Pokok Pikiran
             </h4>
             <p className="text-slate-700 text-sm italic leading-relaxed">
               {article.excerpt}
