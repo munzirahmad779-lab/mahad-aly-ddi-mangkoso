@@ -7,6 +7,7 @@ import StudyCategories from "@/components/home/StudyCategories";
 import LatestArticles from "@/components/home/LatestArticles";
 import LatestTheses from "@/components/home/LatestTheses";
 import LatestNews from "@/components/home/LatestNews";
+import KalamSection from "@/components/home/KalamSection";
 import {
   HomeDonationSection,
   HomeBahtsulSection,
@@ -34,6 +35,8 @@ export default function HomePage() {
       case "quote":
       case "kalam_hikmah":
         return <QuoteSection key={sec.id} />;
+      case "kalam_anregurutta":
+        return <KalamSection key={sec.id} />;
       case "about":
       case "profil_singkat":
         return <AboutPreview key={sec.id} />;

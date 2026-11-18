@@ -58,6 +58,16 @@
   animation-play-state: paused;
 }
 
+/* Pergantian kalam di bagian Kalam Anregurutta beranda */
+@keyframes kalam-masuk {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-kalam-masuk {
+  animation: kalam-masuk 0.7s ease both;
+}
+
 .animate-marquee a {
   cursor: pointer;
   pointer-events: auto;

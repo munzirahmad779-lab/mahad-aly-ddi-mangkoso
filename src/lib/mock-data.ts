@@ -1351,15 +1351,16 @@ export const INITIAL_HERO_SETTINGS: HeroSectionSettings = {
 export const INITIAL_HOME_SECTIONS: HomeSectionConfigItem[] = [
   { id: "sec-hero", name: "hero", label: "Hero Banner & Metrik", isActive: true, order: 1 },
   { id: "sec-quote", name: "quote", label: "Kalam Hikmah (Quote Salaf)", isActive: true, order: 2 },
-  { id: "sec-about", name: "about", label: "Pilar Pendidikan (Tentang Kami)", isActive: true, order: 3 },
-  { id: "sec-categories", name: "categories", label: "Kategori Kajian Fiqh", isActive: true, order: 4 },
-  { id: "sec-articles", name: "articles", label: "Artikel Fiqh Terbaru", isActive: true, order: 5, maxItems: 6 },
-  { id: "sec-theses", name: "theses", label: "Repositori Skripsi Mahasantri", isActive: true, order: 6, maxItems: 4 },
-  { id: "sec-donations", name: "donasi", label: "Infaq & Program Donasi Pilihan", isActive: true, order: 7, maxItems: 3, badge: "Amal Jariyah & Infaq", title: "Dukung Kaderisasi Ulama Fiqh", subtitle: "Salurkan infaq terbaik Anda untuk riset mahasantri, orang tua asuh, dan sarana Ma'had Aly." },
-  { id: "sec-bahtsul", name: "bahtsul", label: "Bahtsul Masail Fiqh Mu'asarah", isActive: true, order: 8, maxItems: 3, badge: "Kajian Fatwa Fiqh", title: "Bahtsul Masail & Tanya Jawab Fiqh", subtitle: "Hasil musyawarah fatwa mahasantri dan dewan masyaikh berlandaskan kitab turats muktabarah." },
-  { id: "sec-pmb", name: "pmb", label: "Informasi PMB Online (Pendaftaran)", isActive: true, order: 9, badge: "Penerimaan Mahasantri Baru", title: "Jadilah Generasi Ulama Fiqh Masa Depan", subtitle: "Pendaftaran jenjang Marhalah Ula (M.1) Takhassus Fiqh wa Usuluhu Ma'had Aly DDI Mangkoso." },
-  { id: "sec-news", name: "news", label: "Warta & Berita Terkini", isActive: true, order: 10, maxItems: 3 },
-  { id: "sec-submission", name: "submission", label: "CTA Kirim Tulisan Santri", isActive: true, order: 11, badge: "Mimbar Penulis", title: "Punya Risalah Ilmiah atau Opini Fiqh?", subtitle: "Kirimkan karya tulis Anda untuk ditinjau oleh Dewan Redaksi Ma'had Aly DDI Mangkoso." }
+  { id: "sec-kalam-anregurutta", name: "kalam_anregurutta", label: "Kalam Anregurutta (Foto dan Putaran Kalam)", isActive: true, order: 3 },
+  { id: "sec-about", name: "about", label: "Pilar Pendidikan (Tentang Kami)", isActive: true, order: 4 },
+  { id: "sec-categories", name: "categories", label: "Kategori Kajian Fiqh", isActive: true, order: 5 },
+  { id: "sec-articles", name: "articles", label: "Artikel Fiqh Terbaru", isActive: true, order: 6, maxItems: 6 },
+  { id: "sec-theses", name: "theses", label: "Repositori Skripsi Mahasantri", isActive: true, order: 7, maxItems: 4 },
+  { id: "sec-donations", name: "donasi", label: "Infaq & Program Donasi Pilihan", isActive: true, order: 8, maxItems: 3, badge: "Amal Jariyah & Infaq", title: "Dukung Kaderisasi Ulama Fiqh", subtitle: "Salurkan infaq terbaik Anda untuk riset mahasantri, orang tua asuh, dan sarana Ma'had Aly." },
+  { id: "sec-bahtsul", name: "bahtsul", label: "Bahtsul Masail Fiqh Mu'asarah", isActive: true, order: 9, maxItems: 3, badge: "Kajian Fatwa Fiqh", title: "Bahtsul Masail & Tanya Jawab Fiqh", subtitle: "Hasil musyawarah fatwa mahasantri dan dewan masyaikh berlandaskan kitab turats muktabarah." },
+  { id: "sec-pmb", name: "pmb", label: "Informasi PMB Online (Pendaftaran)", isActive: true, order: 10, badge: "Penerimaan Mahasantri Baru", title: "Jadilah Generasi Ulama Fiqh Masa Depan", subtitle: "Pendaftaran jenjang Marhalah Ula (M.1) Takhassus Fiqh wa Usuluhu Ma'had Aly DDI Mangkoso." },
+  { id: "sec-news", name: "news", label: "Warta & Berita Terkini", isActive: true, order: 11, maxItems: 3 },
+  { id: "sec-submission", name: "submission", label: "CTA Kirim Tulisan Santri", isActive: true, order: 12, badge: "Mimbar Penulis", title: "Punya Risalah Ilmiah atau Opini Fiqh?", subtitle: "Kirimkan karya tulis Anda untuk ditinjau oleh Dewan Redaksi Ma'had Aly DDI Mangkoso." }
 ];
 
 export const INITIAL_EMAIL_TEMPLATES: EmailTemplateItem[] = [
