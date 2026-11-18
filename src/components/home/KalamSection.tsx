@@ -10,10 +10,11 @@ import Reveal from "@/components/common/Reveal";
 // hanya kalam Anregurutta, tiap kalam wajib menyertakan nama beliau,
 // dan semuanya tertaut ke artikel Mutiara Hikmah Para Masyayikh. Isi
 // kalam sama dengan yang berjalan di ticker navbar (kalam pendek
-// pilihan dari artikel yang sama). Pergantian kalam tiap 3 jam
-// (perintah user 19 Nov 2026 pukul 01:20): kalam yang tampil dipilih
-// dari blok waktu 3 jam berjalan, jadi semua pengunjung pada blok
-// yang sama melihat kalam yang sama dan laman tidak berputar cepat.
+// pilihan dari artikel yang sama). Pergantian kalam tiap 1 menit
+// (perintah user 19 Nov 2026 pukul 01:26, menggantikan tiap beberapa
+// detik lalu tiap 3 jam): pergantiannya hanya menukar teks di
+// peramban pengunjung, tanpa memanggil server sama sekali, jadi
+// ringan dan tidak membebani laman.
 const KALAM_ANREGURUTTA: string[] = [
   "Orang yang tidak melaksanakan sholat adalah orang yang mengkhianati Tuhan, jika Tuhan saja yang ia khianati apalagi sesamanya manusia",
   "Puncak bahagia adalah ketika kita membahagiakan orang yang kita cintai",
@@ -23,25 +24,21 @@ const KALAM_ANREGURUTTA: string[] = [
 ];
 
 const TAUTAN_ARTIKEL = "/artikel/mutiara-hikmah-para-masyayikh-ddi-mangkoso";
-const JEDA_BLOK_MS = 3 * 60 * 60 * 1000;
-
-// Indeks kalam untuk blok 3 jam yang sedang berjalan.
-function indeksBlok() {
-  return Math.floor(Date.now() / JEDA_BLOK_MS) % KALAM_ANREGURUTTA.length;
-}
+const JEDA_PUTAR_MS = 60_000;
 
 export default function KalamSection() {
   const [aktif, setAktif] = useState(0);
   const dipilihManual = useRef(false);
 
-  // Kalam mengikuti blok 3 jam; diperiksa ulang tiap menit supaya
-  // laman yang dibiarkan terbuka ikut berganti saat blok bergeser.
-  // Pilihan manual lewat titik penunjuk dihormati selama kunjungan.
+  // Berganti sendiri tiap 1 menit. Pilihan manual lewat titik
+  // penunjuk dihormati: sesudah pengunjung memilih, putaran berhenti
+  // selama kunjungan itu.
   useEffect(() => {
-    setAktif(indeksBlok());
     const timer = setInterval(() => {
-      if (!dipilihManual.current) setAktif(indeksBlok());
-    }, 60_000);
+      if (!dipilihManual.current) {
+        setAktif((i) => (i + 1) % KALAM_ANREGURUTTA.length);
+      }
+    }, JEDA_PUTAR_MS);
     return () => clearInterval(timer);
   }, []);
 
