@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Reveal from "@/components/common/Reveal";
 
 // Bagian Kalam Anregurutta di beranda (pemasangan kalam hikmah,
 // perintah user 18-19 Nov 2026): foto Anregurutta Mangkoso (Gurutta
-// Farid, Muh. Faried Wadjedy) di samping kalam beliau yang berganti
-// perlahan. Yang bergulir hanya kalam Anregurutta, tiap kalam wajib
-// menyertakan nama beliau, dan semuanya tertaut ke artikel Mutiara
-// Hikmah Para Masyayikh. Isi kalam sama dengan yang berjalan di
-// ticker navbar (kalam pendek pilihan dari artikel yang sama).
+// Farid, Muh. Faried Wadjedy) di samping kalam beliau. Yang tampil
+// hanya kalam Anregurutta, tiap kalam wajib menyertakan nama beliau,
+// dan semuanya tertaut ke artikel Mutiara Hikmah Para Masyayikh. Isi
+// kalam sama dengan yang berjalan di ticker navbar (kalam pendek
+// pilihan dari artikel yang sama). Pergantian kalam tiap 3 jam
+// (perintah user 19 Nov 2026 pukul 01:20): kalam yang tampil dipilih
+// dari blok waktu 3 jam berjalan, jadi semua pengunjung pada blok
+// yang sama melihat kalam yang sama dan laman tidak berputar cepat.
 const KALAM_ANREGURUTTA: string[] = [
   "Orang yang tidak melaksanakan sholat adalah orang yang mengkhianati Tuhan, jika Tuhan saja yang ia khianati apalagi sesamanya manusia",
   "Puncak bahagia adalah ketika kita membahagiakan orang yang kita cintai",
@@ -20,28 +23,30 @@ const KALAM_ANREGURUTTA: string[] = [
 ];
 
 const TAUTAN_ARTIKEL = "/artikel/mutiara-hikmah-para-masyayikh-ddi-mangkoso";
-const JEDA_PUTAR_MS = 6500;
+const JEDA_BLOK_MS = 3 * 60 * 60 * 1000;
+
+// Indeks kalam untuk blok 3 jam yang sedang berjalan.
+function indeksBlok() {
+  return Math.floor(Date.now() / JEDA_BLOK_MS) % KALAM_ANREGURUTTA.length;
+}
 
 export default function KalamSection() {
   const [aktif, setAktif] = useState(0);
-  const [jeda, setJeda] = useState(false);
+  const dipilihManual = useRef(false);
 
-  // Putaran otomatis; berhenti selama disentuh atau diarahkan kursor.
+  // Kalam mengikuti blok 3 jam; diperiksa ulang tiap menit supaya
+  // laman yang dibiarkan terbuka ikut berganti saat blok bergeser.
+  // Pilihan manual lewat titik penunjuk dihormati selama kunjungan.
   useEffect(() => {
-    if (jeda) return;
+    setAktif(indeksBlok());
     const timer = setInterval(() => {
-      setAktif((i) => (i + 1) % KALAM_ANREGURUTTA.length);
-    }, JEDA_PUTAR_MS);
+      if (!dipilihManual.current) setAktif(indeksBlok());
+    }, 60_000);
     return () => clearInterval(timer);
-  }, [jeda]);
+  }, []);
 
   return (
-    <section
-      className="relative py-16 sm:py-20 bg-mahad-green-dark text-white overflow-hidden"
-      onMouseEnter={() => setJeda(true)}
-      onMouseLeave={() => setJeda(false)}
-      onTouchStart={() => setJeda(true)}
-    >
+    <section className="relative py-16 sm:py-20 bg-mahad-green-dark text-white overflow-hidden">
       <div className="absolute inset-0 opacity-10 bg-islamic-pattern pointer-events-none" />
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <Reveal>
@@ -96,7 +101,10 @@ export default function KalamSection() {
                     key={i}
                     type="button"
                     aria-label={`Kalam ke-${i + 1}`}
-                    onClick={() => setAktif(i)}
+                    onClick={() => {
+                      dipilihManual.current = true;
+                      setAktif(i);
+                    }}
                     className={`h-2.5 rounded-full transition-all ${
                       i === aktif
                         ? "w-8 bg-mahad-gold"
