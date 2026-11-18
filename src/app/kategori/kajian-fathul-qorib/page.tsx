@@ -5,13 +5,13 @@ import { BookOpen } from "lucide-react";
 import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
 
-// Ruang hasil Musyawarah Fathul Qorib di dalam Kajian & Diskusi
+// Ruang hasil Kajian Fathul Qorib di dalam Kajian & Diskusi
 // (struktur ruang per ketetapan user 15 Nov 2026: setiap hasil kajian
 // tinggal di ruangnya sendiri di bawah /kategori/<ruang>). Isi ruang
 // dibaca dari artikel terbit bertanda "Fathul Qarib", supaya hasil
-// musyawarah berikutnya yang diterbitkan masuk ke ruang ini dengan
+// kajian berikutnya yang diterbitkan masuk ke ruang ini dengan
 // sendirinya tanpa menumpuk di indeks /kategori.
-export default function MusyawarahFathulQoribPage() {
+export default function KajianFathulQoribPage() {
   const { articles } = useArticles();
   const tulisan = articles.filter(
     (a) => a.status !== "draft" && (a.tags || []).includes("Fathul Qarib")
@@ -24,14 +24,14 @@ export default function MusyawarahFathulQoribPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-3.5 py-1 rounded-full inline-flex items-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Musyawarah Kitab</span>
+            <span>Kajian Kitab</span>
           </span>
           <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white mt-3">
-            Musyawarah Fathul Qorib
+            Kajian Fathul Qorib
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-3 leading-relaxed">
             Hasil pembacaan dan pembahasan kitab Fathul Qorib dalam
-            musyawarah rutin Ma&apos;had Aly DDI Mangkoso, meliputi bahasan
+            kajian rutin Ma&apos;had Aly DDI Mangkoso, meliputi bahasan
             fikih ibadah beserta kajian nahwu dan sharaf yang menyertainya.
           </p>
         </div>
@@ -44,13 +44,13 @@ export default function MusyawarahFathulQoribPage() {
             Kajian &amp; Diskusi
           </Link>
           <span className="mx-2" aria-hidden="true">/</span>
-          <span>Musyawarah Fathul Qorib</span>
+          <span>Kajian Fathul Qorib</span>
         </nav>
 
-        {/* Daftar hasil musyawarah yang terbit */}
+        {/* Daftar hasil kajian yang terbit */}
         <section>
           <h2 className="font-serif font-bold text-2xl leading-snug text-slate-900">
-            Hasil Musyawarah yang Diterbitkan
+            Hasil Kajian yang Diterbitkan
           </h2>
           {tulisan.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
@@ -60,7 +60,7 @@ export default function MusyawarahFathulQoribPage() {
             </div>
           ) : (
             <p className="text-sm text-slate-600 leading-relaxed mt-3">
-              Belum ada hasil musyawarah yang diterbitkan di ruang ini.
+              Belum ada hasil kajian yang diterbitkan di ruang ini.
             </p>
           )}
         </section>

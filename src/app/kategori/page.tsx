@@ -6,7 +6,7 @@ import { PDF_SK_LENGKAP } from "./bahtsul-masail-jilid-ii/data";
 export const metadata: Metadata = {
   title: "Kajian & Diskusi — Ma'had Aly DDI Mangkoso",
   description:
-    "Ruang Kajian & Diskusi Ma'had Aly DDI Mangkoso: daftar hasil kajian dan diskusi keilmuan yang diterbitkan, masing-masing dengan ruangnya sendiri. Ruang yang terbit: Hasil Bahtsul Masa'il Jilid II dan Musyawarah Fathul Qorib.",
+    "Ruang Kajian & Diskusi Ma'had Aly DDI Mangkoso: daftar hasil kajian dan diskusi keilmuan yang diterbitkan, masing-masing dengan ruangnya sendiri. Ruang yang terbit: Hasil Bahtsul Masa'il Jilid II dan Kajian Fathul Qorib.",
 };
 
 // Struktur ruang (ketetapan user 15 Nov 2026): halaman ini HANYA indeks
@@ -90,27 +90,27 @@ export default function KajianDiskusiPage() {
             <article className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col">
               <span className="text-xs font-bold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full inline-flex items-center gap-1.5 w-fit">
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>Musyawarah Kitab</span>
+                <span>Kajian Kitab</span>
               </span>
               <h3 className="font-serif font-bold text-xl text-slate-900 leading-snug mt-3">
-                Musyawarah Fathul Qorib
+                Kajian Fathul Qorib
               </h3>
               <p className="text-sm text-slate-600 leading-relaxed mt-2 flex-1">
-                Pembacaan dan pembahasan kitab Fathul Qorib dalam musyawarah
+                Pembacaan dan pembahasan kitab Fathul Qorib dalam kajian
                 rutin Ma&apos;had Aly DDI Mangkoso, meliputi bahasan fikih
                 ibadah beserta kajian nahwu dan sharaf yang menyertainya.
-                Setiap hasil musyawarah diterbitkan sebagai tulisan
+                Setiap hasil kajian diterbitkan sebagai tulisan
                 tersendiri di ruang hasil ini.
               </p>
               <div className="flex flex-col gap-1.5 mt-4 text-xs text-slate-500">
                 <span className="inline-flex items-center gap-1.5 leading-snug">
                   <Calendar className="w-3.5 h-3.5 shrink-0" />
-                  Musyawarah Oktober s.d. November 2026
+                  Kajian Oktober s.d. November 2026
                 </span>
               </div>
               <div className="flex flex-wrap gap-2 mt-5">
                 <Link
-                  href="/kategori/musyawarah-fathul-qorib"
+                  href="/kategori/kajian-fathul-qorib"
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold transition"
                 >
                   Buka Ruang Hasil
