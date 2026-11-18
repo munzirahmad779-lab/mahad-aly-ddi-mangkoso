@@ -39,6 +39,18 @@ export function kolomDariKategori(
   return dasar;
 }
 
+// Seri Kajian Fathul Qorib (ketetapan user 19 Nov 2026): tulisan hasil
+// kajian ini khusus tinggal di ruang Kajian & Diskusi
+// (/kategori/kajian-fathul-qorib) dan tidak tampil di aliran Mimbar
+// Mahad (/artikel), bagian kajian beranda, atau daftar terkait artikel
+// di luar serinya. Penandanya tag "Fathul Qarib", penanda yang sama
+// dengan yang dipakai halaman ruangnya untuk mengumpulkan isinya.
+export function dalamSeriKajianFathulQorib(a: {
+  tags?: string[] | null;
+}): boolean {
+  return (a?.tags || []).includes("Fathul Qarib");
+}
+
 // Mapper data dari tabel Supabase → tipe aplikasi.
 // Dipakai RootLayout (SSR seed agar tidak ada kedipan konten) — murni fungsi,
 // tanpa akses browser. Tanggal memakai timezone Asia/Makassar secara eksplisit

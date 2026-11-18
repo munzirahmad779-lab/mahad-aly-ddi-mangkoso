@@ -6,6 +6,7 @@ import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
 import Reveal from "@/components/common/Reveal";
 import { urutkanPrioritas } from "@/lib/priorities";
+import { dalamSeriKajianFathulQorib } from "@/lib/content-mappers";
 
 export default function LatestArticles() {
   const { articles, homePriorities } = useArticles();
@@ -13,8 +14,12 @@ export default function LatestArticles() {
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Beranda hanya menampilkan artikel terbit; draf tidak tampil dan
-  // tidak ikut terhitung di teks jumlah artikel.
-  const publicArticles = articles.filter((a) => a.status !== "draft");
+  // tidak ikut terhitung di teks jumlah artikel. Seri Kajian Fathul
+  // Qorib juga dikeluarkan (ketetapan user 19 Nov 2026): serinya
+  // khusus di ruang Kajian & Diskusi, bukan di bagian Mimbar beranda.
+  const publicArticles = articles.filter(
+    (a) => a.status !== "draft" && !dalamSeriKajianFathulQorib(a)
+  );
 
   // Paling banyak dibaca (data views riil dari pembaca)
   const palingDibaca = [...publicArticles]

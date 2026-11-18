@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
 import { supabase } from "@/lib/supabase/client";
+import { dalamSeriKajianFathulQorib } from "@/lib/content-mappers";
 import ArticleCard from "@/components/articles/ArticleCard";
 import ReadingBeam from "@/components/common/ReadingBeam";
 import ViewCount from "@/components/common/ViewCount";
@@ -268,10 +269,17 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
     );
   }
 
+  // Artikel seri Kajian Fathul Qorib hanya saling terkait di dalam
+  // serinya dan tidak muncul sebagai terkait di artikel lain
+  // (ketetapan user 19 Nov 2026: serinya khusus di Kajian & Diskusi).
+  const diSeriKajian = dalamSeriKajianFathulQorib(article);
   const relatedArticles = articles
     .filter(
       (a) =>
-        a.category === article.category && a.id !== article.id && a.status !== "draft"
+        a.category === article.category &&
+        a.id !== article.id &&
+        a.status !== "draft" &&
+        dalamSeriKajianFathulQorib(a) === diSeriKajian
     )
     .slice(0, 2);
 
@@ -307,13 +315,13 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-4">
             <Link
-              href={article.type === "opini" ? "/opini" : "/artikel"}
+              href={article.type === "opini" ? "/opini" : diSeriKajian ? "/kategori/kajian-fathul-qorib" : "/artikel"}
               className="inline-flex items-center gap-1.5 text-xs text-mahad-gold-light hover:text-white bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-full transition border border-white/15"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              <span>{article.type === "opini" ? "Kembali ke Opini Santri" : "Kembali ke Mimbar Kajian"}</span>
+              <span>{article.type === "opini" ? "Kembali ke Opini Santri" : diSeriKajian ? "Kembali ke Kajian Fathul Qorib" : "Kembali ke Mimbar Kajian"}</span>
             </Link>
           </div>
 

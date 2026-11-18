@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
-import { kolomDariKategori } from "@/lib/content-mappers";
+import { dalamSeriKajianFathulQorib, kolomDariKategori } from "@/lib/content-mappers";
 import type { Article, CategoryInfo, KolomArtikel } from "@/lib/types";
 
 const KOLOM_LABEL_KOSONG: Record<KolomArtikel, string> = {
@@ -90,8 +90,12 @@ export default function AllArticlesPage() {
   const slugKategoriArtikel = (a: Article): string =>
     kategoriArtikel(a)?.slug ?? a.category;
   // Sisi publik hanya menampilkan artikel terbit; draf tidak dihitung
-  // di lencana tab dan tidak ditampilkan sebagai kartu.
-  const publicArticles = articles.filter((a) => a.status !== "draft");
+  // di lencana tab dan tidak ditampilkan sebagai kartu. Seri Kajian
+  // Fathul Qorib juga dikeluarkan dari aliran ini (ketetapan user
+  // 19 Nov 2026): serinya khusus di ruang Kajian & Diskusi.
+  const publicArticles = articles.filter(
+    (a) => a.status !== "draft" && !dalamSeriKajianFathulQorib(a)
+  );
   const hitungKolom = (k: KolomArtikel) =>
     publicArticles.filter((a) => kolomArtikel(a) === k).length;
 
