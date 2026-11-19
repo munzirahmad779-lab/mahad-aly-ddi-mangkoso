@@ -47,41 +47,40 @@ import {
   PMBSettings
 } from "@/lib/types";
 import {
-  INITIAL_ARTICLES,
-  INITIAL_CATEGORIES,
-  INITIAL_THESES,
   INITIAL_NEWS,
   INITIAL_SETTINGS,
-  INITIAL_ADMIN_USERS,
-  INITIAL_ACTIVITY_LOGS,
-  INITIAL_MEDIA,
-  INITIAL_LECTURERS,
-  INITIAL_FACILITIES,
-  INITIAL_ACCREDITATIONS,
-  INITIAL_COURSES,
-  INITIAL_CALENDAR,
-  INITIAL_BAHTSUL_QA,
-  INITIAL_PMB_WAVES,
-  INITIAL_PMB_FAQS,
   INITIAL_PMB_SETTINGS,
-  INITIAL_SUBSCRIBERS,
-  INITIAL_EMAIL_LOGS,
-  INITIAL_GALLERY_ALBUMS,
-  INITIAL_COMING_SOON_PAGES,
-  INITIAL_PAGE_SEO,
   INITIAL_FOOTER_SETTINGS,
   INITIAL_FOOTER_NAV,
   INITIAL_FOOTER_FOCUS,
   INITIAL_NAVBAR_SETTINGS,
   INITIAL_HERO_SETTINGS,
   INITIAL_HOME_SECTIONS,
-  INITIAL_EMAIL_TEMPLATES,
   INITIAL_ABOUT_CONTENT,
   INITIAL_PAGE_TEXTS,
-  INITIAL_DONATIONS,
-  INITIAL_SECURITY_THREATS,
-  INITIAL_DEMA_SETTINGS
+  INITIAL_SECURITY_THREATS
 } from "@/lib/mock-data";
+
+// Koleksi cadangan besar (artikel contoh, daftar dosen, donasi, DeMa,
+// template email, dan sejenisnya) tinggal di "@/lib/mock-seed-data" dan
+// hanya dimuat malas saat fungsi reset admin atau fallback lokal DeMa
+// benar-benar membutuhkannya. Nilai awal state koleksi cukup seed server
+// (initialContent) lalu sinkronisasi Supabase yang berjalan sesudah mount;
+// mengimpornya statis di sini pernah membebani bundel semua halaman
+// publik dan membawa data awal akun admin ke JS publik.
+const loadSeedData = () => import("@/lib/mock-seed-data");
+
+// Bentuk kosong DeMa sebagai dasar gabungan seed server: halaman DeMa
+// membaca semua field secara defensif (rantai `?.` dan `|| []`), dan
+// konten aslinya tiba dari seed server atau sinkronisasi Supabase.
+const EMPTY_DEMA_SETTINGS: DemaSettings = {
+  periodTitle: "",
+  tagline: "",
+  leadQuote: "",
+  leadQuoteArabic: "",
+  divisions: [],
+  members: []
+};
 
 interface DataContextType {
   // Articles
@@ -359,37 +358,39 @@ export function ArticleProvider({
           }))
       : [];
 
-  const [articles, setArticles] = useState<Article[]>(() => seedArray("__articles", INITIAL_ARTICLES));
-  const [categories, setCategories] = useState<CategoryInfo[]>(() => seedArray("__categories", INITIAL_CATEGORIES));
-  const [theses, setTheses] = useState<Thesis[]>(() => seedArray("__theses", INITIAL_THESES));
+  const [articles, setArticles] = useState<Article[]>(() => seedArray("__articles", [] as Article[]));
+  const [categories, setCategories] = useState<CategoryInfo[]>(() => seedArray("__categories", [] as CategoryInfo[]));
+  const [theses, setTheses] = useState<Thesis[]>(() => seedArray("__theses", [] as Thesis[]));
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [news, setNews] = useState<NewsItem[]>(() => seedArray("__news", INITIAL_NEWS));
   const [settings, setSettings] = useState<SiteSettings>(() => seedObject("site_settings", INITIAL_SETTINGS));
-  const [users, setUsers] = useState<AdminUser[]>(INITIAL_ADMIN_USERS);
-  const [logs, setLogs] = useState<ActivityLog[]>(INITIAL_ACTIVITY_LOGS);
-  const [media, setMedia] = useState<MediaItem[]>(INITIAL_MEDIA);
+  // Daftar pengguna TIDAK lagi dibenihkan dari data contoh di klien:
+  // panel admin mengambil daftar asli dari tabel users Supabase sendiri.
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [media, setMedia] = useState<MediaItem[]>([]);
   const [lecturers, setLecturers] = useState<Lecturer[]>(
     () => (initialContent && Array.isArray(initialContent["masyayikh_list"])
       ? (initialContent["masyayikh_list"] as Lecturer[])
-      : seedArray("__lecturers", INITIAL_LECTURERS))
+      : seedArray("__lecturers", [] as Lecturer[]))
   );
   const [facilities, setFacilities] = useState<Facility[]>(
     () => (initialContent && Array.isArray(initialContent["sarana_list"])
       ? (initialContent["sarana_list"] as Facility[])
-      : seedArray("__facilities", INITIAL_FACILITIES))
+      : seedArray("__facilities", [] as Facility[]))
   );
-  const [accreditations, setAccreditations] = useState<Accreditation[]>(() => seedArray("accreditations", INITIAL_ACCREDITATIONS));
-  const [courses, setCourses] = useState<Course[]>(() => seedArray("courses_list", INITIAL_COURSES));
-  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>(() => seedArray("calendar_events", INITIAL_CALENDAR));
-  const [bahtsulQA, setBahtsulQA] = useState<BahtsulMasailQA[]>(() => seedArray("bahtsul_masail", INITIAL_BAHTSUL_QA));
+  const [accreditations, setAccreditations] = useState<Accreditation[]>(() => seedArray("accreditations", [] as Accreditation[]));
+  const [courses, setCourses] = useState<Course[]>(() => seedArray("courses_list", [] as Course[]));
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>(() => seedArray("calendar_events", [] as CalendarEvent[]));
+  const [bahtsulQA, setBahtsulQA] = useState<BahtsulMasailQA[]>(() => seedArray("bahtsul_masail", [] as BahtsulMasailQA[]));
   const [pmbSettings, setPmbSettings] = useState<PMBSettings>(() => seedObject("pmb_settings", INITIAL_PMB_SETTINGS));
-  const [pmbWaves, setPmbWaves] = useState<PMBWave[]>(() => seedArray("pmb_waves", INITIAL_PMB_WAVES));
-  const [pmbFAQs, setPmbFAQs] = useState<PMBFAQ[]>(() => seedArray("pmb_faqs", INITIAL_PMB_FAQS));
-  const [subscribers, setSubscribers] = useState<EmailSubscriber[]>(INITIAL_SUBSCRIBERS);
-  const [emailLogs, setEmailLogs] = useState<EmailLog[]>(INITIAL_EMAIL_LOGS);
-  const [galleryAlbums, setGalleryAlbums] = useState<GalleryAlbum[]>(() => seedArray("gallery_albums", INITIAL_GALLERY_ALBUMS));
-  const [comingSoonPages, setComingSoonPages] = useState<ComingSoonPageSetting[]>(INITIAL_COMING_SOON_PAGES);
-  const [pageSeoList, setPageSeoList] = useState<PageSeoItem[]>(INITIAL_PAGE_SEO);
+  const [pmbWaves, setPmbWaves] = useState<PMBWave[]>(() => seedArray("pmb_waves", [] as PMBWave[]));
+  const [pmbFAQs, setPmbFAQs] = useState<PMBFAQ[]>(() => seedArray("pmb_faqs", [] as PMBFAQ[]));
+  const [subscribers, setSubscribers] = useState<EmailSubscriber[]>([]);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
+  const [galleryAlbums, setGalleryAlbums] = useState<GalleryAlbum[]>(() => seedArray("gallery_albums", [] as GalleryAlbum[]));
+  const [comingSoonPages, setComingSoonPages] = useState<ComingSoonPageSetting[]>([]);
+  const [pageSeoList, setPageSeoList] = useState<PageSeoItem[]>([]);
   const [footerSettings, setFooterSettings] = useState<FooterSettings>(() => seedObject("footer", INITIAL_FOOTER_SETTINGS));
   const [footerNav, setFooterNav] = useState<FooterNavLink[]>(() => seedArray("footer_nav", INITIAL_FOOTER_NAV));
   const [footerFocus, setFooterFocus] = useState<FooterFocusItem[]>(() => seedArray("footer_focus", INITIAL_FOOTER_FOCUS));
@@ -407,10 +408,10 @@ export function ArticleProvider({
     const v = (initialContent as Record<string, unknown> | null)?.["history_timeline_entries"];
     return parseHistoryEntries(v);
   });
-  const [emailTemplates, setEmailTemplates] = useState<EmailTemplateItem[]>(() => seedArray("email_templates", INITIAL_EMAIL_TEMPLATES));
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplateItem[]>(() => seedArray("email_templates", [] as EmailTemplateItem[]));
   const [aboutPageContent, setAboutPageContent] = useState<AboutPageContent>(() => seedObject("about_page", INITIAL_ABOUT_CONTENT));
   const [pageTexts, setPageTexts] = useState<PageTextsSettings>(() => seedObject("page_texts", INITIAL_PAGE_TEXTS));
-  const [donations, setDonations] = useState<DonationProgram[]>(() => seedArray("donations", INITIAL_DONATIONS));
+  const [donations, setDonations] = useState<DonationProgram[]>(() => seedArray("donations", [] as DonationProgram[]));
   const [adminPermissions, setAdminPermissions] = useState<Record<string, { canManageDonations?: boolean; canPublishDirect?: boolean }>>(() => {
     const fromSeed = seedObject("admin_permissions", null as any);
     if (fromSeed && typeof fromSeed === "object") return fromSeed;
@@ -423,7 +424,7 @@ export function ArticleProvider({
     return {};
   });
   const [securityThreats, setSecurityThreats] = useState<SecurityThreatLog[]>(INITIAL_SECURITY_THREATS);
-  const [demaSettings, setDemaSettings] = useState<DemaSettings>(() => seedObject("dema_settings", INITIAL_DEMA_SETTINGS));
+  const [demaSettings, setDemaSettings] = useState<DemaSettings>(() => seedObject("dema_settings", EMPTY_DEMA_SETTINGS));
   const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(true);
   // False sampai katalog (masyayikh/kurikulum/sarana) selesai dihidrasi dari server.
   // Dipakai halaman publik untuk menampilkan skeleton rapi alih-alih data mock (anti-flicker).
@@ -480,6 +481,14 @@ export function ArticleProvider({
       }
 
       // Pastikan dema_settings lokal langsung selaras dengan 24 anggota asli
+      // Data standarnya dimuat malas: jalur ini hanya berjalan bila seed
+      // server tidak membawa dema_settings sama sekali.
+      const seedLocalDemaFallback = () => {
+        void loadSeedData().then(({ INITIAL_DEMA_SETTINGS }) => {
+          try { localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS)); } catch {}
+          setDemaSettings(INITIAL_DEMA_SETTINGS);
+        });
+      };
       const savedDema = localStorage.getItem("mahad_dema_settings");
       if (savedDema && !initialContent?.["dema_settings"]) {
         try {
@@ -490,16 +499,13 @@ export function ArticleProvider({
           if (hasRealData) {
             setDemaSettings(parsedDema);
           } else {
-            localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS));
-            setDemaSettings(INITIAL_DEMA_SETTINGS);
+            seedLocalDemaFallback();
           }
         } catch {
-          localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS));
-          setDemaSettings(INITIAL_DEMA_SETTINGS);
+          seedLocalDemaFallback();
         }
       } else if (!initialContent?.["dema_settings"]) {
-        localStorage.setItem("mahad_dema_settings", JSON.stringify(INITIAL_DEMA_SETTINGS));
-        setDemaSettings(INITIAL_DEMA_SETTINGS);
+        seedLocalDemaFallback();
       }
 
       const savedLogs = localStorage.getItem("mahad_logs");
@@ -2600,36 +2606,41 @@ export function ArticleProvider({
   // Reset Data
   const resetAllData = () => {
     localStorage.clear();
-    setArticles(INITIAL_ARTICLES);
-    setCategories(INITIAL_CATEGORIES);
-    setTheses(INITIAL_THESES);
     setSubmissions([]);
     setNews(INITIAL_NEWS);
     setSettings(INITIAL_SETTINGS);
-    setUsers(INITIAL_ADMIN_USERS);
-    setLogs(INITIAL_ACTIVITY_LOGS);
-    setMedia(INITIAL_MEDIA);
-    setLecturers(INITIAL_LECTURERS);
-    setFacilities(INITIAL_FACILITIES);
-    setAccreditations(INITIAL_ACCREDITATIONS);
-    setCourses(INITIAL_COURSES);
-    setCalendarEvents(INITIAL_CALENDAR);
-    setBahtsulQA(INITIAL_BAHTSUL_QA);
-    setPmbWaves(INITIAL_PMB_WAVES);
-    setPmbFAQs(INITIAL_PMB_FAQS);
-    setSubscribers(INITIAL_SUBSCRIBERS);
-    setEmailLogs(INITIAL_EMAIL_LOGS);
-    setGalleryAlbums(INITIAL_GALLERY_ALBUMS);
-    setComingSoonPages(INITIAL_COMING_SOON_PAGES);
-    setPageSeoList(INITIAL_PAGE_SEO);
+    // Daftar pengguna kembali kosong; panel admin memuat ulang daftar
+    // asli dari tabel users Supabase (data contoh admin tidak lagi di klien).
+    setUsers([]);
     setFooterSettings(INITIAL_FOOTER_SETTINGS);
     setFooterNav(INITIAL_FOOTER_NAV);
     setFooterFocus(INITIAL_FOOTER_FOCUS);
     setNavbarSettings(INITIAL_NAVBAR_SETTINGS);
     setHeroSettings(INITIAL_HERO_SETTINGS);
     setHomeSections(INITIAL_HOME_SECTIONS);
-    setEmailTemplates(INITIAL_EMAIL_TEMPLATES);
     setAboutPageContent(INITIAL_ABOUT_CONTENT);
+    // Koleksi besar diisi dari modul benih yang dimuat malas.
+    void loadSeedData().then((seed) => {
+      setArticles(seed.INITIAL_ARTICLES);
+      setCategories(seed.INITIAL_CATEGORIES);
+      setTheses(seed.INITIAL_THESES);
+      setLogs(seed.INITIAL_ACTIVITY_LOGS);
+      setMedia(seed.INITIAL_MEDIA);
+      setLecturers(seed.INITIAL_LECTURERS);
+      setFacilities(seed.INITIAL_FACILITIES);
+      setAccreditations(seed.INITIAL_ACCREDITATIONS);
+      setCourses(seed.INITIAL_COURSES);
+      setCalendarEvents(seed.INITIAL_CALENDAR);
+      setBahtsulQA(seed.INITIAL_BAHTSUL_QA);
+      setPmbWaves(seed.INITIAL_PMB_WAVES);
+      setPmbFAQs(seed.INITIAL_PMB_FAQS);
+      setSubscribers(seed.INITIAL_SUBSCRIBERS);
+      setEmailLogs(seed.INITIAL_EMAIL_LOGS);
+      setGalleryAlbums(seed.INITIAL_GALLERY_ALBUMS);
+      setComingSoonPages(seed.INITIAL_COMING_SOON_PAGES);
+      setPageSeoList(seed.INITIAL_PAGE_SEO);
+      setEmailTemplates(seed.INITIAL_EMAIL_TEMPLATES);
+    });
   };
 
   // â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ
@@ -2664,10 +2675,12 @@ export function ArticleProvider({
   };
 
   const resetEmailTemplatesToDefault = (user?: string) => {
-    setEmailTemplates(INITIAL_EMAIL_TEMPLATES);
-    localStorage.setItem("mahad_email_templates", JSON.stringify(INITIAL_EMAIL_TEMPLATES));
-    addLog("Reset Template Email ke Standar", "Template Notifikasi", user);
-    syncContentToBackend("email_templates", "email", "Email Templates", INITIAL_EMAIL_TEMPLATES);
+    void loadSeedData().then(({ INITIAL_EMAIL_TEMPLATES }) => {
+      setEmailTemplates(INITIAL_EMAIL_TEMPLATES);
+      localStorage.setItem("mahad_email_templates", JSON.stringify(INITIAL_EMAIL_TEMPLATES));
+      addLog("Reset Template Email ke Standar", "Template Notifikasi", user);
+      syncContentToBackend("email_templates", "email", "Email Templates", INITIAL_EMAIL_TEMPLATES);
+    });
   };
 
   const resetProfileToDefault = async (user?: string) => {
@@ -2697,31 +2710,41 @@ export function ArticleProvider({
   };
 
   const resetAcademicToDefault = (user?: string) => {
-    saveCourses(INITIAL_COURSES);
-    saveCalendarEvents(INITIAL_CALENDAR);
-    addLog("Reset Akademik & Kurikulum ke Standar", "Kurikulum & Kalender", user);
+    void loadSeedData().then(({ INITIAL_COURSES, INITIAL_CALENDAR }) => {
+      saveCourses(INITIAL_COURSES);
+      saveCalendarEvents(INITIAL_CALENDAR);
+      addLog("Reset Akademik & Kurikulum ke Standar", "Kurikulum & Kalender", user);
+    });
   };
 
   const resetLecturersToDefault = (user?: string) => {
-    saveLecturers(INITIAL_LECTURERS);
-    addLog("Reset Daftar Masyayikh/Dosen ke Standar", "Dewan Pengampu", user);
+    void loadSeedData().then(({ INITIAL_LECTURERS }) => {
+      saveLecturers(INITIAL_LECTURERS);
+      addLog("Reset Daftar Masyayikh/Dosen ke Standar", "Dewan Pengampu", user);
+    });
   };
 
   const resetFacilitiesToDefault = (user?: string) => {
-    saveFacilities(INITIAL_FACILITIES);
-    addLog("Reset Sarana & Prasarana ke Standar", "Fasilitas Kampus", user);
+    void loadSeedData().then(({ INITIAL_FACILITIES }) => {
+      saveFacilities(INITIAL_FACILITIES);
+      addLog("Reset Sarana & Prasarana ke Standar", "Fasilitas Kampus", user);
+    });
   };
 
   const resetAccreditationsToDefault = (user?: string) => {
-    saveAccreditations(INITIAL_ACCREDITATIONS);
-    addLog("Reset Data Akreditasi ke Standar", "Sertifikasi", user);
+    void loadSeedData().then(({ INITIAL_ACCREDITATIONS }) => {
+      saveAccreditations(INITIAL_ACCREDITATIONS);
+      addLog("Reset Data Akreditasi ke Standar", "Sertifikasi", user);
+    });
   };
 
   const resetPublicationsToDefault = (user?: string) => {
-    saveArticles(INITIAL_ARTICLES);
-    saveCategories(INITIAL_CATEGORIES);
-    saveTheses(INITIAL_THESES);
-    addLog("Reset Publikasi Fiqh & Skripsi ke Standar", "Artikel, Kategori, & Skripsi", user);
+    void loadSeedData().then(({ INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_THESES }) => {
+      saveArticles(INITIAL_ARTICLES);
+      saveCategories(INITIAL_CATEGORIES);
+      saveTheses(INITIAL_THESES);
+      addLog("Reset Publikasi Fiqh & Skripsi ke Standar", "Artikel, Kategori, & Skripsi", user);
+    });
   };
 
   const resetQuoteToDefault = async (user?: string) => {
@@ -2733,29 +2756,38 @@ export function ArticleProvider({
   };
 
   const resetBahtsulToDefault = (user?: string) => {
-    saveBahtsulQA(INITIAL_BAHTSUL_QA);
-    addLog("Reset Bahtsul Masail ke Standar", "Risalah Fatwa & QA", user);
+    void loadSeedData().then(({ INITIAL_BAHTSUL_QA }) => {
+      saveBahtsulQA(INITIAL_BAHTSUL_QA);
+      addLog("Reset Bahtsul Masail ke Standar", "Risalah Fatwa & QA", user);
+    });
   };
 
   const resetPMBToDefault = (user?: string) => {
     savePmbSettings(INITIAL_PMB_SETTINGS);
-    savePmbWaves(INITIAL_PMB_WAVES);
-    savePmbFAQs(INITIAL_PMB_FAQS);
-    addLog("Reset PMB Online ke Standar", "Gelombang & FAQ PMB", user);
+    void loadSeedData().then(({ INITIAL_PMB_WAVES, INITIAL_PMB_FAQS }) => {
+      savePmbWaves(INITIAL_PMB_WAVES);
+      savePmbFAQs(INITIAL_PMB_FAQS);
+      addLog("Reset PMB Online ke Standar", "Gelombang & FAQ PMB", user);
+    });
   };
 
   const resetNewsAndGalleryToDefault = (user?: string) => {
     saveNews(INITIAL_NEWS);
-    saveGalleryAlbums(INITIAL_GALLERY_ALBUMS);
-    addLog("Reset Warta & Galeri ke Standar", "Berita & Dokumentasi", user);
+    void loadSeedData().then(({ INITIAL_GALLERY_ALBUMS }) => {
+      saveGalleryAlbums(INITIAL_GALLERY_ALBUMS);
+      addLog("Reset Warta & Galeri ke Standar", "Berita & Dokumentasi", user);
+    });
   };
 
   const resetComingSoonToDefault = (user?: string) => {
-    saveComingSoonPages(INITIAL_COMING_SOON_PAGES);
-    addLog("Reset Coming Soon ke Standar", "Placeholder Manager", user);
+    void loadSeedData().then(({ INITIAL_COMING_SOON_PAGES }) => {
+      saveComingSoonPages(INITIAL_COMING_SOON_PAGES);
+      addLog("Reset Coming Soon ke Standar", "Placeholder Manager", user);
+    });
   };
 
   const resetSeoToDefault = async (user?: string) => {
+    const { INITIAL_PAGE_SEO } = await loadSeedData();
     savePageSeoList(INITIAL_PAGE_SEO);
     const next = { ...settings, seo: INITIAL_SETTINGS.seo };
     setSettings(next);
@@ -2970,9 +3002,11 @@ export function ArticleProvider({
   };
 
   const resetDonationsToDefault = (user?: string) => {
-    saveDonations(INITIAL_DONATIONS);
-    addLog("Reset Program Donasi ke Standar", "Modul Donasi & Rekening", user);
-    syncContentToBackend("donations", "donations", "Program Donasi & Rekening", INITIAL_DONATIONS);
+    void loadSeedData().then(({ INITIAL_DONATIONS }) => {
+      saveDonations(INITIAL_DONATIONS);
+      addLog("Reset Program Donasi ke Standar", "Modul Donasi & Rekening", user);
+      syncContentToBackend("donations", "donations", "Program Donasi & Rekening", INITIAL_DONATIONS);
+    });
   };
 
   // â”€â”€ Pertahanan Keamanan & Deteksi Ancaman (Retensi 7 Hari Otomatis) â”€â”€
@@ -3071,6 +3105,7 @@ export function ArticleProvider({
   };
 
   const resetDemaToDefault = async (user?: string): Promise<{ success: boolean; error?: string }> => {
+    const { INITIAL_DEMA_SETTINGS } = await loadSeedData();
     setDemaSettings(INITIAL_DEMA_SETTINGS);
     if (typeof window !== "undefined") {
       try {
