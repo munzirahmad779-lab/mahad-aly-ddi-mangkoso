@@ -46,3 +46,6 @@ next-env.d.ts
 
 # tangkapan layar uji (bukti lokal, tidak perlu di repo)
 /scratch/screenshots/
+
+# lapisan data uji cabang jurnal (lokal, bukan data produksi)
+/.jurnal-uji/

@@ -147,6 +147,22 @@ export default function Navbar() {
     })
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
+  // Cabang jurnal (khusus klon uji ini): satu tautan masuk "Jurnal" selalu
+  // tampil di navigasi utama, menambal daftar dari settings tanpa mengubah
+  // data settings itu sendiri dan tanpa menyentuh halaman lain.
+  const navLinksTampil: NavbarLink[] = navLinks.some((l) => l.url === "/jurnal")
+    ? navLinks
+    : [
+        ...navLinks,
+        {
+          id: "jurnal-cabang-uji",
+          label: "Jurnal",
+          url: "/jurnal",
+          order: 900,
+          isActive: true
+        }
+      ];
+
   const isLinkActive = (url: string) => {
     if (url === "/") return pathname === "/";
     return pathname.startsWith(url.split("#")[0]);
@@ -158,7 +174,7 @@ export default function Navbar() {
   // justify-center + flex-wrap, jadi setiap menu yang ditambah admin lewat
   // panel membuat SELURUH baris bergeser dan tetap persis di tengah
   // (menu paling kiri ikut bergeser ke kiri) — bukan menumpuk di satu sisi.
-  const primaryLinks = navLinks;
+  const primaryLinks = navLinksTampil;
   const overflowLinks: typeof navLinks = [];
   const hasOverflow = overflowLinks.length > 0;
   const isAnyOverflowActive = overflowLinks.some(
@@ -680,7 +696,7 @@ export default function Navbar() {
           </form>
 
           {/* Navigation Links */}
-          {navLinks.map((link) => {
+          {navLinksTampil.map((link) => {
             const hasChildren = link.children && link.children.length > 0;
             // Sama seperti navigasi desktop: Kajian & Diskusi tautan
             // biasa selama halamannya berstatus Segera Hadir.

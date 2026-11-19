@@ -45,6 +45,11 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // KHUSUS KLON UJI di VM lambat ini: generasi halaman statis membaca data
+  // lewat proxy egress yang lambat sehingga batas bawaan 60 detik terlampaui
+  // pada halaman web utama (bukan halaman jurnal). Nilai ini penyesuaian
+  // lingkungan uji semata; konfigurasi produksi kampus tidak diubah.
+  staticPageGenerationTimeout: 300,
   images: {
     remotePatterns: [
       {
