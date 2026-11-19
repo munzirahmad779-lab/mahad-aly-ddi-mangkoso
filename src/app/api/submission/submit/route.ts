@@ -252,7 +252,7 @@ export async function POST(req: NextRequest) {
       abstrak,
       keyword: keywordsList.join(", "),
       file_url: `attachment:${file.name} (${fileSizeStr})`,
-      status: "review",
+      status: "pending",
       catatan_admin: JSON.stringify(metadataPayload)
     };
 
