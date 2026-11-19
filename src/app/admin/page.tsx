@@ -7,8 +7,22 @@ import { supabase } from "@/lib/supabase/client";
 import { useArticles } from "@/context/ArticleContext";
 import ImageUploader from "@/components/common/ImageUploader";
 import { entriesFromText } from "@/components/common/HistoryTimeline";
-import AIWebsiteEditor from "@/components/admin/AIWebsiteEditor";
-import SpreadsheetSyncPanel from "@/components/admin/SpreadsheetSyncPanel";
+import dynamic from "next/dynamic";
+
+// Panel berat yang hanya tampil pada satu menu admin dimuat malas:
+// bundel awal /admin tidak lagi membawa editor AI dan panel sinkronisasi
+// spreadsheet sebelum menunya benar-benar dibuka.
+const PanelMemuat = () => (
+  <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center text-xs font-bold text-slate-500 animate-pulse">
+    Memuat panel…
+  </div>
+);
+const AIWebsiteEditor = dynamic(() => import("@/components/admin/AIWebsiteEditor"), {
+  loading: PanelMemuat
+});
+const SpreadsheetSyncPanel = dynamic(() => import("@/components/admin/SpreadsheetSyncPanel"), {
+  loading: PanelMemuat
+});
 import {
   Article,
   CategoryInfo,

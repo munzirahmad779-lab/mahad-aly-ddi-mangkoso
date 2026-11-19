@@ -1,6 +1,6 @@
 import { SUPER_ADMIN_EMAIL } from "@/lib/admin-constants";
 import { Resend } from "resend";
-import { INITIAL_EMAIL_TEMPLATES } from "@/lib/mock-data";
+import { INITIAL_EMAIL_TEMPLATES } from "@/lib/mock-seed-data";
 import { EmailTemplateItem } from "@/lib/types";
 
 const resendApiKey = process.env.RESEND_API_KEY;
