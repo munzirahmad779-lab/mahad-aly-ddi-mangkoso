@@ -12,6 +12,25 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // 1. Kosongkan era tabel (migrasi
+    // supabase/migrations/003_traffic_daily.sql). Wajib ikut direset:
+    // pembaca menjumlahkan dua era, jadi bila tabel tidak dikosongkan
+    // angka era tabel akan muncul lagi sesudah blob direset.
+    // Kode PGRST202 berarti fungsi belum terpasang (migrasi belum
+    // dijalankan, belum ada era tabel yang perlu dikosongkan), jadi
+    // dilewati dengan peringatan; error lain menggagalkan reset.
+    const { error: rpcError } = await supabaseAdmin.rpc("reset_traffic_stats");
+    if (rpcError) {
+      if (rpcError.code === "PGRST202") {
+        console.warn(
+          "reset_traffic_stats belum terpasang (migrasi 003 belum dijalankan); reset era tabel dilewati."
+        );
+      } else {
+        throw new Error(`Gagal mereset statistik trafik era tabel: ${rpcError.message}`);
+      }
+    }
+
+    // 2. Kosongkan era blob seperti sebelumnya.
     const emptyStats = {
       totalViews: 0,
       uniqueVisitors: 0,

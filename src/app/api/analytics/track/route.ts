@@ -5,6 +5,105 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit
 
 export const dynamic = "force-dynamic";
 
+// Jalur lama (cadangan): catat kunjungan ke blob global_traffic_stats
+// dengan pola baca-ubah-tulis persis seperti sebelum migrasi 003.
+// Dipakai HANYA bila rpc record_traffic_visit gagal, yang berarti
+// migrasi 003 belum terpasang di basis data; tujuannya agar pencatatan
+// tidak pernah berhenti dan tidak pernah ganda (satu kunjungan dicatat
+// ke tepat satu jalur). Error tulis blob tetap dibaca dan melempar,
+// mengikuti perbaikan sapu error Gerbang 0.
+async function catatKeBlobLama(params: {
+  pathname: string;
+  device: string;
+  referrerDisplay: string;
+  today: string;
+  visitorHash: string;
+}): Promise<{ totalViews: number; uniqueVisitors: number }> {
+  const { pathname, device, referrerDisplay, today, visitorHash } = params;
+
+  const { data: record } = await supabaseAdmin
+    .from("site_content")
+    .select("value")
+    .eq("key", "global_traffic_stats")
+    .maybeSingle();
+
+  const current = record?.value || {
+    totalViews: 0,
+    uniqueVisitors: 0,
+    pages: {},
+    daily: {},
+    visitorHashes: {},
+    recentVisits: [],
+    lastVisit: ""
+  };
+
+  const totalViews = (current.totalViews || 0) + 1;
+  const pages = { ...(current.pages || {}) };
+  pages[pathname] = (pages[pathname] || 0) + 1;
+
+  const daily = { ...(current.daily || {}) };
+  const todayDaily = daily[today] || { views: 0, unique: 0 };
+  todayDaily.views = (todayDaily.views || 0) + 1;
+
+  const visitorHashes = { ...(current.visitorHashes || {}) };
+  if (!visitorHashes[today]) {
+    visitorHashes[today] = [];
+  }
+
+  let uniqueVisitors = current.uniqueVisitors || 0;
+  if (!visitorHashes[today].includes(visitorHash)) {
+    visitorHashes[today].push(visitorHash);
+    todayDaily.unique = (todayDaily.unique || 0) + 1;
+    uniqueVisitors += 1;
+  }
+  daily[today] = todayDaily;
+
+  // Pangkas hash pengunjung hari-hari terdahulu agar ukuran data tetap ramping
+  const allDays = Object.keys(visitorHashes).sort();
+  if (allDays.length > 7) {
+    for (let i = 0; i < allDays.length - 7; i++) {
+      delete visitorHashes[allDays[i]];
+    }
+  }
+
+  const recent = Array.isArray(current.recentVisits) ? current.recentVisits : [];
+  const newRecent = [
+    {
+      path: pathname,
+      device,
+      referrer: referrerDisplay,
+      timestamp: new Date().toISOString()
+    },
+    ...recent
+  ].slice(0, 20);
+
+  const updatedStats = {
+    totalViews,
+    uniqueVisitors,
+    pages,
+    daily,
+    visitorHashes,
+    recentVisits: newRecent,
+    lastVisit: new Date().toISOString()
+  };
+
+  const { error: statsError } = await supabaseAdmin.from("site_content").upsert(
+    {
+      key: "global_traffic_stats",
+      group_name: "analytics",
+      label: "Global Traffic Analytics",
+      value: updatedStats,
+      updated_at: new Date().toISOString()
+    },
+    { onConflict: "key" }
+  );
+  if (statsError) {
+    throw new Error(`Gagal menyimpan statistik trafik: ${statsError.message}`);
+  }
+
+  return { totalViews, uniqueVisitors };
+}
+
 export async function POST(req: NextRequest) {
   // Rate limit: telemetri publik, batasi banjir bot
   const rl = checkRateLimit(`track:${getClientIp(req)}`, 120, 60 * 1000);
@@ -36,93 +135,63 @@ export async function POST(req: NextRequest) {
     const isMobile = /mobile|iphone|android|ipad/i.test(userAgent);
     const device = isMobile ? "Mobile" : "Desktop";
 
-    // 1. Ambil data statistik dari Supabase site_content
-    const { data: record } = await supabaseAdmin
-      .from("site_content")
-      .select("value")
-      .eq("key", "global_traffic_stats")
-      .maybeSingle();
+    const referrerDisplay = referrer ? referrer.slice(0, 50) : "Langsung";
 
-    const current = record?.value || {
-      totalViews: 0,
-      uniqueVisitors: 0,
-      pages: {},
-      daily: {},
-      visitorHashes: {},
-      recentVisits: [],
-      lastVisit: ""
-    };
+    // 1. Jalur utama: catat ke baris harian atomik lewat
+    // rpc record_traffic_visit (migrasi
+    // supabase/migrations/003_traffic_daily.sql). Dedup pengunjung,
+    // kenaikan views/uniques, dan log kunjungan terbaru berjalan dalam
+    // satu transaksi basis data, menggantikan pola baca-ubah-tulis blob
+    // yang kehilangan hitungan saat kunjungan bersamaan.
+    let totalViews: number;
+    let uniqueVisitors: number;
 
-    const totalViews = (current.totalViews || 0) + 1;
-    const pages = { ...(current.pages || {}) };
-    pages[pathname] = (pages[pathname] || 0) + 1;
-
-    // Daily & Unique Visitor tracking
-    const daily = { ...(current.daily || {}) };
-    const todayDaily = daily[today] || { views: 0, unique: 0 };
-    todayDaily.views = (todayDaily.views || 0) + 1;
-
-    const visitorHashes = { ...(current.visitorHashes || {}) };
-    if (!visitorHashes[today]) {
-      visitorHashes[today] = [];
-    }
-
-    let uniqueVisitors = current.uniqueVisitors || 0;
-    if (!visitorHashes[today].includes(visitorHash)) {
-      visitorHashes[today].push(visitorHash);
-      todayDaily.unique = (todayDaily.unique || 0) + 1;
-      uniqueVisitors += 1;
-    }
-    daily[today] = todayDaily;
-
-    // Pangkas hash pengunjung hari-hari terdahulu agar ukuran data tetap ramping
-    const allDays = Object.keys(visitorHashes).sort();
-    if (allDays.length > 7) {
-      for (let i = 0; i < allDays.length - 7; i++) {
-        delete visitorHashes[allDays[i]];
+    const { data: recorded, error: recordError } = await supabaseAdmin.rpc(
+      "record_traffic_visit",
+      {
+        p_date: today,
+        p_pathname: pathname,
+        p_visitor_hash: visitorHash,
+        p_device: device,
+        p_referrer: referrerDisplay
       }
-    }
-
-    // Recent visits log (20 terakhir)
-    const recent = Array.isArray(current.recentVisits) ? current.recentVisits : [];
-    const newRecent = [
-      {
-        path: pathname,
-        device,
-        referrer: referrer ? referrer.slice(0, 50) : "Langsung",
-        timestamp: new Date().toISOString()
-      },
-      ...recent
-    ].slice(0, 20);
-
-    const updatedStats = {
-      totalViews,
-      uniqueVisitors,
-      pages,
-      daily,
-      visitorHashes,
-      recentVisits: newRecent,
-      lastVisit: new Date().toISOString()
-    };
-
-    // 2. Simpan kembali ke Supabase. Error WAJIB dibaca: PostgREST tidak
-    // melempar, jadi tanpa destructure ini kegagalan tulis akan tetap
-    // dijawab sukses palsu ke pemanggil.
-    const { error: statsError } = await supabaseAdmin.from("site_content").upsert(
-      {
-        key: "global_traffic_stats",
-        group_name: "analytics",
-        label: "Global Traffic Analytics",
-        value: updatedStats,
-        updated_at: new Date().toISOString()
-      },
-      { onConflict: "key" }
     );
-    if (statsError) {
-      throw new Error(`Gagal menyimpan statistik trafik: ${statsError.message}`);
+
+    if (!recordError && recorded) {
+      // rpc mengembalikan total ERA TABEL saja; tampilkan total
+      // gabungan dengan menambahkan era blob yang sudah membeku
+      // (blob hanya dibaca di sini, tidak ditulis).
+      const { data: legacyRecord } = await supabaseAdmin
+        .from("site_content")
+        .select("value")
+        .eq("key", "global_traffic_stats")
+        .maybeSingle();
+      const legacy = legacyRecord?.value || {};
+      const rec = recorded as { totalViews?: number; uniqueVisitors?: number };
+      totalViews = (legacy.totalViews || 0) + (rec.totalViews || 0);
+      uniqueVisitors = (legacy.uniqueVisitors || 0) + (rec.uniqueVisitors || 0);
+    } else {
+      // Migrasi 003 belum terpasang atau rpc gagal: jatuh ke jalur blob
+      // lama agar pencatatan tidak berhenti. Bukan tulis ganda: tepat
+      // satu jalur yang berjalan per kunjungan.
+      if (recordError) {
+        console.error(
+          "record_traffic_visit gagal, memakai jalur blob lama (migrasi 003 mungkin belum terpasang):",
+          recordError.message
+        );
+      }
+      const hasil = await catatKeBlobLama({
+        pathname,
+        device,
+        referrerDisplay,
+        today,
+        visitorHash
+      });
+      totalViews = hasil.totalViews;
+      uniqueVisitors = hasil.uniqueVisitors;
     }
 
-    // 3. Naikkan penghitung views artikel (kolom articles.views) untuk
+    // 2. Naikkan penghitung views artikel (kolom articles.views) untuk
     // kunjungan halaman artikel, agar panel "Paling banyak dibaca" dan
     // urutan populer membaca angka sungguhan. Kenaikan dilakukan oleh
     // fungsi basis data increment_article_views (migrasi
