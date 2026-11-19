@@ -838,6 +838,10 @@ export function ArticleProvider({
                 status: (s.status as any) || "review",
                 reviewNote: extraMeta.feedback || s.catatan_admin || "",
                 feedback: extraMeta.feedback || "",
+                adminEmailSent: extraMeta.adminEmailSent ?? undefined,
+                adminEmailError: extraMeta.adminEmailError || undefined,
+                authorEmailSent: extraMeta.authorEmailSent ?? undefined,
+                authorEmailError: extraMeta.authorEmailError || undefined,
                 timeline: extraMeta.timeline || [
                   { status: "submitted", label: "Naskah Dikirim", timestamp: new Date(s.created_at).toISOString(), notes: "Naskah berhasil diterima oleh sistem" }
                 ]
@@ -1665,6 +1669,10 @@ export function ArticleProvider({
         fileSize: target.fileSize,
         timeline: updatedTimeline,
         feedback: reviewNote || target.feedback,
+        adminEmailSent: target.adminEmailSent,
+        adminEmailError: target.adminEmailError || null,
+        authorEmailSent: target.authorEmailSent,
+        authorEmailError: target.authorEmailError || null,
         fullPaper: target.fullPaper
       };
       const { data: { session } } = await supabase.auth.getSession();
@@ -1787,6 +1795,10 @@ export function ArticleProvider({
         fileSize: target.fileSize,
         timeline: updatedTimeline,
         feedback: target.feedback,
+        adminEmailSent: target.adminEmailSent,
+        adminEmailError: target.adminEmailError || null,
+        authorEmailSent: target.authorEmailSent,
+        authorEmailError: target.authorEmailError || null,
         fullPaper
       };
       const { error: dbError } = await supabase

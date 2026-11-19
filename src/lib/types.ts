@@ -120,6 +120,8 @@ export interface Submission {
   timeline?: SubmissionTimelineEvent[];
   adminEmailSent?: boolean;
   adminEmailError?: string;
+  authorEmailSent?: boolean;
+  authorEmailError?: string;
   fullPaper?: SubmissionFullPaper;
 }
 
