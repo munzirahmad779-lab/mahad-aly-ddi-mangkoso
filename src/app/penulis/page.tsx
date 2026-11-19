@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 export default function PenulisDashboardPage() {
-  const { submissions, articles, updateSubmissionStatus } = useArticles();
+  const { submissions, articles } = useArticles();
 
   // Auth State
   const [authorName, setAuthorName] = useState("");
@@ -82,15 +82,32 @@ export default function PenulisDashboardPage() {
 
   const handleSendReply = async (subId: string) => {
     if (!replyNote.trim()) return;
-    const target = submissions.find((s) => s.id === subId);
-    if (!target) return;
 
-    const formattedNote = `[Catatan Penulis]: ${replyNote.trim()}`;
-    const res = await updateSubmissionStatus(subId, target.status, formattedNote);
-    if (res && res.success === false) {
-      // Kegagalan simpan ke database harus terlihat, bukan memicu
-      // tanda sukses palsu.
-      alert(`Balasan GAGAL tersimpan di database. ${res.emailResult?.error || "Silakan coba lagi."}`);
+    // Balasan disimpan lewat route server khusus penulis
+    // (POST /api/submission/reply): server mencocokkan kode yang dipakai
+    // penulis saat masuk (state accessCode) dengan kode tersimpan milik
+    // naskah ini, lalu menambahkan catatan ke linimasa TANPA mengubah
+    // status. Jalur lama lewat updateSubmissionStatus menuntut sesi admin,
+    // sehingga balasan penulis selalu gagal tersimpan.
+    try {
+      const res = await fetch("/api/submission/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: subId,
+          code: accessCode.trim(),
+          note: replyNote.trim()
+        })
+      });
+      const resJson = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // Kegagalan simpan ke database harus terlihat, bukan memicu
+        // tanda sukses palsu.
+        alert(`Balasan GAGAL tersimpan di database. ${resJson?.error || "Silakan coba lagi."}`);
+        return;
+      }
+    } catch (e: any) {
+      alert(`Balasan GAGAL tersimpan di database. ${e?.message || "Silakan coba lagi."}`);
       return;
     }
     setReplyNote("");
