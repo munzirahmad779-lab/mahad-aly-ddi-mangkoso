@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
-import KalamHikmahHub from "@/components/articles/KalamHikmahHub";
-import dataKalam from "@/lib/kalam-hikmah.json";
 import { dalamSeriKajianFathulQorib, kolomDariKategori } from "@/lib/content-mappers";
 import type { Article, CategoryInfo, KolomArtikel } from "@/lib/types";
 
@@ -23,13 +21,7 @@ export default function AllArticlesPage() {
   // 2026): campuran seluruh tulisan terbit (artikel, kajian tematik,
   // opini, karya ilmiah fiqh kontemporer, kitab, dan berita), bukan
   // membuka pada satu kolom yang bisa jadi hanya berisi satu tulisan.
-  const [activeTab, setActiveTab] = useState<KolomArtikel | "semua" | "kalam">("semua");
-  // Tautan langsung ke tombol khusus Kalam Hikmah: ?kolom=kalam-hikmah
-  // membuka Mimbar Mahad langsung pada hub kalam hikmah.
-  useEffect(() => {
-    const kolom = new URLSearchParams(window.location.search).get("kolom");
-    if (kolom === "kalam-hikmah") setActiveTab("kalam");
-  }, []);
+  const [activeTab, setActiveTab] = useState<KolomArtikel | "semua">("semua");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
@@ -190,9 +182,7 @@ export default function AllArticlesPage() {
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-3.5 py-1 rounded-full">
-            {activeTab === "kalam"
-              ? "Kalam Hikmah"
-              : activeTab === "semua"
+            {activeTab === "semua"
               ? "Mimbar Mahad"
               : activeTab === "berita"
                 ? "Warta Kampus"
@@ -201,9 +191,7 @@ export default function AllArticlesPage() {
                   : (pageTexts?.opiniBadge || "Ruang Gagasan Santri & Esai")}
           </span>
           <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white mt-3">
-            {activeTab === "kalam"
-              ? "Kalam Hikmah Para Masyayikh"
-              : activeTab === "semua"
+            {activeTab === "semua"
               ? "Mimbar Mahad"
               : activeTab === "berita"
                 ? "Berita & Kegiatan"
@@ -212,9 +200,7 @@ export default function AllArticlesPage() {
                   : (pageTexts?.opiniTitle || "Mimbar Opini & Refleksi Santri")}
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto mt-2">
-            {activeTab === "kalam"
-              ? "Kumpulan kalam hikmah para masyayikh pengajian Ma'had Aly DDI Mangkoso, tersusun menurut nama masyayikhnya."
-              : activeTab === "semua"
+            {activeTab === "semua"
               ? "Seluruh tulisan terbit Ma'had Aly DDI Mangkoso dalam satu mimbar: artikel, kajian tematik, opini dan refleksi, serta karya ilmiah fiqh kontemporer."
               : activeTab === "berita"
                 ? "Kabar kegiatan, pengumuman, dan liputan resmi Ma'had Aly DDI Mangkoso."
@@ -253,27 +239,6 @@ export default function AllArticlesPage() {
                 </span>
               </button>
             ))}
-            {/* Tombol khusus Kalam Hikmah (ketetapan user 19 Nov 2026):
-                bukan kolom artikel, melainkan hub kumpulan kalam hikmah
-                para masyayikh menurut nama masyayikhnya. */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("kalam");
-                setSelectedCategory("all");
-              }}
-              className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 ${
-                activeTab === "kalam"
-                  ? "bg-amber-500 text-white shadow"
-                  : "bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200"
-              }`}
-            >
-              <span>📜</span>
-              <span>Kalam Hikmah</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === "kalam" ? "bg-amber-700 text-amber-100" : "bg-amber-200 text-amber-800"}`}>
-                {dataKalam.masyayikh.length}
-              </span>
-            </button>
           </div>
 
           <Link
@@ -285,10 +250,7 @@ export default function AllArticlesPage() {
           </Link>
         </div>
 
-        {activeTab === "kalam" ? (
-          <KalamHikmahHub />
-        ) : (
-          <>
+        <>
         {/* Controls */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="md:col-span-12 flex flex-wrap items-center gap-2">
@@ -381,8 +343,7 @@ export default function AllArticlesPage() {
             </button>
           </div>
         )}
-          </>
-        )}
+        </>
 
         {/* Elemen Tambahan Kustom CMS Halaman Artikel */}
         {(() => {
