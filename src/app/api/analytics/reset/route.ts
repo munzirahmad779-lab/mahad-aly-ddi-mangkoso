@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       lastVisit: new Date().toISOString()
     };
 
-    await supabaseAdmin.from("site_content").upsert(
+    const { error: resetError } = await supabaseAdmin.from("site_content").upsert(
       {
         key: "global_traffic_stats",
         group_name: "analytics",
@@ -32,6 +32,9 @@ export async function POST(req: NextRequest) {
       },
       { onConflict: "key" }
     );
+    if (resetError) {
+      throw new Error(`Gagal mereset statistik trafik: ${resetError.message}`);
+    }
 
     return NextResponse.json({
       success: true,

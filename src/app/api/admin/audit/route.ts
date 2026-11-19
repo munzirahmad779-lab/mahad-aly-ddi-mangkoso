@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     const existingLogs = Array.isArray(record?.value) ? record.value : [];
     const updatedLogs = [newLog, ...existingLogs.slice(0, 249)]; // Simpan 250 log terakhir
 
-    await supabaseAdmin.from("site_content").upsert(
+    const { error: writeError } = await supabaseAdmin.from("site_content").upsert(
       {
         key: "activity_logs",
         group_name: "audit",
@@ -97,6 +97,11 @@ export async function POST(req: NextRequest) {
       },
       { onConflict: "key" }
     );
+
+    if (writeError) {
+      console.error("Error writing activity_logs:", writeError);
+      return NextResponse.json({ success: false, error: writeError.message }, { status: 500 });
+    }
 
     return NextResponse.json({
       success: true,
@@ -117,7 +122,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    await supabaseAdmin.from("site_content").upsert(
+    const { error: clearError } = await supabaseAdmin.from("site_content").upsert(
       {
         key: "activity_logs",
         group_name: "audit",
@@ -127,6 +132,11 @@ export async function DELETE(req: NextRequest) {
       },
       { onConflict: "key" }
     );
+
+    if (clearError) {
+      console.error("Error clearing activity_logs:", clearError);
+      return NextResponse.json({ success: false, error: clearError.message }, { status: 500 });
+    }
 
     return NextResponse.json({
       success: true,

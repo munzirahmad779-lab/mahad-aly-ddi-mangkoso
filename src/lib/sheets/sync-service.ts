@@ -206,7 +206,7 @@ async function appendAuditLog(action: string, target: string, actorEmail: string
 
     const merged = [entry, ...logs].slice(0, 300);
 
-    await supabaseAdmin.from("site_content").upsert(
+    const { error: logError } = await supabaseAdmin.from("site_content").upsert(
       {
         key: "activity_logs",
         group_name: "system",
@@ -216,6 +216,7 @@ async function appendAuditLog(action: string, target: string, actorEmail: string
       },
       { onConflict: "key" }
     );
+    if (logError) throw logError;
   } catch (error) {
     // Jejak audit tidak boleh menggagalkan sinkronisasi utama
     console.warn("Gagal mencatat log aktivitas sinkronisasi:", error);

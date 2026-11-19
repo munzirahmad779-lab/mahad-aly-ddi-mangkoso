@@ -1656,7 +1656,7 @@ export function ArticleProvider({
         feedback: reviewNote || target.feedback,
         fullPaper: target.fullPaper
       };
-      await supabase
+      const { error: dbError } = await supabase
         .from("submissions")
         .update({
           status,
@@ -1664,26 +1664,70 @@ export function ArticleProvider({
           updated_at: new Date().toISOString()
         })
         .eq("id", id);
-    } catch (e) {
+      if (dbError) {
+        // PostgREST tidak melempar: tanpa membaca error ini, fungsi akan
+        // tetap mengembalikan sukses dan bahkan mengirim email status
+        // untuk status yang TIDAK PERNAH tersimpan. Kegagalan tulis
+        // basis data adalah kegagalan fungsi ini: berhenti di sini,
+        // jangan kirim email, dan kembalikan kegagalan nyata.
+        console.warn("DB notice:", dbError);
+        return {
+          success: false,
+          emailResult: {
+            success: false,
+            error: `Status naskah GAGAL tersimpan di database (${dbError.message}). Email notifikasi tidak dikirim; coba lagi sesudah memeriksa koneksi/sesi.`
+          },
+          accessCode: updatedSub.accessCode
+        };
+      }
+    } catch (e: any) {
       console.warn("DB notice:", e);
+      return {
+        success: false,
+        emailResult: {
+          success: false,
+          error: `Status naskah GAGAL tersimpan di database (${e?.message || "galat tidak dikenal"}). Email notifikasi tidak dikirim.`
+        },
+        accessCode: updatedSub.accessCode
+      };
     }
 
-    // Trigger email notification via API route
+    // Trigger email notification via API route.
+    // Endpoint notify kini khusus admin yang masuk: sertakan Authorization
+    // Bearer dari sesi Supabase admin, dengan pola yang sama seperti
+    // pemanggilan route admin lain di berkas ini. accessCode TIDAK lagi
+    // dikirim: server membacanya dari metadata tersimpan di basis data.
     let emailResult: any = null;
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const res = await fetch("/api/submission/notify", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           id,
           status,
-          accessCode: updatedSub.accessCode,
           note: reviewNote,
           publishedArticleLink
         })
       });
-      const resJson = await res.json();
-      emailResult = resJson?.emailResult || null;
+      const resJson = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // Kegagalan (termasuk 401 sesi kedaluwarsa) harus TERLIHAT oleh
+        // admin sebagai galat nyata, bukan ditelan: panel admin
+        // menampilkan emailResult.error pada pesan peringatannya.
+        emailResult = {
+          success: false,
+          error: resJson?.error || `Endpoint notifikasi menolak permintaan (HTTP ${res.status}).`
+        };
+      } else {
+        emailResult = resJson?.emailResult || null;
+      }
     } catch (e: any) {
       console.warn("Email notify notice:", e);
       emailResult = { success: false, error: e?.message || "Koneksi ke endpoint notifikasi gagal" };
@@ -1732,7 +1776,7 @@ export function ArticleProvider({
         feedback: target.feedback,
         fullPaper
       };
-      await supabase
+      const { error: dbError } = await supabase
         .from("submissions")
         .update({
           status: "under_review",
@@ -1740,8 +1784,16 @@ export function ArticleProvider({
           updated_at: new Date().toISOString()
         })
         .eq("id", id);
+      if (dbError) {
+        // Sama seperti updateSubmissionStatus: kegagalan tulis basis
+        // data tidak boleh dijawab sukses. Pemanggil halaman full-paper
+        // sudah menampilkan alert kegagalan bila success false.
+        console.warn("DB notice:", dbError);
+        return { success: false };
+      }
     } catch (e) {
       console.warn("DB notice:", e);
+      return { success: false };
     }
 
     return { success: true };

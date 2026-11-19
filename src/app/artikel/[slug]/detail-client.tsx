@@ -307,7 +307,7 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
     <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c") }}
       />
       
       {/* Header Artikel */}
@@ -359,11 +359,11 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
 
         {/* Foto utama artikel dari thumbnail_url basis data, bila ada */}
         {article.imageUrl && (
-          <figure className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+          <figure className="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-100">
             <img
               src={article.imageUrl}
               alt={article.title}
-              className="w-full h-auto"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           </figure>
         )}

@@ -86,7 +86,13 @@ export default function PenulisDashboardPage() {
     if (!target) return;
 
     const formattedNote = `[Catatan Penulis]: ${replyNote.trim()}`;
-    await updateSubmissionStatus(subId, target.status, formattedNote);
+    const res = await updateSubmissionStatus(subId, target.status, formattedNote);
+    if (res && res.success === false) {
+      // Kegagalan simpan ke database harus terlihat, bukan memicu
+      // tanda sukses palsu.
+      alert(`Balasan GAGAL tersimpan di database. ${res.emailResult?.error || "Silakan coba lagi."}`);
+      return;
+    }
     setReplyNote("");
     setReplySuccess(true);
     setTimeout(() => setReplySuccess(false), 3000);

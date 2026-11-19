@@ -56,7 +56,7 @@ export default function PmbPage() {
       {(pmbFAQs || []).length > 0 && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }}
         />
       )}
       {/* Hero Section Brosur PMB */}

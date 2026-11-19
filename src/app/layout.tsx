@@ -292,7 +292,7 @@ export default async function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
         {/* Google AdSense: kode verifikasi kepemilikan situs dan pemuat iklan untuk akun penayang Ma'had Aly DDI Mangkoso (ca-pub-8103100253301122), dipasang 8 Nov 2026. */}
         <script

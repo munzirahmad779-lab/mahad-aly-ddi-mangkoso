@@ -90,11 +90,11 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         {/* Gambar Utama Berita (Opsional) */}
         {item.imageUrl && (
-          <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-white">
+          <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-slate-100">
             <img
               src={item.imageUrl}
               alt={item.title}
-              className="w-full max-h-[480px] object-cover"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           </div>
         )}

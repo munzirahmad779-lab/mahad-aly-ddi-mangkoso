@@ -20,13 +20,32 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Query submissions where catatan_admin contains the tracking code or id equals kode (if valid UUID)
+    // Validasi format ketat SEBELUM menyentuh basis data: hanya kode
+    // pelacakan utuh MAD-YYYY-XXXX atau UUID sah yang diterima. Input di
+    // luar pola ini (termasuk "%", "_", dan potongan kode) ditolak 400.
+    // Ini menutup kebocoran wildcard ilike: sebelumnya kode "%" berfungsi
+    // sebagai pola tangkap-semua dan mengembalikan kiriman terbaru.
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(kode);
+    const isTrackingCode = /^MAD-\d{4}-\d{4}$/.test(kode);
+    if (!isUuid && !isTrackingCode) {
+      return NextResponse.json(
+        { error: "Format kode pelacakan tidak valid. Gunakan kode utuh yang Anda terima saat mengirim naskah (contoh: MAD-2026-0001)." },
+        { status: 400 }
+      );
+    }
+
+    // Pertahanan berlapis: loloskan karakter pola LIKE (\, %, _) pada input
+    // sebelum masuk ilike, agar input tidak pernah bisa berfungsi sebagai
+    // wildcard walaupun pola validasi di atas kelak dilonggarkan.
+    const escapeLikePattern = (value: string) => value.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+    const safeKode = escapeLikePattern(kode);
+
+    // Query submissions where catatan_admin contains the tracking code or id equals kode (if valid UUID)
     let query = supabaseAdmin.from("submissions").select("*");
     if (isUuid) {
-      query = query.or(`catatan_admin.ilike.%${kode}%,id.eq.${kode.toLowerCase()}`);
+      query = query.or(`catatan_admin.ilike.%${safeKode}%,id.eq.${kode.toLowerCase()}`);
     } else {
-      query = query.ilike("catatan_admin", `%${kode}%`);
+      query = query.ilike("catatan_admin", `%${safeKode}%`);
     }
 
     const { data: rows, error } = await query

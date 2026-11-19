@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { requireRole } from "@/lib/supabase/admin-guard";
+import { requireRole, requireSuperAdmin } from "@/lib/supabase/admin-guard";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 // Gerbang tulis database terpusat. Semua operasi tulis admin harus lewat sini
@@ -8,6 +8,14 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit
 // - Autentikasi: wajib super_admin / editor dengan sesi Supabase asli (mode tamu sudah dihapus).
 // - Allowlist tabel: menutup akses ke tabel di luar daftar (auth, storage, dsb).
 // - Operasi & kolom match tervalidasi untuk mencegah injection pola query.
+// - Tabel "users" perlakuan khusus: HANYA super_admin (gerbang kedua
+//   requireSuperAdmin) dan payload disaring ke daftar kolom tulis users.
+//   Tanpa ini editor dapat meng-update baris users miliknya dan menaikkan
+//   kolom role-nya sendiri menjadi super_admin. Manajemen pengguna yang sah
+//   memang khusus super_admin: buat/edit/hapus/reset sandi lewat
+//   /api/admin/users dan /api/admin/invite (keduanya requireSuperAdmin),
+//   dan satu-satunya pemanggil tabel users lewat route ini (toggle
+//   is_active di panel) berada di menu khusus super_admin.
 
 const ALLOWED_TABLES = new Set([
   "articles",
@@ -24,6 +32,20 @@ const ALLOWED_TABLES = new Set([
 const ALLOWED_OPS = new Set(["insert", "update", "delete", "upsert"]);
 
 const ALLOWED_MATCH_COLUMNS = new Set(["id", "slug", "key", "email"]);
+
+// Kolom yang boleh ditulis pada tabel users (sesuai skema public.users).
+// Kolom sensitif role dan is_active termasuk di sini, tetapi hanya dapat
+// dicapai super_admin karena gerbang requireSuperAdmin untuk tabel users
+// berjalan sebelum daftar ini diperiksa.
+const USERS_WRITABLE_COLUMNS = new Set([
+  "id",
+  "email",
+  "nama_lengkap",
+  "role",
+  "is_active",
+  "invited_by",
+  "updated_at"
+]);
 
 export async function POST(request: Request) {
   try {
@@ -56,6 +78,25 @@ export async function POST(request: Request) {
     if (!op || !ALLOWED_OPS.has(op)) {
       return NextResponse.json({ error: `Operasi "${op}" tidak dikenal.` }, { status: 400 });
     }
+
+    // Tabel users: gerbang kedua khusus super_admin + saringan kolom tulis.
+    if (table === "users") {
+      const superAdmin = await requireSuperAdmin(request);
+      if (!superAdmin.ok) {
+        return superAdmin.response;
+      }
+      if (payload && typeof payload === "object") {
+        for (const col of Object.keys(payload)) {
+          if (!USERS_WRITABLE_COLUMNS.has(col)) {
+            return NextResponse.json(
+              { error: `Kolom "${col}" tidak boleh ditulis pada tabel users.` },
+              { status: 403 }
+            );
+          }
+        }
+      }
+    }
+
     if (op !== "delete" && (!payload || typeof payload !== "object")) {
       return NextResponse.json({ error: "Payload wajib diisi." }, { status: 400 });
     }

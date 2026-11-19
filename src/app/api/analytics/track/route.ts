@@ -105,8 +105,10 @@ export async function POST(req: NextRequest) {
       lastVisit: new Date().toISOString()
     };
 
-    // 2. Simpan kembali ke Supabase
-    await supabaseAdmin.from("site_content").upsert(
+    // 2. Simpan kembali ke Supabase. Error WAJIB dibaca: PostgREST tidak
+    // melempar, jadi tanpa destructure ini kegagalan tulis akan tetap
+    // dijawab sukses palsu ke pemanggil.
+    const { error: statsError } = await supabaseAdmin.from("site_content").upsert(
       {
         key: "global_traffic_stats",
         group_name: "analytics",
@@ -116,26 +118,30 @@ export async function POST(req: NextRequest) {
       },
       { onConflict: "key" }
     );
+    if (statsError) {
+      throw new Error(`Gagal menyimpan statistik trafik: ${statsError.message}`);
+    }
 
     // 3. Naikkan penghitung views artikel (kolom articles.views) untuk
     // kunjungan halaman artikel, agar panel "Paling banyak dibaca" dan
-    // urutan populer membaca angka sungguhan. Sebelumnya kolom ini tidak
-    // pernah ditulis jalur pembaca sehingga selalu 0. Kegagalan di sini
-    // tidak menggagalkan pencatatan statistik utama di atas.
+    // urutan populer membaca angka sungguhan. Kenaikan dilakukan oleh
+    // fungsi basis data increment_article_views (migrasi
+    // supabase/migrations/002_increment_article_views.sql) sebagai SATU
+    // UPDATE atomik di sisi server basis data, menggantikan pola lama
+    // select-lalu-update yang kehilangan kenaikan saat bersamaan.
+    // PRASYARAT: fungsi itu harus sudah terpasang di Supabase sebelum
+    // kode ini di-deploy; bila belum, rpc mengembalikan error dan
+    // kenaikan views gagal (tercatat sebagai peringatan di log server),
+    // sementara pencatatan statistik utama di atas tidak ikut gagal.
     const cocokArtikel = pathname.match(/^\/artikel\/([^/]+)$/);
     if (cocokArtikel) {
       try {
         const slugArtikel = decodeURIComponent(cocokArtikel[1]);
-        const { data: barisArtikel } = await supabaseAdmin
-          .from("articles")
-          .select("views")
-          .eq("slug", slugArtikel)
-          .maybeSingle();
-        if (barisArtikel) {
-          await supabaseAdmin
-            .from("articles")
-            .update({ views: (barisArtikel.views || 0) + 1 })
-            .eq("slug", slugArtikel);
+        const { error: rpcError } = await supabaseAdmin.rpc("increment_article_views", {
+          article_slug: slugArtikel
+        });
+        if (rpcError) {
+          console.warn("Increment views artikel gagal:", rpcError.message);
         }
       } catch (e) {
         console.warn("Increment views artikel gagal:", e);

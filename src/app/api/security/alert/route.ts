@@ -76,7 +76,11 @@ export async function POST(req: NextRequest) {
       adminEmails: verifiedAdminEmails
     });
 
-    // 5. Sinkronkan ke database Supabase agar langsung tampil di Pusat Pertahanan & Panel Akun Terkunci
+    // 5. Sinkronkan ke database Supabase agar langsung tampil di Pusat Pertahanan & Panel Akun Terkunci.
+    // Kegagalan tulis di langkah ini dicatat eksplisit dan dilaporkan
+    // lewat field dbSynced pada respons, bukan ditelan: PostgREST
+    // mengembalikan { error } dan tidak melempar ke catch di bawah.
+    let dbSynced = true;
     try {
       const now = new Date();
       const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
@@ -117,13 +121,17 @@ export async function POST(req: NextRequest) {
         ...validThreats.slice(0, 99)
       ];
 
-      await supabaseAdmin.from("site_content").upsert({
+      const { error: threatWriteErr } = await supabaseAdmin.from("site_content").upsert({
         key: "security_threats",
         group_name: "security",
         label: "Daftar Ancaman & Sensor Siber",
         value: updatedThreats,
         updated_at: new Date().toISOString()
       }, { onConflict: "key" });
+      if (threatWriteErr) {
+        dbSynced = false;
+        console.error("Gagal menyimpan security_threats:", threatWriteErr.message);
+      }
 
       // 5b. Jika brute force salah sandi, sinkronkan ke locked_accounts
       if (safeThreatType === "brute_force") {
@@ -146,23 +154,29 @@ export async function POST(req: NextRequest) {
             reason: "3 kali salah memasukkan kata sandi"
           };
 
-          await supabaseAdmin.from("site_content").upsert({
+          const { error: lockedWriteErr } = await supabaseAdmin.from("site_content").upsert({
             key: "locked_accounts",
             group_name: "security",
             label: "Daftar Akun Terkunci",
             value: currentLocked,
             updated_at: new Date().toISOString()
           }, { onConflict: "key" });
+          if (lockedWriteErr) {
+            dbSynced = false;
+            console.error("Gagal menyimpan locked_accounts:", lockedWriteErr.message);
+          }
         }
       }
     } catch (dbErr) {
+      dbSynced = false;
       console.warn("Gagal mencatat log keamanan ke Supabase:", dbErr);
     }
 
     return NextResponse.json({
       success: true,
       message: "Security alert broadcasted to administrators successfully",
-      details: alertResult
+      details: alertResult,
+      dbSynced
     });
   } catch (error: any) {
     console.error("Security alert API error:", error);

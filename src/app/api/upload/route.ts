@@ -172,6 +172,10 @@ export async function POST(req: NextRequest) {
 
       if (!dbError && data) {
         mediaRecord = data;
+      } else if (dbError) {
+        // Pencatatan metadata gagal: berkasnya sendiri sudah terunggah,
+        // jadi kegagalan ini terlihat di log server, bukan ditelan.
+        console.warn("Notice: DB logging media gagal:", dbError.message);
       }
     } catch (dbErr) {
       console.warn("Notice: DB logging exception:", dbErr);
@@ -253,17 +257,31 @@ export async function DELETE(req: NextRequest) {
     // 2. Hapus dari Supabase Storage
     if (key) {
       try {
-        await supabaseAdmin.storage.from("media").remove([key]);
+        const { error: removeErr } = await supabaseAdmin.storage.from("media").remove([key]);
+        if (removeErr) {
+          console.warn("Supabase Storage remove gagal:", removeErr.message);
+        }
       } catch (supaErr) {
         console.warn("Supabase Storage remove notice:", supaErr);
       }
     }
 
-    // 3. Hapus catatan database
+    // 3. Hapus catatan database. Error WAJIB dibaca: tanpa ini route
+    // menjawab sukses padahal baris media masih ada di basis data.
+    let dbDeleteError: { message: string } | null = null;
     if (id) {
-      await supabaseAdmin.from("media").delete().eq("id", id);
+      const { error } = await supabaseAdmin.from("media").delete().eq("id", id);
+      dbDeleteError = error;
     } else if (url) {
-      await supabaseAdmin.from("media").delete().eq("url", url);
+      const { error } = await supabaseAdmin.from("media").delete().eq("url", url);
+      dbDeleteError = error;
+    }
+    if (dbDeleteError) {
+      console.error("Gagal menghapus catatan media:", dbDeleteError);
+      return NextResponse.json(
+        { error: `Gagal menghapus catatan media dari database: ${dbDeleteError.message}` },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({

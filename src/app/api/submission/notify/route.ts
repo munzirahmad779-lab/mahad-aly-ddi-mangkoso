@@ -1,22 +1,78 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase/client";
+import { supabaseAdmin } from "@/lib/supabase/server";
+import { requireRole } from "@/lib/supabase/admin-guard";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { sendStatusNotificationToAuthor } from "@/lib/email/service";
 import { EmailTemplateItem } from "@/lib/types";
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { id, status, note, publishedArticleLink } = body;
+// Endpoint notifikasi status naskah: KHUSUS admin yang sedang masuk
+// (super_admin / editor). Sebelumnya route ini publik tanpa autentikasi dan
+// memercayai body.accessCode, sehingga siapa pun yang tahu UUID naskah dapat
+// memicu email Kode Akses Tahap 2 berisi kode karangannya sendiri.
+// Perbaikan ini satu paket dengan pemindahan bacaan ke supabaseAdmin:
+// gerbang peran dipasang pada perubahan yang sama, tidak sesudahnya.
+//
+// Kode akses TIDAK PERNAH diambil dari body pemanggil. Satu-satunya sumber
+// yang sah adalah metadata tersimpan di catatan_admin naskah (ditulis alur
+// admin saat status diubah, sebelum endpoint ini dipanggil).
 
-    if (!id || !status) {
+// Nilai status yang dikenal alur naskah (lihat Submission["status"] di
+// src/lib/types.ts, termasuk varian lama "revisi"/"publish").
+const VALID_STATUSES = new Set([
+  "submitted",
+  "review",
+  "under_review",
+  "revision",
+  "revisi",
+  "accepted",
+  "rejected",
+  "published",
+  "publish"
+]);
+
+export async function POST(req: NextRequest) {
+  // Batas laju lebih dulu, sebelum pekerjaan sesi/basis data apa pun.
+  // checkRateLimit berbasis memori proses (di Workers tidak berbagi antar
+  // isolat), jadi ini lapis sementara, bukan penyelesaian akhir.
+  const rl = checkRateLimit(`notify:${getClientIp(req)}`, 30, 60 * 1000);
+  if (!rl.allowed) return rateLimitResponse(rl);
+
+  // Gerbang sesi admin yang sah di sisi server (pola admin-guard yang sama
+  // seperti route admin lain). Tanpa sesi: 401 sebelum data apa pun dibaca.
+  const auth = await requireRole(req, ["super_admin", "editor"]);
+  if (!auth.ok) {
+    return auth.response;
+  }
+
+  try {
+    const body = await req.json().catch(() => null);
+    const { id, status, note, publishedArticleLink } = (body ?? {}) as {
+      id?: unknown;
+      status?: unknown;
+      note?: unknown;
+      publishedArticleLink?: unknown;
+    };
+
+    if (typeof id !== "string" || !id || typeof status !== "string" || !status) {
       return NextResponse.json(
         { error: "Parameter 'id' dan 'status' wajib diisi." },
         { status: 400 }
       );
     }
+    if (!VALID_STATUSES.has(status)) {
+      return NextResponse.json(
+        { error: `Status "${status}" tidak dikenal.` },
+        { status: 400 }
+      );
+    }
+    const noteText = typeof note === "string" ? note : undefined;
+    const publishedLink =
+      typeof publishedArticleLink === "string" ? publishedArticleLink : undefined;
 
-    // 1. Fetch submission data from Supabase
-    const { data: subData, error: subError } = await supabase
+    // 1. Baca naskah memakai klien server (service role), BUKAN klien anon:
+    // sesudah gerbang peran di atas, bacaan ini tidak lagi bergantung pada
+    // lolos/tidaknya RLS untuk kunci publishable.
+    const { data: subData, error: subError } = await supabaseAdmin
       .from("submissions")
       .select("*")
       .eq("id", id)
@@ -40,9 +96,9 @@ export async function POST(req: NextRequest) {
 
     const trackingCode = extraMeta.trackingCode || `MAD-${new Date().getFullYear()}-${id.slice(0, 4)}`;
 
-    // 2. Fetch custom email templates if any
+    // 2. Ambil templat email kustom bila ada (juga lewat klien server)
     let customTemplates: EmailTemplateItem[] | undefined;
-    const { data: tmplRow } = await supabase
+    const { data: tmplRow } = await supabaseAdmin
       .from("site_content")
       .select("value")
       .eq("key", "email_templates")
@@ -51,7 +107,9 @@ export async function POST(req: NextRequest) {
       customTemplates = tmplRow.value;
     }
 
-    const accessCode = body.accessCode || extraMeta.accessCode;
+    // Kode akses HANYA dari metadata tersimpan. body.accessCode sengaja
+    // tidak dibaca sama sekali.
+    const accessCode = extraMeta.accessCode;
 
     // 3. Send email to author
     let emailResult: any;
@@ -71,9 +129,9 @@ export async function POST(req: NextRequest) {
         authorName: subData.nama,
         title: subData.judul,
         trackingCode,
-        status,
-        note: note || extraMeta.feedback || "",
-        publishedArticleLink,
+        status: status as "revision" | "accepted" | "rejected" | "published",
+        note: noteText || extraMeta.feedback || "",
+        publishedArticleLink: publishedLink,
         customTemplates
       });
     }

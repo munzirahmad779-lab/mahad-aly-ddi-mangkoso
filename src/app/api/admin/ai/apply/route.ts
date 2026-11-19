@@ -59,14 +59,19 @@ export async function POST(req: NextRequest) {
     const existingSnapshots = Array.isArray(snapRecord?.value) ? snapRecord.value : [];
     const updatedSnapshots = [newSnapshot, ...existingSnapshots].slice(0, 50); // Simpan 50 riwayat terakhir
 
-    // Simpan snapshot
-    await supabaseAdmin.from("site_content").upsert({
+    // Simpan snapshot. Snapshot adalah syarat aman penerapan (tanpa
+    // snapshot tidak ada rollback), jadi error tulis di sini WAJIB
+    // menggagalkan route, bukan ditelan.
+    const { error: snapshotErr } = await supabaseAdmin.from("site_content").upsert({
       key: "ai_content_snapshots",
       group_name: "ai_system",
       label: "AI Content Version Snapshots",
       value: updatedSnapshots,
       updated_at: new Date().toISOString()
     }, { onConflict: "key" });
+    if (snapshotErr) {
+      throw new Error(`Gagal menyimpan snapshot versi: ${snapshotErr.message}`);
+    }
 
     // 3. Terapkan pembaruan ke kunci konten tujuan
     const group =
@@ -98,13 +103,18 @@ export async function POST(req: NextRequest) {
       for (const lec of proposedData) {
         if (lec.id && lec.name) {
           try {
-            await supabaseAdmin.from("collections").upsert({
+            const { error: colErr } = await supabaseAdmin.from("collections").upsert({
               id: lec.id,
               collection_type: "masyayikh",
               data: lec,
               order_index: lec.order || 1,
               is_published: lec.isActive !== false
             }, { onConflict: "id" });
+            if (colErr) {
+              // Sinkron collections bersifat pendamping; kegagalannya
+              // terlihat di log server, bukan ditelan diam-diam.
+              console.warn("Sinkron collections masyayikh gagal:", colErr.message);
+            }
           } catch {
             // Abaikan jika tabel collections di localhost belum ada
           }
@@ -114,13 +124,16 @@ export async function POST(req: NextRequest) {
       for (const fac of proposedData) {
         if (fac.id && fac.name) {
           try {
-            await supabaseAdmin.from("collections").upsert({
+            const { error: colErr } = await supabaseAdmin.from("collections").upsert({
               id: fac.id,
               collection_type: "sarana",
               data: fac,
               order_index: fac.order || 1,
               is_published: true
             }, { onConflict: "id" });
+            if (colErr) {
+              console.warn("Sinkron collections sarana gagal:", colErr.message);
+            }
           } catch {
             // Abaikan jika tabel collections di localhost belum ada
           }
@@ -130,13 +143,16 @@ export async function POST(req: NextRequest) {
       for (const crs of proposedData) {
         if (crs.id && crs.name) {
           try {
-            await supabaseAdmin.from("collections").upsert({
+            const { error: colErr } = await supabaseAdmin.from("collections").upsert({
               id: crs.id,
               collection_type: "courses",
               data: crs,
               order_index: crs.order || 1,
               is_published: true
             }, { onConflict: "id" });
+            if (colErr) {
+              console.warn("Sinkron collections courses gagal:", colErr.message);
+            }
           } catch {
             // Abaikan jika tabel collections di localhost belum ada
           }
@@ -164,13 +180,16 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
 
       const existingActLogs = Array.isArray(actRecord?.value) ? actRecord.value : [];
-      await supabaseAdmin.from("site_content").upsert({
+      const { error: logWriteErr } = await supabaseAdmin.from("site_content").upsert({
         key: "activity_logs",
         group_name: "audit",
         label: "Arsip Log Aktivitas Admin",
         value: [newAuditLog, ...existingActLogs.slice(0, 249)],
         updated_at: new Date().toISOString()
       }, { onConflict: "key" });
+      if (logWriteErr) {
+        console.warn("Gagal mencatat audit log AI apply:", logWriteErr.message);
+      }
     } catch (logErr) {
       console.warn("Gagal mencatat audit log AI apply:", logErr);
     }

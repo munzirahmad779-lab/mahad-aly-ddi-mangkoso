@@ -92,13 +92,16 @@ export async function POST(req: NextRequest) {
       appliedAt: new Date().toISOString()
     };
 
-    await supabaseAdmin.from("site_content").upsert({
+    const { error: snapLogErr } = await supabaseAdmin.from("site_content").upsert({
       key: "ai_content_snapshots",
       group_name: "ai_system",
       label: "AI Content Version Snapshots",
       value: [rollbackLogSnapshot, ...existingSnapshots].slice(0, 50),
       updated_at: new Date().toISOString()
     }, { onConflict: "key" });
+    if (snapLogErr) {
+      throw new Error(`Gagal mencatat riwayat rollback: ${snapLogErr.message}`);
+    }
 
     // 4. Catat aksi rollback ke arsip Log Aktivitas Admin
     try {
@@ -120,13 +123,16 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
 
       const existingActLogs = Array.isArray(actRecord?.value) ? actRecord.value : [];
-      await supabaseAdmin.from("site_content").upsert({
+      const { error: logWriteErr } = await supabaseAdmin.from("site_content").upsert({
         key: "activity_logs",
         group_name: "audit",
         label: "Arsip Log Aktivitas Admin",
         value: [newAuditLog, ...existingActLogs.slice(0, 249)],
         updated_at: new Date().toISOString()
       }, { onConflict: "key" });
+      if (logWriteErr) {
+        console.warn("Gagal mencatat audit log rollback:", logWriteErr.message);
+      }
     } catch (logErr) {
       console.warn("Gagal mencatat audit log rollback:", logErr);
     }

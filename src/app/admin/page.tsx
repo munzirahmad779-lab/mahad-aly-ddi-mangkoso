@@ -10039,6 +10039,10 @@ export default function AdminPage() {
                           return;
                         }
                         const res = await updateSubmissionStatus(revisionModalSub.id, "revision", revisionNote);
+                        if (res && res.success === false) {
+                          alert(`❌ Status revisi GAGAL tersimpan di database. ${res.emailResult?.error || "Silakan coba lagi."}`);
+                          return;
+                        }
                         if (res?.emailResult?.success) {
                           alert(`✓ Catatan revisi berhasil disimpan & dikirim ke ${revisionModalSub.email}!`);
                         } else {
@@ -10099,6 +10103,10 @@ export default function AdminPage() {
                       onClick={async () => {
                         const reason = rejectReason || "Naskah belum memenuhi kriteria publikasi dewan redaksi.";
                         const res = await updateSubmissionStatus(rejectModalSub.id, "rejected", reason);
+                        if (res && res.success === false) {
+                          alert(`❌ Status penolakan GAGAL tersimpan di database. ${res.emailResult?.error || "Silakan coba lagi."}`);
+                          return;
+                        }
                         if (res?.emailResult?.success) {
                           alert(`✓ Status penolakan tersimpan & pemberitahuan telah dikirim ke ${rejectModalSub.email}.`);
                         } else {
@@ -10528,6 +10536,10 @@ export default function AdminPage() {
                                       "accepted",
                                       "Alhamdulillah, abstrak naskah Anda telah disetujui dewan redaksi. Silakan lanjutkan pengisian Naskah Lengkap (Tahap 2) melalui portal penulisan."
                                     );
+                                    if (res && res.success === false) {
+                                      alert(`❌ Persetujuan GAGAL tersimpan di database. ${res.emailResult?.error || "Silakan coba lagi."}`);
+                                      return;
+                                    }
                                     if (res?.emailResult?.success) {
                                       alert(`✓ Abstrak disetujui! Kode akses Tahap 2 telah dikirimkan ke email ${sub.email}.`);
                                     } else {
