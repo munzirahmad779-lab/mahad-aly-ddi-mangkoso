@@ -6,7 +6,9 @@ import Reveal from "@/components/common/Reveal";
 
 // Bagian Kalam Anregurutta di beranda (pemasangan kalam hikmah,
 // perintah user 18-19 Nov 2026): foto Anregurutta Mangkoso (Gurutta
-// Farid, Muh. Faried Wadjedy) di samping kalam beliau. Yang tampil
+// Farid; keterangan foto memakai nama lengkap bergelar pilihan user
+// 19 Nov 2026: Prof. Dr. KH. Muhammad Faried Wadjedy, Lc., M.A.)
+// di samping kalam beliau. Yang tampil
 // hanya kalam Anregurutta, tiap kalam wajib menyertakan nama beliau,
 // dan semuanya tertaut ke artikel Mutiara Hikmah Para Masyayikh. Isi
 // kalam sama dengan yang berjalan di ticker navbar (kalam pendek
@@ -53,7 +55,7 @@ export default function KalamSection() {
               <div className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-3xl overflow-hidden border-4 border-mahad-gold/50 shadow-2xl mx-auto">
                 <img
                   src="/gurutta-farid.jpg"
-                  alt="Anregurutta Mangkoso, Muh. Faried Wadjedy"
+                  alt="Anregurutta Mangkoso, Prof. Dr. KH. Muhammad Faried Wadjedy, Lc., M.A."
                   className="w-full h-full object-cover object-top"
                   loading="lazy"
                 />
@@ -63,7 +65,7 @@ export default function KalamSection() {
                 Anregurutta Mangkoso
               </p>
               <p className="text-xs sm:text-sm text-white/70 font-medium">
-                Muh. Faried Wadjedy
+                Prof. Dr. KH. Muhammad Faried Wadjedy, Lc., M.A.
                 <br />
                 Pimpinan Pondok Pesantren DDI Mangkoso
               </p>

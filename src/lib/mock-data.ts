@@ -1350,7 +1350,7 @@ export const INITIAL_HERO_SETTINGS: HeroSectionSettings = {
 
 export const INITIAL_HOME_SECTIONS: HomeSectionConfigItem[] = [
   { id: "sec-hero", name: "hero", label: "Hero Banner & Metrik", isActive: true, order: 1 },
-  { id: "sec-quote", name: "quote", label: "Kalam Hikmah (Quote Salaf)", isActive: true, order: 2 },
+  { id: "sec-quote", name: "quote", label: "Kalam Hikmah (Quote Salaf)", isActive: false, order: 2 },
   { id: "sec-kalam-anregurutta", name: "kalam_anregurutta", label: "Kalam Anregurutta (Foto dan Putaran Kalam)", isActive: true, order: 3 },
   { id: "sec-about", name: "about", label: "Pilar Pendidikan (Tentang Kami)", isActive: true, order: 4 },
   { id: "sec-categories", name: "categories", label: "Kategori Kajian Fiqh", isActive: true, order: 5 },
