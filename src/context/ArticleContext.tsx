@@ -1646,7 +1646,12 @@ export function ArticleProvider({
     saveSubmissions(updatedList);
     addLog(`Ubah Status Naskah (${status})`, target.judul);
 
-    // Sync to Supabase
+    // Sync to Supabase LEWAT RUTE SERVER: penulisan langsung dari peramban
+    // memakai klien anon ditolak RLS submissions (permission denied),
+    // sehingga status tidak pernah tersimpan. Rute /api/submission/status
+    // menulis memakai service role di belakang gerbang sesi admin; token
+    // sesi disertakan dengan pola yang sama seperti pemanggilan notify
+    // di bawah.
     try {
       const extraMeta = {
         trackingCode: target.trackingCode,
@@ -1662,26 +1667,28 @@ export function ArticleProvider({
         feedback: reviewNote || target.feedback,
         fullPaper: target.fullPaper
       };
-      const { error: dbError } = await supabase
-        .from("submissions")
-        .update({
-          status,
-          catatan_admin: JSON.stringify(extraMeta),
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", id);
-      if (dbError) {
-        // PostgREST tidak melempar: tanpa membaca error ini, fungsi akan
-        // tetap mengembalikan sukses dan bahkan mengirim email status
-        // untuk status yang TIDAK PERNAH tersimpan. Kegagalan tulis
-        // basis data adalah kegagalan fungsi ini: berhenti di sini,
-        // jangan kirim email, dan kembalikan kegagalan nyata.
-        console.warn("DB notice:", dbError);
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const statusRes = await fetch("/api/submission/status", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ id, status, extraMeta })
+      });
+      const statusJson = await statusRes.json().catch(() => ({}));
+      if (!statusRes.ok) {
+        // Kegagalan tulis basis data adalah kegagalan fungsi ini: berhenti
+        // di sini, jangan kirim email, dan kembalikan kegagalan nyata.
+        // Termasuk 401 bila pemanggil tidak punya sesi admin (halaman
+        // penulis), sama seperti perilaku route notify bagi pemanggil itu.
         return {
           success: false,
           emailResult: {
             success: false,
-            error: `Status naskah GAGAL tersimpan di database (${dbError.message}). Email notifikasi tidak dikirim; coba lagi sesudah memeriksa koneksi/sesi.`
+            error: `Status naskah GAGAL tersimpan di database (${statusJson?.error || `Endpoint status menolak permintaan (HTTP ${statusRes.status})`}). Email notifikasi tidak dikirim; coba lagi sesudah memeriksa koneksi/sesi.`
           },
           accessCode: updatedSub.accessCode
         };
