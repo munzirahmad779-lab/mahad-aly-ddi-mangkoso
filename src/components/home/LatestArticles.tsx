@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
+import { muatPetaKunjungan } from "@/components/common/ViewCount";
 import Reveal from "@/components/common/Reveal";
 import { urutkanPrioritas } from "@/lib/priorities";
 import { dalamSeriKajianFathulQorib } from "@/lib/content-mappers";
@@ -12,6 +13,17 @@ export default function LatestArticles() {
   const { articles, homePriorities } = useArticles();
   const [selectedCategory, setSelectedCategory] = useState<string>("semua");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [pages, setPages] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let alive = true;
+    muatPetaKunjungan().then((p) => {
+      if (alive) setPages(p);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // Beranda hanya menampilkan artikel terbit; draf tidak tampil dan
   // tidak ikut terhitung di teks jumlah artikel. Seri Kajian Fathul
@@ -21,11 +33,21 @@ export default function LatestArticles() {
     (a) => a.status !== "draft" && !dalamSeriKajianFathulQorib(a)
   );
 
-  // Paling banyak dibaca (data views riil dari pembaca)
+  // Paling banyak dibaca: angka pembaca WAJIB dari peta kunjungan
+  // server yang sama dengan lencana pembaca di kartu dan di halaman
+  // artikel (gabungan era blob + era tabel atomik), BUKAN kolom views
+  // atomik yang hanya menghitung sejak 11 Nov 2026. Panel ini pernah
+  // menampilkan 9 pembaca untuk artikel Nurhayati yang angka riilnya
+  // 60 (kasus 22 Nov 2026) karena memakai kolom atomik itu.
+  const pembacaRiil = (a: (typeof publicArticles)[number]) => {
+    const n = pages[`/artikel/${a.slug}`];
+    return typeof n === "number" ? n : a.views || 0;
+  };
   const palingDibaca = [...publicArticles]
-    .sort((a, b) => (b.views || 0) - (a.views || 0))
+    .map((a) => ({ ...a, views: pembacaRiil(a) }))
+    .sort((a, b) => b.views - a.views)
     .slice(0, 5)
-    .filter((a) => (a.views || 0) > 0);
+    .filter((a) => a.views > 0);
 
   // Prioritas admin (panel Prioritas Beranda) tampil lebih dulu;
   // sisanya mengikuti urutan asal (terbaru dulu).
