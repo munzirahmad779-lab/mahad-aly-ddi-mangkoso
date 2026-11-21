@@ -4,15 +4,19 @@ import { supabaseAnon } from "@/lib/supabase/server";
 const BASE = "https://mahadaly-ddimangkoso.ac.id";
 const SITE = "Ma'had Aly DDI Mangkoso";
 
-// Gambar pratinjau tautan (og:image) untuk SEMUA halaman baca:
-// logo situs, sesuai ketetapan user 9 Nov 2026 (logo saja, bukan foto
-// sampul tulisan), supaya kartu pratinjau WhatsApp selalu berlogo dan
-// tidak tampak seperti tautan phishing. Berkasnya og-logo.jpg: logo di
-// atas latar putih padat 1200x630 TANPA transparansi. Berkas logo asli
-// (image_067524.png) adalah PNG palet bertransparansi penuh di sudut
-// dan perayap pratinjau WhatsApp mengabaikan gambar seperti itu
-// (terbukti 9 Nov 2026: kartu teks muncul, gambar tidak, bahkan pada
-// tautan segar), jadi pratinjau memakai berkas turunan yang padat ini.
+// Gambar pratinjau tautan (og:image) halaman baca:
+// - Halaman yang PUNYA gambar sendiri (berita bergambar, artikel
+//   berthumbnail) memakai gambar halamannya itu, sesuai perintah user
+//   21 Nov 2026: kartu pratinjau WhatsApp harus menampilkan poster /
+//   gambar yang memang ada di web halaman itu.
+// - Halaman TANPA gambar tetap memakai logo situs (ketetapan user
+//   9 Nov 2026), supaya kartu pratinjau selalu bergambar dan tidak
+//   tampak seperti tautan phishing. Berkasnya og-logo.jpg: logo di
+//   atas latar putih padat 1200x630 TANPA transparansi. Berkas logo asli
+//   (image_067524.png) adalah PNG palet bertransparansi penuh di sudut
+//   dan perayap pratinjau WhatsApp mengabaikan gambar seperti itu
+//   (terbukti 9 Nov 2026: kartu teks muncul, gambar tidak, bahkan pada
+//   tautan segar), jadi pratinjau memakai berkas turunan yang padat ini.
 export const OG_LOGO_URL = `${BASE}/og-logo.jpg`;
 export const OG_LOGO_IMAGE = {
   url: OG_LOGO_URL,
@@ -34,6 +38,7 @@ interface ArticleRow {
   author_name: string | null;
   created_at: string;
   updated_at: string | null;
+  thumbnail_url: string | null;
 }
 
 /**
@@ -71,7 +76,7 @@ export async function fetchArticleMeta(slug: string) {
   try {
     const { data } = await supabaseAnon
       .from("articles")
-      .select("title, excerpt, content, author_name, created_at, updated_at")
+      .select("title, excerpt, content, author_name, created_at, updated_at, thumbnail_url")
       .ilike("slug", slug)
       .eq("status", "published")
       .maybeSingle();
@@ -106,7 +111,11 @@ export function articleMetadata(
       modifiedTime: a.updated_at || a.created_at,
       authors: [a.author_name || "Redaksi"],
       siteName: SITE,
-      images: [OG_LOGO_IMAGE]
+      // Artikel berthumbnail: pratinjau WA memakai thumbnail halamannya
+      // (perintah user 21 Nov 2026). Tanpa thumbnail: logo situs.
+      images: a.thumbnail_url
+        ? [{ url: a.thumbnail_url, alt: a.title }]
+        : [OG_LOGO_IMAGE]
     }
   };
 }
