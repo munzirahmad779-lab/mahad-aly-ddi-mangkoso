@@ -7,6 +7,8 @@ import { requireJurnalRole } from "@/lib/jurnal/auth";
 import { emailDariHeaderLokal } from "@/lib/jurnal/sesi-lokal";
 import { hasilReviewUntukPenulis } from "@/lib/jurnal/review-server";
 import type { JurnalHasilReviewPenulis } from "@/lib/jurnal/review";
+import { alurUntukPenulis } from "@/lib/jurnal/alur-server";
+import type { JurnalAlurPenulisView } from "@/lib/jurnal/alur";
 import { batasiLajuJurnal } from "@/lib/jurnal/keamanan";
 
 // Daftar naskah milik penulis yang sedang masuk (halaman "Naskah Saya").
@@ -32,6 +34,20 @@ async function kumpulkanHasilReview(
   return peta;
 }
 
+// Keadaan alur Tahap 4 yang perlu ditindaklanjuti penulis (persetujuan
+// copyediting dan proofread galley), dipetakan menurut kode lacak.
+// Hanya naskah yang punya tugas tahap yang masuk peta.
+async function kumpulkanAlur(
+  submissions: { kode: string }[]
+): Promise<Record<string, JurnalAlurPenulisView>> {
+  const peta: Record<string, JurnalAlurPenulisView> = {};
+  for (const s of submissions) {
+    const alur = await alurUntukPenulis(s.kode);
+    if (alur.copyediting || alur.produksi) peta[s.kode] = alur;
+  }
+  return peta;
+}
+
 export async function GET(req: NextRequest) {
   const dibatasi = await batasiLajuJurnal(req, "naskah-saya", {
     perIp: { limit: 120, windowMs: 60 * 1000 }
@@ -51,7 +67,8 @@ export async function GET(req: NextRequest) {
         mode,
         viewer: { email: auth.email, roles: auth.roles },
         submissions,
-        hasilReview: await kumpulkanHasilReview(submissions)
+        hasilReview: await kumpulkanHasilReview(submissions),
+        alur: await kumpulkanAlur(submissions)
       });
     }
 
@@ -67,7 +84,8 @@ export async function GET(req: NextRequest) {
       mode,
       viewer: { email, roles: ["author"] },
       submissions,
-      hasilReview: await kumpulkanHasilReview(submissions)
+      hasilReview: await kumpulkanHasilReview(submissions),
+      alur: await kumpulkanAlur(submissions)
     });
   } catch (err) {
     console.error(

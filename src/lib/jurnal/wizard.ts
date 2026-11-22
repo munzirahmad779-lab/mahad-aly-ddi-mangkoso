@@ -149,7 +149,13 @@ export function validasiKataSandi(kataSandi: string): string | null {
 // penyimpanan S3-compatible (Cloudflare R2). Batas di bawah ditegakkan
 // di klien (kenyamanan) dan di server (kebenaran).
 
-export type JurnalBerkasKategori = "utama" | "pendukung";
+export type JurnalBerkasKategori = "utama" | "pendukung" | "galley";
+
+// Galley produksi (Tahap 4): PDF atau HTML, maksimal 20 MB per berkas.
+// Kategori ini hanya dipakai alur produksi (route alur), tidak pernah
+// dikirim wizard pengiriman naskah.
+export const BERKAS_GALLEY_EKSTENSI = [".pdf", ".html"] as const;
+export const BERKAS_GALLEY_MAX_BYTES = 20 * 1024 * 1024; // 20 MB
 
 // Naskah utama: PDF atau DOCX, maksimal 20 MB per berkas.
 export const BERKAS_UTAMA_EKSTENSI = [".pdf", ".docx"] as const;
@@ -194,7 +200,8 @@ export const MIME_UNTUK_EKSTENSI: Record<string, readonly string[]> = {
   ".xlsx": [
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   ],
-  ".zip": ["application/zip", "application/x-zip-compressed"]
+  ".zip": ["application/zip", "application/x-zip-compressed"],
+  ".html": ["text/html"]
 };
 
 export function mimeKanonisBerkas(namaAsli: string): string {
@@ -220,7 +227,14 @@ export function validasiBerkasMeta(input: {
   ukuran: number;
 }): string | null {
   const ekstensi = ekstensiBerkas(input.namaAsli);
-  if (input.kategori === "utama") {
+  if (input.kategori === "galley") {
+    if (!(BERKAS_GALLEY_EKSTENSI as readonly string[]).includes(ekstensi)) {
+      return "Berkas galley harus berformat PDF atau HTML.";
+    }
+    if (input.ukuran > BERKAS_GALLEY_MAX_BYTES) {
+      return "Berkas galley melebihi batas 20 MB.";
+    }
+  } else if (input.kategori === "utama") {
     if (!(BERKAS_UTAMA_EKSTENSI as readonly string[]).includes(ekstensi)) {
       return "Berkas naskah utama harus berformat PDF atau DOCX.";
     }

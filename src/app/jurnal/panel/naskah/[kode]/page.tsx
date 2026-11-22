@@ -19,6 +19,7 @@ import {
   type JurnalReviewerOption,
   type JurnalRoundStaffView
 } from "@/lib/jurnal/review";
+import AlurPanel from "./alur-panel";
 
 // Halaman rincian naskah untuk staf (Tahap 3): mengelola mesin review
 // per naskah. Membuka putaran, menugaskan reviewer dari daftar pengguna
@@ -561,6 +562,12 @@ export default function PanelNaskahRincianPage() {
                 </ol>
               </>
             )}
+            <AlurPanel
+              kode={kode}
+              statusNaskah={keadaan.naskah.status}
+              ambilToken={ambilToken}
+              onStatusBerubah={muat}
+            />
           </>
         ) : null}
       </section>

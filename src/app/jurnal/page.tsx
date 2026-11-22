@@ -4,27 +4,32 @@ import {
   JURNAL_NAMA_LABEL_UJI,
   JURNAL_SUBJUDUL,
   JURNAL_PENERBIT_UJI,
-  JURNAL_FOKUS_DAN_RUANG_LINGKUP,
-  TERBITAN_UJI,
-  ARTIKEL_UJI,
-  artikelPadaTerbitan
+  JURNAL_FOKUS_DAN_RUANG_LINGKUP
 } from "@/lib/jurnal/konten";
+import { daftarTerbitanPublik } from "@/lib/jurnal/alur-server";
 
-// Beranda cabang jurnal VERSI UJI. Menggantikan halaman "Coming Soon"
-// khusus di klon uji ini; situs produksi tidak berubah.
+// Beranda cabang jurnal VERSI UJI. Sejak Tahap 4 daftar terbitan dan
+// artikel terbaru membaca basis data lewat lapisan store (kedua mode):
+// hanya terbitan berstatus published beserta artikel published di
+// dalamnya yang tampil. Konten contoh statis versi uji awal sudah
+// digantikan jalur data ini.
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Turatsuna (Usulan Nama - Versi Uji) | Jurnal Ma'had Aly DDI Mangkoso",
   description:
-    "Versi uji cabang jurnal kustom Ma'had Aly DDI Mangkoso: jurnal fiqh, ushul fiqh, dan kajian turats. Nama masih usulan dan konten adalah contoh.",
+    "Versi uji cabang jurnal kustom Ma'had Aly DDI Mangkoso: jurnal fiqh, ushul fiqh, dan kajian turats. Nama masih usulan.",
   alternates: { canonical: "/jurnal" },
   robots: { index: false, follow: false }
 };
 
-export default function JurnalBerandaPage() {
-  const terbitan = TERBITAN_UJI[0];
-  const artikelTerbitan = artikelPadaTerbitan(terbitan.slug);
-  const artikelTerbaru = [...ARTIKEL_UJI].slice(0, 5);
+export default async function JurnalBerandaPage() {
+  const terbitan = await daftarTerbitanPublik();
+  const artikelTerbaru = terbitan
+    .flatMap((t) => t.artikel)
+    .sort((a, b) => (a.tanggalTerbit < b.tanggalTerbit ? 1 : -1))
+    .slice(0, 5);
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-12">
@@ -83,73 +88,93 @@ export default function JurnalBerandaPage() {
         </ul>
       </section>
 
-      {/* Daftar terbitan */}
+      {/* Daftar terbitan dari basis data */}
       <section>
         <h2 className="font-serif font-bold text-xl sm:text-2xl text-mahad-green-dark mb-4">
           Daftar Terbitan
         </h2>
-        <div className="grid gap-4">
-          {TERBITAN_UJI.map((t) => (
-            <Link
-              key={t.slug}
-              href={`/jurnal/terbitan/${t.slug}`}
-              className="block bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-mahad-gold hover:shadow transition"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h3 className="font-serif font-bold text-lg text-slate-800">
-                    {t.label}
-                  </h3>
-                  <p className="text-sm text-slate-500 mt-1">{t.catatan}</p>
+        {terbitan.length === 0 ? (
+          <p className="text-sm text-slate-500 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            Belum ada terbitan yang diterbitkan. Terbitan pertama akan
+            tampil di sini sesudah redaksi menerbitkannya dari panel.
+          </p>
+        ) : (
+          <div className="grid gap-4">
+            {terbitan.map((t) => (
+              <Link
+                key={t.slug}
+                href={`/jurnal/terbitan/${t.slug}`}
+                className="block bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-mahad-gold hover:shadow transition"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-serif font-bold text-lg text-slate-800">
+                      {t.label}
+                      {t.isCurrent && (
+                        <span className="ml-2 align-middle text-[11px] font-bold bg-emerald-100 text-mahad-green-dark border border-emerald-300 px-2.5 py-0.5 rounded-full">
+                          Terbitan Berjalan
+                        </span>
+                      )}
+                    </h3>
+                    {t.uraian && (
+                      <p className="text-sm text-slate-500 mt-1">{t.uraian}</p>
+                    )}
+                  </div>
+                  <span className="text-xs font-bold bg-emerald-50 text-mahad-green-dark border border-emerald-200 rounded-full px-3 py-1">
+                    {t.artikel.length} artikel
+                  </span>
                 </div>
-                <span className="text-xs font-bold bg-emerald-50 text-mahad-green-dark border border-emerald-200 rounded-full px-3 py-1">
-                  {artikelPadaTerbitan(t.slug).length} artikel contoh
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* Artikel terbaru */}
+      {/* Artikel terbaru dari basis data */}
       <section>
         <h2 className="font-serif font-bold text-xl sm:text-2xl text-mahad-green-dark mb-4">
-          Artikel Terbaru (Contoh)
+          Artikel Terbaru
         </h2>
-        <div className="grid gap-4">
-          {artikelTerbaru.map((a) => (
-            <article
-              key={a.slug}
-              className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
-            >
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-wider">
-                <span className="bg-mahad-gold-light text-mahad-green-dark px-2.5 py-0.5 rounded-full">
-                  {a.seksi}
-                </span>
-                <span className="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-full">
-                  Artikel Contoh
-                </span>
-                <span className="text-slate-400 normal-case tracking-normal font-medium">
-                  {terbitan.label} &bull; hlm. {a.halaman}
-                </span>
-              </div>
-              <h3 className="font-serif font-bold text-lg text-slate-800 mt-3 leading-snug">
-                <Link
-                  href={`/jurnal/artikel/${a.slug}`}
-                  className="hover:text-mahad-green transition"
-                >
-                  {a.judul}
-                </Link>
-              </h3>
-              <p className="text-sm text-slate-500 mt-1">
-                {a.penulis.join(", ")} — {a.afiliasi}
-              </p>
-              <p className="text-sm text-slate-600 mt-3 line-clamp-3">
-                {a.abstrak}
-              </p>
-            </article>
-          ))}
-        </div>
+        {artikelTerbaru.length === 0 ? (
+          <p className="text-sm text-slate-500">
+            Belum ada artikel yang diterbitkan.
+          </p>
+        ) : (
+          <div className="grid gap-4">
+            {artikelTerbaru.map((a) => (
+              <article
+                key={a.slug}
+                className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
+              >
+                <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-wider">
+                  {a.bagianLabel && (
+                    <span className="bg-mahad-gold-light text-mahad-green-dark px-2.5 py-0.5 rounded-full">
+                      {a.bagianLabel}
+                    </span>
+                  )}
+                  <span className="text-slate-400 normal-case tracking-normal font-medium">
+                    {a.terbitanLabel}
+                    {a.halaman ? ` • hlm. ${a.halaman}` : ""}
+                  </span>
+                </div>
+                <h3 className="font-serif font-bold text-lg text-slate-800 mt-3 leading-snug">
+                  <Link
+                    href={`/jurnal/artikel/${a.slug}`}
+                    className="hover:text-mahad-green transition"
+                  >
+                    {a.judul}
+                  </Link>
+                </h3>
+                <p className="text-sm text-slate-500 mt-1">
+                  {a.penulis.map((p) => p.nama).join(", ")} — {a.afiliasiUtama}
+                </p>
+                <p className="text-sm text-slate-600 mt-3 line-clamp-3">
+                  {a.abstrak}
+                </p>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

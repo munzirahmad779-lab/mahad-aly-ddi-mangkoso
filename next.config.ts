@@ -141,6 +141,18 @@ const nextConfig: NextConfig = {
       {
         source: "/jurnal/naskah-saya",
         headers: JURNAL_PRIVATE_HEADERS
+      },
+      {
+        // Galley HTML artikel (Tahap 4) adalah berkas buatan petugas
+        // layout yang disajikan dari asal situs. CSP global di atas
+        // akan menimpa header route handler, jadi sandbox ditegakkan
+        // di lapisan config ini: dokumen galley dirender dalam asal
+        // buram tanpa skrip. Entri ini harus sesudah entri global.
+        source: "/jurnal/artikel/:slug/html",
+        headers: [
+          { key: "Content-Security-Policy", value: "sandbox" },
+          { key: "X-Content-Type-Options", value: "nosniff" }
+        ]
       }
     ];
   }

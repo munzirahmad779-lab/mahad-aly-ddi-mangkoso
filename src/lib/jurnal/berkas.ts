@@ -36,6 +36,7 @@ import {
   type JurnalBerkasKategori,
   type JurnalBerkasMeta
 } from "./wizard";
+import { BATAS_TEKS } from "./keamanan";
 
 export const BUCKET_LOKAL_UJI = "lokal-uji";
 const URL_KEDALUWARSA_DETIK = 10 * 60; // 10 menit: satu objek, satu PUT
@@ -249,7 +250,46 @@ export async function simpanBerkasLokalUji(input: {
 // bucketnya harus bucket yang sah untuk modenya, dan segmen kategori di
 // kunci harus sama dengan kategori yang dinyatakan.
 const POLA_KUNCI_OBJEK =
-  /^jurnal\/naskah\/[A-Za-z0-9-]{1,64}\/(utama|pendukung)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(pdf|docx|xlsx|zip)$/;
+  /^jurnal\/naskah\/[A-Za-z0-9-]{1,64}\/(utama|pendukung|galley)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(pdf|docx|xlsx|zip|html)$/;
+
+// Memeriksa satu metadata berkas dari badan permintaan route alur
+// (Tahap 4: hasil copyediting dan galley). Aturannya sama dengan route
+// revisi Tahap 3: validasi jenis dan ukuran, kelengkapan bucket dan
+// kunci, batas nama berkas, lalu verifikasi pola kunci buatan server.
+export function periksaMetaBerkasDariBody(
+  mentah: Record<string, unknown> | null | undefined
+): { meta: JurnalBerkasMeta } | { galat: string } {
+  const bersih = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  const kategoriMentah = bersih(mentah?.kategori);
+  const meta: JurnalBerkasMeta = {
+    kategori:
+      kategoriMentah === "pendukung"
+        ? "pendukung"
+        : kategoriMentah === "galley"
+          ? "galley"
+          : "utama",
+    namaAsli: bersih(mentah?.namaAsli),
+    mime: bersih(mentah?.mime),
+    ukuran: typeof mentah?.ukuran === "number" ? mentah.ukuran : 0,
+    bucket: bersih(mentah?.bucket),
+    kunci: bersih(mentah?.kunci),
+    mode: mentah?.mode === "r2" ? "r2" : "local"
+  };
+  const pesan = validasiBerkasMeta(meta);
+  if (pesan) return { galat: pesan };
+  if (!meta.bucket || !meta.kunci) {
+    return {
+      galat:
+        "Metadata berkas tidak lengkap: unggah ulang berkas sampai server mencatat bucket dan kunci objeknya."
+    };
+  }
+  if (meta.namaAsli.length > BATAS_TEKS.namaBerkas) {
+    return { galat: "Nama berkas terlalu panjang." };
+  }
+  const pesanVerifikasi = verifikasiMetaBerkasTersimpan(meta);
+  if (pesanVerifikasi) return { galat: pesanVerifikasi };
+  return { meta };
+}
 
 export function verifikasiMetaBerkasTersimpan(
   meta: JurnalBerkasMeta

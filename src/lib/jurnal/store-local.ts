@@ -101,7 +101,9 @@ function keTampilan(n: CatatanLokal): JurnalSubmissionView {
     kataKunci: n.kataKunci ?? [],
     penulisPendamping: n.penulisPendamping ?? [],
     berkas: (n.berkas ?? []).map((b) => ({
-      kategori: b.kategori,
+      kategori: (b.kategori === "pendukung"
+        ? "pendukung"
+        : "utama") as "utama" | "pendukung",
       namaAsli: b.namaAsli,
       mime: b.mime,
       ukuran: b.ukuran,
@@ -118,7 +120,9 @@ const FILE = path.join(DIR, "submissions.json");
 let memori: CatatanLokal[] | null = null;
 
 async function muat(): Promise<CatatanLokal[]> {
-  if (memori) return memori;
+  // Selalu baca ulang dari berkas: bundel halaman dan bundel route
+  // Next.js memegang salinan modul terpisah, jadi cache memori murni
+  // membuat halaman publik membaca data basi (temuan Tahap 4).
   try {
     const teks = await fs.readFile(FILE, "utf8");
     const data = JSON.parse(teks);
@@ -349,7 +353,7 @@ const FILE_AKUN = path.join(DIR, "accounts.json");
 let memoriAkun: AkunLokalTersimpan[] | null = null;
 
 async function muatAkun(): Promise<AkunLokalTersimpan[]> {
-  if (memoriAkun) return memoriAkun;
+  // Baca ulang dari berkas (alasan sama seperti muat di atas).
   try {
     const teks = await fs.readFile(FILE_AKUN, "utf8");
     const data = JSON.parse(teks);
@@ -511,7 +515,7 @@ const FILE_KEAMANAN = path.join(DIR, "security-events.json");
 let memoriKeamanan: PeristiwaKeamananLokal[] | null = null;
 
 async function muatKeamanan(): Promise<PeristiwaKeamananLokal[]> {
-  if (memoriKeamanan) return memoriKeamanan;
+  // Baca ulang dari berkas (alasan sama seperti muat di atas).
   try {
     const teks = await fs.readFile(FILE_KEAMANAN, "utf8");
     const data = JSON.parse(teks);
@@ -607,7 +611,7 @@ const FILE_REVIEW = path.join(DIR, "review.json");
 let memoriReview: DataReviewLokal | null = null;
 
 export async function muatDataReviewLokal(): Promise<DataReviewLokal> {
-  if (memoriReview) return memoriReview;
+  // Baca ulang dari berkas (alasan sama seperti muat di atas).
   try {
     const teks = await fs.readFile(FILE_REVIEW, "utf8");
     const data = JSON.parse(teks) as Partial<DataReviewLokal>;
@@ -655,7 +659,7 @@ const FILE_UNDANGAN = path.join(DIR, "invitations.json");
 let memoriUndangan: UndanganLokal[] | null = null;
 
 export async function muatUndanganLokal(): Promise<UndanganLokal[]> {
-  if (memoriUndangan) return memoriUndangan;
+  // Baca ulang dari berkas (alasan sama seperti muat di atas).
   try {
     const teks = await fs.readFile(FILE_UNDANGAN, "utf8");
     const data = JSON.parse(teks);
@@ -677,5 +681,130 @@ export async function simpanUndanganLokal(): Promise<void> {
     );
   } catch {
     // Tetap hidup di memori proses.
+  }
+}
+
+// ── Tahap 4: penyimpanan alur copyediting, produksi, terbitan, metrik ────
+// Padanan lokal tabel jurnal_copyediting_tasks, jurnal_production_tasks,
+// jurnal_issues, kolom penempatan pada jurnal_submissions, baris berkas
+// tahap copyedit dan galley pada jurnal_submission_files, dan tabel
+// jurnal_article_daily_metrics (migrasi 004). Disimpan di
+// .jurnal-uji/workflow.json. Isi berkas tidak pernah disimpan di sini;
+// hanya metadata dan kunci objeknya, sama seperti tahap sebelumnya.
+
+export interface TugasCopyLokal {
+  id: string;
+  kode: string;
+  copyeditorEmail: string;
+  copyeditorNama: string;
+  ditugaskanOleh: string | null;
+  status: string; // assigned | in_progress | author_review | completed | cancelled
+  catatan: string | null;
+  berkasHasilId: string | null;
+  persetujuanPenulisPada: string | null;
+  dibuatPada: string;
+  selesaiPada: string | null;
+}
+
+export interface TugasProduksiLokal {
+  id: string;
+  kode: string;
+  layoutEmail: string;
+  layoutNama: string;
+  ditugaskanOleh: string | null;
+  status: string; // assigned | galley_ready | proofreading | author_proof | ready | cancelled
+  catatan: string | null;
+  proofStatus: "menunggu" | "disetujui" | "koreksi";
+  proofCatatan: string | null;
+  proofPada: string | null;
+  siapPada: string | null;
+  dibuatPada: string;
+}
+
+export interface BerkasAlurLokal {
+  id: string;
+  kode: string;
+  tahap: "copyedit" | "galley";
+  jenis: "copyedited" | "galley_pdf" | "galley_html";
+  kategori: string;
+  namaAsli: string;
+  mime: string;
+  ukuran: number;
+  bucket: string;
+  kunci: string;
+  diunggahOleh: string | null;
+  diunggahPada: string;
+}
+
+export interface TerbitanLokal {
+  id: string;
+  slug: string;
+  volume: number | null;
+  number: number | null;
+  year: number;
+  judul: string | null;
+  uraian: string | null;
+  status: "draft" | "scheduled" | "published";
+  isCurrent: boolean;
+  tanggalTerbit: string | null;
+  dibuatPada: string;
+}
+
+export interface PenempatanLokal {
+  issueId: string;
+  urutan: number;
+}
+
+export interface DataAlurLokal {
+  tugasCopy: TugasCopyLokal[];
+  tugasProduksi: TugasProduksiLokal[];
+  berkasAlur: BerkasAlurLokal[];
+  terbitan: TerbitanLokal[];
+  penempatan: Record<string, PenempatanLokal>;
+  metrik: Record<string, Record<string, { views: number; downloads: number }>>;
+}
+
+const FILE_ALUR = path.join(DIR, "workflow.json");
+let memoriAlur: DataAlurLokal | null = null;
+
+export async function muatDataAlurLokal(): Promise<DataAlurLokal> {
+  // Baca ulang dari berkas (alasan sama seperti muat di atas).
+  try {
+    const teks = await fs.readFile(FILE_ALUR, "utf8");
+    const data = JSON.parse(teks) as Partial<DataAlurLokal>;
+    memoriAlur = {
+      tugasCopy: Array.isArray(data.tugasCopy) ? data.tugasCopy : [],
+      tugasProduksi: Array.isArray(data.tugasProduksi)
+        ? data.tugasProduksi
+        : [],
+      berkasAlur: Array.isArray(data.berkasAlur) ? data.berkasAlur : [],
+      terbitan: Array.isArray(data.terbitan) ? data.terbitan : [],
+      penempatan:
+        data.penempatan && typeof data.penempatan === "object"
+          ? data.penempatan
+          : {},
+      metrik:
+        data.metrik && typeof data.metrik === "object" ? data.metrik : {}
+    };
+  } catch {
+    memoriAlur = {
+      tugasCopy: [],
+      tugasProduksi: [],
+      berkasAlur: [],
+      terbitan: [],
+      penempatan: {},
+      metrik: {}
+    };
+  }
+  return memoriAlur;
+}
+
+export async function simpanDataAlurLokal(): Promise<void> {
+  if (!memoriAlur) return;
+  try {
+    await fs.mkdir(DIR, { recursive: true });
+    await fs.writeFile(FILE_ALUR, JSON.stringify(memoriAlur, null, 2), "utf8");
+  } catch {
+    // Sama seperti data lokal lain: tetap hidup di memori proses.
   }
 }

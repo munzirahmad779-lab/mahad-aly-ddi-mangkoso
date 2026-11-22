@@ -195,7 +195,7 @@ export const reviewBackendLokal: ReviewBackend = {
       hasil.push({
         id: `asal-${i}`,
         tahap: b.kategori === "utama" ? "submission" : "supplementary",
-        kategori: b.kategori,
+        kategori: b.kategori === "utama" ? "utama" : "pendukung",
         namaAsli: b.namaAsli,
         mime: b.mime,
         ukuran: b.ukuran,
@@ -209,7 +209,7 @@ export const reviewBackendLokal: ReviewBackend = {
       hasil.push({
         id: b.id,
         tahap: "review",
-        kategori: b.kategori,
+        kategori: b.kategori === "utama" ? "utama" : "pendukung",
         namaAsli: b.namaAsli,
         mime: b.mime,
         ukuran: b.ukuran,
@@ -231,7 +231,7 @@ export const reviewBackendLokal: ReviewBackend = {
         id: randomUUID(),
         kode: target,
         putaran,
-        kategori: b.kategori,
+        kategori: b.kategori === "utama" ? "utama" : "pendukung",
         namaAsli: b.namaAsli,
         mime: b.mime,
         ukuran: b.ukuran,

@@ -81,9 +81,13 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  if (kategori !== "utama" && kategori !== "pendukung") {
+  if (
+    kategori !== "utama" &&
+    kategori !== "pendukung" &&
+    kategori !== "galley"
+  ) {
     return NextResponse.json(
-      { error: "Kategori berkas harus 'utama' atau 'pendukung'." },
+      { error: "Kategori berkas harus 'utama', 'pendukung', atau 'galley'." },
       { status: 400 }
     );
   }

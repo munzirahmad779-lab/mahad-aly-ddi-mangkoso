@@ -3,18 +3,27 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
 import {
-  getArtikel,
-  getTerbitan,
   JURNAL_NAMA_LABEL_UJI,
   JURNAL_NAMA_PLACEHOLDER
 } from "@/lib/jurnal/konten";
+import {
+  artikelPublikDariSlug,
+  catatKunjunganArtikel
+} from "@/lib/jurnal/alur-server";
+import type { JurnalArtikelPublik } from "@/lib/jurnal/alur";
 
-// Halaman artikel jurnal VERSI UJI dengan metadata lengkap:
-// - tag citation_* (Google Scholar) lewat Metadata.other
+// Halaman artikel jurnal dengan metadata lengkap:
+// - tag citation_* (Google Scholar) lewat Metadata.other, termasuk
+//   citation_pdf_url yang menunjuk jalur PDF satu direktori dengan
+//   halaman artikel ini
 // - meta Dublin Core (DC.*) lewat Metadata.other
 // - JSON-LD ScholarlyArticle di badan halaman
-// Seluruh artikel di sini adalah contoh bertanda contoh dengan penulis
-// fiktif; DOI belum diterbitkan pada versi uji.
+// Sejak Tahap 4 isinya membaca basis data lewat lapisan store: hanya
+// artikel published di dalam terbitan published yang punya halaman;
+// selain itu 404. DOI tampil sebagai belum diterbitkan sampai DOI
+// sungguhan didepositkan (pekerjaan sesudah e-ISSN, lihat rancangan).
+
+export const dynamic = "force-dynamic";
 
 async function urlAsal(): Promise<string> {
   const h = await headers();
@@ -23,49 +32,74 @@ async function urlAsal(): Promise<string> {
   return `${proto}://${host}`;
 }
 
+function pecahHalaman(halaman: string | null): {
+  pertama?: string;
+  terakhir?: string;
+} {
+  if (!halaman) return {};
+  const [pertama, terakhir] = halaman.split("-").map((s) => s.trim());
+  return { pertama: pertama || undefined, terakhir: terakhir || undefined };
+}
+
+function labelBahasa(kode: string): string {
+  if (kode === "en") return "Bahasa Inggris";
+  if (kode === "ar") return "Bahasa Arab";
+  return "Bahasa Indonesia";
+}
+
 export async function generateMetadata({
   params
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const artikel = getArtikel(slug);
+  const artikel = await artikelPublikDariSlug(slug);
   if (!artikel) return { title: "Artikel tidak ditemukan" };
-  const terbitan = getTerbitan(artikel.terbitanSlug);
   const asal = await urlAsal();
   const urlArtikel = `${asal}/jurnal/artikel/${artikel.slug}`;
-  const tanggal = artikel.tanggalTerbit; // YYYY-MM-DD
+  const urlPdf = `${asal}/jurnal/artikel/${artikel.slug}/pdf`;
+  const tanggal = artikel.tanggalTerbit.slice(0, 10); // YYYY-MM-DD
   const [tahun, bulan, hari] = tanggal.split("-");
+  const { pertama, terakhir } = pecahHalaman(artikel.halaman);
+  const namaPenulis = artikel.penulis.map((p) => p.nama);
+
+  const other: Record<string, string | string[]> = {
+    // Google Scholar (citation_*)
+    citation_title: artikel.judul,
+    citation_author: namaPenulis,
+    citation_journal_title: `${JURNAL_NAMA_PLACEHOLDER} (Usulan Nama - Versi Uji)`,
+    citation_publication_date: `${tahun}/${bulan}/${hari}`,
+    citation_abstract_html_url: urlArtikel,
+    citation_pdf_url: urlPdf,
+    citation_language: artikel.bahasa,
+    // Dublin Core (DC.*)
+    "DC.title": artikel.judul,
+    "DC.creator": namaPenulis,
+    "DC.subject": artikel.kataKunci,
+    "DC.description": artikel.abstrak,
+    "DC.publisher": "Ma'had Aly DDI Mangkoso (versi uji)",
+    "DC.date": tanggal,
+    "DC.type": "Text",
+    "DC.identifier": urlArtikel,
+    "DC.language": artikel.bahasa,
+    "DC.source": `${JURNAL_NAMA_LABEL_UJI}; ${artikel.terbitanLabel}`,
+    "DC.rights": artikel.lisensi
+  };
+  if (artikel.volume != null) other.citation_volume = String(artikel.volume);
+  if (artikel.nomor != null) other.citation_issue = String(artikel.nomor);
+  if (pertama) other.citation_firstpage = pertama;
+  if (terakhir) other.citation_lastpage = terakhir;
+  if (artikel.doi) {
+    other.citation_doi = artikel.doi;
+    other["DC.identifier"] = [urlArtikel, `https://doi.org/${artikel.doi}`];
+  }
 
   return {
     title: `${artikel.judul} | ${JURNAL_NAMA_LABEL_UJI}`,
     description: artikel.abstrak,
     alternates: { canonical: `/jurnal/artikel/${slug}` },
     robots: { index: false, follow: false },
-    other: {
-      // Google Scholar (citation_*)
-      citation_title: artikel.judul,
-      citation_author: artikel.penulis,
-      citation_journal_title: `${JURNAL_NAMA_PLACEHOLDER} (Usulan Nama - Versi Uji)`,
-      citation_publication_date: `${tahun}/${bulan}/${hari}`,
-      citation_volume: "1",
-      citation_issue: "1",
-      citation_firstpage: artikel.halaman.split("-")[0],
-      citation_lastpage: artikel.halaman.split("-")[1] ?? "",
-      citation_abstract_html_url: urlArtikel,
-      citation_language: "id",
-      // Dublin Core (DC.*)
-      "DC.title": artikel.judul,
-      "DC.creator": artikel.penulis,
-      "DC.subject": artikel.kataKunci,
-      "DC.description": artikel.abstrak,
-      "DC.publisher": "Ma'had Aly DDI Mangkoso (versi uji)",
-      "DC.date": tanggal,
-      "DC.type": "Text",
-      "DC.identifier": urlArtikel,
-      "DC.language": "id",
-      "DC.source": `${JURNAL_NAMA_LABEL_UJI}; ${terbitan?.label ?? ""}; ${artikel.halaman}`
-    }
+    other
   };
 }
 
@@ -75,32 +109,35 @@ export default async function ArtikelJurnalPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const artikel = getArtikel(slug);
+  const artikel = await artikelPublikDariSlug(slug);
   if (!artikel) notFound();
-  const terbitan = getTerbitan(artikel.terbitanSlug);
+  // Pencatatan metrik dasar: satu kunjungan halaman artikel menaikkan
+  // penghitung harian. Kegagalannya tidak pernah menggagalkan halaman.
+  await catatKunjunganArtikel(artikel.kode);
   const asal = await urlAsal();
   const urlArtikel = `${asal}/jurnal/artikel/${artikel.slug}`;
+  const tanggal = artikel.tanggalTerbit.slice(0, 10);
+  const { pertama, terakhir } = pecahHalaman(artikel.halaman);
 
-  const jsonLd = {
+  const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "ScholarlyArticle",
     headline: artikel.judul,
     name: artikel.judul,
     author: artikel.penulis.map((p) => ({
       "@type": "Person",
-      name: p,
-      affiliation: { "@type": "Organization", name: artikel.afiliasi }
+      name: p.nama,
+      affiliation: { "@type": "Organization", name: p.afiliasi }
     })),
-    datePublished: artikel.tanggalTerbit,
-    inLanguage: "id",
+    datePublished: tanggal,
+    inLanguage: artikel.bahasa,
     abstract: artikel.abstrak,
     keywords: artikel.kataKunci.join(", "),
-    pageStart: artikel.halaman.split("-")[0],
-    pageEnd: artikel.halaman.split("-")[1] ?? undefined,
     url: urlArtikel,
+    license: artikel.lisensi,
     isPartOf: {
       "@type": "PublicationIssue",
-      name: terbitan?.label ?? "",
+      name: artikel.terbitanLabel,
       isPartOf: {
         "@type": "Periodical",
         name: JURNAL_NAMA_LABEL_UJI,
@@ -111,6 +148,9 @@ export default async function ArtikelJurnalPage({
       }
     }
   };
+  if (pertama) jsonLd.pageStart = pertama;
+  if (terakhir) jsonLd.pageEnd = terakhir;
+  if (artikel.doi) jsonLd.identifier = `https://doi.org/${artikel.doi}`;
 
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
@@ -122,11 +162,13 @@ export default async function ArtikelJurnalPage({
       />
       <article className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-10">
         <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-wider">
-          <span className="bg-mahad-gold-light text-mahad-green-dark px-2.5 py-0.5 rounded-full">
-            {artikel.seksi}
-          </span>
-          <span className="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-full">
-            Artikel Contoh — Versi Uji
+          {artikel.bagianLabel && (
+            <span className="bg-mahad-gold-light text-mahad-green-dark px-2.5 py-0.5 rounded-full">
+              {artikel.bagianLabel}
+            </span>
+          )}
+          <span className="bg-emerald-50 text-mahad-green-dark border border-emerald-200 px-2.5 py-0.5 rounded-full">
+            Artikel Terbit — Versi Uji
           </span>
         </div>
 
@@ -134,49 +176,86 @@ export default async function ArtikelJurnalPage({
           {artikel.judul}
         </h1>
 
-        <p className="text-sm text-slate-600 mt-4">
-          <span className="font-semibold">{artikel.penulis.join(", ")}</span>
-          <br />
-          <span className="text-slate-500">{artikel.afiliasi}</span>
-        </p>
+        <div className="text-sm text-slate-600 mt-4 space-y-1">
+          {artikel.penulis.map((p, i) => (
+            <p key={i}>
+              <span className="font-semibold">{p.nama}</span>
+              {p.afiliasi && (
+                <span className="text-slate-500"> — {p.afiliasi}</span>
+              )}
+            </p>
+          ))}
+        </div>
 
         <dl className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm mt-6 border-y border-slate-200 py-4">
           <div className="flex gap-2">
             <dt className="font-semibold text-slate-500 w-24 shrink-0">Terbitan</dt>
             <dd>
-              {terbitan ? (
-                <Link
-                  href={`/jurnal/terbitan/${terbitan.slug}`}
-                  className="text-mahad-green hover:underline"
-                >
-                  {terbitan.label}
-                </Link>
-              ) : (
-                "-"
-              )}
+              <Link
+                href={`/jurnal/terbitan/${artikel.terbitanSlug}`}
+                className="text-mahad-green hover:underline"
+              >
+                {artikel.terbitanLabel}
+              </Link>
             </dd>
           </div>
           <div className="flex gap-2">
             <dt className="font-semibold text-slate-500 w-24 shrink-0">Halaman</dt>
-            <dd>{artikel.halaman}</dd>
+            <dd>{artikel.halaman ?? "-"}</dd>
           </div>
           <div className="flex gap-2">
             <dt className="font-semibold text-slate-500 w-24 shrink-0">Tanggal</dt>
-            <dd>{artikel.tanggalTerbit}</dd>
+            <dd>{tanggal}</dd>
           </div>
           <div className="flex gap-2">
             <dt className="font-semibold text-slate-500 w-24 shrink-0">Bahasa</dt>
-            <dd>{artikel.bahasa}</dd>
+            <dd>{labelBahasa(artikel.bahasa)}</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="font-semibold text-slate-500 w-24 shrink-0">Lisensi</dt>
+            <dd>{artikel.lisensi}</dd>
           </div>
           <div className="flex gap-2 sm:col-span-2">
             <dt className="font-semibold text-slate-500 w-24 shrink-0">DOI</dt>
             <dd>
-              {artikel.doi
-                ? artikel.doi
-                : "Belum diterbitkan (kolom DOI disiapkan sejak awal; versi uji belum memiliki DOI)"}
+              {artikel.doi ? (
+                <a
+                  href={`https://doi.org/${artikel.doi}`}
+                  className="text-mahad-green hover:underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  https://doi.org/{artikel.doi}
+                </a>
+              ) : (
+                "Belum diterbitkan (kolom DOI disiapkan sejak awal; DOI diterbitkan sesudah e-ISSN aktif)"
+              )}
             </dd>
           </div>
         </dl>
+
+        {(artikel.punyaPdf || artikel.punyaHtml) && (
+          <div className="mt-6 flex flex-wrap gap-3">
+            {artikel.punyaPdf && (
+              <a
+                href={`/jurnal/artikel/${artikel.slug}/pdf`}
+                className="bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-sm px-5 py-2.5 rounded-full shadow transition"
+              >
+                Unduh PDF
+              </a>
+            )}
+            {artikel.punyaHtml && (
+              <a
+                href={`/jurnal/artikel/${artikel.slug}/html`}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-white border border-slate-300 hover:border-mahad-gold font-bold text-sm px-5 py-2.5 rounded-full transition"
+              >
+                Baca HTML
+              </a>
+            )}
+          </div>
+        )}
 
         <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
           Abstrak
@@ -184,6 +263,17 @@ export default async function ArtikelJurnalPage({
         <p className="text-sm sm:text-base text-slate-700 leading-relaxed mt-2 text-justify">
           {artikel.abstrak}
         </p>
+
+        {artikel.abstrakEn && (
+          <>
+            <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
+              Abstract
+            </h2>
+            <p className="text-sm sm:text-base text-slate-700 leading-relaxed mt-2 text-justify">
+              {artikel.abstrakEn}
+            </p>
+          </>
+        )}
 
         <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
           Kata Kunci
@@ -199,11 +289,14 @@ export default async function ArtikelJurnalPage({
           ))}
         </div>
 
-        <div className="mt-10 rounded-xl bg-amber-50 border border-amber-300 px-4 py-3 text-xs sm:text-sm text-amber-900">
-          Halaman ini adalah artikel <strong>contoh</strong> pada versi uji
-          sistem jurnal. Nama penulis bersifat fiktif dan isi abstrak adalah
-          teks contoh, bukan karya ilmiah yang diterbitkan.
-        </div>
+        {artikel.pernyataanAi && (
+          <>
+            <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
+              Pernyataan Pemakaian AI
+            </h2>
+            <p className="text-sm text-slate-600 mt-2">{artikel.pernyataanAi}</p>
+          </>
+        )}
       </article>
     </div>
   );

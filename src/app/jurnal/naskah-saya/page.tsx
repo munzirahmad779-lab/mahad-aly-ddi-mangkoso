@@ -10,6 +10,7 @@ import {
 import { supabase } from "@/lib/supabase/client";
 import type { JurnalSubmissionView } from "@/lib/jurnal/status";
 import type { JurnalHasilReviewPenulis } from "@/lib/jurnal/review";
+import type { JurnalAlurPenulisView } from "@/lib/jurnal/alur";
 import {
   validasiBerkasMeta,
   type JurnalBerkasMeta
@@ -30,6 +31,7 @@ export default function NaskahSayaPage() {
   const [hasilReview, setHasilReview] = useState<
     Record<string, JurnalHasilReviewPenulis[]>
   >({});
+  const [alur, setAlur] = useState<Record<string, JurnalAlurPenulisView>>({});
   const [galat, setGalat] = useState<string | null>(null);
 
   const muat = useCallback(async () => {
@@ -53,6 +55,9 @@ export default function NaskahSayaPage() {
             string,
             JurnalHasilReviewPenulis[]
           >) ?? {}
+        );
+        setAlur(
+          (data.alur as Record<string, JurnalAlurPenulisView>) ?? {}
         );
       }
     } catch {
@@ -231,6 +236,14 @@ export default function NaskahSayaPage() {
                         />
                       ) : null;
                     })()}
+                    {sesi && alur[n.kode] && (
+                      <BlokAlurPenulis
+                        kode={n.kode}
+                        token={sesi.token}
+                        alur={alur[n.kode]}
+                        onSelesai={muat}
+                      />
+                    )}
                     {n.riwayat.length > 0 && (
                       <ol className="mt-4 space-y-2 border-l-2 border-slate-200 pl-4">
                         {n.riwayat.map((r, i) => (
@@ -478,6 +491,186 @@ function UnggahRevisi({
           {sibuk ? "Mendaftarkan..." : "Daftarkan Berkas Revisi"}
         </button>
       </div>
+    </div>
+  );
+}
+
+// Blok tindak lanjut Tahap 4 untuk penulis: persetujuan hasil
+// copyediting dan proofread galley produksi. Persetujuan tercatat di
+// linimasa naskah oleh server; halaman ini hanya mengirim keputusan
+// penulis yang masuk sebagai pemilik naskah.
+function BlokAlurPenulis({
+  kode,
+  token,
+  alur,
+  onSelesai
+}: {
+  kode: string;
+  token: string;
+  alur: JurnalAlurPenulisView;
+  onSelesai: () => Promise<void>;
+}) {
+  const [sibuk, setSibuk] = useState(false);
+  const [galat, setGalat] = useState<string | null>(null);
+  const [pesan, setPesan] = useState<string | null>(null);
+  const [catatanKoreksi, setCatatanKoreksi] = useState("");
+
+  async function kirim(jalur: string, body: unknown): Promise<boolean> {
+    const res = await fetch(jalur, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      setGalat(data?.error || "Permintaan gagal diproses.");
+      return false;
+    }
+    return true;
+  }
+
+  async function setujuiCopy() {
+    if (!alur.copyediting) return;
+    setSibuk(true);
+    setGalat(null);
+    setPesan(null);
+    const ok = await kirim(
+      `/api/jurnal/submissions/${encodeURIComponent(kode)}/copyediting/setujui`,
+      { tugasId: alur.copyediting.tugasId }
+    );
+    if (ok) {
+      setPesan("Hasil copyediting Anda setujui. Terima kasih.");
+      await onSelesai();
+    }
+    setSibuk(false);
+  }
+
+  async function kirimProof(keputusan: "setujui" | "koreksi") {
+    if (!alur.produksi) return;
+    if (keputusan === "koreksi" && !catatanKoreksi.trim()) {
+      setGalat("Catatan koreksi wajib diisi untuk permintaan koreksi.");
+      return;
+    }
+    setSibuk(true);
+    setGalat(null);
+    setPesan(null);
+    const ok = await kirim(
+      `/api/jurnal/submissions/${encodeURIComponent(kode)}/produksi/proof`,
+      {
+        tugasId: alur.produksi.tugasId,
+        keputusan,
+        catatan: keputusan === "koreksi" ? catatanKoreksi.trim() : undefined
+      }
+    );
+    if (ok) {
+      setPesan(
+        keputusan === "setujui"
+          ? "Proof galley Anda setujui."
+          : "Permintaan koreksi terkirim ke redaksi."
+      );
+      setCatatanKoreksi("");
+      await onSelesai();
+    }
+    setSibuk(false);
+  }
+
+  return (
+    <div className="mt-4 space-y-3">
+      {pesan && (
+        <p className="rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 text-sm px-4 py-3">
+          {pesan}
+        </p>
+      )}
+      {galat && (
+        <p className="rounded-xl border border-red-300 bg-red-50 text-red-700 text-sm px-4 py-3">
+          {galat}
+        </p>
+      )}
+      {alur.copyediting && (
+        <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+          <p className="text-sm font-semibold text-slate-700">
+            Copyediting — {alur.copyediting.statusLabel}
+          </p>
+          {alur.copyediting.berkasHasil && (
+            <p className="text-sm text-slate-600 mt-1">
+              Berkas hasil sunting: {alur.copyediting.berkasHasil.namaAsli}{" "}
+              (diunggah{" "}
+              {new Date(alur.copyediting.berkasHasil.diunggahPada).toLocaleString(
+                "id-ID"
+              )}
+              )
+            </p>
+          )}
+          {alur.copyediting.perluPersetujuan ? (
+            <button
+              onClick={() => void setujuiCopy()}
+              disabled={sibuk}
+              className="mt-3 bg-mahad-gold hover:bg-yellow-400 disabled:opacity-60 text-mahad-green-dark font-bold text-sm px-6 py-2.5 rounded-full shadow transition"
+            >
+              Setujui Hasil Copyediting
+            </button>
+          ) : alur.copyediting.status === "completed" ? (
+            <p className="text-sm text-slate-500 mt-1">
+              Anda sudah menyetujui hasil copyediting ini.
+            </p>
+          ) : null}
+        </div>
+      )}
+      {alur.produksi && (
+        <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+          <p className="text-sm font-semibold text-slate-700">
+            Produksi — {alur.produksi.statusLabel}
+          </p>
+          <p className="text-sm text-slate-600 mt-1">
+            Galley PDF:{" "}
+            {alur.produksi.punyaPdf ? "sudah tersedia" : "belum tersedia"} •
+            Galley HTML:{" "}
+            {alur.produksi.punyaHtml ? "sudah tersedia" : "belum tersedia"}
+          </p>
+          <p className="text-sm text-slate-600 mt-1">
+            Proofread Anda: {alur.produksi.proofLabel}
+          </p>
+          {alur.produksi.perluProof && (
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label
+                    htmlFor={`catatan-koreksi-${kode}`}
+                    className="block text-sm font-semibold text-slate-700 mb-1"
+                  >
+                    Catatan koreksi (wajib bila meminta koreksi)
+                  </label>
+                  <textarea
+                    id={`catatan-koreksi-${kode}`}
+                    value={catatanKoreksi}
+                    onChange={(e) => setCatatanKoreksi(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:border-mahad-gold"
+                    rows={2}
+                    placeholder="Tulis bagian yang perlu dikoreksi pada galley"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => void kirimProof("setujui")}
+                    disabled={sibuk}
+                    className="bg-mahad-gold hover:bg-yellow-400 disabled:opacity-60 text-mahad-green-dark font-bold text-sm px-6 py-2.5 rounded-full shadow transition"
+                  >
+                    Setujui Proof
+                  </button>
+                  <button
+                    onClick={() => void kirimProof("koreksi")}
+                    disabled={sibuk}
+                    className="bg-white border border-slate-300 hover:border-red-300 hover:text-red-600 disabled:opacity-60 font-bold text-sm px-6 py-2.5 rounded-full transition"
+                  >
+                    Minta Koreksi
+                  </button>
+                </div>
+              </div>
+            )}
+        </div>
+      )}
     </div>
   );
 }

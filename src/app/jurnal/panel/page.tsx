@@ -217,12 +217,20 @@ export default function PanelRedaksiJurnalPage() {
                 </>
               )}
             </p>
-            <button
-              onClick={handleLogout}
-              className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-1.5 transition"
-            >
-              Keluar
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href="/jurnal/panel/terbitan"
+                className="text-xs font-bold bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark rounded-full px-4 py-1.5 transition"
+              >
+                Kelola Terbitan
+              </a>
+              <button
+                onClick={handleLogout}
+                className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-1.5 transition"
+              >
+                Keluar
+              </button>
+            </div>
           </div>
         )}
 
