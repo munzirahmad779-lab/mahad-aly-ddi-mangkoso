@@ -21,16 +21,24 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 import type { JurnalStatus, JurnalSubmissionView } from "./status";
 import {
   createLokal,
+  createLokalLengkap,
   getLokal,
   listLokal,
+  listLokalByEmail,
   updateStatusLokal
 } from "./store-local";
 import {
   createSupabase,
+  createSupabaseLengkap,
   getSupabase,
   listSupabase,
+  listSupabaseByOwner,
   updateStatusSupabase
 } from "./store-supabase";
+import {
+  teksPernyataanAi,
+  type JurnalWizardInput
+} from "./wizard";
 
 export type JurnalDataMode = "supabase" | "local";
 
@@ -118,4 +126,30 @@ export async function updateSubmissionStatus(
   }
   // Backend lokal tidak menyimpan pelaku; catatan tetap dicatat.
   return updateStatusLokal(kode, status, catatan);
+}
+
+// ── Tahap 2: wizard kirim lengkap dan daftar milik penulis ───────────────
+
+export async function createSubmissionLengkap(
+  input: JurnalWizardInput,
+  submitterUserId?: string | null
+): Promise<JurnalSubmissionView> {
+  const pernyataanAiTeks = teksPernyataanAi(input.pernyataanAi);
+  if ((await getJurnalDataMode()) === "supabase") {
+    return createSupabaseLengkap(input, pernyataanAiTeks, submitterUserId);
+  }
+  return createLokalLengkap(input, pernyataanAiTeks);
+}
+
+// Daftar naskah milik satu penulis (halaman "Naskah Saya"). Penulis hanya
+// pernah menerima naskahnya sendiri: backend supabase menyaring menurut
+// submitter_user_id atau email pengirim, backend lokal menurut email.
+export async function listSubmissionsByOwner(owner: {
+  email: string;
+  userId?: string | null;
+}): Promise<JurnalSubmissionView[]> {
+  if ((await getJurnalDataMode()) === "supabase") {
+    return listSupabaseByOwner(owner);
+  }
+  return listLokalByEmail(owner.email);
 }

@@ -99,4 +99,25 @@ export interface JurnalSubmissionView {
   statusLabel: string;
   riwayat: JurnalRiwayatItem[];
   dibuatPada: string; // ISO datetime
+  // Rincian Tahap 2 (wizard): opsional supaya tampilan lama tetap sah.
+  bagianSlug?: string | null;
+  bagianLabel?: string | null;
+  bahasa?: string;
+  abstrakEn?: string;
+  kataKunci?: string[];
+  penulisPendamping?: {
+    nama: string;
+    email: string;
+    afiliasi: string;
+    orcid?: string | null;
+  }[];
+  berkas?: {
+    kategori: "utama" | "pendukung";
+    namaAsli: string;
+    mime: string;
+    ukuran: number;
+    bucket: string;
+    kunci: string;
+  }[];
+  pernyataanAi?: string | null;
 }

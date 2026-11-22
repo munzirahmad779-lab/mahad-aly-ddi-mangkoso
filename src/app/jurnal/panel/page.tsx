@@ -295,6 +295,7 @@ export default function PanelRedaksiJurnalPage() {
                     </h2>
                     <p className="text-sm text-slate-500 mt-1">
                       {n.penulis} ({n.email}) — {n.afiliasi}
+                      {n.bagianLabel ? ` — Bagian: ${n.bagianLabel}` : ""}
                     </p>
                     <p className="text-xs text-slate-400 mt-1">
                       Dikirim {new Date(n.dibuatPada).toLocaleString("id-ID")}
@@ -307,6 +308,20 @@ export default function PanelRedaksiJurnalPage() {
                 <p className="text-sm text-slate-600 mt-3 line-clamp-3">
                   {n.abstrak}
                 </p>
+                {n.berkas && n.berkas.length > 0 && (
+                  <p className="text-xs text-slate-500 mt-2">
+                    Berkas:{" "}
+                    {n.berkas
+                      .map(
+                        (b) =>
+                          `${b.kategori === "utama" ? "utama" : "pendukung"}: ${b.namaAsli} (${b.bucket})`
+                      )
+                      .join("; ")}
+                    {n.pernyataanAi
+                      ? ` — Pernyataan AI tercatat.`
+                      : ""}
+                  </p>
+                )}
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <label
                     htmlFor={`status-${n.kode}`}

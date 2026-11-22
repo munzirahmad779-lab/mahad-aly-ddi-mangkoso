@@ -6,6 +6,9 @@ import {
   rateLimitResponse
 } from "@/lib/rate-limit";
 import { getJurnalRolesForUser } from "@/lib/jurnal/auth";
+import { getJurnalDataMode } from "@/lib/jurnal/store";
+import { verifikasiAkunLokal } from "@/lib/jurnal/store-local";
+import { buatTokenSesiLokal } from "@/lib/jurnal/sesi-lokal";
 
 // Proxy login panel jurnal. Meniru /api/auth/login situs utama:
 // rate limit per IP dan per email ditegakkan di server, kredensial
@@ -64,6 +67,38 @@ export async function POST(req: NextRequest) {
         },
         { status: 429 }
       );
+    }
+
+    // Mode data lokal (uji): tidak ada Supabase Auth yang terhubung ke
+    // tabel jurnal, jadi kredensial diperiksa ke akun uji lokal dan sesi
+    // dinyatakan dengan token lokal bertanda tangan (sesi-lokal.ts).
+    // Cabang ini tidak pernah berjalan pada mode supabase.
+    if ((await getJurnalDataMode()) === "local") {
+      const akun = await verifikasiAkunLokal(email, password);
+      if (!akun) {
+        return NextResponse.json(
+          {
+            error:
+              "Email atau kata sandi akun uji lokal tidak cocok. Bila belum punya akun, daftar dulu di halaman pendaftaran penulis.",
+            remainingAttempts: emailRl.remaining
+          },
+          { status: 401 }
+        );
+      }
+      return NextResponse.json({
+        success: true,
+        mode: "local",
+        localSession: {
+          token: buatTokenSesiLokal(akun.email),
+          email: akun.email,
+          nama: akun.nama
+        },
+        user: {
+          id: null,
+          email: akun.email,
+          roles: ["author"]
+        }
+      });
     }
 
     const { data, error } = await supabaseAnon.auth.signInWithPassword({

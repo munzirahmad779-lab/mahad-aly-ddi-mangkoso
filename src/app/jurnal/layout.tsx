@@ -10,6 +10,9 @@ const TAUTAN_JURNAL = [
   { href: "/jurnal/terbitan/vol-1-no-1-versi-uji", label: "Terbitan" },
   { href: "/jurnal/kirim", label: "Kirim Naskah" },
   { href: "/jurnal/lacak", label: "Lacak Naskah" },
+  { href: "/jurnal/daftar", label: "Daftar Penulis" },
+  { href: "/jurnal/masuk", label: "Masuk Penulis" },
+  { href: "/jurnal/naskah-saya", label: "Naskah Saya" },
   { href: "/jurnal/panel", label: "Panel Redaksi" },
   { href: "/jurnal/oai?verb=Identify", label: "OAI-PMH" }
 ];
