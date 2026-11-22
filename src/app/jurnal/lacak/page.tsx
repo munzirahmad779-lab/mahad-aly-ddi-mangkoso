@@ -1,28 +1,19 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import type { JurnalSubmissionView } from "@/lib/jurnal/status";
 
-// Halaman lacak naskah cabang jurnal VERSI UJI.
-// Membaca status dari lapisan data uji yang sama dengan formulir kirim
-// dan panel redaksi, lewat /api/jurnal/submissions/[kode].
-
-interface NaskahUji {
-  kode: string;
-  judul: string;
-  penulis: string;
-  email: string;
-  afiliasi: string;
-  abstrak: string;
-  status: string;
-  riwayat: { status: string; pada: string }[];
-  dibuatPada: string;
-}
+// Halaman lacak naskah jurnal "OJS versi kita".
+// Membaca status dan linimasa dari lapisan data jurnal yang sama dengan
+// formulir kirim dan panel redaksi, lewat /api/jurnal/submissions/[kode].
+// Status mengikuti kosakata alur OJS dan ditampilkan dengan label
+// Indonesia dari server.
 
 export default function LacakNaskahJurnalPage() {
   const [kode, setKode] = useState("");
   const [memuat, setMemuat] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
-  const [naskah, setNaskah] = useState<NaskahUji | null>(null);
+  const [naskah, setNaskah] = useState<JurnalSubmissionView | null>(null);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -37,7 +28,7 @@ export default function LacakNaskahJurnalPage() {
       if (!res.ok) {
         setGalat(data?.error || "Kode lacak tidak ditemukan.");
       } else {
-        setNaskah(data.submission as NaskahUji);
+        setNaskah(data.submission as JurnalSubmissionView);
       }
     } catch {
       setGalat("Tidak dapat menghubungi server uji.");
@@ -50,12 +41,12 @@ export default function LacakNaskahJurnalPage() {
     <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8">
       <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
         <h1 className="font-serif font-bold text-2xl sm:text-3xl text-slate-800">
-          Lacak Naskah — Versi Uji
+          Lacak Naskah
         </h1>
         <p className="text-sm text-slate-600 mt-2">
           Masukkan kode lacak berformat <span className="font-mono">JRN-YYYY-XXXX</span>{" "}
-          yang Anda terima saat mengirim naskah uji. Status yang tampil
-          berasal dari lapisan data uji situs ini.
+          yang Anda terima saat mengirim naskah. Status mengikuti tahap alur
+          editorial jurnal dan ditampilkan beserta linimasa perubahannya.
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -87,7 +78,7 @@ export default function LacakNaskahJurnalPage() {
               Status Terkini
             </p>
             <p className="text-lg font-bold text-mahad-green-dark mt-1">
-              {naskah.status}
+              {naskah.statusLabel}
             </p>
             <dl className="mt-4 space-y-1.5 text-sm text-slate-700">
               <div className="flex gap-2">
@@ -119,11 +110,14 @@ export default function LacakNaskahJurnalPage() {
                   className="flex flex-wrap gap-x-3 text-sm text-slate-600"
                 >
                   <span className="font-semibold text-slate-700">
-                    {r.status}
+                    {r.label}
                   </span>
                   <span className="text-slate-400">
                     {new Date(r.pada).toLocaleString("id-ID")}
                   </span>
+                  {r.catatan && (
+                    <span className="text-slate-500">— {r.catatan}</span>
+                  )}
                 </li>
               ))}
             </ol>

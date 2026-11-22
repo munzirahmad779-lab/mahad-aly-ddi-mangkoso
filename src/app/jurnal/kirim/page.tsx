@@ -18,9 +18,11 @@ export default function KirimNaskahJurnalPage() {
   });
   const [mengirim, setMengirim] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
-  const [hasil, setHasil] = useState<{ kode: string; status: string } | null>(
-    null
-  );
+  const [hasil, setHasil] = useState<{
+    kode: string;
+    status: string;
+    statusLabel: string;
+  } | null>(null);
 
   const ubah =
     (kolom: keyof typeof form) =>
@@ -43,7 +45,11 @@ export default function KirimNaskahJurnalPage() {
       if (!res.ok) {
         setGalat(data?.error || "Pengiriman gagal. Coba lagi.");
       } else {
-        setHasil({ kode: data.kode, status: data.status });
+        setHasil({
+          kode: data.kode,
+          status: data.status,
+          statusLabel: data.statusLabel || data.status
+        });
       }
     } catch {
       setGalat("Tidak dapat menghubungi server uji.");
@@ -78,7 +84,7 @@ export default function KirimNaskahJurnalPage() {
               <span className="font-mono font-bold text-base">{hasil.kode}</span>
             </p>
             <p className="text-sm text-emerald-800">
-              Status awal: <strong>{hasil.status}</strong>
+              Status awal: <strong>{hasil.statusLabel}</strong>
             </p>
             <p className="text-sm mt-3">
               Gunakan kode itu di{" "}

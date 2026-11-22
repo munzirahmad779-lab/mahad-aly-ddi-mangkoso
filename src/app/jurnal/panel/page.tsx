@@ -1,68 +1,138 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { supabase } from "@/lib/supabase/client";
+import {
+  JURNAL_STATUSES,
+  JURNAL_STATUS_LABEL_ID,
+  JURNAL_ROLE_LABEL_ID,
+  type JurnalRole,
+  type JurnalSubmissionView
+} from "@/lib/jurnal/status";
 
-// Panel redaksi cabang jurnal VERSI UJI.
-// TANPA login sungguhan — ditandai jelas di halaman. Mendaftar naskah dari
-// lapisan data uji dan mengubah status lewat PATCH
-// /api/jurnal/submissions/[kode]; perubahan terbaca di halaman lacak.
+// Panel redaksi jurnal "OJS versi kita" (Tahap 1).
+// Dua keadaan mengikuti lapisan data (src/lib/jurnal/store.ts):
+// - Mode supabase: panel wajib login. Masuk lewat proxy
+//   /api/jurnal/auth/login (pola yang sama dengan login admin situs),
+//   sesi diterapkan ke klien Supabase, dan token Bearer dikirim ke route
+//   panel yang memeriksa peran jurnal di server.
+// - Mode lokal: basis data jurnal belum tersambung; panel terbuka sebagai
+//   mode uji dan ditandai jelas, sama seperti versi uji sebelumnya.
 
-const PILIHAN_STATUS = [
-  "Diterima Redaksi",
-  "Direview",
-  "Revisi",
-  "Diterima",
-  "Ditolak"
-] as const;
-
-interface NaskahUji {
-  kode: string;
-  judul: string;
-  penulis: string;
+interface Viewer {
   email: string;
-  afiliasi: string;
-  abstrak: string;
-  status: string;
-  dibuatPada: string;
+  roles: string[];
 }
 
 export default function PanelRedaksiJurnalPage() {
-  const [daftar, setDaftar] = useState<NaskahUji[]>([]);
+  const [daftar, setDaftar] = useState<JurnalSubmissionView[]>([]);
   const [memuat, setMemuat] = useState(true);
   const [galat, setGalat] = useState<string | null>(null);
   const [menyimpan, setMenyimpan] = useState<string | null>(null);
   const [pesan, setPesan] = useState<string | null>(null);
+  const [mode, setMode] = useState<"supabase" | "local" | null>(null);
+  const [viewer, setViewer] = useState<Viewer | null>(null);
+  const [perluLogin, setPerluLogin] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [masukLoading, setMasukLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  const ambilToken = useCallback(async (): Promise<string | null> => {
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+    return session?.access_token ?? null;
+  }, []);
 
   const muatDaftar = useCallback(async () => {
     try {
-      const res = await fetch("/api/jurnal/submissions");
+      const token = await ambilToken();
+      const res = await fetch("/api/jurnal/submissions", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       const data = await res.json().catch(() => null);
+      if (res.status === 401) {
+        setPerluLogin(true);
+        setMode("supabase");
+        setDaftar([]);
+        return;
+      }
       if (!res.ok) {
-        setGalat(data?.error || "Gagal memuat daftar naskah uji.");
+        setGalat(data?.error || "Gagal memuat daftar naskah.");
       } else {
-        setDaftar(data.submissions as NaskahUji[]);
+        setMode(data.mode === "supabase" ? "supabase" : "local");
+        setViewer((data.viewer as Viewer | null) ?? null);
+        setPerluLogin(false);
+        setDaftar(data.submissions as JurnalSubmissionView[]);
         setGalat(null);
       }
     } catch {
-      setGalat("Tidak dapat menghubungi server uji.");
+      setGalat("Tidak dapat menghubungi server.");
     } finally {
       setMemuat(false);
     }
-  }, []);
+  }, [ambilToken]);
 
   useEffect(() => {
     muatDaftar();
   }, [muatDaftar]);
 
+  async function handleLogin(e: FormEvent) {
+    e.preventDefault();
+    setMasukLoading(true);
+    setLoginError(null);
+    try {
+      const res = await fetch("/api/jurnal/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password })
+      });
+      const result = await res.json().catch(() => null);
+      if (!res.ok || !result?.success || !result?.session) {
+        setLoginError(
+          result?.error || "Email atau kata sandi tidak cocok."
+        );
+        return;
+      }
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: result.session.access_token,
+        refresh_token: result.session.refresh_token
+      });
+      if (sessionError) throw sessionError;
+      setPassword("");
+      await muatDaftar();
+    } catch (err) {
+      setLoginError(
+        err instanceof Error ? err.message : "Terjadi kesalahan saat masuk."
+      );
+    } finally {
+      setMasukLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    setViewer(null);
+    setDaftar([]);
+    setPesan(null);
+    await muatDaftar();
+  }
+
   async function ubahStatus(kode: string, status: string) {
     setMenyimpan(kode);
     setPesan(null);
     try {
+      const token = await ambilToken();
       const res = await fetch(
         `/api/jurnal/submissions/${encodeURIComponent(kode)}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
           body: JSON.stringify({ status })
         }
       );
@@ -70,28 +140,61 @@ export default function PanelRedaksiJurnalPage() {
       if (!res.ok) {
         setGalat(data?.error || "Gagal mengubah status.");
       } else {
-        setPesan(`Status naskah ${kode} diubah menjadi "${status}".`);
+        setPesan(
+          `Status naskah ${kode} diubah menjadi "${JURNAL_STATUS_LABEL_ID[status as keyof typeof JURNAL_STATUS_LABEL_ID] || status}".`
+        );
         await muatDaftar();
       }
     } catch {
-      setGalat("Tidak dapat menghubungi server uji.");
+      setGalat("Tidak dapat menghubungi server.");
     } finally {
       setMenyimpan(null);
     }
   }
 
+  const labelPeran = (roles: string[]) =>
+    roles
+      .map(
+        (r) =>
+          JURNAL_ROLE_LABEL_ID[r as JurnalRole] || r
+      )
+      .join(", ");
+
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
       <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
         <h1 className="font-serif font-bold text-2xl sm:text-3xl text-slate-800">
-          Panel Redaksi — Versi Uji
+          Panel Redaksi Jurnal
         </h1>
-        <div className="mt-3 rounded-xl border-2 border-amber-500 bg-amber-100 px-4 py-3 text-amber-900 text-sm">
-          <strong>Panel uji tanpa login.</strong> Halaman ini sengaja dibuka
-          tanpa gerbang masuk hanya untuk menguji alur redaksi. Panel resmi
-          kelak wajib memakai login redaksi. Semua naskah di bawah berasal
-          dari lapisan data uji.
-        </div>
+
+        {mode === "local" && (
+          <div className="mt-3 rounded-xl border-2 border-amber-500 bg-amber-100 px-4 py-3 text-amber-900 text-sm">
+            <strong>Mode data lokal (uji).</strong> Basis data jurnal belum
+            tersambung di lingkungan ini, jadi panel terbuka tanpa login dan
+            naskah berasal dari lapisan data uji lokal. Begitu migrasi
+            basis data jurnal dijalankan dan env server terpasang, panel
+            ini otomatis mewajibkan login berperan.
+          </div>
+        )}
+        {mode === "supabase" && viewer && (
+          <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 flex flex-wrap items-center justify-between gap-3">
+            <p>
+              Masuk sebagai <strong>{viewer.email}</strong>
+              {viewer.roles.length > 0 && (
+                <>
+                  {" "}
+                  — peran: <strong>{labelPeran(viewer.roles)}</strong>
+                </>
+              )}
+            </p>
+            <button
+              onClick={handleLogout}
+              className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-1.5 transition"
+            >
+              Keluar
+            </button>
+          </div>
+        )}
 
         {pesan && (
           <p className="mt-4 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 text-sm px-4 py-3">
@@ -105,14 +208,75 @@ export default function PanelRedaksiJurnalPage() {
         )}
 
         {memuat ? (
-          <p className="text-sm text-slate-500 mt-6">Memuat daftar naskah...</p>
+          <p className="text-sm text-slate-500 mt-6">Memuat panel...</p>
+        ) : perluLogin ? (
+          <form
+            onSubmit={handleLogin}
+            className="mt-6 max-w-md rounded-2xl border border-slate-200 bg-slate-50 p-6 space-y-4"
+          >
+            <h2 className="font-serif font-bold text-lg text-slate-800">
+              Masuk Panel Redaksi
+            </h2>
+            <p className="text-sm text-slate-600">
+              Gunakan akun yang sudah diberi peran jurnal (Manajer Jurnal,
+              Editor, atau Editor Bagian) oleh pengelola.
+            </p>
+            {loginError && (
+              <p className="rounded-xl border border-red-300 bg-red-50 text-red-700 text-sm px-4 py-3">
+                {loginError}
+              </p>
+            )}
+            <div>
+              <label
+                htmlFor="email-panel"
+                className="block text-sm font-semibold text-slate-700 mb-1"
+              >
+                Email
+              </label>
+              <input
+                id="email-panel"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:border-mahad-gold"
+                placeholder="nama@contoh.ac.id"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="password-panel"
+                className="block text-sm font-semibold text-slate-700 mb-1"
+              >
+                Kata Sandi
+              </label>
+              <input
+                id="password-panel"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:border-mahad-gold"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={masukLoading}
+              className="bg-mahad-gold hover:bg-yellow-400 disabled:opacity-60 text-mahad-green-dark font-bold text-sm px-6 py-2.5 rounded-full shadow transition"
+            >
+              {masukLoading ? "Memeriksa..." : "Masuk"}
+            </button>
+          </form>
         ) : daftar.length === 0 ? (
           <p className="text-sm text-slate-500 mt-6">
-            Belum ada naskah di lapisan data uji. Kirim satu lewat halaman{" "}
-            <a href="/jurnal/kirim" className="text-mahad-green font-semibold underline">
+            Belum ada naskah. Kirim satu lewat halaman{" "}
+            <a
+              href="/jurnal/kirim"
+              className="text-mahad-green font-semibold underline"
+            >
               Kirim Naskah
             </a>{" "}
-            untuk mulai menguji.
+            untuk mulai.
           </p>
         ) : (
           <div className="mt-6 space-y-4">
@@ -137,7 +301,7 @@ export default function PanelRedaksiJurnalPage() {
                     </p>
                   </div>
                   <span className="text-xs font-bold bg-mahad-gold-light text-mahad-green-dark px-3 py-1 rounded-full shrink-0">
-                    {n.status}
+                    {n.statusLabel}
                   </span>
                 </div>
                 <p className="text-sm text-slate-600 mt-3 line-clamp-3">
@@ -148,7 +312,7 @@ export default function PanelRedaksiJurnalPage() {
                     htmlFor={`status-${n.kode}`}
                     className="text-xs font-semibold text-slate-500"
                   >
-                    Ubah status:
+                    Pindah tahap:
                   </label>
                   <select
                     id={`status-${n.kode}`}
@@ -157,9 +321,9 @@ export default function PanelRedaksiJurnalPage() {
                     onChange={(e) => ubahStatus(n.kode, e.target.value)}
                     className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:border-mahad-gold"
                   >
-                    {PILIHAN_STATUS.map((s) => (
+                    {JURNAL_STATUSES.map((s) => (
                       <option key={s} value={s}>
-                        {s}
+                        {JURNAL_STATUS_LABEL_ID[s]}
                       </option>
                     ))}
                   </select>

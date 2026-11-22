@@ -1,128 +1,121 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Lapisan data uji naskah jurnal — SERVER ONLY.
+// Fasad lapisan data jurnal — SERVER ONLY.
 //
-// Penyimpanan: berkas JSON lokal di <cwd>/.jurnal-uji/submissions.json
-// dengan cadangan memori proses bila berkas tidak bisa ditulis (mis. sistem
-// berkas hanya-baca di lingkungan serverless). Lapisan ini SENGAJA tidak
-// memakai Supabase Mahadaly produksi: data uji tidak boleh mencemari kotak
-// naskah asli kampus. Di lingkungan serverless berkas bersifat sementara,
-// jadi data uji bisa hilang saat instans berganti — diterima untuk versi uji.
+// Dua backend di belakang satu antarmuka:
+// - "supabase": tabel jurnal_* migrasi 004 lewat service role. Dipakai
+//   bila SUPABASE_SERVICE_ROLE_KEY terpasang DAN pemeriksaan ringan ke
+//   tabel jurnal_submissions berhasil (artinya migrasi sudah dijalankan
+//   di proyek tujuan).
+// - "local": berkas JSON uji di .jurnal-uji/ (store-local.ts). Dipakai
+//   bila env tidak tersedia atau tabel belum ada, supaya build dan uji
+//   lokal tidak pernah pecah dan tidak pernah menulis ke basis data
+//   produksi kampus.
+//
+// Keputusan mode diperiksa sekali per proses dan disimpan. Kegagalan
+// sesudah mode supabase terpilih dianggap galat sungguhan dan diteruskan
+// ke route, bukan disembunyikan dengan jatuh diam-diam ke lokal.
+// Paksa mode lewat env JURNAL_DATA_MODE=local|supabase bila perlu.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { promises as fs } from "fs";
-import path from "path";
+import { supabaseAdmin } from "@/lib/supabase/server";
+import type { JurnalStatus, JurnalSubmissionView } from "./status";
+import {
+  createLokal,
+  getLokal,
+  listLokal,
+  updateStatusLokal
+} from "./store-local";
+import {
+  createSupabase,
+  getSupabase,
+  listSupabase,
+  updateStatusSupabase
+} from "./store-supabase";
 
-export const STATUS_NASKAH_UJI = [
-  "Diterima Redaksi",
-  "Direview",
-  "Revisi",
-  "Diterima",
-  "Ditolak"
-] as const;
+export type JurnalDataMode = "supabase" | "local";
 
-export type StatusNaskahUji = (typeof STATUS_NASKAH_UJI)[number];
+let modePromise: Promise<JurnalDataMode> | null = null;
 
-export interface RiwayatStatus {
-  status: StatusNaskahUji;
-  pada: string; // ISO datetime
+async function deteksiMode(): Promise<JurnalDataMode> {
+  const paksa = (process.env.JURNAL_DATA_MODE || "").trim().toLowerCase();
+  if (paksa === "local") return "local";
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (paksa === "supabase") {
+      console.warn(
+        "[jurnal] JURNAL_DATA_MODE=supabase tetapi SUPABASE_SERVICE_ROLE_KEY tidak terpasang; jatuh ke mode lokal."
+      );
+    }
+    return "local";
+  }
+
+  try {
+    const { error } = await supabaseAdmin
+      .from("jurnal_submissions")
+      .select("id", { head: true, count: "exact" })
+      .limit(1);
+    if (error) {
+      console.warn(
+        `[jurnal] Tabel jurnal belum tersedia (${error.message}); jatuh ke mode lokal. Jalankan migrasi 004 untuk mengaktifkan mode supabase.`
+      );
+      return "local";
+    }
+    return "supabase";
+  } catch (err) {
+    console.warn(
+      `[jurnal] Pemeriksaan tabel jurnal gagal (${err instanceof Error ? err.message : String(err)}); jatuh ke mode lokal.`
+    );
+    return "local";
+  }
 }
 
-export interface NaskahUji {
-  kode: string; // JRN-YYYY-XXXX
+export function getJurnalDataMode(): Promise<JurnalDataMode> {
+  if (!modePromise) modePromise = deteksiMode();
+  return modePromise;
+}
+
+// Panel dan route tulis wajib login berperan hanya pada mode supabase.
+// Pada mode lokal panel berjalan sebagai mode uji terbuka (ditandai jelas
+// di halaman), sama seperti versi uji sebelumnya.
+export async function isJurnalAuthRequired(): Promise<boolean> {
+  return (await getJurnalDataMode()) === "supabase";
+}
+
+export async function listSubmissions(): Promise<JurnalSubmissionView[]> {
+  return (await getJurnalDataMode()) === "supabase"
+    ? listSupabase()
+    : listLokal();
+}
+
+export async function getSubmission(
+  kode: string
+): Promise<JurnalSubmissionView | null> {
+  return (await getJurnalDataMode()) === "supabase"
+    ? getSupabase(kode)
+    : getLokal(kode);
+}
+
+export async function createSubmission(input: {
   judul: string;
   penulis: string;
   email: string;
   afiliasi: string;
   abstrak: string;
-  status: StatusNaskahUji;
-  riwayat: RiwayatStatus[];
-  dibuatPada: string; // ISO datetime
+}): Promise<JurnalSubmissionView> {
+  return (await getJurnalDataMode()) === "supabase"
+    ? createSupabase(input)
+    : createLokal(input);
 }
 
-const DIR = path.join(process.cwd(), ".jurnal-uji");
-const FILE = path.join(DIR, "submissions.json");
-
-let memori: NaskahUji[] | null = null;
-
-async function muat(): Promise<NaskahUji[]> {
-  if (memori) return memori;
-  try {
-    const teks = await fs.readFile(FILE, "utf8");
-    const data = JSON.parse(teks);
-    memori = Array.isArray(data) ? (data as NaskahUji[]) : [];
-  } catch {
-    memori = [];
-  }
-  return memori;
-}
-
-async function simpan(): Promise<void> {
-  if (!memori) return;
-  try {
-    await fs.mkdir(DIR, { recursive: true });
-    await fs.writeFile(FILE, JSON.stringify(memori, null, 2), "utf8");
-  } catch {
-    // Sistem berkas tidak bisa ditulis: data tetap hidup di memori proses.
-  }
-}
-
-function buatKodeUnik(existing: NaskahUji[]): string {
-  const tahun = new Date().getFullYear();
-  for (let i = 0; i < 50; i++) {
-    const acak = Math.floor(1000 + Math.random() * 9000);
-    const kode = `JRN-${tahun}-${acak}`;
-    if (!existing.some((n) => n.kode === kode)) return kode;
-  }
-  // Cadangan bila 50 percobaan bentrok (nyaris mustahil pada skala uji).
-  return `JRN-${tahun}-${Date.now() % 10000}`;
-}
-
-export async function listNaskahUji(): Promise<NaskahUji[]> {
-  const data = await muat();
-  return [...data].sort((a, b) => (a.dibuatPada < b.dibuatPada ? 1 : -1));
-}
-
-export async function getNaskahUji(kode: string): Promise<NaskahUji | null> {
-  const data = await muat();
-  const target = kode.trim().toUpperCase();
-  return data.find((n) => n.kode === target) ?? null;
-}
-
-export async function createNaskahUji(input: {
-  judul: string;
-  penulis: string;
-  email: string;
-  afiliasi: string;
-  abstrak: string;
-}): Promise<NaskahUji> {
-  const data = await muat();
-  const sekarang = new Date().toISOString();
-  const naskah: NaskahUji = {
-    kode: buatKodeUnik(data),
-    judul: input.judul,
-    penulis: input.penulis,
-    email: input.email,
-    afiliasi: input.afiliasi,
-    abstrak: input.abstrak,
-    status: "Diterima Redaksi",
-    riwayat: [{ status: "Diterima Redaksi", pada: sekarang }],
-    dibuatPada: sekarang
-  };
-  data.push(naskah);
-  await simpan();
-  return naskah;
-}
-
-export async function updateStatusNaskahUji(
+export async function updateSubmissionStatus(
   kode: string,
-  status: StatusNaskahUji
-): Promise<NaskahUji | null> {
-  const data = await muat();
-  const target = kode.trim().toUpperCase();
-  const naskah = data.find((n) => n.kode === target);
-  if (!naskah) return null;
-  naskah.status = status;
-  naskah.riwayat.push({ status, pada: new Date().toISOString() });
-  await simpan();
-  return naskah;
+  status: JurnalStatus,
+  actor?: { userId?: string | null; label?: string | null },
+  catatan?: string | null
+): Promise<JurnalSubmissionView | null> {
+  if ((await getJurnalDataMode()) === "supabase") {
+    return updateStatusSupabase(kode, status, actor, catatan);
+  }
+  // Backend lokal tidak menyimpan pelaku; catatan tetap dicatat.
+  return updateStatusLokal(kode, status, catatan);
 }
