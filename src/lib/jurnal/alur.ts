@@ -191,6 +191,7 @@ export interface JurnalArtikelPublik {
   penulis: JurnalPenulisPublik[];
   afiliasiUtama: string;
   bagianLabel: string;
+  bagianSlug: string;
   abstrak: string;
   abstrakEn: string;
   kataKunci: string[];

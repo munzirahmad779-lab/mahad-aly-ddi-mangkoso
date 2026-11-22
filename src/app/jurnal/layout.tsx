@@ -7,6 +7,14 @@ import type { ReactNode } from "react";
 
 const TAUTAN_JURNAL = [
   { href: "/jurnal", label: "Beranda Jurnal" },
+  { href: "/jurnal/cari", label: "Cari Artikel" },
+  { href: "/jurnal/pengumuman", label: "Pengumuman" },
+  { href: "/jurnal/halaman/tentang", label: "Tentang Jurnal" },
+  { href: "/jurnal/halaman/fokus-ruang-lingkup", label: "Fokus dan Ruang Lingkup" },
+  { href: "/jurnal/halaman/dewan-redaksi", label: "Dewan Redaksi" },
+  { href: "/jurnal/halaman/pedoman-penulis", label: "Pedoman Penulis" },
+  { href: "/jurnal/halaman/etika-publikasi", label: "Etika Publikasi" },
+  { href: "/jurnal/halaman/biaya-lisensi", label: "Biaya dan Lisensi" },
   { href: "/jurnal/terbitan/vol-1-no-1-versi-uji", label: "Terbitan" },
   { href: "/jurnal/kirim", label: "Kirim Naskah" },
   { href: "/jurnal/lacak", label: "Lacak Naskah" },

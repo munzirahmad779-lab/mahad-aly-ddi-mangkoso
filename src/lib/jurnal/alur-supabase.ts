@@ -593,6 +593,7 @@ export const alurBackendSupabase: AlurBackend = {
         "id, tracking_code, title_id, abstract_id, abstract_en, keywords, language, pages, doi, license, ai_statement, section_id, issue_id, issue_order"
       )
       .eq("status", "published")
+      .is("withdrawn_at", null)
       .order("issue_order", { ascending: true });
     if (error) throw new Error(`Gagal membaca artikel terbit: ${error.message}`);
     const baris = (data ?? []) as unknown as Record<string, unknown>[];

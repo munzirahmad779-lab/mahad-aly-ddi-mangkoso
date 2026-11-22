@@ -143,4 +143,7 @@ export interface JurnalSubmissionView {
     kunci: string;
   }[];
   pernyataanAi?: string | null;
+  // Tahap 5: DOI yang diisi journal_manager dan penanda penarikan.
+  doi?: string | null;
+  ditarikPada?: string | null;
 }

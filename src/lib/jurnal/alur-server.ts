@@ -779,6 +779,7 @@ async function kumpulkanPublik(): Promise<{
       penulis: a.penulis,
       afiliasiUtama: a.afiliasiUtama,
       bagianLabel: labelBagian(a.bagianSlug),
+      bagianSlug: a.bagianSlug ?? "",
       abstrak: a.abstrak,
       abstrakEn: a.abstrakEn,
       kataKunci: a.kataKunci,

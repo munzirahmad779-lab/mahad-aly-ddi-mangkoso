@@ -224,6 +224,24 @@ export default function PanelRedaksiJurnalPage() {
               >
                 Kelola Terbitan
               </a>
+              <a
+                href="/jurnal/panel/pengumuman"
+                className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-1.5 transition"
+              >
+                Pengumuman
+              </a>
+              <a
+                href="/jurnal/panel/artikel"
+                className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-1.5 transition"
+              >
+                DOI dan Penarikan
+              </a>
+              <a
+                href="/jurnal/panel/statistik"
+                className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-1.5 transition"
+              >
+                Statistik
+              </a>
               <button
                 onClick={handleLogout}
                 className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-1.5 transition"

@@ -331,6 +331,7 @@ export const alurBackendLokal: AlurBackend = {
     const hasil: ArtikelPublikInternal[] = [];
     for (const n of daftar) {
       if (n.status !== "published") continue;
+      if (n.ditarikPada) continue; // artikel ditarik tidak tampil publik
       const penempatan = data.penempatan[n.kode];
       const galley = data.berkasAlur
         .filter((b) => b.kode === n.kode && b.tahap === "galley")
@@ -364,7 +365,7 @@ export const alurBackendLokal: AlurBackend = {
         kataKunci: n.kataKunci ?? [],
         halaman: null,
         bahasa: n.bahasa ?? "id",
-        doi: null,
+        doi: n.doi ?? null,
         lisensi: "CC BY 4.0",
         pernyataanAi: n.pernyataanAi ?? null,
         issueId: penempatan?.issueId ?? null,

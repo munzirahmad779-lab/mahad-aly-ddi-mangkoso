@@ -7,6 +7,7 @@ import {
   JURNAL_FOKUS_DAN_RUANG_LINGKUP
 } from "@/lib/jurnal/konten";
 import { daftarTerbitanPublik } from "@/lib/jurnal/alur-server";
+import { daftarPengumumanPublik } from "@/lib/jurnal/publik5-server";
 
 // Beranda cabang jurnal VERSI UJI. Sejak Tahap 4 daftar terbitan dan
 // artikel terbaru membaca basis data lewat lapisan store (kedua mode):
@@ -26,6 +27,7 @@ export const metadata: Metadata = {
 
 export default async function JurnalBerandaPage() {
   const terbitan = await daftarTerbitanPublik();
+  const pengumuman = (await daftarPengumumanPublik()).slice(0, 3);
   const artikelTerbaru = terbitan
     .flatMap((t) => t.artikel)
     .sort((a, b) => (a.tanggalTerbit < b.tanggalTerbit ? 1 : -1))
@@ -87,6 +89,38 @@ export default async function JurnalBerandaPage() {
           ))}
         </ul>
       </section>
+
+      {/* Pengumuman terbaru (Tahap 5) */}
+      {pengumuman.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-serif font-bold text-xl sm:text-2xl text-mahad-green-dark">
+              Pengumuman
+            </h2>
+            <Link
+              href="/jurnal/pengumuman"
+              className="text-sm font-semibold text-mahad-green hover:underline"
+            >
+              Semua pengumuman
+            </Link>
+          </div>
+          <div className="grid gap-4">
+            {pengumuman.map((p) => (
+              <article
+                key={p.id}
+                className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
+              >
+                <h3 className="font-serif font-bold text-lg text-slate-800">
+                  {p.judul}
+                </h3>
+                <p className="text-sm text-slate-600 mt-2 line-clamp-3 whitespace-pre-line">
+                  {p.isi}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Daftar terbitan dari basis data */}
       <section>

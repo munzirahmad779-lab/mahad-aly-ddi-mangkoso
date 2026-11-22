@@ -50,6 +50,11 @@ export interface CatatanLokal {
   berkas?: JurnalBerkasMeta[];
   pernyataanAi?: string | null;
   daftarPeriksa?: JurnalDaftarPeriksa;
+  // Tahap 5: DOI per artikel dan penarikan (tombstone OAI). Catatan
+  // tidak pernah dihapus; penarikan hanya menandai.
+  doi?: string | null;
+  ditarikPada?: string | null;
+  alasanTarik?: string | null;
 }
 
 // Catatan lama versi uji memakai label Indonesia sebagai status. Petakan
@@ -110,7 +115,9 @@ function keTampilan(n: CatatanLokal): JurnalSubmissionView {
       bucket: b.bucket,
       kunci: b.kunci
     })),
-    pernyataanAi: n.pernyataanAi ?? null
+    pernyataanAi: n.pernyataanAi ?? null,
+    doi: n.doi ?? null,
+    ditarikPada: n.ditarikPada ?? null
   };
 }
 
@@ -160,6 +167,11 @@ async function muat(): Promise<CatatanLokal[]> {
         : [],
       pernyataanAi:
         typeof n.pernyataanAi === "string" ? (n.pernyataanAi as string) : null,
+      doi: typeof n.doi === "string" ? (n.doi as string) : null,
+      ditarikPada:
+        typeof n.ditarikPada === "string" ? (n.ditarikPada as string) : null,
+      alasanTarik:
+        typeof n.alasanTarik === "string" ? (n.alasanTarik as string) : null,
       daftarPeriksa:
         n.daftarPeriksa && typeof n.daftarPeriksa === "object"
           ? (n.daftarPeriksa as JurnalDaftarPeriksa)
@@ -247,6 +259,66 @@ export async function updateStatusLokal(
   });
   await simpan();
   return keTampilan(naskah);
+}
+
+// ── Tahap 5: DOI dan penarikan artikel ──────────────────────────────────
+// Padanan lokal kolom doi dan withdrawn_at pada jurnal_submissions
+// (migrasi 004 dan 008). Penarikan tidak menghapus catatan dan tidak
+// mengubah status: ia menandai artikel sebagai ditarik, yang menjadi
+// tombstone persisten untuk OAI-PMH (header deleted).
+
+export async function tetapkanDoiLokal(
+  kode: string,
+  doi: string | null
+): Promise<JurnalSubmissionView | null> {
+  const data = await muat();
+  const target = kode.trim().toUpperCase();
+  const naskah = data.find((n) => n.kode === target);
+  if (!naskah) return null;
+  naskah.doi = doi;
+  await simpan();
+  return keTampilan(naskah);
+}
+
+export async function tarikArtikelLokal(
+  kode: string,
+  alasan: string | null
+): Promise<JurnalSubmissionView | null> {
+  const data = await muat();
+  const target = kode.trim().toUpperCase();
+  const naskah = data.find((n) => n.kode === target);
+  if (!naskah) return null;
+  if (!naskah.ditarikPada) {
+    naskah.ditarikPada = new Date().toISOString();
+    naskah.alasanTarik = alasan;
+    // Linimasa penarikan ditulis pemanggil lewat catatPeristiwaNaskah,
+    // sama seperti jalur mode supabase.
+    await simpan();
+  }
+  return keTampilan(naskah);
+}
+
+export interface ArtikelDitarikLokal {
+  kode: string;
+  judul: string;
+  bagianSlug: string | null;
+  ditarikPada: string;
+  alasanTarik: string | null;
+}
+
+export async function daftarArtikelDitarikLokal(): Promise<
+  ArtikelDitarikLokal[]
+> {
+  const data = await muat();
+  return data
+    .filter((n) => n.ditarikPada)
+    .map((n) => ({
+      kode: n.kode,
+      judul: n.judul,
+      bagianSlug: n.bagianSlug ?? null,
+      ditarikPada: n.ditarikPada as string,
+      alasanTarik: n.alasanTarik ?? null
+    }));
 }
 
 // ── Tahap 2: pengiriman lengkap dari wizard ──────────────────────────────

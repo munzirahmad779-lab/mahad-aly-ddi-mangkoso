@@ -10,6 +10,8 @@ import {
   artikelPublikDariSlug,
   catatKunjunganArtikel
 } from "@/lib/jurnal/alur-server";
+import { infoPenarikanDariSlug } from "@/lib/jurnal/publik5-server";
+import { teksKutipan } from "@/lib/jurnal/publik5";
 import type { JurnalArtikelPublik } from "@/lib/jurnal/alur";
 
 // Halaman artikel jurnal dengan metadata lengkap:
@@ -110,7 +112,45 @@ export default async function ArtikelJurnalPage({
 }) {
   const { slug } = await params;
   const artikel = await artikelPublikDariSlug(slug);
-  if (!artikel) notFound();
+  if (!artikel) {
+    // Artikel yang ditarik sesudah terbit tidak hilang diam-diam:
+    // halamannya menjadi pemberitahuan penarikan (asas COPE).
+    const penarikan = await infoPenarikanDariSlug(slug);
+    if (penarikan) {
+      return (
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
+          <article className="bg-white rounded-2xl shadow-sm border border-red-200 p-6 sm:p-10">
+            <span className="text-[11px] font-bold uppercase tracking-wider bg-red-50 text-red-700 border border-red-200 px-2.5 py-0.5 rounded-full">
+              Artikel Ditarik (Retracted)
+            </span>
+            <h1 className="font-serif font-bold text-2xl text-slate-800 leading-snug mt-4">
+              {penarikan.judul}
+            </h1>
+            <p className="text-sm sm:text-base text-slate-700 leading-relaxed mt-4">
+              Artikel ini telah ditarik dari publikasi oleh redaksi pada{" "}
+              {new Date(penarikan.ditarikPada).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+              })}
+              .
+            </p>
+            {penarikan.alasanTarik && (
+              <p className="text-sm text-slate-600 mt-3">
+                Alasan penarikan: {penarikan.alasanTarik}
+              </p>
+            )}
+            <p className="text-sm text-slate-500 mt-3">
+              Catatan bibliografis artikel tetap dipertahankan dan rekod
+              OAI-PMH-nya ditandai sebagai terhapus (deleted) sesuai
+              kebijakan koreksi dan penarikan jurnal.
+            </p>
+          </article>
+        </div>
+      );
+    }
+    notFound();
+  }
   // Pencatatan metrik dasar: satu kunjungan halaman artikel menaikkan
   // penghitung harian. Kegagalannya tidak pernah menggagalkan halaman.
   await catatKunjunganArtikel(artikel.kode);
@@ -297,6 +337,36 @@ export default async function ArtikelJurnalPage({
             <p className="text-sm text-slate-600 mt-2">{artikel.pernyataanAi}</p>
           </>
         )}
+
+        <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
+          Cara Mengutip
+        </h2>
+        <p className="text-sm text-slate-700 leading-relaxed mt-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+          {teksKutipan({
+            judul: artikel.judul,
+            penulis: artikel.penulis,
+            tahun: artikel.tahun,
+            volume: artikel.volume,
+            nomor: artikel.nomor,
+            halaman: artikel.halaman,
+            doi: artikel.doi,
+            slug: artikel.slug
+          })}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-3">
+          <a
+            href={`/api/jurnal/artikel/${artikel.kode}/sitasi?format=bibtex`}
+            className="bg-white border border-slate-300 hover:border-mahad-gold font-bold text-sm px-5 py-2 rounded-full transition"
+          >
+            Unduh BibTeX
+          </a>
+          <a
+            href={`/api/jurnal/artikel/${artikel.kode}/sitasi?format=ris`}
+            className="bg-white border border-slate-300 hover:border-mahad-gold font-bold text-sm px-5 py-2 rounded-full transition"
+          >
+            Unduh RIS
+          </a>
+        </div>
       </article>
     </div>
   );
