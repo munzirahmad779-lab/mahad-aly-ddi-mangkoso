@@ -606,3 +606,37 @@ export async function listSupabaseByOwner(owner: {
   if (error) throw new Error(`Gagal membaca naskah penulis: ${error.message}`);
   return lengkapiTampilan((data ?? []) as unknown as BarisNaskahLengkap[]);
 }
+
+// ── Tahap 3: peristiwa linimasa tanpa perubahan status ──────────────────
+// Baris peristiwa membawa to_status = status berjalan supaya ikut tampil
+// di linimasa tampilan yang ada (keTampilan menyaring peristiwa menurut
+// to_status), dengan event_type yang membedakannya dari perubahan status.
+export async function appendEventSupabase(
+  kode: string,
+  catatan: string,
+  actor?: { userId?: string | null; label?: string | null },
+  jenis = "review"
+): Promise<void> {
+  const target = kode.trim().toUpperCase();
+  const { data: lama, error: errBaca } = await supabaseAdmin
+    .from("jurnal_submissions")
+    .select("id, status")
+    .eq("tracking_code", target)
+    .maybeSingle();
+  if (errBaca) throw new Error(`Gagal membaca naskah jurnal: ${errBaca.message}`);
+  if (!lama) return;
+  const { error } = await supabaseAdmin
+    .from("jurnal_submission_events")
+    .insert({
+      submission_id: lama.id as string,
+      event_type: jenis,
+      from_status: lama.status as string,
+      to_status: lama.status as string,
+      actor_user_id: actor?.userId ?? null,
+      actor_label: actor?.label ?? null,
+      note: catatan
+    });
+  if (error) {
+    throw new Error(`Gagal mencatat linimasa jurnal: ${error.message}`);
+  }
+}

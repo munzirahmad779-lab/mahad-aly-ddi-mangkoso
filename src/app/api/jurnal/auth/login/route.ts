@@ -7,11 +7,11 @@ import {
 } from "@/lib/rate-limit";
 import { getJurnalRolesForUser } from "@/lib/jurnal/auth";
 import { getJurnalDataMode } from "@/lib/jurnal/store";
-import { verifikasiAkunLokal } from "@/lib/jurnal/store-local";
 import {
-  buatTokenSesiLokal,
-  peranLokalDariEmail
-} from "@/lib/jurnal/sesi-lokal";
+  peranLokalLengkap,
+  verifikasiAkunLokal
+} from "@/lib/jurnal/store-local";
+import { buatTokenSesiLokal } from "@/lib/jurnal/sesi-lokal";
 import {
   bacaJsonTerbatas,
   catatPeristiwaKeamanan,
@@ -121,9 +121,10 @@ export async function POST(req: NextRequest) {
         user: {
           id: null,
           email: akun.email,
-          // Peran diturunkan di server dari daftar staf uji (env), bukan
-          // dari klien: akun staf uji memegang journal_manager.
-          roles: peranLokalDariEmail(akun.email)
+          // Peran diturunkan di server dari akun uji dan daftar staf uji
+          // (env), bukan dari klien: akun staf uji memegang peran staf,
+          // akun hasil klaim undangan memegang peran reviewer.
+          roles: await peranLokalLengkap(akun.email)
         }
       });
     }

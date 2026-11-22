@@ -9,9 +9,9 @@ import {
 import { requireJurnalRole } from "@/lib/jurnal/auth";
 import {
   emailDariHeaderLokal,
-  peranLokalDariEmail,
   sesiLokalStaf
 } from "@/lib/jurnal/sesi-lokal";
+import { peranLokalLengkap } from "@/lib/jurnal/store-local";
 import { JURNAL_STAFF_ROLES, labelStatus } from "@/lib/jurnal/status";
 import {
   BERKAS_PENDUKUNG_MAX_JUMLAH,
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
         { status: emailPemanggil ? 403 : 401 }
       );
     }
-    viewer = { email: emailStaf, roles: peranLokalDariEmail(emailStaf) };
+    viewer = { email: emailStaf, roles: await peranLokalLengkap(emailStaf) };
   }
 
   try {

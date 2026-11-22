@@ -32,7 +32,8 @@ export type JenisPeristiwaKeamanan =
   | "register_ditolak"
   | "turnstile_gagal"
   | "turnstile_dilewati"
-  | "kode_tidak_sah";
+  | "kode_tidak_sah"
+  | "review_ditolak";
 
 export interface DetailPeristiwaKeamanan {
   ip?: string | null;

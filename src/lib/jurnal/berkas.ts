@@ -23,7 +23,11 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   ekstensiBerkas,
@@ -157,6 +161,57 @@ export async function tandaTanganiUnggahan(input: {
 // ── Cadangan uji lokal ────────────────────────────────────────────────────
 
 const DIR_UNGGAH_UJI = path.join(process.cwd(), ".jurnal-uji", "uploads");
+
+// ── Unduhan berkas (Tahap 3: reviewer mengunduh naskah yang ditugaskan) ──
+// URL unduh bertanda tangan berumur pendek (10 menit) ke R2. Kunci objek
+// adalah kunci buatan server yang tidak memuat identitas penulis, jadi
+// URL ini aman diserahkan kepada reviewer yang berhak. Pemeriksaan hak
+// aksesnya sendiri dilakukan pemanggil (route review) sebelum memanggil
+// fungsi ini; fungsi ini hanya menandatangani.
+const URL_UNDUH_KEDALUWARSA_DETIK = 10 * 60;
+
+export async function tandaTanganiUnduhan(
+  bucket: string,
+  kunci: string
+): Promise<string> {
+  const cfg = konfigurasiR2();
+  if (!cfg) {
+    throw new Error("Penyimpanan R2 belum terkonfigurasi di server.");
+  }
+  if (bucket !== cfg.bucket) {
+    throw new Error("Bucket berkas tidak cocok dengan bucket R2 jurnal.");
+  }
+  const klien = new S3Client({
+    region: "auto",
+    endpoint: cfg.endpoint,
+    credentials: {
+      accessKeyId: cfg.accessKeyId,
+      secretAccessKey: cfg.secretAccessKey
+    }
+  });
+  const perintah = new GetObjectCommand({ Bucket: bucket, Key: kunci });
+  return getSignedUrl(klien, perintah, {
+    expiresIn: URL_UNDUH_KEDALUWARSA_DETIK
+  });
+}
+
+// Membaca isi berkas uji lokal dari folder scratch. Kunci diverifikasi
+// terhadap pola kunci buatan server dan jalur hasil join ditahan di
+// dalam folder unggahan, jadi kunci karangan tidak bisa membaca berkas
+// di luar folder itu.
+export async function bacaBerkasLokalUji(
+  kunci: string
+): Promise<Buffer | null> {
+  if (!POLA_KUNCI_OBJEK.test(kunci)) return null;
+  const tujuan = path.resolve(DIR_UNGGAH_UJI, kunci);
+  const akar = path.resolve(DIR_UNGGAH_UJI);
+  if (!tujuan.startsWith(akar + path.sep)) return null;
+  try {
+    return await fs.readFile(tujuan);
+  } catch {
+    return null;
+  }
+}
 
 // Menyimpan berkas ke folder scratch lokal klon (MODE UJI). Mengembalikan
 // metadata berkas dengan bucket penanda "lokal-uji".

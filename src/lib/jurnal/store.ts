@@ -28,6 +28,7 @@ import {
   updateStatusLokal
 } from "./store-local";
 import {
+  appendEventSupabase,
   createSupabase,
   createSupabaseLengkap,
   getSupabase,
@@ -35,6 +36,7 @@ import {
   listSupabaseByOwner,
   updateStatusSupabase
 } from "./store-supabase";
+import { tambahRiwayatLokal } from "./store-local";
 import {
   teksPernyataanAi,
   type JurnalWizardInput
@@ -152,4 +154,22 @@ export async function listSubmissionsByOwner(owner: {
     return listSupabaseByOwner(owner);
   }
   return listLokalByEmail(owner.email);
+}
+
+// ── Tahap 3: peristiwa linimasa tanpa perubahan status ──────────────────
+// Dipakai mesin review untuk mencatat penugasan, penyerahan telaah,
+// pembukaan putaran, keputusan revisi, dan unggahan revisi. Catatan
+// terbaca penulis lewat lacak dan Naskah Saya, jadi isinya tidak pernah
+// boleh memuat identitas reviewer.
+export async function catatPeristiwaNaskah(
+  kode: string,
+  catatan: string,
+  actor?: { userId?: string | null; label?: string | null },
+  jenis = "review"
+): Promise<void> {
+  if ((await getJurnalDataMode()) === "supabase") {
+    await appendEventSupabase(kode, catatan, actor, jenis);
+    return;
+  }
+  await tambahRiwayatLokal(kode, catatan);
 }

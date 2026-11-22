@@ -375,6 +375,12 @@ export default function PanelRedaksiJurnalPage() {
                   {menyimpan === n.kode && (
                     <span className="text-xs text-slate-400">Menyimpan...</span>
                   )}
+                  <a
+                    href={`/jurnal/panel/naskah/${encodeURIComponent(n.kode)}`}
+                    className="text-xs font-bold bg-mahad-green-dark text-emerald-100 hover:bg-mahad-green rounded-full px-4 py-1.5 transition"
+                  >
+                    Kelola Telaah
+                  </a>
                 </div>
               </article>
             ))}

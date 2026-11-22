@@ -17,9 +17,11 @@ import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import {
   labelStatus,
   type JurnalRiwayatItem,
+  type JurnalRole,
   type JurnalStatus,
   type JurnalSubmissionView
 } from "./status";
+import { emailStafLokal } from "./sesi-lokal";
 import {
   labelBagian,
   type JurnalBerkasMeta,
@@ -28,7 +30,7 @@ import {
   type JurnalWizardInput
 } from "./wizard";
 
-interface CatatanLokal {
+export interface CatatanLokal {
   kode: string;
   judul: string;
   penulis: string;
@@ -286,6 +288,39 @@ export async function listLokalByEmail(
     .map(keTampilan);
 }
 
+// ── Tahap 3: akses catatan mentah dan penambahan linimasa ────────────────
+// Dipakai backend review lokal. Catatan mentah hanya beredar di server;
+// fungsi yang melayani reviewer tidak pernah meneruskan kolom identitas
+// penulis dari catatan ini (lihat review-local.ts).
+
+export async function ambilCatatanLokalByKode(
+  kode: string
+): Promise<CatatanLokal | null> {
+  const data = await muat();
+  const target = kode.trim().toUpperCase();
+  return data.find((n) => n.kode === target) ?? null;
+}
+
+// Menambah peristiwa linimasa tanpa mengubah status (penugasan reviewer,
+// telaah diserahkan, putaran dibuka, revisi diunggah, dan sebagainya).
+// Catatan peristiwa ini terbaca penulis lewat lacak dan Naskah Saya, jadi
+// isinya tidak pernah boleh memuat identitas reviewer.
+export async function tambahRiwayatLokal(
+  kode: string,
+  catatan: string
+): Promise<void> {
+  const data = await muat();
+  const target = kode.trim().toUpperCase();
+  const naskah = data.find((n) => n.kode === target);
+  if (!naskah) return;
+  naskah.riwayat.push({
+    status: naskah.status,
+    pada: new Date().toISOString(),
+    catatan
+  });
+  await simpan();
+}
+
 // ── Tahap 2: akun penulis uji lokal ──────────────────────────────────────
 // Akun uji untuk mode data lokal, disimpan di .jurnal-uji/accounts.json
 // dengan kata sandi ter-hash scrypt (tidak pernah teks terang). Akun ini
@@ -300,6 +335,10 @@ export interface AkunLokal {
   orcid: string | null;
   consentVersi: string;
   dibuatPada: string;
+  // Peran jurnal akun uji (Tahap 3). Pendaftaran biasa memberi
+  // ["author"]; klaim undangan reviewer memberi "reviewer". Peran staf
+  // tidak disimpan di sini: ia diturunkan dari env staf uji di server.
+  peran: JurnalRole[];
 }
 
 interface AkunLokalTersimpan extends AkunLokal {
@@ -356,7 +395,8 @@ function akunPublik(a: AkunLokalTersimpan): AkunLokal {
     negara: a.negara,
     orcid: a.orcid,
     consentVersi: a.consentVersi,
-    dibuatPada: a.dibuatPada
+    dibuatPada: a.dibuatPada,
+    peran: Array.isArray(a.peran) && a.peran.length > 0 ? a.peran : ["author"]
   };
 }
 
@@ -368,6 +408,7 @@ export async function daftarAkunLokal(input: {
   negara?: string;
   orcid?: string;
   consentVersi: string;
+  peran?: JurnalRole[];
 }): Promise<AkunLokal> {
   const akun = await muatAkun();
   const email = input.email.trim().toLowerCase();
@@ -382,6 +423,7 @@ export async function daftarAkunLokal(input: {
     orcid: input.orcid?.trim() || null,
     consentVersi: input.consentVersi,
     dibuatPada: new Date().toISOString(),
+    peran: input.peran && input.peran.length > 0 ? input.peran : ["author"],
     kataSandiHash: hashKataSandi(input.kataSandi)
   };
   akun.push(baru);
@@ -405,6 +447,50 @@ export async function cariAkunLokal(email: string): Promise<AkunLokal | null> {
   const akun = await muatAkun();
   const target = akun.find((a) => a.email === email.trim().toLowerCase());
   return target ? akunPublik(target) : null;
+}
+
+// Daftar semua akun uji lokal (dipakai daftar pilihan reviewer staf).
+export async function daftarSemuaAkunLokal(): Promise<AkunLokal[]> {
+  const akun = await muatAkun();
+  return akun.map(akunPublik);
+}
+
+// Menambah satu peran ke akun uji lokal yang sudah ada (klaim undangan
+// reviewer untuk email yang sudah terdaftar). Mengembalikan null bila
+// akun tidak ditemukan.
+export async function tambahPeranAkunLokal(
+  email: string,
+  peranBaru: JurnalRole
+): Promise<AkunLokal | null> {
+  const akun = await muatAkun();
+  const target = akun.find((a) => a.email === email.trim().toLowerCase());
+  if (!target) return null;
+  const peran: JurnalRole[] = Array.isArray(target.peran)
+    ? [...target.peran]
+    : ["author"];
+  if (!peran.includes(peranBaru)) {
+    target.peran = [...peran, peranBaru];
+    await simpanAkun();
+  }
+  return akunPublik(target);
+}
+
+// Peran lengkap akun uji lokal: gabungan peran tersimpan akun dengan
+// peran staf uji dari env (JURNAL_LOCAL_STAFF_EMAILS). Versi asinkron
+// dari peranLokalDariEmail di sesi-lokal.ts, dipakai route baru Tahap 3
+// dan route login supaya peran reviewer hasil klaim undangan terbaca.
+export async function peranLokalLengkap(
+  email: string
+): Promise<JurnalRole[]> {
+  const peran = new Set<JurnalRole>();
+  const akun = await cariAkunLokal(email);
+  for (const p of akun?.peran ?? ["author"]) peran.add(p);
+  if (emailStafLokal(email)) {
+    peran.add("journal_manager");
+    peran.add("editor");
+    peran.add("author");
+  }
+  return [...peran];
 }
 
 // ── Tahap Keamanan: catatan peristiwa keamanan mode lokal ───────────────
@@ -467,4 +553,129 @@ export async function daftarPeristiwaKeamananLokal(): Promise<
   PeristiwaKeamananLokal[]
 > {
   return [...(await muatKeamanan())];
+}
+
+// ── Tahap 3: penyimpanan mesin review mode lokal ─────────────────────────
+// Padanan lokal tabel jurnal_review_rounds, jurnal_review_assignments,
+// dan baris berkas tahap review pada jurnal_submission_files (migrasi
+// 004). Disimpan di .jurnal-uji/review.json. Berkas revisi hanya berupa
+// metadata; isi berkas tetap di folder unggahan uji atau R2.
+
+export interface PutaranReviewLokal {
+  nomor: number;
+  status: "open" | "closed";
+  keputusan: string | null;
+  dibuatPada: string;
+  diputuskanPada: string | null;
+}
+
+export interface PenugasanReviewLokal {
+  id: string;
+  kode: string;
+  putaran: number;
+  reviewerEmail: string;
+  reviewerNama: string;
+  status: string; // invited | accepted | declined | completed | cancelled
+  ditugaskanPada: string;
+  tenggat: string | null;
+  rekomendasi: string | null;
+  komentarPenulis: string | null;
+  komentarEditor: string | null;
+  diserahkanPada: string | null;
+}
+
+export interface BerkasRevisiLokal {
+  id: string;
+  kode: string;
+  putaran: number; // putaran yang keputusannya memicu revisi ini
+  kategori: "utama" | "pendukung";
+  namaAsli: string;
+  mime: string;
+  ukuran: number;
+  bucket: string;
+  kunci: string;
+  diunggahPada: string;
+}
+
+export interface DataReviewLokal {
+  putaran: Record<string, PutaranReviewLokal[]>;
+  penugasan: PenugasanReviewLokal[];
+  berkasRevisi: BerkasRevisiLokal[];
+}
+
+const FILE_REVIEW = path.join(DIR, "review.json");
+let memoriReview: DataReviewLokal | null = null;
+
+export async function muatDataReviewLokal(): Promise<DataReviewLokal> {
+  if (memoriReview) return memoriReview;
+  try {
+    const teks = await fs.readFile(FILE_REVIEW, "utf8");
+    const data = JSON.parse(teks) as Partial<DataReviewLokal>;
+    memoriReview = {
+      putaran:
+        data.putaran && typeof data.putaran === "object" ? data.putaran : {},
+      penugasan: Array.isArray(data.penugasan) ? data.penugasan : [],
+      berkasRevisi: Array.isArray(data.berkasRevisi) ? data.berkasRevisi : []
+    };
+  } catch {
+    memoriReview = { putaran: {}, penugasan: [], berkasRevisi: [] };
+  }
+  return memoriReview;
+}
+
+export async function simpanDataReviewLokal(): Promise<void> {
+  if (!memoriReview) return;
+  try {
+    await fs.mkdir(DIR, { recursive: true });
+    await fs.writeFile(
+      FILE_REVIEW,
+      JSON.stringify(memoriReview, null, 2),
+      "utf8"
+    );
+  } catch {
+    // Sama seperti data lokal lain: tetap hidup di memori proses.
+  }
+}
+
+// ── Tahap 3: undangan reviewer mode lokal ────────────────────────────────
+// Padanan lokal tabel jurnal_invitations (migrasi 006). Token mentah
+// tidak pernah disimpan; yang disimpan adalah hash SHA-256 token.
+
+export interface UndanganLokal {
+  id: string;
+  email: string;
+  tokenHash: string;
+  dibuatOleh: string | null;
+  dibuatPada: string;
+  kedaluwarsa: string;
+  dipakaiPada: string | null;
+}
+
+const FILE_UNDANGAN = path.join(DIR, "invitations.json");
+let memoriUndangan: UndanganLokal[] | null = null;
+
+export async function muatUndanganLokal(): Promise<UndanganLokal[]> {
+  if (memoriUndangan) return memoriUndangan;
+  try {
+    const teks = await fs.readFile(FILE_UNDANGAN, "utf8");
+    const data = JSON.parse(teks);
+    memoriUndangan = Array.isArray(data) ? (data as UndanganLokal[]) : [];
+  } catch {
+    memoriUndangan = [];
+  }
+  return memoriUndangan;
+}
+
+export async function simpanUndanganLokal(): Promise<void> {
+  if (!memoriUndangan) return;
+  try {
+    await fs.mkdir(DIR, { recursive: true });
+    await fs.writeFile(
+      FILE_UNDANGAN,
+      JSON.stringify(memoriUndangan, null, 2),
+      "utf8"
+    );
+  } catch {
+    // Tetap hidup di memori proses.
+  }
 }

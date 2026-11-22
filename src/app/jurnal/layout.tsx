@@ -13,6 +13,7 @@ const TAUTAN_JURNAL = [
   { href: "/jurnal/daftar", label: "Daftar Penulis" },
   { href: "/jurnal/masuk", label: "Masuk Penulis" },
   { href: "/jurnal/naskah-saya", label: "Naskah Saya" },
+  { href: "/jurnal/review", label: "Dasbor Reviewer" },
   { href: "/jurnal/panel", label: "Panel Redaksi" },
   { href: "/jurnal/oai?verb=Identify", label: "OAI-PMH" }
 ];
