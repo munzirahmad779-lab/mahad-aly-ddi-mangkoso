@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/lib/supabase/client";
 import {
+  ambilSesiKlien,
+  hapusSesiLokal,
+  simpanSesiLokal
+} from "@/lib/jurnal/sesi-klien";
+import {
   JURNAL_STATUSES,
   JURNAL_STATUS_LABEL_ID,
   JURNAL_ROLE_LABEL_ID,
@@ -10,14 +15,16 @@ import {
   type JurnalSubmissionView
 } from "@/lib/jurnal/status";
 
-// Panel redaksi jurnal "OJS versi kita" (Tahap 1).
-// Dua keadaan mengikuti lapisan data (src/lib/jurnal/store.ts):
-// - Mode supabase: panel wajib login. Masuk lewat proxy
-//   /api/jurnal/auth/login (pola yang sama dengan login admin situs),
-//   sesi diterapkan ke klien Supabase, dan token Bearer dikirim ke route
-//   panel yang memeriksa peran jurnal di server.
-// - Mode lokal: basis data jurnal belum tersambung; panel terbuka sebagai
-//   mode uji dan ditandai jelas, sama seperti versi uji sebelumnya.
+// Panel redaksi jurnal "OJS versi kita" (Tahap 1, dikeraskan Tahap
+// Keamanan). Panel mewajibkan login berperan staf pada KEDUA mode data:
+// - Mode supabase: masuk lewat proxy /api/jurnal/auth/login (pola yang
+//   sama dengan login admin situs), sesi diterapkan ke klien Supabase,
+//   dan token Bearer dikirim ke route panel yang memeriksa peran jurnal
+//   di server.
+// - Mode lokal: masuk dengan akun staf uji (email tercantum di env
+//   server JURNAL_LOCAL_STAFF_EMAILS); sesi lokal bertanda tangan
+//   disimpan seperti sesi penulis, dan server menurunkan peran staf
+//   dari email pada token. Akun penulis biasa ditolak panel.
 
 interface Viewer {
   email: string;
@@ -40,6 +47,13 @@ export default function PanelRedaksiJurnalPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const ambilToken = useCallback(async (): Promise<string | null> => {
+    // Sesi lokal (mode uji) didahulukan; tokennya juga yang dipakai
+    // halaman penulis. Sesudah itu sesi Supabase Auth untuk mode
+    // supabase.
+    const sesiLokal = await ambilSesiKlien();
+    if (sesiLokal?.mode === "local" && sesiLokal.token) {
+      return sesiLokal.token;
+    }
     const {
       data: { session }
     } = await supabase.auth.getSession();
@@ -53,9 +67,11 @@ export default function PanelRedaksiJurnalPage() {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       const data = await res.json().catch(() => null);
-      if (res.status === 401) {
+      if (res.status === 401 || res.status === 403) {
         setPerluLogin(true);
-        setMode("supabase");
+        if (data?.mode === "local" || data?.mode === "supabase") {
+          setMode(data.mode);
+        }
         setDaftar([]);
         return;
       }
@@ -90,17 +106,29 @@ export default function PanelRedaksiJurnalPage() {
         body: JSON.stringify({ email: email.trim(), password })
       });
       const result = await res.json().catch(() => null);
-      if (!res.ok || !result?.success || !result?.session) {
+      if (!res.ok || !result?.success) {
         setLoginError(
           result?.error || "Email atau kata sandi tidak cocok."
         );
         return;
       }
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: result.session.access_token,
-        refresh_token: result.session.refresh_token
-      });
-      if (sessionError) throw sessionError;
+      if (result.localSession) {
+        // Mode lokal: simpan sesi lokal staf uji, lalu muat antrean.
+        simpanSesiLokal({
+          token: result.localSession.token,
+          email: result.localSession.email,
+          nama: result.localSession.nama
+        });
+      } else if (result.session) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: result.session.access_token,
+          refresh_token: result.session.refresh_token
+        });
+        if (sessionError) throw sessionError;
+      } else {
+        setLoginError("Jawaban masuk tidak memuat sesi.");
+        return;
+      }
       setPassword("");
       await muatDaftar();
     } catch (err) {
@@ -113,6 +141,7 @@ export default function PanelRedaksiJurnalPage() {
   }
 
   async function handleLogout() {
+    hapusSesiLokal();
     await supabase.auth.signOut();
     setViewer(null);
     setDaftar([]);
@@ -170,13 +199,14 @@ export default function PanelRedaksiJurnalPage() {
         {mode === "local" && (
           <div className="mt-3 rounded-xl border-2 border-amber-500 bg-amber-100 px-4 py-3 text-amber-900 text-sm">
             <strong>Mode data lokal (uji).</strong> Basis data jurnal belum
-            tersambung di lingkungan ini, jadi panel terbuka tanpa login dan
-            naskah berasal dari lapisan data uji lokal. Begitu migrasi
-            basis data jurnal dijalankan dan env server terpasang, panel
-            ini otomatis mewajibkan login berperan.
+            tersambung di lingkungan ini; panel tetap mewajibkan masuk
+            dengan akun staf uji (email yang tercantum di daftar staf uji
+            server). Naskah berasal dari lapisan data uji lokal. Begitu
+            migrasi basis data jurnal dijalankan dan env server terpasang,
+            panel ini mewajibkan login berperan jurnal.
           </div>
         )}
-        {mode === "supabase" && viewer && (
+        {viewer && (
           <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 flex flex-wrap items-center justify-between gap-3">
             <p>
               Masuk sebagai <strong>{viewer.email}</strong>

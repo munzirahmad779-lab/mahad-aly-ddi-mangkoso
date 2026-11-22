@@ -39,6 +39,29 @@ export function isJurnalStatus(v: unknown): v is JurnalStatus {
   );
 }
 
+// Tabel transisi status yang diizinkan (Tahap Keamanan). Perubahan status
+// naskah hanya sah bila bergerak mengikuti alur editorial OJS; melompat
+// tahap (mis. declined langsung published) ditolak server. published
+// bersifat terminal lewat jalur ubah status: penarikan artikel adalah
+// mekanisme terpisah. declined bisa dihidupkan kembali ke submitted oleh
+// editor. Perpindahan ke status yang sama diizinkan sebagai pembaruan
+// catatan. Rancangan lengkap: KEAMANAN-OJS-VERSI-KITA.md bagian 1.2.
+export const JURNAL_TRANSISI_STATUS: Record<JurnalStatus, JurnalStatus[]> = {
+  submitted: ["review", "declined"],
+  review: ["copyediting", "declined", "submitted"],
+  copyediting: ["production", "review", "declined"],
+  production: ["published", "copyediting"],
+  published: [],
+  declined: ["submitted"]
+};
+
+export function transisiStatusSah(
+  dari: JurnalStatus,
+  ke: JurnalStatus
+): boolean {
+  return dari === ke || JURNAL_TRANSISI_STATUS[dari].includes(ke);
+}
+
 export function labelStatus(status: JurnalStatus): string {
   return JURNAL_STATUS_LABEL_ID[status] ?? status;
 }

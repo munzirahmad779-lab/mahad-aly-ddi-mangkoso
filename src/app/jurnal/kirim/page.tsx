@@ -6,6 +6,7 @@ import {
   ambilSesiKlien,
   type SesiKlienJurnal
 } from "@/lib/jurnal/sesi-klien";
+import TurnstileJurnal from "@/components/jurnal/turnstile";
 import {
   BERKAS_PENDUKUNG_MAX_JUMLAH,
   JURNAL_BAGIAN,
@@ -89,6 +90,7 @@ export default function KirimNaskahJurnalPage() {
 
   const [mengirim, setMengirim] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
+  const [tokenTurnstile, setTokenTurnstile] = useState<string | null>(null);
   const [hasil, setHasil] = useState<{ kode: string; statusLabel: string } | null>(
     null
   );
@@ -172,7 +174,13 @@ export default function KirimNaskahJurnalPage() {
     try {
       const resSign = await fetch("/api/jurnal/uploads/sign", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          // Route unggah mewajibkan sesi penulis (Tahap Keamanan).
+          ...(sesi?.token
+            ? { Authorization: `Bearer ${sesi.token}` }
+            : {})
+        },
         body: JSON.stringify({
           batchId,
           kategori,
@@ -211,6 +219,9 @@ export default function KirimNaskahJurnalPage() {
         form.append("batchId", batchId);
         const resLocal = await fetch("/api/jurnal/uploads/local", {
           method: "POST",
+          headers: sesi?.token
+            ? { Authorization: `Bearer ${sesi.token}` }
+            : {},
           body: form
         });
         const dataLocal = await resLocal.json().catch(() => null);
@@ -298,7 +309,8 @@ export default function KirimNaskahJurnalPage() {
           berkas: berkas
             .filter((b) => b.meta)
             .map((b) => b.meta as JurnalBerkasMeta),
-          pernyataanAi: { mode: aiMode, teks: aiTeks.trim() }
+          pernyataanAi: { mode: aiMode, teks: aiTeks.trim() },
+          turnstileToken: tokenTurnstile ?? undefined
         })
       });
       const data = await res.json().catch(() => null);
@@ -925,6 +937,7 @@ export default function KirimNaskahJurnalPage() {
                   <dd>Keenam butir telah dicentang.</dd>
                 </div>
               </dl>
+              <TurnstileJurnal onToken={setTokenTurnstile} />
               {galat && (
                 <p className="rounded-xl border border-red-300 bg-red-50 text-red-700 px-4 py-3">
                   {galat}

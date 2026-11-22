@@ -5,6 +5,7 @@ import {
 } from "@/lib/jurnal/store";
 import { requireJurnalRole } from "@/lib/jurnal/auth";
 import { emailDariHeaderLokal } from "@/lib/jurnal/sesi-lokal";
+import { batasiLajuJurnal } from "@/lib/jurnal/keamanan";
 
 // Daftar naskah milik penulis yang sedang masuk (halaman "Naskah Saya").
 // Penulis hanya pernah menerima naskahnya sendiri:
@@ -16,6 +17,11 @@ import { emailDariHeaderLokal } from "@/lib/jurnal/sesi-lokal";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  const dibatasi = await batasiLajuJurnal(req, "naskah-saya", {
+    perIp: { limit: 120, windowMs: 60 * 1000 }
+  });
+  if (dibatasi) return dibatasi;
+
   const mode = await getJurnalDataMode();
   try {
     if (mode === "supabase") {

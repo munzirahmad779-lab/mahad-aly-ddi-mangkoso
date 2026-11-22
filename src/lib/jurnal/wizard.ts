@@ -112,6 +112,37 @@ export function teksPernyataanAi(p: JurnalPernyataanAi): string {
     : `Penulis menyatakan memakai AI: ${p.teks.trim()}`;
 }
 
+// ── Kebijakan kata sandi pendaftaran (Tahap Keamanan) ────────────────────
+// Dinyatakan eksplisit di sini, ditegakkan di server (route register),
+// dan ditampilkan di halaman daftar. Login TIDAK menegakkan komposisi
+// ini (akun lama tidak boleh terkunci); login hanya memeriksa kesesuaian
+// kata sandi dengan yang tersimpan.
+export const KEBIJAKAN_KATA_SANDI = {
+  minPanjang: 10,
+  maksPanjang: 128,
+  wajibHuruf: true,
+  wajibAngka: true
+} as const;
+
+export const KEBIJAKAN_KATA_SANDI_LABEL =
+  "Kata sandi minimal 10 karakter, mengandung huruf dan angka, maksimal 128 karakter.";
+
+export function validasiKataSandi(kataSandi: string): string | null {
+  if (typeof kataSandi !== "string" || kataSandi.length < KEBIJAKAN_KATA_SANDI.minPanjang) {
+    return `Kata sandi minimal ${KEBIJAKAN_KATA_SANDI.minPanjang} karakter.`;
+  }
+  if (kataSandi.length > KEBIJAKAN_KATA_SANDI.maksPanjang) {
+    return `Kata sandi maksimal ${KEBIJAKAN_KATA_SANDI.maksPanjang} karakter.`;
+  }
+  if (KEBIJAKAN_KATA_SANDI.wajibHuruf && !/[A-Za-z]/.test(kataSandi)) {
+    return "Kata sandi wajib mengandung huruf.";
+  }
+  if (KEBIJAKAN_KATA_SANDI.wajibAngka && !/[0-9]/.test(kataSandi)) {
+    return "Kata sandi wajib mengandung angka.";
+  }
+  return null;
+}
+
 // ── Berkas ────────────────────────────────────────────────────────────────
 // Keputusan user: isi berkas TIDAK disimpan di basis data dan TIDAK di
 // disk aplikasi. Yang disimpan hanya metadata dan kunci objek pada
@@ -149,6 +180,36 @@ export function ekstensiBerkas(nama: string): string {
   return titik >= 0 ? nama.slice(titik).toLowerCase() : "";
 }
 
+// Peta ekstensi ke tipe MIME yang sah untuk ekstensi itu (Tahap
+// Keamanan). Pemeriksaan silang ini menahan berkas menyamar: berkas
+// berekstensi .pdf yang dinyatakan ber-MIME lain ditolak. MIME kosong
+// (peramban kadang tidak mengisinya) tidak ditolak di sini, tetapi
+// server memakai MIME kanonis dari ekstensi saat menandatangani URL
+// unggah, jadi Content-Type yang terkunci selalu yang benar.
+export const MIME_UNTUK_EKSTENSI: Record<string, readonly string[]> = {
+  ".pdf": ["application/pdf"],
+  ".docx": [
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ],
+  ".xlsx": [
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  ],
+  ".zip": ["application/zip", "application/x-zip-compressed"]
+};
+
+export function mimeKanonisBerkas(namaAsli: string): string {
+  const daftar = MIME_UNTUK_EKSTENSI[ekstensiBerkas(namaAsli)];
+  return daftar?.[0] ?? "application/octet-stream";
+}
+
+export function mimeCocokEkstensi(namaAsli: string, mime: string): boolean {
+  const dinyatakan = (mime || "").trim().toLowerCase();
+  if (!dinyatakan) return true; // tidak dinyatakan: dinilai dari ekstensi
+  const daftar = MIME_UNTUK_EKSTENSI[ekstensiBerkas(namaAsli)];
+  if (!daftar) return false;
+  return (daftar as readonly string[]).includes(dinyatakan);
+}
+
 // Validasi satu berkas berdasarkan nama, mime, dan ukuran. Mengembalikan
 // pesan galat Bahasa Indonesia, atau null bila sah. Dipakai klien dan
 // server supaya aturannya tidak bercabang.
@@ -176,6 +237,9 @@ export function validasiBerkasMeta(input: {
   }
   if (!input.ukuran || input.ukuran <= 0) {
     return "Berkas kosong tidak dapat diunggah.";
+  }
+  if (!mimeCocokEkstensi(input.namaAsli, input.mime)) {
+    return "Jenis konten (MIME) berkas tidak cocok dengan ekstensinya.";
   }
   return null;
 }

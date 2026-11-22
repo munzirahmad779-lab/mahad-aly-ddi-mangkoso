@@ -5,15 +5,28 @@ import {
   rateLimitResponse
 } from "@/lib/rate-limit";
 import { daftarPenulis } from "@/lib/jurnal/akun";
-import { JURNAL_CONSENT_TEKS, JURNAL_CONSENT_VERSI } from "@/lib/jurnal/wizard";
+import {
+  JURNAL_CONSENT_TEKS,
+  JURNAL_CONSENT_VERSI,
+  validasiKataSandi
+} from "@/lib/jurnal/wizard";
+import {
+  BATAS_TEKS,
+  bacaJsonTerbatas,
+  catatPeristiwaKeamanan,
+  galatBatasTeks,
+  periksaTurnstile,
+  responsBadanTerlaluBesar
+} from "@/lib/jurnal/keamanan";
 
-// Pendaftaran akun penulis jurnal (Tahap 2).
+// Pendaftaran akun penulis jurnal (Tahap 2, dikeraskan Tahap Keamanan).
 // Persetujuan (consent) eksplisit wajib: klien mengirim persetujuan=true
 // sesudah penulis mencentang bunyi persetujuan yang tampil; versi bunyi
 // persetujuan dicatat pada akun. Mode supabase membuat akun Supabase Auth
 // dan memberi peran author; mode lokal membuat akun uji lokal berlabel
-// mode uji. Mengikuti pola route login: rate limit per IP dan per email
-// ditegakkan di server.
+// mode uji. Rate limit per IP dan per email ditegakkan di server, kata
+// sandi mengikuti kebijakan bersama di wizard.ts, dan kait Turnstile
+// diperiksa sebelum akun dibuat (KEAMANAN-OJS-VERSI-KITA.md bagian 3).
 
 const MAX_ATTEMPTS_PER_EMAIL = 5;
 const ATTEMPT_WINDOW_MS = 60 * 60 * 1000;
@@ -32,9 +45,19 @@ export async function POST(req: NextRequest) {
       MAX_ATTEMPTS_PER_IP,
       IP_WINDOW_MS
     );
-    if (!ipRl.allowed) return rateLimitResponse(ipRl);
+    if (!ipRl.allowed) {
+      await catatPeristiwaKeamanan("rate_limit", {
+        ip,
+        rincian: "register:per-ip"
+      });
+      return rateLimitResponse(ipRl);
+    }
 
-    const body = await req.json().catch(() => null);
+    const { data: body, terlaluBesar } = await bacaJsonTerbatas(
+      req,
+      16 * 1024
+    );
+    if (terlaluBesar) return responsBadanTerlaluBesar();
     const data = {
       nama: bersih(body?.nama),
       email: bersih(body?.email).toLowerCase(),
@@ -57,13 +80,25 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (data.kataSandi.length < 8 || data.kataSandi.length > 128) {
-      return NextResponse.json(
-        { error: "Kata sandi minimal 8 karakter." },
-        { status: 400 }
-      );
+    const galatBatas = galatBatasTeks([
+      { label: "Nama", nilai: data.nama, maks: BATAS_TEKS.nama },
+      { label: "Afiliasi", nilai: data.afiliasi, maks: BATAS_TEKS.afiliasi },
+      { label: "Negara", nilai: data.negara, maks: BATAS_TEKS.negara },
+      { label: "ORCID", nilai: data.orcid, maks: BATAS_TEKS.orcid }
+    ]);
+    if (galatBatas) {
+      return NextResponse.json({ error: galatBatas }, { status: 400 });
+    }
+    const galatSandi = validasiKataSandi(data.kataSandi);
+    if (galatSandi) {
+      return NextResponse.json({ error: galatSandi }, { status: 400 });
     }
     if (!data.persetujuan) {
+      await catatPeristiwaKeamanan("register_ditolak", {
+        ip,
+        email: data.email,
+        rincian: "tanpa-persetujuan"
+      });
       return NextResponse.json(
         {
           error:
@@ -73,12 +108,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Kait Turnstile: diperiksa sebelum akun dibuat.
+    const turnstile = await periksaTurnstile(
+      req,
+      body?.turnstileToken,
+      "register"
+    );
+    if (!turnstile.lolos) {
+      return NextResponse.json(
+        { error: turnstile.pesan },
+        { status: turnstile.status }
+      );
+    }
+
     const emailRl = checkRateLimit(
       `jurnal-register:email:${data.email}`,
       MAX_ATTEMPTS_PER_EMAIL,
       ATTEMPT_WINDOW_MS
     );
-    if (!emailRl.allowed) return rateLimitResponse(emailRl);
+    if (!emailRl.allowed) {
+      await catatPeristiwaKeamanan("rate_limit", {
+        ip,
+        email: data.email,
+        rincian: "register:per-email"
+      });
+      return rateLimitResponse(emailRl);
+    }
 
     const hasil = await daftarPenulis({
       nama: data.nama,

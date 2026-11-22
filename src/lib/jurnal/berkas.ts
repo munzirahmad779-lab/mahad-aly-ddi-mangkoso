@@ -26,13 +26,15 @@ import { randomUUID } from "crypto";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
+  ekstensiBerkas,
+  mimeKanonisBerkas,
   validasiBerkasMeta,
   type JurnalBerkasKategori,
   type JurnalBerkasMeta
 } from "./wizard";
 
 export const BUCKET_LOKAL_UJI = "lokal-uji";
-const URL_KEDALUWARSA_DETIK = 15 * 60; // 15 menit
+const URL_KEDALUWARSA_DETIK = 10 * 60; // 10 menit: satu objek, satu PUT
 
 interface KonfigurasiR2 {
   endpoint: string;
@@ -80,16 +82,20 @@ export function namaAmanBerkas(nama: string): string {
   return bersih || "berkas";
 }
 
-// Kunci objek dibuat sebelum naskah punya kode lacak: memakai id batch
-// unggahan dari klien, sehingga satu pengiriman bisa mengelompokkan
-// berkas utamanya dan berkas pendukungnya.
+// Kunci objek dibuat server sebelum naskah punya kode lacak: memakai id
+// batch unggahan dari klien untuk mengelompokkan berkas satu pengiriman.
+// Nama berkasnya sendiri TIDAK ikut ke kunci (Tahap Keamanan): segmen
+// terakhir murni UUID acak plus ekstensi yang sudah divalidasi, jadi
+// tidak ada satu pun potongan jalur yang dikendalikan pengguna dan tidak
+// ada berkas yang bisa ditimpa dengan menebak kunci. Nama asli berkas
+// tetap tercatat sebagai metadata.
 export function buatKunciObjek(
   batchId: string,
   kategori: JurnalBerkasKategori,
   namaAsli: string
 ): string {
   const batch = namaAmanBerkas(batchId).replace(/[^a-zA-Z0-9-]+/g, "");
-  return `jurnal/naskah/${batch}/${kategori}/${randomUUID()}-${namaAmanBerkas(namaAsli)}`;
+  return `jurnal/naskah/${batch}/${kategori}/${randomUUID()}${ekstensiBerkas(namaAsli)}`;
 }
 
 export interface HasilTandaTangan {
@@ -129,7 +135,11 @@ export async function tandaTanganiUnggahan(input: {
   const perintah = new PutObjectCommand({
     Bucket: cfg.bucket,
     Key: kunci,
-    ContentType: input.mime || "application/octet-stream",
+    // Content-Type dikunci ke MIME kanonis dari ekstensi yang sudah
+    // divalidasi, bukan ke MIME kiriman klien, dan Content-Length
+    // dikunci ke ukuran yang dinyatakan; URL bertanda tangan menolak
+    // unggahan yang menyimpang dari keduanya.
+    ContentType: mimeKanonisBerkas(input.namaAsli),
     ContentLength: input.ukuran
   });
   const uploadUrl = await getSignedUrl(klien, perintah, {
@@ -169,10 +179,48 @@ export async function simpanBerkasLokalUji(input: {
   return {
     kategori: input.kategori,
     namaAsli: input.namaAsli,
-    mime: input.mime,
+    mime: input.mime || mimeKanonisBerkas(input.namaAsli),
     ukuran: input.isi.length,
     bucket: BUCKET_LOKAL_UJI,
     kunci,
     mode: "local"
   };
+}
+
+// ── Verifikasi metadata berkas yang diserahkan balik ─────────────────────
+// Pada POST /api/jurnal/submissions klien menyerahkan metadata berkas
+// (bucket dan kunci) yang sebelumnya diterbitkan server. Metadata itu
+// tidak dipercaya mentah: polanya harus persis pola kunci buatan server,
+// bucketnya harus bucket yang sah untuk modenya, dan segmen kategori di
+// kunci harus sama dengan kategori yang dinyatakan.
+const POLA_KUNCI_OBJEK =
+  /^jurnal\/naskah\/[A-Za-z0-9-]{1,64}\/(utama|pendukung)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(pdf|docx|xlsx|zip)$/;
+
+export function verifikasiMetaBerkasTersimpan(
+  meta: JurnalBerkasMeta
+): string | null {
+  const cocok = POLA_KUNCI_OBJEK.exec(meta.kunci);
+  if (!cocok) {
+    return "Kunci objek berkas tidak mengikuti pola yang diterbitkan server. Unggah ulang berkasnya.";
+  }
+  if (cocok[1] !== meta.kategori) {
+    return "Kategori berkas tidak cocok dengan kunci objeknya.";
+  }
+  if (ekstensiBerkas(meta.namaAsli) !== `.${cocok[2]}`) {
+    return "Ekstensi nama berkas tidak cocok dengan kunci objeknya.";
+  }
+  if (meta.mode === "local") {
+    if (meta.bucket !== BUCKET_LOKAL_UJI) {
+      return "Bucket berkas uji lokal tidak sah.";
+    }
+    return null;
+  }
+  const cfg = konfigurasiR2();
+  if (!cfg) {
+    return "Metadata berkas menyebut penyimpanan R2, tetapi R2 tidak terkonfigurasi di server.";
+  }
+  if (meta.bucket !== cfg.bucket) {
+    return "Bucket berkas tidak cocok dengan bucket R2 jurnal.";
+  }
+  return null;
 }

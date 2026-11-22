@@ -2,7 +2,12 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { JURNAL_CONSENT_TEKS } from "@/lib/jurnal/wizard";
+import {
+  JURNAL_CONSENT_TEKS,
+  KEBIJAKAN_KATA_SANDI_LABEL,
+  validasiKataSandi
+} from "@/lib/jurnal/wizard";
+import TurnstileJurnal from "@/components/jurnal/turnstile";
 
 // Pendaftaran akun penulis jurnal (Tahap 2).
 // Persetujuan (consent) eksplisit adalah syarat server: tanpa centang
@@ -20,6 +25,7 @@ export default function DaftarPenulisJurnalPage() {
     orcid: ""
   });
   const [setuju, setSetuju] = useState(false);
+  const [tokenTurnstile, setTokenTurnstile] = useState<string | null>(null);
   const [mengirim, setMengirim] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
   const [hasil, setHasil] = useState<{ mode: string; email: string } | null>(
@@ -33,13 +39,24 @@ export default function DaftarPenulisJurnalPage() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    // Kebijakan kata sandi yang sama dengan yang ditegakkan server
+    // (wizard.ts), diperiksa lebih dulu di sini untuk umpan balik cepat.
+    const galatSandi = validasiKataSandi(form.password);
+    if (galatSandi) {
+      setGalat(galatSandi);
+      return;
+    }
     setMengirim(true);
     setGalat(null);
     try {
       const res = await fetch("/api/jurnal/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, persetujuan: setuju })
+        body: JSON.stringify({
+          ...form,
+          persetujuan: setuju,
+          turnstileToken: tokenTurnstile ?? undefined
+        })
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
@@ -124,17 +141,20 @@ export default function DaftarPenulisJurnalPage() {
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-slate-700 mb-1">
-                Kata Sandi (minimal 8 karakter)
+                Kata Sandi
               </label>
               <input
                 id="password"
                 type="password"
                 required
-                minLength={8}
+                minLength={10}
                 value={form.password}
                 onChange={ubah("password")}
                 className={kelasInput}
               />
+              <p className="text-xs text-slate-400 mt-1">
+                {KEBIJAKAN_KATA_SANDI_LABEL}
+              </p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
@@ -189,6 +209,8 @@ export default function DaftarPenulisJurnalPage() {
               />
               <span className="text-sm text-slate-700">{JURNAL_CONSENT_TEKS}</span>
             </label>
+
+            <TurnstileJurnal onToken={setTokenTurnstile} />
 
             {galat && (
               <p className="rounded-xl border border-red-300 bg-red-50 text-red-700 text-sm px-4 py-3">

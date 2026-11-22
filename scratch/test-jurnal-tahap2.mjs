@@ -33,6 +33,10 @@ function check(name, ok, detail = "") {
 const STAMP = Date.now().toString().slice(-6);
 const EMAIL = `penulis.uji.tahap2.${STAMP}@contoh.ac.id`;
 const PASSWORD = "UjiTahap2-2026";
+// Akun staf uji panel (Tahap Keamanan). Server uji harus dijalankan
+// dengan JURNAL_LOCAL_STAFF_EMAILS berisi email ini.
+const STAFF_EMAIL = process.env.TEST_STAFF_EMAIL || "staf.uji@contoh.ac.id";
+const STAFF_PASSWORD = "StafUji2026x";
 const NAMA = "Penulis Uji Tahap Dua";
 const JUDUL =
   "Uji Peramban Tahap 2: Kedudukan Maslahah dalam Penetapan Hukum Muamalah";
@@ -90,6 +94,10 @@ try {
   await page.locator('section button[type="submit"]').first().click();
   await page.waitForURL("**/jurnal/naskah-saya", { timeout: 30000 });
   await page.waitForSelector("text=Naskah Saya", { timeout: 30000 });
+  // Tunggu daftar selesai dimuat (bukan sekadar judul halaman tampil).
+  await page.waitForSelector("text=belum memiliki naskah", {
+    timeout: 30000
+  });
   const teksAwal = await page.locator("section").first().innerText();
   check(
     "masuk penulis sampai di Naskah Saya (masih kosong)",
@@ -186,18 +194,8 @@ try {
     teksHasil.includes("Terkirim (Submission)")
   );
 
-  // 9. Panel staf (mode lokal terbuka) memuat naskah baru.
-  await buka(page, `${BASE}/jurnal/panel`);
-  await page.waitForSelector(`text=${kode}`, { timeout: 30000 });
-  const teksPanel = await page.locator("section").first().innerText();
-  check(
-    "panel staf menampilkan naskah wizard",
-    teksPanel.includes(JUDUL) && teksPanel.includes("Kajian Pustaka dan Turats"),
-    teksPanel.slice(0, 200)
-  );
-  await page.screenshot({ path: path.join(SHOT_DIR, "tahap2-panel.png") });
-
-  // 10. Naskah Saya kini memuat naskah dengan linimasa.
+  // 9. Naskah Saya kini memuat naskah dengan linimasa (sesi penulis
+  // masih aktif; langkah panel sesudah ini mengganti sesi ke staf).
   await buka(page, `${BASE}/jurnal/naskah-saya`);
   await page.waitForSelector(`text=${kode}`, { timeout: 30000 });
   const teksSaya = await page.locator("section").first().innerText();
@@ -209,6 +207,44 @@ try {
   await page.screenshot({
     path: path.join(SHOT_DIR, "tahap2-naskah-saya.png")
   });
+
+  // 10. Panel staf (Tahap Keamanan: panel mewajibkan masuk akun staf
+  // uji; email staf dari env TEST_STAFF_EMAIL dan server dijalankan
+  // dengan JURNAL_LOCAL_STAFF_EMAILS berisi email yang sama). Daftar
+  // akun staf, lalu masuk lewat formulir panel.
+  await buka(page, `${BASE}/jurnal/daftar`);
+  await page.fill("#nama", "Staf Uji Panel");
+  await page.fill("#email", STAFF_EMAIL);
+  await page.fill("#password", STAFF_PASSWORD);
+  await page.fill("#afiliasi", "Tim Uji Staf");
+  await page.check("#persetujuan");
+  await page.locator('section button[type="submit"]').first().click();
+  // Pada jalan ulang, akun staf mungkin sudah terdaftar dari jalan
+  // sebelumnya; kedua keadaan diterima, bukti akhirnya adalah masuk
+  // panel di langkah berikut.
+  await page
+    .waitForSelector("text=Pendaftaran berhasil", { timeout: 15000 })
+    .catch(() => {});
+  const teksDaftarStaf = await page.locator("section").first().innerText();
+  check(
+    "pendaftaran akun staf uji berhasil atau sudah terdaftar",
+    teksDaftarStaf.includes("Pendaftaran berhasil") ||
+      teksDaftarStaf.includes("sudah terdaftar"),
+    teksDaftarStaf.slice(0, 200)
+  );
+
+  await buka(page, `${BASE}/jurnal/panel`);
+  await page.fill("#email-panel", STAFF_EMAIL);
+  await page.fill("#password-panel", STAFF_PASSWORD);
+  await page.locator('section button[type="submit"]').first().click();
+  await page.waitForSelector(`text=${kode}`, { timeout: 30000 });
+  const teksPanel = await page.locator("section").first().innerText();
+  check(
+    "panel staf menampilkan naskah wizard",
+    teksPanel.includes(JUDUL) && teksPanel.includes("Kajian Pustaka dan Turats"),
+    teksPanel.slice(0, 200)
+  );
+  await page.screenshot({ path: path.join(SHOT_DIR, "tahap2-panel.png") });
 
   console.log(`\nHASIL: ${pass} lulus, ${fail} gagal. Kode uji: ${kode}`);
   process.exitCode = fail > 0 ? 1 : 0;

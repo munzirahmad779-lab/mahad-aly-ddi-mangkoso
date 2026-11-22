@@ -8,7 +8,9 @@ const scriptSrc = [
   "'unsafe-inline'",
   ...(isDev ? ["'unsafe-eval'"] : []),
   "https://www.googletagmanager.com",
-  "https://www.google-analytics.com"
+  "https://www.google-analytics.com",
+  // Widget Turnstile jurnal (Tahap Keamanan) dimuat dari Cloudflare.
+  "https://challenges.cloudflare.com"
 ];
 
 // Security headers berlaku untuk SEMUA route (sebelumnya hanya /admin via
@@ -39,9 +41,20 @@ const SECURITY_HEADERS = [
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      "frame-src 'self' https://challenges.cloudflare.com",
       "frame-ancestors 'none'"
     ].join("; ")
   }
+];
+
+// Header khusus jurnal (Tahap Keamanan): permukaan berlogin dan semua
+// route API jurnal tidak boleh tersimpan di cache bersama dan tidak
+// diindeks mesin pencari. Halaman baca publik jurnal (/jurnal, artikel,
+// terbitan, lacak, oai) sengaja TIDAK diberi header ini supaya tetap
+// bisa dirayapi dan di-cache sebagaimana syarat pengindeks.
+const JURNAL_PRIVATE_HEADERS = [
+  { key: "Cache-Control", value: "private, no-store" },
+  { key: "X-Robots-Tag", value: "noindex, nofollow" }
 ];
 
 const nextConfig: NextConfig = {
@@ -104,6 +117,30 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: SECURITY_HEADERS
+      },
+      {
+        source: "/api/jurnal/:path*",
+        headers: JURNAL_PRIVATE_HEADERS
+      },
+      {
+        source: "/jurnal/panel",
+        headers: JURNAL_PRIVATE_HEADERS
+      },
+      {
+        source: "/jurnal/masuk",
+        headers: JURNAL_PRIVATE_HEADERS
+      },
+      {
+        source: "/jurnal/daftar",
+        headers: JURNAL_PRIVATE_HEADERS
+      },
+      {
+        source: "/jurnal/kirim",
+        headers: JURNAL_PRIVATE_HEADERS
+      },
+      {
+        source: "/jurnal/naskah-saya",
+        headers: JURNAL_PRIVATE_HEADERS
       }
     ];
   }

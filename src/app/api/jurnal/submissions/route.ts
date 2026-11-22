@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getClientIp } from "@/lib/rate-limit";
 import {
   createSubmission,
   createSubmissionLengkap,
@@ -6,7 +7,11 @@ import {
   listSubmissions
 } from "@/lib/jurnal/store";
 import { requireJurnalRole } from "@/lib/jurnal/auth";
-import { emailDariHeaderLokal } from "@/lib/jurnal/sesi-lokal";
+import {
+  emailDariHeaderLokal,
+  peranLokalDariEmail,
+  sesiLokalStaf
+} from "@/lib/jurnal/sesi-lokal";
 import { JURNAL_STAFF_ROLES, labelStatus } from "@/lib/jurnal/status";
 import {
   BERKAS_PENDUKUNG_MAX_JUMLAH,
@@ -16,17 +21,34 @@ import {
   type JurnalBerkasMeta,
   type JurnalWizardInput
 } from "@/lib/jurnal/wizard";
+import { verifikasiMetaBerkasTersimpan } from "@/lib/jurnal/berkas";
+import {
+  BATAS_TEKS,
+  bacaJsonTerbatas,
+  batasiLajuJurnal,
+  catatPeristiwaKeamanan,
+  galatBatasTeks,
+  periksaTurnstile,
+  responsBadanTerlaluBesar
+} from "@/lib/jurnal/keamanan";
 
-// API naskah jurnal "OJS versi kita" (Tahap 1).
-// Lapisan data dipilih fasad src/lib/jurnal/store.ts: tabel jurnal_*
-// Supabase bila migrasi 004 sudah dijalankan dan env tersedia, selain itu
-// data uji lokal. POST bersifat publik (pintu kirim naskah). GET daftar
-// adalah antrean panel: pada mode supabase wajib login berperan staf;
-// pada mode lokal terbuka sebagai mode uji.
+// API naskah jurnal "OJS versi kita" (Tahap 1 dan 2, dikeraskan Tahap
+// Keamanan). Lapisan data dipilih fasad src/lib/jurnal/store.ts: tabel
+// jurnal_* Supabase bila migrasi 004 sudah dijalankan dan env tersedia,
+// selain itu data uji lokal. GET daftar adalah antrean panel dan
+// mewajibkan sesi berperan staf pada KEDUA mode (mode lokal: akun staf
+// uji dari env JURNAL_LOCAL_STAFF_EMAILS). POST wizard mewajibkan sesi
+// penulis dan kait Turnstile; POST lama (formulir satu halaman versi
+// uji) dibatasi laju per IP dan per email.
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  const dibatasi = await batasiLajuJurnal(req, "panel-daftar", {
+    perIp: { limit: 120, windowMs: 60 * 1000 }
+  });
+  if (dibatasi) return dibatasi;
+
   const mode = await getJurnalDataMode();
   let viewer: { email: string; roles: string[] } | null = null;
 
@@ -34,13 +56,35 @@ export async function GET(req: NextRequest) {
     const auth = await requireJurnalRole(req, JURNAL_STAFF_ROLES);
     if (!auth.ok) return auth.response;
     viewer = { email: auth.email, roles: auth.roles };
+  } else {
+    const emailStaf = sesiLokalStaf(req);
+    if (!emailStaf) {
+      const emailPemanggil = emailDariHeaderLokal(req);
+      await catatPeristiwaKeamanan("peran_ditolak", {
+        ip: getClientIp(req),
+        email: emailPemanggil,
+        rincian: emailPemanggil
+          ? "daftar-panel:akun-lokal-bukan-staf"
+          : "daftar-panel:tanpa-sesi"
+      });
+      return NextResponse.json(
+        {
+          error: emailPemanggil
+            ? "Daftar panel hanya untuk akun staf jurnal."
+            : "Sesi staf jurnal tidak ditemukan. Silakan masuk lewat panel redaksi.",
+          mode
+        },
+        { status: emailPemanggil ? 403 : 401 }
+      );
+    }
+    viewer = { email: emailStaf, roles: peranLokalDariEmail(emailStaf) };
   }
 
   try {
     const data = await listSubmissions();
     return NextResponse.json({
       mode,
-      authRequired: mode === "supabase",
+      authRequired: true,
       viewer,
       submissions: data
     });
@@ -57,13 +101,28 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => null);
+  const { data: body, terlaluBesar } = await bacaJsonTerbatas(
+    req,
+    64 * 1024
+  );
+  if (terlaluBesar) return responsBadanTerlaluBesar();
 
   // Muatan wizard Tahap 2 dikenali dari adanya bagianSlug. Jalur lama
   // (formulir satu halaman versi uji) tetap dilayani di bawah.
   if (body && typeof body === "object" && "bagianSlug" in body) {
     return tanganiWizard(req, body as Record<string, unknown>);
   }
+
+  const dibatasi = await batasiLajuJurnal(
+    req,
+    "kirim-lama",
+    {
+      perIp: { limit: 20, windowMs: 60 * 60 * 1000 },
+      perAkun: { limit: 5, windowMs: 60 * 60 * 1000 }
+    },
+    typeof body?.email === "string" ? body.email : null
+  );
+  if (dibatasi) return dibatasi;
 
   const { judul, penulis, email, afiliasi, abstrak } = (body ?? {}) as {
     judul?: unknown;
@@ -93,6 +152,15 @@ export async function POST(req: NextRequest) {
       { error: "Format email tidak sah." },
       { status: 400 }
     );
+  }
+  const galatBatasLama = galatBatasTeks([
+    { label: "Judul", nilai: data.judul, maks: BATAS_TEKS.judul },
+    { label: "Nama penulis", nilai: data.penulis, maks: BATAS_TEKS.nama },
+    { label: "Afiliasi", nilai: data.afiliasi, maks: BATAS_TEKS.afiliasi },
+    { label: "Abstrak", nilai: data.abstrak, maks: BATAS_TEKS.abstrak }
+  ]);
+  if (galatBatasLama) {
+    return NextResponse.json({ error: galatBatasLama }, { status: 400 });
   }
   if (data.abstrak.length < 50) {
     return NextResponse.json(
@@ -130,12 +198,13 @@ export async function POST(req: NextRequest) {
 // dari isian formulir: mode supabase memakai sesi Supabase Auth, mode
 // lokal memakai token sesi lokal. Email penulis utama diselaraskan ke
 // email akun pengirim supaya halaman "Naskah Saya" selalu menemukan
-// naskahnya.
+// naskahnya. Peran atau pemilik yang dikirim klien di badan permintaan
+// tidak pernah dibaca.
 
 async function tanganiWizard(
   req: NextRequest,
   body: Record<string, unknown>
-): Promise<NextResponse> {
+): Promise<Response> {
   const mode = await getJurnalDataMode();
   let submitterUserId: string | null = null;
   let emailPengirim = "";
@@ -157,6 +226,30 @@ async function tanganiWizard(
       );
     }
     emailPengirim = email;
+  }
+
+  const dibatasi = await batasiLajuJurnal(
+    req,
+    "kirim-wizard",
+    {
+      perIp: { limit: 20, windowMs: 60 * 60 * 1000 },
+      perAkun: { limit: 10, windowMs: 60 * 60 * 1000 }
+    },
+    emailPengirim
+  );
+  if (dibatasi) return dibatasi;
+
+  // Kait Turnstile sesudah sesi dan rate limit, sebelum data diproses.
+  const turnstile = await periksaTurnstile(
+    req,
+    body.turnstileToken,
+    "kirim-wizard"
+  );
+  if (!turnstile.lolos) {
+    return NextResponse.json(
+      { error: turnstile.pesan },
+      { status: turnstile.status }
+    );
   }
 
   const bersih = (v: unknown) => (typeof v === "string" ? v.trim() : "");
@@ -198,6 +291,17 @@ async function tanganiWizard(
   if (kataKunci.length === 0) {
     return galat("Kata kunci wajib diisi, minimal satu.");
   }
+  const galatBatas = galatBatasTeks([
+    { label: "Judul", nilai: judul, maks: BATAS_TEKS.judul },
+    { label: "Abstrak Bahasa Indonesia", nilai: abstrakId, maks: BATAS_TEKS.abstrak },
+    { label: "Abstrak Bahasa Inggris", nilai: abstrakEn, maks: BATAS_TEKS.abstrak },
+    ...kataKunci.map((k) => ({
+      label: "Kata kunci",
+      nilai: k,
+      maks: BATAS_TEKS.kataKunciItem
+    }))
+  ]);
+  if (galatBatas) return galat(galatBatas);
 
   const pu = (body.penulisUtama ?? {}) as Record<string, unknown>;
   const penulisUtama = {
@@ -209,6 +313,12 @@ async function tanganiWizard(
   if (!penulisUtama.nama || !penulisUtama.afiliasi) {
     return galat("Nama dan afiliasi penulis utama wajib diisi.");
   }
+  const galatBatasUtama = galatBatasTeks([
+    { label: "Nama penulis utama", nilai: penulisUtama.nama, maks: BATAS_TEKS.nama },
+    { label: "Afiliasi penulis utama", nilai: penulisUtama.afiliasi, maks: BATAS_TEKS.afiliasi },
+    { label: "ORCID penulis utama", nilai: penulisUtama.orcid ?? "", maks: BATAS_TEKS.orcid }
+  ]);
+  if (galatBatasUtama) return galat(galatBatasUtama);
 
   const penulisPendamping: JurnalWizardInput["penulisPendamping"] = [];
   if (Array.isArray(body.penulisPendamping)) {
@@ -224,6 +334,12 @@ async function tanganiWizard(
           "Setiap penulis pendamping wajib memiliki nama, email yang sah, dan afiliasi."
         );
       }
+      const galatBatasP = galatBatasTeks([
+        { label: "Nama penulis pendamping", nilai: p.nama, maks: BATAS_TEKS.nama },
+        { label: "Afiliasi penulis pendamping", nilai: p.afiliasi, maks: BATAS_TEKS.afiliasi },
+        { label: "ORCID penulis pendamping", nilai: p.orcid ?? "", maks: BATAS_TEKS.orcid }
+      ]);
+      if (galatBatasP) return galat(galatBatasP);
       penulisPendamping.push(p);
     }
   }
@@ -250,6 +366,20 @@ async function tanganiWizard(
           "Metadata berkas tidak lengkap: unggah ulang berkas sampai server mencatat bucket dan kunci objeknya."
         );
       }
+      if (meta.namaAsli.length > BATAS_TEKS.namaBerkas) {
+        return galat("Nama berkas terlalu panjang.");
+      }
+      // Metadata yang diterbitkan server diverifikasi polanya; kunci
+      // karangan klien ditolak di sini.
+      const pesanVerifikasi = verifikasiMetaBerkasTersimpan(meta);
+      if (pesanVerifikasi) {
+        await catatPeristiwaKeamanan("unggah_ditolak", {
+          ip: getClientIp(req),
+          email: emailPengirim,
+          rincian: `metadata-berkas:${pesanVerifikasi}`
+        });
+        return galat(pesanVerifikasi);
+      }
       berkas.push(meta);
     }
   }
@@ -265,6 +395,11 @@ async function tanganiWizard(
   const ai = (body.pernyataanAi ?? {}) as Record<string, unknown>;
   const modeAi = ai.mode === "memakai" ? "memakai" : "tidak_memakai";
   const teksAi = bersih(ai.teks);
+  if (teksAi.length > BATAS_TEKS.teksAi) {
+    return galat(
+      `Penjelasan pemakaian AI melebihi batas ${BATAS_TEKS.teksAi} karakter.`
+    );
+  }
   if (modeAi === "memakai" && !teksAi) {
     return galat(
       "Pernyataan pemakaian AI wajib disertai penjelasan alat dan tujuannya."

@@ -406,3 +406,65 @@ export async function cariAkunLokal(email: string): Promise<AkunLokal | null> {
   const target = akun.find((a) => a.email === email.trim().toLowerCase());
   return target ? akunPublik(target) : null;
 }
+
+// ── Tahap Keamanan: catatan peristiwa keamanan mode lokal ───────────────
+// Padanan lokal tabel jurnal_security_events (migrasi 005). Disimpan di
+// .jurnal-uji/security-events.json, maksimal 1.000 peristiwa terakhir.
+// Pencatatan tidak pernah melempar: kegagalannya hanya masuk log server.
+
+export interface PeristiwaKeamananLokal {
+  jenis: string;
+  ip: string | null;
+  email: string | null;
+  kode: string | null;
+  rincian: string | null;
+  pada: string; // ISO datetime
+}
+
+const FILE_KEAMANAN = path.join(DIR, "security-events.json");
+let memoriKeamanan: PeristiwaKeamananLokal[] | null = null;
+
+async function muatKeamanan(): Promise<PeristiwaKeamananLokal[]> {
+  if (memoriKeamanan) return memoriKeamanan;
+  try {
+    const teks = await fs.readFile(FILE_KEAMANAN, "utf8");
+    const data = JSON.parse(teks);
+    memoriKeamanan = Array.isArray(data)
+      ? (data as PeristiwaKeamananLokal[])
+      : [];
+  } catch {
+    memoriKeamanan = [];
+  }
+  return memoriKeamanan;
+}
+
+export async function catatPeristiwaKeamananLokal(
+  peristiwa: Omit<PeristiwaKeamananLokal, "pada">
+): Promise<void> {
+  try {
+    const daftar = await muatKeamanan();
+    daftar.push({ ...peristiwa, pada: new Date().toISOString() });
+    while (daftar.length > 1000) daftar.shift();
+    try {
+      await fs.mkdir(DIR, { recursive: true });
+      await fs.writeFile(
+        FILE_KEAMANAN,
+        JSON.stringify(daftar, null, 2),
+        "utf8"
+      );
+    } catch {
+      // Sistem berkas tidak bisa ditulis: catatan tetap hidup di memori.
+    }
+  } catch (err) {
+    console.warn(
+      "[jurnal] Gagal mencatat peristiwa keamanan lokal:",
+      err instanceof Error ? err.message : err
+    );
+  }
+}
+
+export async function daftarPeristiwaKeamananLokal(): Promise<
+  PeristiwaKeamananLokal[]
+> {
+  return [...(await muatKeamanan())];
+}

@@ -8,7 +8,15 @@ import {
 import { getJurnalRolesForUser } from "@/lib/jurnal/auth";
 import { getJurnalDataMode } from "@/lib/jurnal/store";
 import { verifikasiAkunLokal } from "@/lib/jurnal/store-local";
-import { buatTokenSesiLokal } from "@/lib/jurnal/sesi-lokal";
+import {
+  buatTokenSesiLokal,
+  peranLokalDariEmail
+} from "@/lib/jurnal/sesi-lokal";
+import {
+  bacaJsonTerbatas,
+  catatPeristiwaKeamanan,
+  responsBadanTerlaluBesar
+} from "@/lib/jurnal/keamanan";
 
 // Proxy login panel jurnal. Meniru /api/auth/login situs utama:
 // rate limit per IP dan per email ditegakkan di server, kredensial
@@ -41,9 +49,16 @@ export async function POST(req: NextRequest) {
       MAX_ATTEMPTS_PER_IP,
       IP_WINDOW_MS
     );
-    if (!ipRl.allowed) return rateLimitResponse(ipRl);
+    if (!ipRl.allowed) {
+      await catatPeristiwaKeamanan("rate_limit", {
+        ip,
+        rincian: "login:per-ip"
+      });
+      return rateLimitResponse(ipRl);
+    }
 
-    const body = await req.json().catch(() => ({}));
+    const { data: body, terlaluBesar } = await bacaJsonTerbatas(req, 8 * 1024);
+    if (terlaluBesar) return responsBadanTerlaluBesar();
     const email = cleanEmail(body?.email);
     const password = typeof body?.password === "string" ? body.password : "";
 
@@ -60,6 +75,11 @@ export async function POST(req: NextRequest) {
       ATTEMPT_WINDOW_MS
     );
     if (!emailRl.allowed) {
+      await catatPeristiwaKeamanan("rate_limit", {
+        ip,
+        email,
+        rincian: "login:per-email"
+      });
       return NextResponse.json(
         {
           error: `Terlalu banyak percobaan gagal untuk akun ini. Coba lagi dalam ${emailRl.retryAfterSeconds} detik.`,
@@ -76,6 +96,11 @@ export async function POST(req: NextRequest) {
     if ((await getJurnalDataMode()) === "local") {
       const akun = await verifikasiAkunLokal(email, password);
       if (!akun) {
+        await catatPeristiwaKeamanan("login_gagal", {
+          ip,
+          email,
+          rincian: "mode-lokal"
+        });
         return NextResponse.json(
           {
             error:
@@ -96,7 +121,9 @@ export async function POST(req: NextRequest) {
         user: {
           id: null,
           email: akun.email,
-          roles: ["author"]
+          // Peran diturunkan di server dari daftar staf uji (env), bukan
+          // dari klien: akun staf uji memegang journal_manager.
+          roles: peranLokalDariEmail(akun.email)
         }
       });
     }
@@ -107,6 +134,11 @@ export async function POST(req: NextRequest) {
     });
 
     if (error || !data?.session || !data?.user) {
+      await catatPeristiwaKeamanan("login_gagal", {
+        ip,
+        email,
+        rincian: "mode-supabase"
+      });
       return NextResponse.json(
         {
           error:

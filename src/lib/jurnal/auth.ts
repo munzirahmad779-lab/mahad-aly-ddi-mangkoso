@@ -13,6 +13,8 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { SUPER_ADMIN_EMAIL } from "@/lib/admin-constants";
+import { getClientIp } from "@/lib/rate-limit";
+import { catatPeristiwaKeamanan } from "./keamanan";
 import {
   JURNAL_ROLES,
   type JurnalRole
@@ -110,6 +112,12 @@ export async function requireJurnalRole(
       roles.includes("journal_manager") ||
       allowedRoles.some((r) => roles.includes(r));
     if (!lolos) {
+      // Penolakan peran selalu tercatat sebagai peristiwa keamanan.
+      await catatPeristiwaKeamanan("peran_ditolak", {
+        ip: getClientIp(request),
+        email,
+        rincian: `butuh:${allowedRoles.join("|")} punya:${roles.join("|") || "-"}`
+      });
       return {
         ok: false,
         response: NextResponse.json(
