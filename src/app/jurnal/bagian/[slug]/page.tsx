@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { JURNAL_BAGIAN } from "@/lib/jurnal/wizard";
 import { cariArtikelPublik } from "@/lib/jurnal/publik5-server";
 import { DaftarArtikelPublik } from "../../daftar-artikel";
+import { tJurnal } from "@/lib/jurnal/i18n";
+import { localeJurnalServer } from "@/lib/jurnal/i18n-server";
 
 // Jelajah artikel per bagian jurnal (Tahap 5). Bagian adalah set yang
 // sama dengan set OAI-PMH. Hanya artikel published yang tampil.
@@ -34,11 +36,12 @@ export default async function BagianJurnalPage({
   const bagian = JURNAL_BAGIAN.find((b) => b.slug === slug);
   if (!bagian) notFound();
   const artikel = await cariArtikelPublik({ bagianSlug: slug });
+  const teks = tJurnal(await localeJurnalServer());
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
       <h1 className="font-serif font-bold text-2xl sm:text-3xl text-mahad-green-dark">
-        {bagian.judulId}
+        {teks.artikelPadaBagian}: {bagian.judulId}
       </h1>
       <p className="text-sm text-slate-500 mt-2">
         {bagian.judulEn} • Singkatan {bagian.singkatan}

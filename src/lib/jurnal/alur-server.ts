@@ -47,6 +47,11 @@ import {
 import type { AlurBackend, BerkasAlurInternal } from "./alur-internal";
 import { alurBackendLokal } from "./alur-local";
 import { alurBackendSupabase } from "./alur-supabase";
+import {
+  notifArtikelTerbit,
+  notifPermintaanProofread,
+  notifPersetujuanCopyediting
+} from "./notifikasi";
 
 async function backend(): Promise<AlurBackend> {
   return (await getJurnalDataMode()) === "supabase"
@@ -281,6 +286,13 @@ export async function daftarkanHasilCopyediting(
     labelPelaku(actor),
     "copyediting_uploaded"
   );
+  // Email permintaan persetujuan copyediting ke penulis (Tahap 6).
+  await notifPersetujuanCopyediting({
+    kode,
+    judul: naskah.judul,
+    penulis: naskah.penulis,
+    email: naskah.email
+  });
 }
 
 export async function setujuiCopyeditingOlehPenulis(
@@ -410,6 +422,13 @@ export async function daftarkanGalley(
       labelPelaku(actor),
       "galley_ready"
     );
+    // Email permintaan proofread ke penulis (Tahap 6).
+    await notifPermintaanProofread({
+      kode,
+      judul: naskah.judul,
+      penulis: naskah.penulis,
+      email: naskah.email
+    });
   } else {
     await b.ubahTugasProduksi(tugas.id, { status: "galley_ready" });
     await catatPeristiwaNaskah(
@@ -740,6 +759,19 @@ export async function terbitkanTerbitan(
       `Diterbitkan dalam ${label}.`
     );
     diterbitkan.push(p.kode);
+    // Email pemberitahuan terbit ke penulis (Tahap 6), memuat tautan
+    // artikel dan DOI yang tercatat sesudah penerbitan.
+    const sesudah = await getSubmission(p.kode);
+    await notifArtikelTerbit({
+      naskah: {
+        kode: p.kode,
+        judul: naskah.judul,
+        penulis: naskah.penulis,
+        email: naskah.email
+      },
+      slugArtikel: slugDariKode(p.kode),
+      doi: sesudah?.doi ?? naskah.doi ?? null
+    });
   }
   await b.ubahTerbitan(terbitan.id, {
     status: "published",

@@ -48,6 +48,11 @@ import type {
 } from "./review-internal";
 import { reviewBackendLokal } from "./review-local";
 import { reviewBackendSupabase } from "./review-supabase";
+import {
+  notifKeputusan,
+  notifReviewDiserahkan,
+  notifReviewerDitugaskan
+} from "./notifikasi";
 
 async function backend(): Promise<ReviewBackend> {
   return (await getJurnalDataMode()) === "supabase"
@@ -299,6 +304,15 @@ export async function tugaskanReviewer(
     `Reviewer ditugaskan untuk putaran ${terbuka.nomor} (tenggat ${hari} hari).`,
     labelPelaku(actor)
   );
+  // Email undangan telaah (Tahap 6): tanpa identitas penulis, dan
+  // kegagalannya tidak pernah menggagalkan penugasan.
+  await notifReviewerDitugaskan({
+    kode,
+    judul: naskah.judul,
+    reviewerEmail: email,
+    putaran: terbuka.nomor,
+    tenggatIso: tenggat
+  });
   return { id: dibuat.id, putaran: terbuka.nomor };
 }
 
@@ -351,6 +365,28 @@ export async function keputusanPutaran(
   } else {
     await catatPeristiwaNaskah(kode, catatan, labelPelaku(actor), "review_decision");
   }
+  // Email keputusan ke penulis (Tahap 6). Yang disertakan hanya catatan
+  // editor dari badan keputusan dan komentar reviewer UNTUK PENULIS;
+  // komentar rahasia untuk editor tidak pernah ikut.
+  const komentarUntukPenulis = penugasan
+    .filter(
+      (a) =>
+        a.putaran === terbuka.nomor &&
+        a.status === "completed" &&
+        a.komentarPenulis
+    )
+    .map((a) => a.komentarPenulis as string);
+  await notifKeputusan({
+    naskah: {
+      kode,
+      judul: naskah.judul,
+      penulis: naskah.penulis,
+      email: naskah.email
+    },
+    keputusan: input.keputusan,
+    catatan: input.catatan?.trim() || null,
+    komentarUntukPenulis
+  });
   return { putaran: terbuka.nomor };
 }
 
@@ -473,6 +509,16 @@ export async function serahkanReview(
     { userId: null, label: "Reviewer" },
     "review_submitted"
   );
+  // Email ke editor bahwa satu telaah masuk (Tahap 6), tanpa identitas
+  // reviewer di isi surat.
+  const naskah = await getSubmission(p.kode);
+  if (naskah) {
+    await notifReviewDiserahkan({
+      kode: p.kode,
+      judul: naskah.judul,
+      putaran: p.putaran
+    });
+  }
 }
 
 // Mengembalikan sasaran unduhan satu berkas untuk reviewer pemilik

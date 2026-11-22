@@ -12,6 +12,8 @@ import {
 } from "@/lib/jurnal/alur-server";
 import { infoPenarikanDariSlug } from "@/lib/jurnal/publik5-server";
 import { teksKutipan } from "@/lib/jurnal/publik5";
+import { tJurnal } from "@/lib/jurnal/i18n";
+import { localeJurnalServer } from "@/lib/jurnal/i18n-server";
 import type { JurnalArtikelPublik } from "@/lib/jurnal/alur";
 
 // Halaman artikel jurnal dengan metadata lengkap:
@@ -111,6 +113,7 @@ export default async function ArtikelJurnalPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const teks = tJurnal(await localeJurnalServer());
   const artikel = await artikelPublikDariSlug(slug);
   if (!artikel) {
     // Artikel yang ditarik sesudah terbit tidak hilang diam-diam:
@@ -281,7 +284,7 @@ export default async function ArtikelJurnalPage({
                 href={`/jurnal/artikel/${artikel.slug}/pdf`}
                 className="bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-sm px-5 py-2.5 rounded-full shadow transition"
               >
-                Unduh PDF
+                {teks.bacaPdf}
               </a>
             )}
             {artikel.punyaHtml && (
@@ -291,14 +294,14 @@ export default async function ArtikelJurnalPage({
                 rel="noreferrer"
                 className="bg-white border border-slate-300 hover:border-mahad-gold font-bold text-sm px-5 py-2.5 rounded-full transition"
               >
-                Baca HTML
+                {teks.bacaHtml}
               </a>
             )}
           </div>
         )}
 
         <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
-          Abstrak
+          {teks.abstrak}
         </h2>
         <p className="text-sm sm:text-base text-slate-700 leading-relaxed mt-2 text-justify">
           {artikel.abstrak}
@@ -316,7 +319,7 @@ export default async function ArtikelJurnalPage({
         )}
 
         <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
-          Kata Kunci
+          {teks.kataKunci}
         </h2>
         <div className="flex flex-wrap gap-2 mt-2">
           {artikel.kataKunci.map((k) => (
@@ -339,7 +342,7 @@ export default async function ArtikelJurnalPage({
         )}
 
         <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
-          Cara Mengutip
+          {teks.caraMengutip}
         </h2>
         <p className="text-sm text-slate-700 leading-relaxed mt-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
           {teksKutipan({
@@ -358,13 +361,13 @@ export default async function ArtikelJurnalPage({
             href={`/api/jurnal/artikel/${artikel.kode}/sitasi?format=bibtex`}
             className="bg-white border border-slate-300 hover:border-mahad-gold font-bold text-sm px-5 py-2 rounded-full transition"
           >
-            Unduh BibTeX
+            {teks.unduhSitasiBibtex}
           </a>
           <a
             href={`/api/jurnal/artikel/${artikel.kode}/sitasi?format=ris`}
             className="bg-white border border-slate-300 hover:border-mahad-gold font-bold text-sm px-5 py-2 rounded-full transition"
           >
-            Unduh RIS
+            {teks.unduhSitasiRis}
           </a>
         </div>
       </article>

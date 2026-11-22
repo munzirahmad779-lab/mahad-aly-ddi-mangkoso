@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { tJurnal } from "@/lib/jurnal/i18n";
+import { useJurnalLocale } from "@/lib/jurnal/i18n-klien";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
@@ -15,6 +17,7 @@ import { simpanSesiLokal } from "@/lib/jurnal/sesi-klien";
 // Staf redaksi tetap masuk lewat halaman Panel Redaksi.
 
 export default function MasukJurnalPage() {
+  const teks = tJurnal(useJurnalLocale());
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,7 +69,7 @@ export default function MasukJurnalPage() {
     <div className="max-w-xl mx-auto px-3 sm:px-6 lg:px-8">
       <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
         <h1 className="font-serif font-bold text-2xl sm:text-3xl text-slate-800">
-          Masuk Penulis
+          {teks.masukJudul}
         </h1>
         <p className="text-sm text-slate-600 mt-2">
           Masuk dengan akun penulis untuk mengirim naskah dan memantau

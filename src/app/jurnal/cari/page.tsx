@@ -5,6 +5,8 @@ import {
 } from "@/lib/jurnal/publik5-server";
 import { daftarTerbitanPublik } from "@/lib/jurnal/alur-server";
 import { DaftarArtikelPublik } from "../daftar-artikel";
+import { tJurnal } from "@/lib/jurnal/i18n";
+import { localeJurnalServer } from "@/lib/jurnal/i18n-server";
 
 // Pencarian artikel jurnal (Tahap 5): hanya artikel published yang
 // dicari, atas judul, abstrak, kata kunci, dan nama penulis. Pada mode
@@ -40,11 +42,12 @@ export default async function CariArtikelPage({
     })
   ]);
   const mencari = Boolean(q || bagian || terbitanSlug);
+  const teks = tJurnal(await localeJurnalServer());
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
       <h1 className="font-serif font-bold text-2xl sm:text-3xl text-mahad-green-dark">
-        Pencarian Artikel
+        {teks.cariJudul}
       </h1>
       <form
         method="get"
@@ -52,25 +55,25 @@ export default async function CariArtikelPage({
       >
         <label className="flex-1 min-w-56 block">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Kata kunci
+            {teks.kataKunci}
           </span>
           <input
             name="q"
             defaultValue={q}
-            placeholder="Judul, abstrak, kata kunci, atau nama penulis"
+            placeholder={teks.cariPlaceholder}
             className={`${kelasInput} mt-1 w-full`}
           />
         </label>
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Bagian
+            {teks.saringBagian}
           </span>
           <select
             name="bagian"
             defaultValue={bagian}
             className={`${kelasInput} mt-1`}
           >
-            <option value="">Semua bagian</option>
+            <option value="">{teks.semuaPilihan} {teks.saringBagian}</option>
             {JURNAL_BAGIAN.map((b) => (
               <option key={b.slug} value={b.slug}>
                 {b.judulId}
@@ -80,14 +83,14 @@ export default async function CariArtikelPage({
         </label>
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Terbitan
+            {teks.saringTerbitan}
           </span>
           <select
             name="terbitan"
             defaultValue={terbitanSlug}
             className={`${kelasInput} mt-1`}
           >
-            <option value="">Semua terbitan</option>
+            <option value="">{teks.semuaPilihan} {teks.saringTerbitan}</option>
             {terbitan.map((t) => (
               <option key={t.slug} value={t.slug}>
                 {t.label}
@@ -99,19 +102,19 @@ export default async function CariArtikelPage({
           type="submit"
           className="bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-sm px-5 py-2.5 rounded-full shadow transition"
         >
-          Cari
+          {teks.cariTombol}
         </button>
       </form>
 
       <div className="mt-8">
         <p className="text-sm text-slate-500 mb-4">
           {mencari
-            ? `${hasil.length} artikel terbit cocok dengan pencarian.`
-            : `${hasil.length} artikel terbit tersedia.`}
+            ? `${hasil.length} ${teks.hasilDitemukan}.`
+            : `${hasil.length} ${teks.hasilDitemukan}.`}
         </p>
         <DaftarArtikelPublik
           artikel={hasil}
-          kosong="Tidak ada artikel terbit yang cocok. Coba kata kunci atau saringan lain."
+          kosong={teks.tidakDitemukan}
         />
       </div>
     </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { tJurnal } from "@/lib/jurnal/i18n";
+import { useJurnalLocale } from "@/lib/jurnal/i18n-klien";
 import Link from "next/link";
 import {
   ambilSesiKlien,
@@ -25,6 +27,7 @@ import {
 // dan formulir unggah berkas revisi sesudah keputusan revisi.
 
 export default function NaskahSayaPage() {
+  const teks = tJurnal(useJurnalLocale());
   const [sesi, setSesi] = useState<SesiKlienJurnal | null>(null);
   const [memuat, setMemuat] = useState(true);
   const [daftar, setDaftar] = useState<JurnalSubmissionView[]>([]);
@@ -83,7 +86,7 @@ export default function NaskahSayaPage() {
       <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h1 className="font-serif font-bold text-2xl sm:text-3xl text-slate-800">
-            Naskah Saya
+            {teks.naskahSayaJudul}
           </h1>
           {sesi && (
             <button

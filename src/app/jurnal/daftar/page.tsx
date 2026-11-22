@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { tJurnal } from "@/lib/jurnal/i18n";
+import { useJurnalLocale } from "@/lib/jurnal/i18n-klien";
 import Link from "next/link";
 import {
   JURNAL_CONSENT_TEKS,
@@ -16,6 +18,7 @@ import TurnstileJurnal from "@/components/jurnal/turnstile";
 // lokal yang jelas berlabel mode uji.
 
 export default function DaftarPenulisJurnalPage() {
+  const teks = tJurnal(useJurnalLocale());
   const [form, setForm] = useState({
     nama: "",
     email: "",
@@ -78,7 +81,7 @@ export default function DaftarPenulisJurnalPage() {
     <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8">
       <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
         <h1 className="font-serif font-bold text-2xl sm:text-3xl text-slate-800">
-          Daftar Akun Penulis
+          {teks.daftarJudul}
         </h1>
         <p className="text-sm text-slate-600 mt-2">
           Akun penulis dipakai untuk mengirim naskah lewat wizard kirim dan

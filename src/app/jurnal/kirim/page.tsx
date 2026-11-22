@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { tJurnal } from "@/lib/jurnal/i18n";
+import { useJurnalLocale } from "@/lib/jurnal/i18n-klien";
 import Link from "next/link";
 import {
   ambilSesiKlien,
@@ -56,6 +58,7 @@ interface BerkasTerpilih {
 }
 
 export default function KirimNaskahJurnalPage() {
+  const teks = tJurnal(useJurnalLocale());
   const [sesi, setSesi] = useState<SesiKlienJurnal | null>(null);
   const [memuatSesi, setMemuatSesi] = useState(true);
   const [langkah, setLangkah] = useState(0);
@@ -341,7 +344,7 @@ export default function KirimNaskahJurnalPage() {
       <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8">
         <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
           <h1 className="font-serif font-bold text-2xl sm:text-3xl text-slate-800">
-            Kirim Naskah
+            {teks.kirimJudul}
           </h1>
           <p className="text-sm text-slate-600 mt-3">
             Pengiriman naskah memerlukan akun penulis, sama seperti sistem
@@ -411,7 +414,7 @@ export default function KirimNaskahJurnalPage() {
     <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8">
       <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
         <h1 className="font-serif font-bold text-2xl sm:text-3xl text-slate-800">
-          Kirim Naskah
+          {teks.kirimJudul}
         </h1>
         <p className="text-sm text-slate-600 mt-2">
           Mengirim sebagai <strong>{sesi.email}</strong>

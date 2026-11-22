@@ -8,6 +8,8 @@ import {
 } from "@/lib/jurnal/konten";
 import { daftarTerbitanPublik } from "@/lib/jurnal/alur-server";
 import { daftarPengumumanPublik } from "@/lib/jurnal/publik5-server";
+import { tJurnal } from "@/lib/jurnal/i18n";
+import { localeJurnalServer } from "@/lib/jurnal/i18n-server";
 
 // Beranda cabang jurnal VERSI UJI. Sejak Tahap 4 daftar terbitan dan
 // artikel terbaru membaca basis data lewat lapisan store (kedua mode):
@@ -26,6 +28,7 @@ export const metadata: Metadata = {
 };
 
 export default async function JurnalBerandaPage() {
+  const teks = tJurnal(await localeJurnalServer());
   const terbitan = await daftarTerbitanPublik();
   const pengumuman = (await daftarPengumumanPublik()).slice(0, 3);
   const artikelTerbaru = terbitan
@@ -38,7 +41,7 @@ export default async function JurnalBerandaPage() {
       {/* Kepala jurnal */}
       <section className="bg-mahad-green-dark text-white rounded-2xl py-12 px-6 sm:px-10 text-center shadow-md">
         <span className="text-[11px] font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-4 py-1 rounded-full">
-          Publikasi Ilmiah &bull; Versi Uji
+          {teks.publikasiIlmiah} &bull; {teks.spandukJudul}
         </span>
         <h1 className="font-serif font-bold text-3xl sm:text-5xl mt-5">
           {JURNAL_NAMA_LABEL_UJI}
@@ -56,13 +59,13 @@ export default async function JurnalBerandaPage() {
             href="/jurnal/kirim"
             className="bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-sm px-5 py-2.5 rounded-full shadow transition"
           >
-            Kirim Naskah (Uji)
+            {teks.kirimNaskah}
           </Link>
           <Link
             href="/jurnal/lacak"
             className="bg-white/10 hover:bg-white/20 text-white font-semibold text-sm px-5 py-2.5 rounded-full border border-emerald-700 transition"
           >
-            Lacak Naskah
+            {teks.lacakNaskah}
           </Link>
         </div>
       </section>
@@ -70,7 +73,7 @@ export default async function JurnalBerandaPage() {
       {/* Fokus dan ruang lingkup */}
       <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
         <h2 className="font-serif font-bold text-xl sm:text-2xl text-mahad-green-dark">
-          Fokus dan Ruang Lingkup
+          {teks.fokusDanRuangLingkup}
         </h2>
         <p className="text-sm text-slate-600 mt-2 max-w-3xl">
           Jurnal ini (versi uji) menampung kajian sesuai takhasus Ma&apos;had
@@ -95,13 +98,13 @@ export default async function JurnalBerandaPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-serif font-bold text-xl sm:text-2xl text-mahad-green-dark">
-              Pengumuman
+              {teks.pengumuman}
             </h2>
             <Link
               href="/jurnal/pengumuman"
               className="text-sm font-semibold text-mahad-green hover:underline"
             >
-              Semua pengumuman
+              {teks.semuaPengumuman}
             </Link>
           </div>
           <div className="grid gap-4">
@@ -125,12 +128,11 @@ export default async function JurnalBerandaPage() {
       {/* Daftar terbitan dari basis data */}
       <section>
         <h2 className="font-serif font-bold text-xl sm:text-2xl text-mahad-green-dark mb-4">
-          Daftar Terbitan
+          {teks.daftarTerbitan}
         </h2>
         {terbitan.length === 0 ? (
           <p className="text-sm text-slate-500 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            Belum ada terbitan yang diterbitkan. Terbitan pertama akan
-            tampil di sini sesudah redaksi menerbitkannya dari panel.
+            {teks.belumAdaTerbitan}
           </p>
         ) : (
           <div className="grid gap-4">
@@ -146,7 +148,7 @@ export default async function JurnalBerandaPage() {
                       {t.label}
                       {t.isCurrent && (
                         <span className="ml-2 align-middle text-[11px] font-bold bg-emerald-100 text-mahad-green-dark border border-emerald-300 px-2.5 py-0.5 rounded-full">
-                          Terbitan Berjalan
+                          {teks.terbitanBerjalan}
                         </span>
                       )}
                     </h3>
@@ -155,7 +157,7 @@ export default async function JurnalBerandaPage() {
                     )}
                   </div>
                   <span className="text-xs font-bold bg-emerald-50 text-mahad-green-dark border border-emerald-200 rounded-full px-3 py-1">
-                    {t.artikel.length} artikel
+                    {t.artikel.length} {teks.satuanArtikel}
                   </span>
                 </div>
               </Link>
@@ -167,11 +169,11 @@ export default async function JurnalBerandaPage() {
       {/* Artikel terbaru dari basis data */}
       <section>
         <h2 className="font-serif font-bold text-xl sm:text-2xl text-mahad-green-dark mb-4">
-          Artikel Terbaru
+          {teks.artikelTerbaru}
         </h2>
         {artikelTerbaru.length === 0 ? (
           <p className="text-sm text-slate-500">
-            Belum ada artikel yang diterbitkan.
+            {teks.belumAdaArtikel}
           </p>
         ) : (
           <div className="grid gap-4">

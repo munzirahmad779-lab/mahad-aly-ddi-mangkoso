@@ -22,6 +22,7 @@ import {
   type JurnalWizardInput
 } from "@/lib/jurnal/wizard";
 import { verifikasiMetaBerkasTersimpan } from "@/lib/jurnal/berkas";
+import { notifNaskahDiterima } from "@/lib/jurnal/notifikasi";
 import {
   BATAS_TEKS,
   bacaJsonTerbatas,
@@ -171,6 +172,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const naskah = await createSubmission(data);
+    await notifNaskahDiterima({
+      kode: naskah.kode,
+      judul: naskah.judul,
+      penulis: naskah.penulis,
+      email: naskah.email
+    });
     return NextResponse.json(
       {
         kode: naskah.kode,
@@ -422,6 +429,12 @@ async function tanganiWizard(
 
   try {
     const naskah = await createSubmissionLengkap(input, submitterUserId);
+    await notifNaskahDiterima({
+      kode: naskah.kode,
+      judul: naskah.judul,
+      penulis: naskah.penulis,
+      email: naskah.email
+    });
     return NextResponse.json(
       {
         kode: naskah.kode,

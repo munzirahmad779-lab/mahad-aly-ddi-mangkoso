@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { tJurnal } from "@/lib/jurnal/i18n";
+import { useJurnalLocale } from "@/lib/jurnal/i18n-klien";
 import type { JurnalSubmissionView } from "@/lib/jurnal/status";
 
 // Halaman lacak naskah jurnal "OJS versi kita".
@@ -10,6 +12,7 @@ import type { JurnalSubmissionView } from "@/lib/jurnal/status";
 // Indonesia dari server.
 
 export default function LacakNaskahJurnalPage() {
+  const teks = tJurnal(useJurnalLocale());
   const [kode, setKode] = useState("");
   const [memuat, setMemuat] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
@@ -41,7 +44,7 @@ export default function LacakNaskahJurnalPage() {
     <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8">
       <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
         <h1 className="font-serif font-bold text-2xl sm:text-3xl text-slate-800">
-          Lacak Naskah
+          {teks.lacakJudul}
         </h1>
         <p className="text-sm text-slate-600 mt-2">
           Masukkan kode lacak berformat <span className="font-mono">JRN-YYYY-XXXX</span>{" "}
