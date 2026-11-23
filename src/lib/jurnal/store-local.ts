@@ -124,16 +124,57 @@ function keTampilan(n: CatatanLokal): JurnalSubmissionView {
 const DIR = path.join(process.cwd(), ".jurnal-uji");
 const FILE = path.join(DIR, "submissions.json");
 
+// ── Baca dan tulis JSON mode lokal yang tahan balapan ────────────────────
+// Temuan regresi penggabungan 23 Nov 2026: penulisan writeFile yang
+// menimpa berkas secara langsung bisa dibaca setengah oleh permintaan
+// lain yang datang hampir bersamaan (klaim undangan menulis
+// accounts.json, login membaca 153 ms kemudian dan JSON.parse gagal),
+// dan para pemuat memperlakukan bacaan robek itu sebagai berkas
+// kosong, sehingga akun yang baru dibuat sesaat terbaca tidak ada.
+// Perbaikannya dua arah: penulisan selalu atomik (berkas sementara
+// lalu rename), dan pembacaan mencoba ulang beberapa kali sebelum
+// menyerah; null hanya berarti berkas memang belum ada. Pemuat yang
+// sudah memegang data di memori tidak menimpanya dengan keadaan
+// kosong hanya karena satu bacaan gagal.
+export async function bacaJsonBerkas<T>(file: string): Promise<T | null> {
+  for (let percobaan = 0; percobaan < 8; percobaan++) {
+    let teks: string;
+    try {
+      teks = await fs.readFile(file, "utf8");
+    } catch {
+      return null;
+    }
+    try {
+      return JSON.parse(teks) as T;
+    } catch {
+      await new Promise((r) => setTimeout(r, 30));
+    }
+  }
+  return null;
+}
+
+export async function tulisJsonBerkas(
+  file: string,
+  data: unknown
+): Promise<void> {
+  await fs.mkdir(DIR, { recursive: true });
+  const tmp = `${file}.tmp-${process.pid}-${Date.now()}-${Math.floor(
+    Math.random() * 1e6
+  )}`;
+  await fs.writeFile(tmp, JSON.stringify(data, null, 2), "utf8");
+  await fs.rename(tmp, file);
+}
+
 let memori: CatatanLokal[] | null = null;
 
 async function muat(): Promise<CatatanLokal[]> {
   // Selalu baca ulang dari berkas: bundel halaman dan bundel route
   // Next.js memegang salinan modul terpisah, jadi cache memori murni
   // membuat halaman publik membaca data basi (temuan Tahap 4).
-  try {
-    const teks = await fs.readFile(FILE, "utf8");
-    const data = JSON.parse(teks);
-    const mentah = Array.isArray(data) ? data : [];
+  const dataMentah = await bacaJsonBerkas<unknown>(FILE);
+  if (dataMentah === null) return memori ?? [];
+  {
+    const mentah = Array.isArray(dataMentah) ? dataMentah : [];
     memori = mentah.map((n: Record<string, unknown>) => ({
       kode: String(n.kode ?? ""),
       judul: String(n.judul ?? ""),
@@ -177,8 +218,6 @@ async function muat(): Promise<CatatanLokal[]> {
           ? (n.daftarPeriksa as JurnalDaftarPeriksa)
           : undefined
     }));
-  } catch {
-    memori = [];
   }
   return memori;
 }
@@ -186,8 +225,7 @@ async function muat(): Promise<CatatanLokal[]> {
 async function simpan(): Promise<void> {
   if (!memori) return;
   try {
-    await fs.mkdir(DIR, { recursive: true });
-    await fs.writeFile(FILE, JSON.stringify(memori, null, 2), "utf8");
+    await tulisJsonBerkas(FILE, memori);
   } catch {
     // Sistem berkas tidak bisa ditulis: data tetap hidup di memori proses.
   }
@@ -426,21 +464,16 @@ let memoriAkun: AkunLokalTersimpan[] | null = null;
 
 async function muatAkun(): Promise<AkunLokalTersimpan[]> {
   // Baca ulang dari berkas (alasan sama seperti muat di atas).
-  try {
-    const teks = await fs.readFile(FILE_AKUN, "utf8");
-    const data = JSON.parse(teks);
-    memoriAkun = Array.isArray(data) ? (data as AkunLokalTersimpan[]) : [];
-  } catch {
-    memoriAkun = [];
-  }
+  const data = await bacaJsonBerkas<unknown>(FILE_AKUN);
+  if (data === null) return memoriAkun ?? [];
+  memoriAkun = Array.isArray(data) ? (data as AkunLokalTersimpan[]) : [];
   return memoriAkun;
 }
 
 async function simpanAkun(): Promise<void> {
   if (!memoriAkun) return;
   try {
-    await fs.mkdir(DIR, { recursive: true });
-    await fs.writeFile(FILE_AKUN, JSON.stringify(memoriAkun, null, 2), "utf8");
+    await tulisJsonBerkas(FILE_AKUN, memoriAkun);
   } catch {
     // Sama seperti data naskah lokal: tetap hidup di memori proses.
   }
@@ -588,15 +621,11 @@ let memoriKeamanan: PeristiwaKeamananLokal[] | null = null;
 
 async function muatKeamanan(): Promise<PeristiwaKeamananLokal[]> {
   // Baca ulang dari berkas (alasan sama seperti muat di atas).
-  try {
-    const teks = await fs.readFile(FILE_KEAMANAN, "utf8");
-    const data = JSON.parse(teks);
-    memoriKeamanan = Array.isArray(data)
-      ? (data as PeristiwaKeamananLokal[])
-      : [];
-  } catch {
-    memoriKeamanan = [];
-  }
+  const data = await bacaJsonBerkas<unknown>(FILE_KEAMANAN);
+  if (data === null) return memoriKeamanan ?? [];
+  memoriKeamanan = Array.isArray(data)
+    ? (data as PeristiwaKeamananLokal[])
+    : [];
   return memoriKeamanan;
 }
 
@@ -608,12 +637,7 @@ export async function catatPeristiwaKeamananLokal(
     daftar.push({ ...peristiwa, pada: new Date().toISOString() });
     while (daftar.length > 1000) daftar.shift();
     try {
-      await fs.mkdir(DIR, { recursive: true });
-      await fs.writeFile(
-        FILE_KEAMANAN,
-        JSON.stringify(daftar, null, 2),
-        "utf8"
-      );
+      await tulisJsonBerkas(FILE_KEAMANAN, daftar);
     } catch {
       // Sistem berkas tidak bisa ditulis: catatan tetap hidup di memori.
     }
@@ -684,30 +708,21 @@ let memoriReview: DataReviewLokal | null = null;
 
 export async function muatDataReviewLokal(): Promise<DataReviewLokal> {
   // Baca ulang dari berkas (alasan sama seperti muat di atas).
-  try {
-    const teks = await fs.readFile(FILE_REVIEW, "utf8");
-    const data = JSON.parse(teks) as Partial<DataReviewLokal>;
-    memoriReview = {
-      putaran:
-        data.putaran && typeof data.putaran === "object" ? data.putaran : {},
-      penugasan: Array.isArray(data.penugasan) ? data.penugasan : [],
-      berkasRevisi: Array.isArray(data.berkasRevisi) ? data.berkasRevisi : []
-    };
-  } catch {
-    memoriReview = { putaran: {}, penugasan: [], berkasRevisi: [] };
-  }
+  const data = await bacaJsonBerkas<Partial<DataReviewLokal>>(FILE_REVIEW);
+  if (data === null && memoriReview) return memoriReview;
+  const d = data ?? {};
+  memoriReview = {
+    putaran: d.putaran && typeof d.putaran === "object" ? d.putaran : {},
+    penugasan: Array.isArray(d.penugasan) ? d.penugasan : [],
+    berkasRevisi: Array.isArray(d.berkasRevisi) ? d.berkasRevisi : []
+  };
   return memoriReview;
 }
 
 export async function simpanDataReviewLokal(): Promise<void> {
   if (!memoriReview) return;
   try {
-    await fs.mkdir(DIR, { recursive: true });
-    await fs.writeFile(
-      FILE_REVIEW,
-      JSON.stringify(memoriReview, null, 2),
-      "utf8"
-    );
+    await tulisJsonBerkas(FILE_REVIEW, memoriReview);
   } catch {
     // Sama seperti data lokal lain: tetap hidup di memori proses.
   }
@@ -732,25 +747,16 @@ let memoriUndangan: UndanganLokal[] | null = null;
 
 export async function muatUndanganLokal(): Promise<UndanganLokal[]> {
   // Baca ulang dari berkas (alasan sama seperti muat di atas).
-  try {
-    const teks = await fs.readFile(FILE_UNDANGAN, "utf8");
-    const data = JSON.parse(teks);
-    memoriUndangan = Array.isArray(data) ? (data as UndanganLokal[]) : [];
-  } catch {
-    memoriUndangan = [];
-  }
+  const data = await bacaJsonBerkas<unknown>(FILE_UNDANGAN);
+  if (data === null) return memoriUndangan ?? [];
+  memoriUndangan = Array.isArray(data) ? (data as UndanganLokal[]) : [];
   return memoriUndangan;
 }
 
 export async function simpanUndanganLokal(): Promise<void> {
   if (!memoriUndangan) return;
   try {
-    await fs.mkdir(DIR, { recursive: true });
-    await fs.writeFile(
-      FILE_UNDANGAN,
-      JSON.stringify(memoriUndangan, null, 2),
-      "utf8"
-    );
+    await tulisJsonBerkas(FILE_UNDANGAN, memoriUndangan);
   } catch {
     // Tetap hidup di memori proses.
   }
@@ -841,41 +847,25 @@ let memoriAlur: DataAlurLokal | null = null;
 
 export async function muatDataAlurLokal(): Promise<DataAlurLokal> {
   // Baca ulang dari berkas (alasan sama seperti muat di atas).
-  try {
-    const teks = await fs.readFile(FILE_ALUR, "utf8");
-    const data = JSON.parse(teks) as Partial<DataAlurLokal>;
-    memoriAlur = {
-      tugasCopy: Array.isArray(data.tugasCopy) ? data.tugasCopy : [],
-      tugasProduksi: Array.isArray(data.tugasProduksi)
-        ? data.tugasProduksi
-        : [],
-      berkasAlur: Array.isArray(data.berkasAlur) ? data.berkasAlur : [],
-      terbitan: Array.isArray(data.terbitan) ? data.terbitan : [],
-      penempatan:
-        data.penempatan && typeof data.penempatan === "object"
-          ? data.penempatan
-          : {},
-      metrik:
-        data.metrik && typeof data.metrik === "object" ? data.metrik : {}
-    };
-  } catch {
-    memoriAlur = {
-      tugasCopy: [],
-      tugasProduksi: [],
-      berkasAlur: [],
-      terbitan: [],
-      penempatan: {},
-      metrik: {}
-    };
-  }
+  const data = await bacaJsonBerkas<Partial<DataAlurLokal>>(FILE_ALUR);
+  if (data === null && memoriAlur) return memoriAlur;
+  const d = data ?? {};
+  memoriAlur = {
+    tugasCopy: Array.isArray(d.tugasCopy) ? d.tugasCopy : [],
+    tugasProduksi: Array.isArray(d.tugasProduksi) ? d.tugasProduksi : [],
+    berkasAlur: Array.isArray(d.berkasAlur) ? d.berkasAlur : [],
+    terbitan: Array.isArray(d.terbitan) ? d.terbitan : [],
+    penempatan:
+      d.penempatan && typeof d.penempatan === "object" ? d.penempatan : {},
+    metrik: d.metrik && typeof d.metrik === "object" ? d.metrik : {}
+  };
   return memoriAlur;
 }
 
 export async function simpanDataAlurLokal(): Promise<void> {
   if (!memoriAlur) return;
   try {
-    await fs.mkdir(DIR, { recursive: true });
-    await fs.writeFile(FILE_ALUR, JSON.stringify(memoriAlur, null, 2), "utf8");
+    await tulisJsonBerkas(FILE_ALUR, memoriAlur);
   } catch {
     // Sama seperti data lokal lain: tetap hidup di memori proses.
   }

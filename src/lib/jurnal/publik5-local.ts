@@ -8,15 +8,16 @@
 // setiap kali, mengikuti pelajaran bundel terpisah Tahap 4.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { promises as fs } from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
 import {
+  bacaJsonBerkas,
   daftarArtikelDitarikLokal,
   listLokal,
   muatDataAlurLokal,
   tarikArtikelLokal,
-  tetapkanDoiLokal
+  tetapkanDoiLokal,
+  tulisJsonBerkas
 } from "./store-local";
 import type {
   MetrikMentah,
@@ -31,21 +32,16 @@ interface DataTahap5Lokal {
 }
 
 async function muat(): Promise<DataTahap5Lokal> {
-  try {
-    const teks = await fs.readFile(FILE, "utf8");
-    const data = JSON.parse(teks) as Partial<DataTahap5Lokal>;
-    return {
-      pengumuman: Array.isArray(data.pengumuman) ? data.pengumuman : []
-    };
-  } catch {
-    return { pengumuman: [] };
-  }
+  const data = await bacaJsonBerkas<Partial<DataTahap5Lokal>>(FILE);
+  const d = data ?? {};
+  return {
+    pengumuman: Array.isArray(d.pengumuman) ? d.pengumuman : []
+  };
 }
 
 async function simpan(data: DataTahap5Lokal): Promise<void> {
   try {
-    await fs.mkdir(path.dirname(FILE), { recursive: true });
-    await fs.writeFile(FILE, JSON.stringify(data, null, 2), "utf8");
+    await tulisJsonBerkas(FILE, data);
   } catch {
     // Sistem berkas hanya-baca: data tetap hidup selama proses berjalan
     // lewat bacaan berikutnya yang gagal dan mengembalikan kosong;
