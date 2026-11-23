@@ -172,7 +172,10 @@ async function muat(): Promise<CatatanLokal[]> {
   // Next.js memegang salinan modul terpisah, jadi cache memori murni
   // membuat halaman publik membaca data basi (temuan Tahap 4).
   const dataMentah = await bacaJsonBerkas<unknown>(FILE);
-  if (dataMentah === null) return memori ?? [];
+  if (dataMentah === null) {
+    if (!memori) memori = [];
+    return memori;
+  }
   {
     const mentah = Array.isArray(dataMentah) ? dataMentah : [];
     memori = mentah.map((n: Record<string, unknown>) => ({
@@ -465,7 +468,10 @@ let memoriAkun: AkunLokalTersimpan[] | null = null;
 async function muatAkun(): Promise<AkunLokalTersimpan[]> {
   // Baca ulang dari berkas (alasan sama seperti muat di atas).
   const data = await bacaJsonBerkas<unknown>(FILE_AKUN);
-  if (data === null) return memoriAkun ?? [];
+  if (data === null) {
+    if (!memoriAkun) memoriAkun = [];
+    return memoriAkun;
+  }
   memoriAkun = Array.isArray(data) ? (data as AkunLokalTersimpan[]) : [];
   return memoriAkun;
 }
@@ -622,7 +628,10 @@ let memoriKeamanan: PeristiwaKeamananLokal[] | null = null;
 async function muatKeamanan(): Promise<PeristiwaKeamananLokal[]> {
   // Baca ulang dari berkas (alasan sama seperti muat di atas).
   const data = await bacaJsonBerkas<unknown>(FILE_KEAMANAN);
-  if (data === null) return memoriKeamanan ?? [];
+  if (data === null) {
+    if (!memoriKeamanan) memoriKeamanan = [];
+    return memoriKeamanan;
+  }
   memoriKeamanan = Array.isArray(data)
     ? (data as PeristiwaKeamananLokal[])
     : [];
@@ -748,7 +757,10 @@ let memoriUndangan: UndanganLokal[] | null = null;
 export async function muatUndanganLokal(): Promise<UndanganLokal[]> {
   // Baca ulang dari berkas (alasan sama seperti muat di atas).
   const data = await bacaJsonBerkas<unknown>(FILE_UNDANGAN);
-  if (data === null) return memoriUndangan ?? [];
+  if (data === null) {
+    if (!memoriUndangan) memoriUndangan = [];
+    return memoriUndangan;
+  }
   memoriUndangan = Array.isArray(data) ? (data as UndanganLokal[]) : [];
   return memoriUndangan;
 }
