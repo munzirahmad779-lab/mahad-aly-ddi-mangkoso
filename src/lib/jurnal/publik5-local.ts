@@ -11,6 +11,7 @@
 import path from "path";
 import { randomUUID } from "crypto";
 import {
+  antrianUntuk,
   bacaJsonBerkas,
   daftarArtikelDitarikLokal,
   listLokal,
@@ -58,44 +59,53 @@ export const publik5BackendLokal: Publik5Backend = {
   },
 
   async buatPengumuman(input) {
-    const data = await muat();
-    const sekarang = new Date().toISOString();
-    const baru: PengumumanInternal = {
-      id: randomUUID(),
-      judul: input.judul,
-      isi: input.isi,
-      tayang: input.tayang,
-      diterbitkanPada: input.tayang ? sekarang : null,
-      kedaluwarsaPada: input.kedaluwarsaPada,
-      dibuatPada: sekarang
-    };
-    data.pengumuman.push(baru);
-    await simpan(data);
-    return baru;
+    // Seluruh siklus muat-ubah-simpan berjalan di antrean tulis berkas
+    // ini (lihat antrianUntuk di store-local): tanpa itu dua request
+    // bersamaan dapat saling menimpa dengan potret basi.
+    return antrianUntuk(FILE)(async () => {
+      const data = await muat();
+      const sekarang = new Date().toISOString();
+      const baru: PengumumanInternal = {
+        id: randomUUID(),
+        judul: input.judul,
+        isi: input.isi,
+        tayang: input.tayang,
+        diterbitkanPada: input.tayang ? sekarang : null,
+        kedaluwarsaPada: input.kedaluwarsaPada,
+        dibuatPada: sekarang
+      };
+      data.pengumuman.push(baru);
+      await simpan(data);
+      return baru;
+    });
   },
 
   async ubahPengumuman(id, patch) {
-    const data = await muat();
-    const target = data.pengumuman.find((p) => p.id === id);
-    if (!target) throw new Error("Pengumuman tidak ditemukan.");
-    if (patch.judul !== undefined) target.judul = patch.judul;
-    if (patch.isi !== undefined) target.isi = patch.isi;
-    if (patch.tayang !== undefined) {
-      target.tayang = patch.tayang;
-      target.diterbitkanPada = patch.tayang
-        ? target.diterbitkanPada ?? new Date().toISOString()
-        : null;
-    }
-    if (patch.kedaluwarsaPada !== undefined) {
-      target.kedaluwarsaPada = patch.kedaluwarsaPada;
-    }
-    await simpan(data);
+    return antrianUntuk(FILE)(async () => {
+      const data = await muat();
+      const target = data.pengumuman.find((p) => p.id === id);
+      if (!target) throw new Error("Pengumuman tidak ditemukan.");
+      if (patch.judul !== undefined) target.judul = patch.judul;
+      if (patch.isi !== undefined) target.isi = patch.isi;
+      if (patch.tayang !== undefined) {
+        target.tayang = patch.tayang;
+        target.diterbitkanPada = patch.tayang
+          ? target.diterbitkanPada ?? new Date().toISOString()
+          : null;
+      }
+      if (patch.kedaluwarsaPada !== undefined) {
+        target.kedaluwarsaPada = patch.kedaluwarsaPada;
+      }
+      await simpan(data);
+    });
   },
 
   async hapusPengumuman(id) {
-    const data = await muat();
-    data.pengumuman = data.pengumuman.filter((p) => p.id !== id);
-    await simpan(data);
+    return antrianUntuk(FILE)(async () => {
+      const data = await muat();
+      data.pengumuman = data.pengumuman.filter((p) => p.id !== id);
+      await simpan(data);
+    });
   },
 
   async tetapkanDoi(kode, doi) {
