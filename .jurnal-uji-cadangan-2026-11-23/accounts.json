@@ -1,0 +1,249 @@
+[
+  {
+    "nama": "Staf Uji Panel",
+    "email": "staf.uji@contoh.ac.id",
+    "afiliasi": "Tim Uji Staf",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T19:02:20.252Z",
+    "peran": [
+      "author"
+    ],
+    "kataSandiHash": "scrypt:8d79e116943644229fec70f090b784aa:aa87304029297b8927e2b76d76478e02cc7cddefcb61b8a827c5af3e0d7007ecdfd4f87c3601bb670d8c951d3c638eaeb1f4a2f4df56e5f16c41c14cff286539"
+  },
+  {
+    "nama": "Akun Uji Serangan",
+    "email": "penulis.serang@contoh.ac.id",
+    "afiliasi": "Tim Uji Keamanan",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T19:59:31.870Z",
+    "peran": [
+      "author"
+    ],
+    "kataSandiHash": "scrypt:4936b1dfe8f1807c955b3fadb6b9a003:e2df0afefac82945548b38db9a8ca33404a6b0121a378ebcf245ac2ed03088bb573adbb9245f5491e1773c240b3b25af2bfcef8d51b15b9c5dc750dad81e69fa"
+  },
+  {
+    "nama": "Penulis Uji Tahap Dua",
+    "email": "penulis.uji.tahap2.585546@contoh.ac.id",
+    "afiliasi": "Tim Uji Peramban Tahap Dua",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:00:03.646Z",
+    "peran": [
+      "author"
+    ],
+    "kataSandiHash": "scrypt:5ecede976fadf4437023b2d4b9eb9d6e:d88c292f9427db1692a7519de60579792d3f83bd05b43c05387a8f3b3ab1d38f5360d700f3e438ed3d54709d6ed75adabba197fef8e227cbb547e5b1d1ea035c"
+  },
+  {
+    "nama": "Penulis Uji Tahap Tiga",
+    "email": "penulis.uji.tahap3.709095@contoh.ac.id",
+    "afiliasi": "Tim Uji Peramban Tahap Tiga",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:02:04.937Z",
+    "peran": [
+      "author"
+    ],
+    "kataSandiHash": "scrypt:335993a7048650cf4e3f1a2fd5325356:e47ed708e9bb1a4cfc3d21cbbb8a965a1f009bed606883cad57edc195a04e983030b76faf8fbf989aeb2c77f05b5bce18fe8f7cf80ed19492cbaa121c5dacc06"
+  },
+  {
+    "nama": "Reviewer Uji Satu",
+    "email": "reviewer.satu.709095@contoh.ac.id",
+    "afiliasi": "Lembaga Reviewer Satu",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:03:59.047Z",
+    "peran": [
+      "reviewer"
+    ],
+    "kataSandiHash": "scrypt:afe6ae0a6677427699cdec1a86beecab:c847eca2012ca8d99a471bc7384d59c777c8c633379f204af41371b661c0a87158b199be63490e5f5b1c38ff2931dfeaf00efa67bbb3237d8d44f87cdfa07bbd"
+  },
+  {
+    "nama": "Reviewer Uji Dua",
+    "email": "reviewer.dua.709095@contoh.ac.id",
+    "afiliasi": "Lembaga Reviewer Dua",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:04:16.252Z",
+    "peran": [
+      "reviewer"
+    ],
+    "kataSandiHash": "scrypt:7679d27e68ab8bf76927004b8450dd9c:b72fdf0c96a7506ccc034dff4448f2f84c65de1668af735ccb0c8057d66dd2f9d79723dbee8bae0260aca8d8bddf045c92b79af031052e05aad9a664fb39db07"
+  },
+  {
+    "nama": "Penulis Uji Tahap Dua",
+    "email": "penulis.uji.tahap2.996082@contoh.ac.id",
+    "afiliasi": "Tim Uji Peramban Tahap Dua",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:23:39.156Z",
+    "peran": [
+      "author"
+    ],
+    "kataSandiHash": "scrypt:47f85b4ebc7db90a7f12adeefab0a87c:03c6b60e4310182004cfd2e21171e6327a549b6b05703fa4537514e1666b62eca95f0ff8d2d90d87461c15a1e972b9257dda825ee2e1fa0f815ea7f575cb0e55"
+  },
+  {
+    "nama": "Penulis Uji Tahap Tiga",
+    "email": "penulis.uji.tahap3.069465@contoh.ac.id",
+    "afiliasi": "Tim Uji Peramban Tahap Tiga",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:24:52.991Z",
+    "peran": [
+      "author"
+    ],
+    "kataSandiHash": "scrypt:36fcecf3182db4d0ac8aa56d848badfb:081c94d86d5b28a4b1d70c8743b92035b8462e277fa3bf3065ee46fe1cc76e525d60ef4cf68b7ea3643d1809e0c6f9f4e089b23e7975d6fddd4f1bed9034cb99"
+  },
+  {
+    "nama": "Penulis Uji Tahap Dua",
+    "email": "penulis.uji.tahap2.148371@contoh.ac.id",
+    "afiliasi": "Tim Uji Peramban Tahap Dua",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:26:12.271Z",
+    "peran": [
+      "author"
+    ],
+    "kataSandiHash": "scrypt:54a3969624217a905322d1a79b82ab1f:a6460f36bb2eb0325dac1e49d131328d317927546b481ffdf1f0fa6c41c376de4d2aef5e5e178775271b5b81716972ea287759c26d519d4fe4c1dab9550c511c"
+  },
+  {
+    "nama": "Probe",
+    "email": "probe.1795379244654@contoh.ac.id",
+    "afiliasi": "Probe",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:27:24.772Z",
+    "peran": [
+      "author"
+    ],
+    "kataSandiHash": "scrypt:769a89235d04ad8be6fb389860c5dae5:d32fe1a115b11fcb8c079fb335e88d455b817bad74c8aab9fcd58684c834c093efe02211b0bced9069a78448c5bb33e1227ee7c39f91f318e3d76a3bf8f572e8"
+  },
+  {
+    "nama": "Penulis Uji Tahap Dua",
+    "email": "penulis.uji.tahap2.296981@contoh.ac.id",
+    "afiliasi": "Tim Uji Peramban Tahap Dua",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:28:39.554Z",
+    "peran": [
+      "author"
+    ],
+    "kataSandiHash": "scrypt:1a75e960357a50a05227b102a0b215c3:5aaa14e5994d15fa3676fcfe0b33c7c8169fcabca2bdc8584966d21f4f8711be92f907aed481ce47141a1e78ca804021c6d5342f44af31bf2f075abea3ed1863"
+  },
+  {
+    "nama": "Penulis Uji Tahap Tiga",
+    "email": "penulis.uji.tahap3.460646@contoh.ac.id",
+    "afiliasi": "Tim Uji Peramban Tahap Tiga",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:31:17.046Z",
+    "peran": [
+      "author"
+    ],
+    "kataSandiHash": "scrypt:84f6fe8d6061959d40f49fcd1e4cd737:1902f19f4219eee0837384431000b4921410fa70d2f81dd585a198390e65a3fae4d2445df458b7277ee55897f4d606c2ba2b35aff50990d2e62d940e3fb9a5fd"
+  },
+  {
+    "nama": "Reviewer Uji Satu",
+    "email": "reviewer.satu.460646@contoh.ac.id",
+    "afiliasi": "Lembaga Reviewer Satu",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:33:23.339Z",
+    "peran": [
+      "reviewer"
+    ],
+    "kataSandiHash": "scrypt:eef2f2d6e74bdcfc144fefc90b183501:ab9c4864c6e0d48eccb603baa0823974d3b89d07555c948f9cdeedb02540796e5ab2b38b6e41b30c25435650d5429f56517fb8866674c322dbe500dbc0cc3132"
+  },
+  {
+    "nama": "Reviewer Uji Dua",
+    "email": "reviewer.dua.460646@contoh.ac.id",
+    "afiliasi": "Lembaga Reviewer Dua",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:33:46.589Z",
+    "peran": [
+      "reviewer"
+    ],
+    "kataSandiHash": "scrypt:d4deb39d2effd4cbfc4c40c42f902511:c67a75100f38e2362b4c8a4004a9b54da3aceeee5414bdf05e1443ce7c40166e424729ea349ac67dcbfa39ad7d52709d2def02eeb8c7adebf489198c24b68607"
+  },
+  {
+    "nama": "Penulis Uji Tahap Tiga",
+    "email": "penulis.uji.tahap3.804198@contoh.ac.id",
+    "afiliasi": "Tim Uji Peramban Tahap Tiga",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:36:56.960Z",
+    "peran": [
+      "author"
+    ],
+    "kataSandiHash": "scrypt:b2f305e1aad50ceff55d28eca70fc927:843a26c460113784a1fe9ee2f53328a996fedad45c408c4b2957d706f5cd25f1b3599979f697e184477324a8fa0e394b918194abb6c85e611bdac5254fe28098"
+  },
+  {
+    "nama": "Reviewer Uji Satu",
+    "email": "reviewer.satu.804198@contoh.ac.id",
+    "afiliasi": "Lembaga Reviewer Satu",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:39:04.354Z",
+    "peran": [
+      "reviewer"
+    ],
+    "kataSandiHash": "scrypt:396bb2ae1ef7c3a46b283a77e0eaa864:3fa39d4b60a26688467ce646332087e5efae78403e27515fb8238d27521f1bee6395ab6db06e4a1c5beee04d42ade60827843dacfa69d1b3b02852c5da5a47cb"
+  },
+  {
+    "nama": "Reviewer Uji Dua",
+    "email": "reviewer.dua.804198@contoh.ac.id",
+    "afiliasi": "Lembaga Reviewer Dua",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:39:26.542Z",
+    "peran": [
+      "reviewer"
+    ],
+    "kataSandiHash": "scrypt:64204287495240118a15f76dc4672dcb:1e4115c2c6fea8beb22127c1f9482f70e6f104057cff3b3dd6cc02ec6f00805719e6b202009f74fb843349e78b788577a3ecc05221f74e5fa8e5b64601ae249a"
+  },
+  {
+    "nama": "Probe Klaim satu",
+    "email": "probe.klaim.satu.150007@contoh.ac.id",
+    "afiliasi": "Lembaga Probe",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:42:42.379Z",
+    "peran": [
+      "reviewer"
+    ],
+    "kataSandiHash": "scrypt:cd78ae7e12cad5d093e77f02b0855a9d:352301d46febea39d021d2b3ce56b44d0b75e06b5868c6bb4cedacd9ce8aa0ab95442373cf6d6d383183aa8628287583a6bf2514a32e06be5c0c815471a5be77"
+  },
+  {
+    "nama": "Probe Klaim dua",
+    "email": "probe.klaim.dua.150007@contoh.ac.id",
+    "afiliasi": "Lembaga Probe",
+    "negara": null,
+    "orcid": null,
+    "consentVersi": "2026-11-23",
+    "dibuatPada": "2026-11-22T20:42:53.550Z",
+    "peran": [
+      "reviewer"
+    ],
+    "kataSandiHash": "scrypt:a5b234b303ab4bfa36239878a89313d5:2bd8f86ec087cfd9511dedf791acad2c166213d4af38214ea611258c2f84c995ed3ec9c0a27bfd0731e58a0b1e4a8651f845999514e76f79f768d0df5cd57ee6"
+  }
+]

@@ -1,0 +1,2770 @@
+[
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:00:11.221Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T18:00:43.536Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:01:10.041Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap2.394394@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:01:10.925Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:02:05.118Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T18:02:37.641Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:03:03.902Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:04:09.640Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T18:04:41.532Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:05:07.833Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap2.633858@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:05:23.127Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:05:51.732Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:05:51.762Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T18:05:52.166Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:05:52.175Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-9304",
+    "rincian": "patch-status:tanpa-sesi",
+    "pada": "2026-11-22T18:05:52.217Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-9304",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:05:52.227Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-9304",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:05:52.242Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-9304",
+    "rincian": "review -> published",
+    "pada": "2026-11-22T18:05:52.249Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-9304",
+    "rincian": "declined -> published",
+    "pada": "2026-11-22T18:05:52.260Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:05:52.278Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:05:52.286Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:05:52.291Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:05:52.297Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:05:52.305Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "login:per-email",
+    "pada": "2026-11-22T18:05:52.311Z"
+  },
+  {
+    "jenis": "register_ditolak",
+    "ip": "::1",
+    "email": "tanpa.consent@contoh.ac.id",
+    "kode": null,
+    "rincian": "tanpa-persetujuan",
+    "pada": "2026-11-22T18:05:52.318Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T18:05:52.344Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Jenis konten (MIME) berkas tidak cocok dengan ekstensinya.",
+    "pada": "2026-11-22T18:05:52.352Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "unggah-lokal:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T18:05:52.396Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "_",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T18:05:52.427Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-1234' OR '1'='1",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T18:05:52.432Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "BUKAN-KODE",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T18:05:52.440Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:07:48.471Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:07:48.499Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T18:07:48.754Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:07:48.763Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-3907",
+    "rincian": "patch-status:tanpa-sesi",
+    "pada": "2026-11-22T18:07:48.792Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-3907",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:07:48.804Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-3907",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:07:48.831Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-3907",
+    "rincian": "review -> published",
+    "pada": "2026-11-22T18:07:48.844Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-3907",
+    "rincian": "declined -> published",
+    "pada": "2026-11-22T18:07:48.855Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:07:48.866Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:07:48.871Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:07:48.879Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:07:48.885Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:07:48.892Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "login:per-email",
+    "pada": "2026-11-22T18:07:48.898Z"
+  },
+  {
+    "jenis": "register_ditolak",
+    "ip": "::1",
+    "email": "tanpa.consent@contoh.ac.id",
+    "kode": null,
+    "rincian": "tanpa-persetujuan",
+    "pada": "2026-11-22T18:07:48.905Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T18:07:48.928Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Jenis konten (MIME) berkas tidak cocok dengan ekstensinya.",
+    "pada": "2026-11-22T18:07:48.933Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "unggah-lokal:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T18:07:48.960Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "%",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T18:07:48.967Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "_",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T18:07:48.972Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-1234' OR '1'='1",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T18:07:48.979Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "BUKAN-KODE",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T18:07:48.985Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:26:38.506Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T18:27:08.848Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:27:23.326Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T18:27:24.313Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:31:18.344Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T18:31:49.041Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:32:03.701Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T18:32:19.107Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "reviewer.dua.262395@contoh.ac.id",
+    "kode": null,
+    "rincian": "review-rincian:bukan-milik-atau-tidak-ada",
+    "pada": "2026-11-22T18:35:02.647Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "reviewer.satu.262395@contoh.ac.id",
+    "kode": null,
+    "rincian": "review-keputusan:peran-reviewer",
+    "pada": "2026-11-22T18:35:02.653Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:37:09.210Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T18:37:39.213Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:37:53.297Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T18:38:08.940Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "reviewer.dua.614082@contoh.ac.id",
+    "kode": null,
+    "rincian": "review-rincian:bukan-milik-atau-tidak-ada",
+    "pada": "2026-11-22T18:41:01.964Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "reviewer.satu.614082@contoh.ac.id",
+    "kode": null,
+    "rincian": "review-keputusan:peran-reviewer",
+    "pada": "2026-11-22T18:41:02.002Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:42:53.720Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:42:53.769Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T18:42:54.237Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:42:54.249Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-8457",
+    "rincian": "patch-status:tanpa-sesi",
+    "pada": "2026-11-22T18:42:54.289Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-8457",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:42:54.305Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-8457",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:42:54.335Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-8457",
+    "rincian": "review -> published",
+    "pada": "2026-11-22T18:42:54.352Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-8457",
+    "rincian": "declined -> published",
+    "pada": "2026-11-22T18:42:54.386Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:42:54.418Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:42:54.427Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:42:54.434Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:42:54.440Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T18:42:54.446Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "login:per-email",
+    "pada": "2026-11-22T18:42:54.459Z"
+  },
+  {
+    "jenis": "register_ditolak",
+    "ip": "::1",
+    "email": "tanpa.consent@contoh.ac.id",
+    "kode": null,
+    "rincian": "tanpa-persetujuan",
+    "pada": "2026-11-22T18:42:54.473Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T18:42:54.504Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Jenis konten (MIME) berkas tidak cocok dengan ekstensinya.",
+    "pada": "2026-11-22T18:42:54.510Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "unggah-lokal:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T18:42:54.540Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "%",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T18:42:54.547Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "_",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T18:42:54.556Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-1234' OR '1'='1",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T18:42:54.571Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "BUKAN-KODE",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T18:42:54.577Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:43:25.029Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T18:43:57.873Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T18:44:24.105Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap2.988599@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T18:44:39.422Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:02:20.160Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:02:20.249Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:02:20.451Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T19:02:52.431Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "reviewers:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.749Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "reviewers:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.814Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-putaran:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.834Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-penugasan:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.846Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-penugasan:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.854Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-daftar:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.864Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-tanggapi:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.895Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-serahkan:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.907Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-daftar:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.916Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-tanggapi:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.925Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-serahkan:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.935Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-keputusan:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.964Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "alur-keadaan:tanpa-sesi",
+    "pada": "2026-11-22T19:02:52.991Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap4.138464@contoh.ac.id",
+    "kode": null,
+    "rincian": "alur-copy-tugas:peran-author",
+    "pada": "2026-11-22T19:02:53.006Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T19:02:55.232Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:03:07.251Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:04:20.289Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:04:20.443Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:04:20.678Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T19:04:54.618Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "reviewers:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.070Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "reviewers:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.178Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-putaran:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.225Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-penugasan:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.245Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-penugasan:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.260Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-daftar:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.305Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-tanggapi:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.373Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-serahkan:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.393Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-daftar:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.406Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-tanggapi:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.417Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-serahkan:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.429Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-keputusan:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.450Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "alur-keadaan:tanpa-sesi",
+    "pada": "2026-11-22T19:04:55.461Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap4.254847@contoh.ac.id",
+    "kode": null,
+    "rincian": "alur-copy-tugas:peran-author",
+    "pada": "2026-11-22T19:04:55.478Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T19:04:58.373Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:05:09.800Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:06:25.247Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:06:25.388Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:06:25.569Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T19:06:59.751Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "reviewers:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.164Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "reviewers:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.177Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-putaran:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.189Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-penugasan:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.199Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-penugasan:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.243Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-daftar:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.260Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-tanggapi:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.273Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-serahkan:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.288Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-daftar:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.295Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-tanggapi:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.301Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-serahkan:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.307Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-keputusan:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.318Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "alur-keadaan:tanpa-sesi",
+    "pada": "2026-11-22T19:07:00.331Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap4.384305@contoh.ac.id",
+    "kode": null,
+    "rincian": "alur-copy-tugas:peran-author",
+    "pada": "2026-11-22T19:07:00.346Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T19:07:03.047Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:07:15.302Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:08:09.320Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:08:15.427Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:08:15.511Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "login:per-email",
+    "pada": "2026-11-22T19:08:15.563Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "login:per-email",
+    "pada": "2026-11-22T19:08:15.579Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "login:per-email",
+    "pada": "2026-11-22T19:08:25.543Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:08:47.942Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:08:54.117Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:08:54.207Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:09:40.300Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:09:40.547Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T19:10:15.203Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap4.578938@contoh.ac.id",
+    "kode": null,
+    "rincian": "alur-copy-tugas:peran-author",
+    "pada": "2026-11-22T19:10:16.196Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T19:10:19.554Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:16:27.876Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:16:28.190Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T19:17:01.969Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap4.985243@contoh.ac.id",
+    "kode": null,
+    "rincian": "alur-copy-tugas:peran-author",
+    "pada": "2026-11-22T19:17:02.989Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T19:17:05.852Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:22:41.562Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:22:41.841Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T19:23:16.188Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap4.359136@contoh.ac.id",
+    "kode": null,
+    "rincian": "alur-copy-tugas:peran-author",
+    "pada": "2026-11-22T19:23:17.317Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T19:23:19.881Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:29:08.694Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:29:08.880Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T19:29:41.791Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap4.746539@contoh.ac.id",
+    "kode": null,
+    "rincian": "alur-copy-tugas:peran-author",
+    "pada": "2026-11-22T19:29:42.847Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T19:29:45.382Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:32:38.686Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:32:38.728Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T19:32:39.420Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T19:32:39.437Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-1628",
+    "rincian": "patch-status:tanpa-sesi",
+    "pada": "2026-11-22T19:32:39.485Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-1628",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T19:32:39.498Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-1628",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T19:32:39.516Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-1628",
+    "rincian": "review -> published",
+    "pada": "2026-11-22T19:32:39.526Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-1628",
+    "rincian": "declined -> published",
+    "pada": "2026-11-22T19:32:39.543Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:32:39.558Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:32:39.566Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:32:39.572Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:32:39.580Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:32:39.587Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "login:per-email",
+    "pada": "2026-11-22T19:32:39.597Z"
+  },
+  {
+    "jenis": "register_ditolak",
+    "ip": "::1",
+    "email": "tanpa.consent@contoh.ac.id",
+    "kode": null,
+    "rincian": "tanpa-persetujuan",
+    "pada": "2026-11-22T19:32:39.606Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T19:32:39.638Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Jenis konten (MIME) berkas tidak cocok dengan ekstensinya.",
+    "pada": "2026-11-22T19:32:39.646Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "unggah-lokal:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T19:32:39.675Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "%",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T19:32:39.683Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "_",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T19:32:39.689Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-1234' OR '1'='1",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T19:32:39.698Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "BUKAN-KODE",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T19:32:39.705Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:33:12.457Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T19:33:49.284Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:34:16.088Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap2.974396@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T19:34:31.588Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:35:13.981Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T19:35:46.308Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:36:00.781Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T19:36:16.506Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "reviewer.dua.097856@contoh.ac.id",
+    "kode": null,
+    "rincian": "review-rincian:bukan-milik-atau-tidak-ada",
+    "pada": "2026-11-22T19:39:36.245Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "reviewer.satu.097856@contoh.ac.id",
+    "kode": null,
+    "rincian": "review-keputusan:peran-reviewer",
+    "pada": "2026-11-22T19:39:36.270Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:54:48.697Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "pengumuman-buat:tanpa-sesi",
+    "pada": "2026-11-22T19:54:48.891Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "statistik:tanpa-sesi",
+    "pada": "2026-11-22T19:58:29.178Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "artikel-tarik:tanpa-sesi",
+    "pada": "2026-11-22T19:59:05.535Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:59:31.795Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T19:59:31.866Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T19:59:32.453Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T19:59:32.475Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-2735",
+    "rincian": "patch-status:tanpa-sesi",
+    "pada": "2026-11-22T19:59:32.588Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-2735",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T19:59:32.600Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-2735",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T19:59:32.618Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-2735",
+    "rincian": "review -> published",
+    "pada": "2026-11-22T19:59:32.630Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-2735",
+    "rincian": "declined -> published",
+    "pada": "2026-11-22T19:59:32.647Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:59:32.661Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:59:32.667Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:59:32.676Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:59:32.683Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T19:59:32.690Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "login:per-email",
+    "pada": "2026-11-22T19:59:32.697Z"
+  },
+  {
+    "jenis": "register_ditolak",
+    "ip": "::1",
+    "email": "tanpa.consent@contoh.ac.id",
+    "kode": null,
+    "rincian": "tanpa-persetujuan",
+    "pada": "2026-11-22T19:59:32.712Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T19:59:32.740Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Jenis konten (MIME) berkas tidak cocok dengan ekstensinya.",
+    "pada": "2026-11-22T19:59:32.749Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "unggah-lokal:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T19:59:32.787Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "%",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T19:59:32.798Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "_",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T19:59:32.805Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-1234' OR '1'='1",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T19:59:32.815Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "BUKAN-KODE",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T19:59:32.821Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:00:03.637Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T20:00:38.409Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:01:05.677Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap2.585546@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T20:01:21.161Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:02:04.779Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T20:02:37.580Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:02:52.784Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T20:03:08.370Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "reviewer.dua.709095@contoh.ac.id",
+    "kode": null,
+    "rincian": "review-rincian:bukan-milik-atau-tidak-ada",
+    "pada": "2026-11-22T20:06:23.138Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "reviewer.satu.709095@contoh.ac.id",
+    "kode": null,
+    "rincian": "review-keputusan:peran-reviewer",
+    "pada": "2026-11-22T20:06:23.248Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:08:24.676Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:08:24.941Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T20:08:58.971Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap4.103028@contoh.ac.id",
+    "kode": null,
+    "rincian": "alur-copy-tugas:peran-author",
+    "pada": "2026-11-22T20:09:00.153Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T20:09:02.675Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:21:28.506Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:21:28.654Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T20:21:29.342Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-daftar:tanpa-sesi",
+    "pada": "2026-11-22T20:21:29.448Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-tanggapi:tanpa-sesi",
+    "pada": "2026-11-22T20:21:29.460Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-serahkan:tanpa-sesi",
+    "pada": "2026-11-22T20:21:29.470Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:21:34.251Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:21:34.356Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T20:21:35.005Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": null,
+    "rincian": "unggah-lokal:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T20:21:35.763Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:21:44.349Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:21:44.453Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T20:21:45.013Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T20:21:45.857Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:23:02.640Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:23:02.682Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T20:23:02.886Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T20:23:02.899Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-2727",
+    "rincian": "patch-status:tanpa-sesi",
+    "pada": "2026-11-22T20:23:02.949Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-2727",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T20:23:02.958Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": "JRN-2026-2727",
+    "rincian": "patch-status:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T20:23:02.979Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-2727",
+    "rincian": "review -> published",
+    "pada": "2026-11-22T20:23:02.990Z"
+  },
+  {
+    "jenis": "transisi_ditolak",
+    "ip": "::1",
+    "email": "staf.uji@contoh.ac.id",
+    "kode": "JRN-2026-2727",
+    "rincian": "declined -> published",
+    "pada": "2026-11-22T20:23:03.010Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T20:23:03.029Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T20:23:03.036Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T20:23:03.050Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T20:23:03.064Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T20:23:03.082Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": "korban.rl@contoh.ac.id",
+    "kode": null,
+    "rincian": "login:per-email",
+    "pada": "2026-11-22T20:23:03.089Z"
+  },
+  {
+    "jenis": "register_ditolak",
+    "ip": "::1",
+    "email": "tanpa.consent@contoh.ac.id",
+    "kode": null,
+    "rincian": "tanpa-persetujuan",
+    "pada": "2026-11-22T20:23:03.108Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T20:23:03.197Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "sign-validasi:Jenis konten (MIME) berkas tidak cocok dengan ekstensinya.",
+    "pada": "2026-11-22T20:23:03.218Z"
+  },
+  {
+    "jenis": "unggah_ditolak",
+    "ip": "::1",
+    "email": "penulis.serang@contoh.ac.id",
+    "kode": null,
+    "rincian": "unggah-lokal:Berkas naskah utama harus berformat PDF atau DOCX.",
+    "pada": "2026-11-22T20:23:03.244Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "%",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T20:23:03.253Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "_",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T20:23:03.270Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "JRN-2026-1234' OR '1'='1",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T20:23:03.277Z"
+  },
+  {
+    "jenis": "kode_tidak_sah",
+    "ip": "::1",
+    "email": null,
+    "kode": "BUKAN-KODE",
+    "rincian": "format-kode-lacak",
+    "pada": "2026-11-22T20:23:03.291Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:23:39.140Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "login:per-ip",
+    "pada": "2026-11-22T20:23:58.467Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:24:52.968Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "login:per-ip",
+    "pada": "2026-11-22T20:25:12.672Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:26:12.264Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "login:per-ip",
+    "pada": "2026-11-22T20:26:31.869Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:27:24.768Z"
+  },
+  {
+    "jenis": "rate_limit",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "login:per-ip",
+    "pada": "2026-11-22T20:27:35.538Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:28:39.538Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T20:29:27.465Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:30:06.738Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap2.296981@contoh.ac.id",
+    "kode": null,
+    "rincian": "daftar-panel:akun-lokal-bukan-staf",
+    "pada": "2026-11-22T20:30:29.340Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:31:16.988Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T20:31:50.984Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:32:06.479Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T20:32:28.537Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "reviewer.dua.460646@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T20:33:46.739Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-daftar:tanpa-sesi",
+    "pada": "2026-11-22T20:35:37.466Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "reviewer.dua.460646@contoh.ac.id",
+    "kode": null,
+    "rincian": "review-rincian:bukan-milik-atau-tidak-ada",
+    "pada": "2026-11-22T20:35:44.557Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:36:56.874Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T20:37:31.358Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:37:47.380Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T20:38:09.075Z"
+  },
+  {
+    "jenis": "login_gagal",
+    "ip": "::1",
+    "email": "reviewer.dua.804198@contoh.ac.id",
+    "kode": null,
+    "rincian": "mode-lokal",
+    "pada": "2026-11-22T20:39:26.773Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "review-daftar:tanpa-sesi",
+    "pada": "2026-11-22T20:41:14.342Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "reviewer.dua.804198@contoh.ac.id",
+    "kode": null,
+    "rincian": "review-rincian:bukan-milik-atau-tidak-ada",
+    "pada": "2026-11-22T20:41:21.279Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:50:13.234Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:50:13.393Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "kirim-wizard",
+    "pada": "2026-11-22T20:50:51.663Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": "penulis.uji.tahap4.611536@contoh.ac.id",
+    "kode": null,
+    "rincian": "alur-copy-tugas:peran-author",
+    "pada": "2026-11-22T20:50:52.748Z"
+  },
+  {
+    "jenis": "peran_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "daftar-panel:tanpa-sesi",
+    "pada": "2026-11-22T20:50:55.766Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T20:53:53.532Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "pengumuman-buat:tanpa-sesi",
+    "pada": "2026-11-22T20:53:53.798Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "statistik:tanpa-sesi",
+    "pada": "2026-11-22T20:57:19.362Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T21:00:03.282Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "pengumuman-buat:tanpa-sesi",
+    "pada": "2026-11-22T21:00:03.495Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "statistik:tanpa-sesi",
+    "pada": "2026-11-22T21:03:46.288Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T21:04:01.053Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "pengumuman-buat:tanpa-sesi",
+    "pada": "2026-11-22T21:04:01.322Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T21:07:02.504Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "pengumuman-buat:tanpa-sesi",
+    "pada": "2026-11-22T21:07:02.676Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "statistik:tanpa-sesi",
+    "pada": "2026-11-22T21:10:42.503Z"
+  },
+  {
+    "jenis": "turnstile_dilewati",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "register",
+    "pada": "2026-11-22T21:10:56.123Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "pengumuman-buat:tanpa-sesi",
+    "pada": "2026-11-22T21:10:56.285Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "statistik:tanpa-sesi",
+    "pada": "2026-11-22T21:14:17.207Z"
+  },
+  {
+    "jenis": "review_ditolak",
+    "ip": "::1",
+    "email": null,
+    "kode": null,
+    "rincian": "artikel-tarik:tanpa-sesi",
+    "pada": "2026-11-22T21:14:34.690Z"
+  }
+]

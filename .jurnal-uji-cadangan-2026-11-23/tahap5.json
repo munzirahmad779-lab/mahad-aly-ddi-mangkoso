@@ -1,0 +1,22 @@
+{
+  "pengumuman": [
+    {
+      "id": "b5b49bd3-372a-4579-b391-7d2c7c7959e2",
+      "judul": "Pengumuman Tayang Tahap Lima",
+      "isi": "Isi pengumuman yang memang ditayangkan untuk umum.",
+      "tayang": true,
+      "diterbitkanPada": "2026-11-22T21:04:01.301Z",
+      "kedaluwarsaPada": null,
+      "dibuatPada": "2026-11-22T21:04:01.301Z"
+    },
+    {
+      "id": "416fe241-ef6c-4310-9084-39eda2667908",
+      "judul": "Pengumuman Draf Tahap Lima",
+      "isi": "Isi draf yang tidak boleh tampil publik.",
+      "tayang": false,
+      "diterbitkanPada": null,
+      "kedaluwarsaPada": null,
+      "dibuatPada": "2026-11-22T21:04:01.313Z"
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "putaran": {
+    "JRN-2026-3798": [
+      {
+        "nomor": 1,
+        "status": "closed",
+        "keputusan": "major_revisions",
+        "dibuatPada": "2026-11-22T20:04:17.782Z",
+        "diputuskanPada": "2026-11-22T20:06:42.783Z"
+      },
+      {
+        "nomor": 2,
+        "status": "closed",
+        "keputusan": "accept",
+        "dibuatPada": "2026-11-22T20:07:18.667Z",
+        "diputuskanPada": "2026-11-22T20:08:03.950Z"
+      }
+    ],
+    "JRN-2026-9437": [
+      {
+        "nomor": 1,
+        "status": "open",
+        "keputusan": null,
+        "dibuatPada": "2026-11-22T20:33:48.147Z",
+        "diputuskanPada": null
+      }
+    ],
+    "JRN-2026-4033": [
+      {
+        "nomor": 1,
+        "status": "open",
+        "keputusan": null,
+        "dibuatPada": "2026-11-22T20:39:28.069Z",
+        "diputuskanPada": null
+      }
+    ]
+  },
+  "penugasan": [
+    {
+      "id": "dbab896f-68da-4650-a117-b54ae5e555ed",
+      "kode": "JRN-2026-3798",
+      "putaran": 1,
+      "reviewerEmail": "reviewer.satu.709095@contoh.ac.id",
+      "reviewerNama": "Reviewer Uji Satu",
+      "status": "completed",
+      "ditugaskanPada": "2026-11-22T20:04:19.249Z",
+      "tenggat": "2026-12-20T20:04:19.241Z",
+      "rekomendasi": "major_revisions",
+      "komentarPenulis": "Komentar untuk penulis dari reviewer satu: bab metode perlu ditulis ulang secara besar.",
+      "komentarEditor": "Komentar rahasia untuk editor dari reviewer satu: jangan diteruskan ke penulis.",
+      "diserahkanPada": "2026-11-22T20:05:09.761Z"
+    },
+    {
+      "id": "2ed6f0b7-b13f-4db5-9305-a3baf0447dad",
+      "kode": "JRN-2026-3798",
+      "putaran": 1,
+      "reviewerEmail": "reviewer.dua.709095@contoh.ac.id",
+      "reviewerNama": "Reviewer Uji Dua",
+      "status": "completed",
+      "ditugaskanPada": "2026-11-22T20:04:20.040Z",
+      "tenggat": "2026-12-20T20:04:20.039Z",
+      "rekomendasi": "minor_revisions",
+      "komentarPenulis": "Komentar untuk penulis dari reviewer dua: sitasi turats perlu dilengkapi.",
+      "komentarEditor": "Catatan editor dari reviewer dua.",
+      "diserahkanPada": "2026-11-22T20:06:21.457Z"
+    },
+    {
+      "id": "38031ba7-34dc-4617-8fc3-e5d046677967",
+      "kode": "JRN-2026-3798",
+      "putaran": 2,
+      "reviewerEmail": "reviewer.satu.709095@contoh.ac.id",
+      "reviewerNama": "Reviewer Uji Satu",
+      "status": "completed",
+      "ditugaskanPada": "2026-11-22T20:07:20.376Z",
+      "tenggat": "2026-12-20T20:07:20.373Z",
+      "rekomendasi": "accept",
+      "komentarPenulis": "Revisi sudah memperbaiki bab metode. Naskah layak diterima.",
+      "komentarEditor": "Setuju diterbitkan.",
+      "diserahkanPada": "2026-11-22T20:07:42.987Z"
+    },
+    {
+      "id": "cdad9f05-12dd-4f0e-b033-aa16fe4ed54a",
+      "kode": "JRN-2026-3798",
+      "putaran": 2,
+      "reviewerEmail": "reviewer.dua.709095@contoh.ac.id",
+      "reviewerNama": "Reviewer Uji Dua",
+      "status": "invited",
+      "ditugaskanPada": "2026-11-22T20:07:20.978Z",
+      "tenggat": "2026-12-20T20:07:20.977Z",
+      "rekomendasi": null,
+      "komentarPenulis": null,
+      "komentarEditor": null,
+      "diserahkanPada": null
+    },
+    {
+      "id": "66487613-d7df-452d-a30a-d0136023809b",
+      "kode": "JRN-2026-9437",
+      "putaran": 1,
+      "reviewerEmail": "reviewer.satu.460646@contoh.ac.id",
+      "reviewerNama": "Reviewer Uji Satu",
+      "status": "completed",
+      "ditugaskanPada": "2026-11-22T20:33:49.262Z",
+      "tenggat": "2026-12-20T20:33:49.261Z",
+      "rekomendasi": "major_revisions",
+      "komentarPenulis": "Komentar untuk penulis dari reviewer satu: bab metode perlu ditulis ulang secara besar.",
+      "komentarEditor": "Komentar rahasia untuk editor dari reviewer satu: jangan diteruskan ke penulis.",
+      "diserahkanPada": "2026-11-22T20:34:46.209Z"
+    },
+    {
+      "id": "65cd49f4-d971-44d3-a39f-8d6882a55467",
+      "kode": "JRN-2026-9437",
+      "putaran": 1,
+      "reviewerEmail": "reviewer.dua.460646@contoh.ac.id",
+      "reviewerNama": "Reviewer Uji Dua",
+      "status": "invited",
+      "ditugaskanPada": "2026-11-22T20:33:50.775Z",
+      "tenggat": "2026-12-20T20:33:50.774Z",
+      "rekomendasi": null,
+      "komentarPenulis": null,
+      "komentarEditor": null,
+      "diserahkanPada": null
+    },
+    {
+      "id": "47cf292e-836c-4b36-b656-9bde44da0f2c",
+      "kode": "JRN-2026-4033",
+      "putaran": 1,
+      "reviewerEmail": "reviewer.satu.804198@contoh.ac.id",
+      "reviewerNama": "Reviewer Uji Satu",
+      "status": "completed",
+      "ditugaskanPada": "2026-11-22T20:39:28.967Z",
+      "tenggat": "2026-12-20T20:39:28.966Z",
+      "rekomendasi": "major_revisions",
+      "komentarPenulis": "Komentar untuk penulis dari reviewer satu: bab metode perlu ditulis ulang secara besar.",
+      "komentarEditor": "Komentar rahasia untuk editor dari reviewer satu: jangan diteruskan ke penulis.",
+      "diserahkanPada": "2026-11-22T20:40:22.270Z"
+    },
+    {
+      "id": "1ef9abb1-1fd4-439a-b9aa-0f9c3941868d",
+      "kode": "JRN-2026-4033",
+      "putaran": 1,
+      "reviewerEmail": "reviewer.dua.804198@contoh.ac.id",
+      "reviewerNama": "Reviewer Uji Dua",
+      "status": "invited",
+      "ditugaskanPada": "2026-11-22T20:39:30.188Z",
+      "tenggat": "2026-12-20T20:39:30.183Z",
+      "rekomendasi": null,
+      "komentarPenulis": null,
+      "komentarEditor": null,
+      "diserahkanPada": null
+    }
+  ],
+  "berkasRevisi": [
+    {
+      "id": "554e5076-5587-4091-8dee-c1ae589a858e",
+      "kode": "JRN-2026-3798",
+      "putaran": 1,
+      "kategori": "utama",
+      "namaAsli": "berkas-uji-tahap3.pdf",
+      "mime": "application/pdf",
+      "ukuran": 193,
+      "bucket": "lokal-uji",
+      "kunci": "jurnal/naskah/revisi-mws9pi5b-e3vbr2/utama/4821fc63-153a-4d93-9916-bfdba8880407.pdf",
+      "diunggahPada": "2026-11-22T20:06:58.738Z"
+    }
+  ]
+}

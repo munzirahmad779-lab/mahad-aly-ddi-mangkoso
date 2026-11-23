@@ -1,0 +1,73 @@
+[
+  {
+    "kode": "JRN-2026-2040",
+    "judul": "Zebra Fiqh Panen Tahap Lima",
+    "penulis": "Penulis Tahap Lima",
+    "email": "penulis.tahap5@contoh.ac.id",
+    "afiliasi": "Ma'had Aly Uji",
+    "abstrak": "Abstrak artikel tahap lima tentang zebraunik dan panen metadata jurnal untuk uji pencarian publik.",
+    "status": "published",
+    "riwayat": [
+      {
+        "status": "submitted",
+        "pada": "2026-01-20T00:00:00.000Z",
+        "catatan": null
+      },
+      {
+        "status": "published",
+        "pada": "2026-06-30T00:00:00.000Z",
+        "catatan": null
+      }
+    ],
+    "dibuatPada": "2026-01-20T00:00:00.000Z",
+    "bagianSlug": "artikel-penelitian",
+    "bahasa": "id",
+    "abstrakEn": "Abstract of the stage five article.",
+    "kataKunci": [
+      "zebraunik",
+      "tahap lima"
+    ],
+    "penulisPendamping": [
+      {
+        "nama": "Pendamping Tahap Lima",
+        "email": "pendamping.tahap5@contoh.ac.id",
+        "afiliasi": "Afiliasi Pendamping",
+        "orcid": null
+      }
+    ],
+    "berkas": [],
+    "pernyataanAi": null,
+    "doi": "10.5678/turatsuna.v1i1.2040",
+    "ditarikPada": null,
+    "alasanTarik": null
+  },
+  {
+    "kode": "JRN-2026-2041",
+    "judul": "Zebra Belum Terbit Tahap Lima",
+    "penulis": "Penulis Proses Lima",
+    "email": "proses.tahap5@contoh.ac.id",
+    "afiliasi": "Ma'had Aly Uji",
+    "abstrak": "Abstrak artikel zebraunik yang masih dalam telaah.",
+    "status": "review",
+    "riwayat": [
+      {
+        "status": "submitted",
+        "pada": "2026-02-01T00:00:00.000Z",
+        "catatan": null
+      }
+    ],
+    "dibuatPada": "2026-02-01T00:00:00.000Z",
+    "bagianSlug": "artikel-penelitian",
+    "bahasa": "id",
+    "abstrakEn": "",
+    "kataKunci": [
+      "zebraunik"
+    ],
+    "penulisPendamping": [],
+    "berkas": [],
+    "pernyataanAi": null,
+    "doi": null,
+    "ditarikPada": null,
+    "alasanTarik": null
+  }
+]

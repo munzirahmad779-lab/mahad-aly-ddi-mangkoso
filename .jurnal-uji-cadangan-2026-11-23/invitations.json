@@ -1,0 +1,74 @@
+[
+  {
+    "id": "918567a6-2d1b-4c16-90d9-030a8fef1c9a",
+    "email": "reviewer.satu.709095@contoh.ac.id",
+    "tokenHash": "7599b4bd709d14138dd76064ffe6d1098857327a9e412ac96c60d5123af15bdc",
+    "dibuatOleh": "staf.uji@contoh.ac.id",
+    "dibuatPada": "2026-11-22T20:03:41.359Z",
+    "kedaluwarsa": "2026-12-06T20:03:41.358Z",
+    "dipakaiPada": "2026-11-22T20:03:59.239Z"
+  },
+  {
+    "id": "da818f79-4512-4e1a-bc29-206b6d322b61",
+    "email": "reviewer.dua.709095@contoh.ac.id",
+    "tokenHash": "c268865163ca53bc1eebb51b3df02a76a9e55d884ca48f8bfdf467e1a780a3bc",
+    "dibuatOleh": "staf.uji@contoh.ac.id",
+    "dibuatPada": "2026-11-22T20:03:42.776Z",
+    "kedaluwarsa": "2026-12-06T20:03:42.765Z",
+    "dipakaiPada": "2026-11-22T20:04:16.764Z"
+  },
+  {
+    "id": "690aeaaa-97b2-4964-a32a-2160098e9dea",
+    "email": "reviewer.satu.460646@contoh.ac.id",
+    "tokenHash": "b7324cd916928121a4800481697231547cc36e229d48130294173c62fa4c893d",
+    "dibuatOleh": "staf.uji@contoh.ac.id",
+    "dibuatPada": "2026-11-22T20:32:59.648Z",
+    "kedaluwarsa": "2026-12-06T20:32:59.646Z",
+    "dipakaiPada": "2026-11-22T20:33:23.880Z"
+  },
+  {
+    "id": "412a2c28-2608-4832-957c-b1284ad46150",
+    "email": "reviewer.dua.460646@contoh.ac.id",
+    "tokenHash": "f6b066c69847b526d6b4548c65e162fce975177d0d1cd8c3b88af8620d9f02c9",
+    "dibuatOleh": "staf.uji@contoh.ac.id",
+    "dibuatPada": "2026-11-22T20:33:00.804Z",
+    "kedaluwarsa": "2026-12-06T20:33:00.799Z",
+    "dipakaiPada": "2026-11-22T20:33:46.711Z"
+  },
+  {
+    "id": "dfd93d89-7634-496c-8032-40139bafeeb4",
+    "email": "reviewer.satu.804198@contoh.ac.id",
+    "tokenHash": "a0bd35395f1ee99b90e9290eb07d8ed771c5cfb80e6b1cc690b81e505236328b",
+    "dibuatOleh": "staf.uji@contoh.ac.id",
+    "dibuatPada": "2026-11-22T20:38:40.292Z",
+    "kedaluwarsa": "2026-12-06T20:38:40.290Z",
+    "dipakaiPada": "2026-11-22T20:39:04.751Z"
+  },
+  {
+    "id": "d517f879-6eb3-4649-ba8a-126ce063b72f",
+    "email": "reviewer.dua.804198@contoh.ac.id",
+    "tokenHash": "14b835453e2ef749ef2740d928c75b593ff9dcc5f4f6cf64a21ee526f73518c0",
+    "dibuatOleh": "staf.uji@contoh.ac.id",
+    "dibuatPada": "2026-11-22T20:38:41.398Z",
+    "kedaluwarsa": "2026-12-06T20:38:41.397Z",
+    "dipakaiPada": "2026-11-22T20:39:26.856Z"
+  },
+  {
+    "id": "33ccf396-7ac0-41b0-946b-bff00cbcdab7",
+    "email": "probe.klaim.satu.150007@contoh.ac.id",
+    "tokenHash": "e8b0ee739232258968c9217e102510b3120cef654899a5196480ecb212d14417",
+    "dibuatOleh": "staf.uji@contoh.ac.id",
+    "dibuatPada": "2026-11-22T20:42:31.390Z",
+    "kedaluwarsa": "2026-12-06T20:42:31.389Z",
+    "dipakaiPada": "2026-11-22T20:42:42.614Z"
+  },
+  {
+    "id": "6b516014-fae7-4c8d-99f7-caf0da94815b",
+    "email": "probe.klaim.dua.150007@contoh.ac.id",
+    "tokenHash": "38ff52e524817803ad62b6c8081087d45162eda9f0c4c57040663754ce9892e7",
+    "dibuatOleh": "staf.uji@contoh.ac.id",
+    "dibuatPada": "2026-11-22T20:42:48.619Z",
+    "kedaluwarsa": "2026-12-06T20:42:48.611Z",
+    "dipakaiPada": "2026-11-22T20:42:53.805Z"
+  }
+]

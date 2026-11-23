@@ -1,0 +1,27 @@
+{
+  "tugasCopy": [],
+  "tugasProduksi": [],
+  "berkasAlur": [],
+  "terbitan": [
+    {
+      "id": "umpan-tahap5-1",
+      "slug": "vol-1-no-1-2026",
+      "volume": 1,
+      "number": 1,
+      "year": 2026,
+      "judul": null,
+      "uraian": null,
+      "status": "published",
+      "isCurrent": true,
+      "tanggalTerbit": "2026-06-30T00:00:00.000Z",
+      "dibuatPada": "2026-06-30T00:00:00.000Z"
+    }
+  ],
+  "penempatan": {
+    "JRN-2026-2040": {
+      "issueId": "umpan-tahap5-1",
+      "urutan": 1
+    }
+  },
+  "metrik": {}
+}

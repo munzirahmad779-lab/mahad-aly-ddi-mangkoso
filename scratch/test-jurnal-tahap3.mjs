@@ -286,9 +286,29 @@ try {
     await pg.fill("#klaim-afiliasi", rev.afiliasi);
     await pg.fill("#klaim-password", rev.password);
     await pg.check("#klaim-persetujuan");
+    const tungguKlaim = pg.waitForResponse(
+      (r) =>
+        r.url().includes("/api/jurnal/auth/klaim-undangan") &&
+        r.request().method() === "POST",
+      { timeout: 30000 }
+    );
     await pg.getByRole("button", { name: "Buat Akun Reviewer" }).click();
+    // Tunggu jawaban POST klaim itu sendiri sebelum login. JANGAN
+    // menunggu teks "Berhasil": kerangka situs memuat kutipan
+    // "Keberhasilan itu harus diperjuangkan..." di semua halaman,
+    // sehingga penantian teks itu selesai seketika dan login balapan
+    // dengan klaim yang belum tuntas. Itulah akar kegagalan
+    // klaim-login yang lama dicari di store lokal (terbukti dari log
+    // server 23 Nov 2026 malam: login tiba 19 ms sebelum klaim
+    // selesai; elemen penandingnya adalah SPAN kutipan itu).
+    const respKlaim = await tungguKlaim.catch(() => null);
+    if (respKlaim && respKlaim.status() !== 201) {
+      console.log(
+        `  KLAIM ${rev.email} menjawab HTTP ${respKlaim.status()}`
+      );
+    }
     await pg
-      .waitForSelector("text=Berhasil", { timeout: 30000 })
+      .waitForSelector("text=Undangan berhasil diklaim.", { timeout: 30000 })
       .catch(() => {});
     const login = await loginApi(rev.email, rev.password);
     const peran = login.data?.user?.roles || [];
