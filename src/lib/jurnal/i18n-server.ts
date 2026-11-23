@@ -1,6 +1,7 @@
 // Pembaca bahasa jurnal di sisi server — SERVER ONLY (Tahap 6).
 // Bahasa dibaca dari cookie "jurnal-bahasa" yang dipasang pemilih bahasa;
-// bawaan id bila cookie tidak ada atau tidak sah.
+// bawaan "ar" bila cookie tidak ada atau tidak sah (ketetapan pemilik
+// 24 Nov 2026: bahasa utama jurnal adalah Bahasa Arab seluruhnya).
 
 import { cookies } from "next/headers";
 import {
@@ -13,8 +14,8 @@ export async function localeJurnalServer(): Promise<JurnalLocale> {
   try {
     const c = await cookies();
     const v = c.get(JURNAL_LOCALE_COOKIE)?.value;
-    return isJurnalLocale(v) ? v : "id";
+    return isJurnalLocale(v) ? v : "ar";
   } catch {
-    return "id";
+    return "ar";
   }
 }

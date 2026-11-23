@@ -1,9 +1,9 @@
 "use client";
 
 // Pembaca bahasa jurnal di sisi klien (Tahap 6). Cookie adalah sumber
-// yang sama dengan server; localStorage cadangan. Nilai awal "id"
-// supaya render pertama komponen klien tidak berkedip, lalu diselaraskan
-// dari cookie pada efek pertama.
+// yang sama dengan server; localStorage cadangan. Nilai awal "ar"
+// (bahasa utama jurnal) supaya render pertama komponen klien tidak
+// berkedip, lalu diselaraskan dari cookie pada efek pertama.
 
 import { useEffect, useState } from "react";
 import {
@@ -14,7 +14,7 @@ import {
 } from "./i18n";
 
 export function useJurnalLocale(): JurnalLocale {
-  const [locale, setLocale] = useState<JurnalLocale>("id");
+  const [locale, setLocale] = useState<JurnalLocale>("ar");
   useEffect(() => {
     const dariCookie = document.cookie
       .split(";")

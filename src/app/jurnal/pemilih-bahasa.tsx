@@ -17,7 +17,7 @@ import {
 } from "@/lib/jurnal/i18n";
 
 export default function PemilihBahasa() {
-  const [locale, setLocale] = useState<JurnalLocale>("id");
+  const [locale, setLocale] = useState<JurnalLocale>("ar");
 
   useEffect(() => {
     const dariCookie = document.cookie
@@ -30,7 +30,7 @@ export default function PemilihBahasa() {
       ? dariCookie
       : isJurnalLocale(dariStorage)
         ? dariStorage
-        : "id";
+        : "ar";
     setLocale(aktif);
   }, []);
 
