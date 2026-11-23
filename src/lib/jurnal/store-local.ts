@@ -303,17 +303,24 @@ async function muat(): Promise<CatatanLokal[]> {
   return memori;
 }
 
-async function simpan(): Promise<void> {
-  if (!memori) return;
+async function simpan(baru?: CatatanLokal[]): Promise<void> {
+  const sumber = baru ?? memori;
+  if (!sumber) return;
   await antrianUntuk(FILE)(async () => {
-    if (!memori) return;
     try {
       const mentah = await bacaJsonBerkas<unknown>(FILE);
       const diBerkas = Array.isArray(mentah)
         ? (mentah as CatatanLokal[])
         : [];
-      memori = gabungDaftar(diBerkas, memori, (n) => n.kode);
-      await tulisJsonBerkas(FILE, memori);
+      // Gabung dari POTRET MILIK MUTASI INI (parameter baru), bukan dari
+      // variabel memori bersama: muat() milik request lain dapat
+      // mengganti isi memori di antara muat dan simpan milik mutasi ini,
+      // dan menggabung dari memori membuang hasil mutasi ini diam-diam.
+      // Akar balapan klaim-login, terungkap lewat uji 20 pendaftaran
+      // serentak: 20 jawaban 201 tetapi hanya 15 akun yang tersimpan.
+      const gabungan = gabungDaftar(diBerkas, sumber, (n) => n.kode);
+      memori = gabungan;
+      await tulisJsonBerkas(FILE, gabungan);
     } catch {
       // Sistem berkas tidak bisa ditulis: data tetap hidup di memori proses.
     }
@@ -365,7 +372,7 @@ export async function createLokal(input: {
     dibuatPada: sekarang
   };
   data.push(naskah);
-  await simpan();
+  await simpan(data);
   return keTampilan(naskah);
 }
 
@@ -384,7 +391,7 @@ export async function updateStatusLokal(
     pada: new Date().toISOString(),
     catatan: catatan ?? null
   });
-  await simpan();
+  await simpan(data);
   return keTampilan(naskah);
 }
 
@@ -403,7 +410,7 @@ export async function tetapkanDoiLokal(
   const naskah = data.find((n) => n.kode === target);
   if (!naskah) return null;
   naskah.doi = doi;
-  await simpan();
+  await simpan(data);
   return keTampilan(naskah);
 }
 
@@ -420,7 +427,7 @@ export async function tarikArtikelLokal(
     naskah.alasanTarik = alasan;
     // Linimasa penarikan ditulis pemanggil lewat catatPeristiwaNaskah,
     // sama seperti jalur mode supabase.
-    await simpan();
+    await simpan(data);
   }
   return keTampilan(naskah);
 }
@@ -476,7 +483,7 @@ export async function createLokalLengkap(
     daftarPeriksa: input.daftarPeriksa
   };
   data.push(naskah);
-  await simpan();
+  await simpan(data);
   return keTampilan(naskah);
 }
 
@@ -521,7 +528,7 @@ export async function tambahRiwayatLokal(
     pada: new Date().toISOString(),
     catatan
   });
-  await simpan();
+  await simpan(data);
 }
 
 // ── Tahap 2: akun penulis uji lokal ──────────────────────────────────────
@@ -562,17 +569,20 @@ async function muatAkun(): Promise<AkunLokalTersimpan[]> {
   return memoriAkun;
 }
 
-async function simpanAkun(): Promise<void> {
-  if (!memoriAkun) return;
+async function simpanAkun(baru?: AkunLokalTersimpan[]): Promise<void> {
+  const sumber = baru ?? memoriAkun;
+  if (!sumber) return;
   await antrianUntuk(FILE_AKUN)(async () => {
-    if (!memoriAkun) return;
     try {
       const mentah = await bacaJsonBerkas<unknown>(FILE_AKUN);
       const diBerkas = Array.isArray(mentah)
         ? (mentah as AkunLokalTersimpan[])
         : [];
-      memoriAkun = gabungDaftar(diBerkas, memoriAkun, (a) => a.email);
-      await tulisJsonBerkas(FILE_AKUN, memoriAkun);
+      // Potret mutasi ini yang digabung, bukan memori bersama (lihat
+      // catatan pada simpan di atas).
+      const gabungan = gabungDaftar(diBerkas, sumber, (a) => a.email);
+      memoriAkun = gabungan;
+      await tulisJsonBerkas(FILE_AKUN, gabungan);
     } catch {
       // Sama seperti data naskah lokal: tetap hidup di memori proses.
     }
@@ -636,7 +646,7 @@ export async function daftarAkunLokal(input: {
     kataSandiHash: hashKataSandi(input.kataSandi)
   };
   akun.push(baru);
-  await simpanAkun();
+  await simpanAkun(akun);
   return akunPublik(baru);
 }
 
@@ -679,7 +689,7 @@ export async function tambahPeranAkunLokal(
     : ["author"];
   if (!peran.includes(peranBaru)) {
     target.peran = [...peran, peranBaru];
-    await simpanAkun();
+    await simpanAkun(akun);
   }
   return akunPublik(target);
 }
@@ -832,10 +842,12 @@ export async function muatDataReviewLokal(): Promise<DataReviewLokal> {
   return memoriReview;
 }
 
-export async function simpanDataReviewLokal(): Promise<void> {
-  if (!memoriReview) return;
+export async function simpanDataReviewLokal(
+  baru?: DataReviewLokal
+): Promise<void> {
+  const sumber = baru ?? memoriReview;
+  if (!sumber) return;
   await antrianUntuk(FILE_REVIEW)(async () => {
-    if (!memoriReview) return;
     try {
       const mentah = await bacaJsonBerkas<Partial<DataReviewLokal>>(FILE_REVIEW);
       const diBerkas: DataReviewLokal = {
@@ -848,20 +860,21 @@ export async function simpanDataReviewLokal(): Promise<void> {
           ? mentah.berkasRevisi
           : []
       };
-      memoriReview = {
-        putaran: { ...diBerkas.putaran, ...memoriReview.putaran },
+      const gabungan: DataReviewLokal = {
+        putaran: { ...diBerkas.putaran, ...sumber.putaran },
         penugasan: gabungDaftar(
           diBerkas.penugasan,
-          memoriReview.penugasan,
+          sumber.penugasan,
           (p) => p.id
         ),
         berkasRevisi: gabungDaftar(
           diBerkas.berkasRevisi,
-          memoriReview.berkasRevisi,
+          sumber.berkasRevisi,
           (b) => b.id
         )
       };
-      await tulisJsonBerkas(FILE_REVIEW, memoriReview);
+      memoriReview = gabungan;
+      await tulisJsonBerkas(FILE_REVIEW, gabungan);
     } catch {
       // Sama seperti data lokal lain: tetap hidup di memori proses.
     }
@@ -896,19 +909,18 @@ export async function muatUndanganLokal(): Promise<UndanganLokal[]> {
   return memoriUndangan;
 }
 
-export async function simpanUndanganLokal(): Promise<void> {
-  if (!memoriUndangan) return;
+export async function simpanUndanganLokal(
+  baru?: UndanganLokal[]
+): Promise<void> {
+  const sumber = baru ?? memoriUndangan;
+  if (!sumber) return;
   await antrianUntuk(FILE_UNDANGAN)(async () => {
-    if (!memoriUndangan) return;
     try {
       const mentah = await bacaJsonBerkas<unknown>(FILE_UNDANGAN);
       const diBerkas = Array.isArray(mentah) ? (mentah as UndanganLokal[]) : [];
-      memoriUndangan = gabungDaftar(
-        diBerkas,
-        memoriUndangan,
-        (u) => u.tokenHash
-      );
-      await tulisJsonBerkas(FILE_UNDANGAN, memoriUndangan);
+      const gabungan = gabungDaftar(diBerkas, sumber, (u) => u.tokenHash);
+      memoriUndangan = gabungan;
+      await tulisJsonBerkas(FILE_UNDANGAN, gabungan);
     } catch {
       // Tetap hidup di memori proses.
     }
@@ -1015,10 +1027,12 @@ export async function muatDataAlurLokal(): Promise<DataAlurLokal> {
   return memoriAlur;
 }
 
-export async function simpanDataAlurLokal(): Promise<void> {
-  if (!memoriAlur) return;
+export async function simpanDataAlurLokal(
+  baru?: DataAlurLokal
+): Promise<void> {
+  const sumber = baru ?? memoriAlur;
+  if (!sumber) return;
   await antrianUntuk(FILE_ALUR)(async () => {
-    if (!memoriAlur) return;
     try {
       const mentah = await bacaJsonBerkas<Partial<DataAlurLokal>>(FILE_ALUR);
       const diBerkas: DataAlurLokal = {
@@ -1038,30 +1052,31 @@ export async function simpanDataAlurLokal(): Promise<void> {
             : {}
       };
       const metrikGabungan: DataAlurLokal["metrik"] = { ...diBerkas.metrik };
-      for (const [kode, perHari] of Object.entries(memoriAlur.metrik)) {
+      for (const [kode, perHari] of Object.entries(sumber.metrik)) {
         metrikGabungan[kode] = { ...(metrikGabungan[kode] ?? {}), ...perHari };
       }
-      memoriAlur = {
+      const gabungan: DataAlurLokal = {
         tugasCopy: gabungDaftar(
           diBerkas.tugasCopy,
-          memoriAlur.tugasCopy,
+          sumber.tugasCopy,
           (t) => t.id
         ),
         tugasProduksi: gabungDaftar(
           diBerkas.tugasProduksi,
-          memoriAlur.tugasProduksi,
+          sumber.tugasProduksi,
           (t) => t.id
         ),
         berkasAlur: gabungDaftar(
           diBerkas.berkasAlur,
-          memoriAlur.berkasAlur,
+          sumber.berkasAlur,
           (b) => b.id
         ),
-        terbitan: gabungDaftar(diBerkas.terbitan, memoriAlur.terbitan, (t) => t.id),
-        penempatan: { ...diBerkas.penempatan, ...memoriAlur.penempatan },
+        terbitan: gabungDaftar(diBerkas.terbitan, sumber.terbitan, (t) => t.id),
+        penempatan: { ...diBerkas.penempatan, ...sumber.penempatan },
         metrik: metrikGabungan
       };
-      await tulisJsonBerkas(FILE_ALUR, memoriAlur);
+      memoriAlur = gabungan;
+      await tulisJsonBerkas(FILE_ALUR, gabungan);
     } catch {
       // Sama seperti data lokal lain: tetap hidup di memori proses.
     }

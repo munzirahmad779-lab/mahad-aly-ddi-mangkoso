@@ -139,7 +139,7 @@ export const alurBackendLokal: AlurBackend = {
       selesaiPada: null
     };
     data.tugasCopy.push(baru);
-    await simpanDataAlurLokal();
+    await simpanDataAlurLokal(data);
     return tugasCopyKeInternal(baru);
   },
 
@@ -155,7 +155,7 @@ export const alurBackendLokal: AlurBackend = {
       target.persetujuanPenulisPada = patch.persetujuanPenulisPada;
     }
     if (patch.selesaiPada !== undefined) target.selesaiPada = patch.selesaiPada;
-    await simpanDataAlurLokal();
+    await simpanDataAlurLokal(data);
   },
 
   async ambilTugasProduksi(kode) {
@@ -184,7 +184,7 @@ export const alurBackendLokal: AlurBackend = {
       dibuatPada: new Date().toISOString()
     };
     data.tugasProduksi.push(baru);
-    await simpanDataAlurLokal();
+    await simpanDataAlurLokal(data);
     return tugasProduksiKeInternal(baru);
   },
 
@@ -199,7 +199,7 @@ export const alurBackendLokal: AlurBackend = {
     }
     if (patch.proofPada !== undefined) target.proofPada = patch.proofPada;
     if (patch.siapPada !== undefined) target.siapPada = patch.siapPada;
-    await simpanDataAlurLokal();
+    await simpanDataAlurLokal(data);
   },
 
   async simpanBerkasAlur({ kode, tahap, jenis, berkas, diunggahOleh }) {
@@ -227,7 +227,7 @@ export const alurBackendLokal: AlurBackend = {
       diunggahPada: new Date().toISOString()
     };
     data.berkasAlur.push(baru);
-    await simpanDataAlurLokal();
+    await simpanDataAlurLokal(data);
     return berkasKeInternal(baru);
   },
 
@@ -271,7 +271,7 @@ export const alurBackendLokal: AlurBackend = {
       dibuatPada: new Date().toISOString()
     };
     data.terbitan.push(baru);
-    await simpanDataAlurLokal();
+    await simpanDataAlurLokal(data);
     return terbitanKeInternal(baru);
   },
 
@@ -292,7 +292,7 @@ export const alurBackendLokal: AlurBackend = {
     if (patch.tanggalTerbit !== undefined) {
       target.tanggalTerbit = patch.tanggalTerbit;
     }
-    await simpanDataAlurLokal();
+    await simpanDataAlurLokal(data);
   },
 
   async ambilPenempatanSemua() {
@@ -305,13 +305,13 @@ export const alurBackendLokal: AlurBackend = {
   async tetapkanPenempatan(kode, issueId, urutan) {
     const data = await muatDataAlurLokal();
     data.penempatan[kode.trim().toUpperCase()] = { issueId, urutan };
-    await simpanDataAlurLokal();
+    await simpanDataAlurLokal(data);
   },
 
   async hapusPenempatan(kode) {
     const data = await muatDataAlurLokal();
     delete data.penempatan[kode.trim().toUpperCase()];
-    await simpanDataAlurLokal();
+    await simpanDataAlurLokal(data);
   },
 
   async catatMetrik(kode, jenis) {
@@ -323,7 +323,7 @@ export const alurBackendLokal: AlurBackend = {
     hari[jenis] += 1;
     perKode[tanggal] = hari;
     data.metrik[target] = perKode;
-    await simpanDataAlurLokal();
+    await simpanDataAlurLokal(data);
   },
 
   async daftarArtikelPublik() {

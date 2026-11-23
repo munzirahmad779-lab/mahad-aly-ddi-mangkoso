@@ -98,7 +98,7 @@ export const reviewBackendLokal: ReviewBackend = {
       diputuskanPada: null
     });
     data.putaran[kunci] = daftar;
-    await simpanDataReviewLokal();
+    await simpanDataReviewLokal(data);
   },
 
   async tutupPutaran(kode, nomor, keputusan) {
@@ -109,7 +109,7 @@ export const reviewBackendLokal: ReviewBackend = {
     target.status = "closed";
     target.keputusan = keputusan;
     target.diputuskanPada = new Date().toISOString();
-    await simpanDataReviewLokal();
+    await simpanDataReviewLokal(data);
   },
 
   async ambilPenugasanSemua(kode) {
@@ -144,7 +144,7 @@ export const reviewBackendLokal: ReviewBackend = {
       diserahkanPada: null
     };
     data.penugasan.push(baru);
-    await simpanDataReviewLokal();
+    await simpanDataReviewLokal(data);
     return penugasanKeInternal(baru);
   },
 
@@ -165,7 +165,7 @@ export const reviewBackendLokal: ReviewBackend = {
     if (patch.diserahkanPada !== undefined) {
       target.diserahkanPada = patch.diserahkanPada;
     }
-    await simpanDataReviewLokal();
+    await simpanDataReviewLokal(data);
   },
 
   async ambilNaskahAnonim(kode) {
@@ -241,6 +241,6 @@ export const reviewBackendLokal: ReviewBackend = {
       };
       data.berkasRevisi.push(baris);
     }
-    await simpanDataReviewLokal();
+    await simpanDataReviewLokal(data);
   }
 };

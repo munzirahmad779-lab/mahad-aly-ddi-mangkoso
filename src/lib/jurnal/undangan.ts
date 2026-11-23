@@ -56,7 +56,7 @@ export async function buatUndanganReviewer(
       dipakaiPada: null
     };
     daftar.push(baru);
-    await simpanUndanganLokal();
+    await simpanUndanganLokal(daftar);
     return { email, token, kedaluwarsa };
   }
 
@@ -125,7 +125,7 @@ export async function konsumsiUndangan(
     const u = daftar.find((x) => x.tokenHash === hashToken(token));
     if (!u || u.dipakaiPada) return null;
     u.dipakaiPada = new Date().toISOString();
-    await simpanUndanganLokal();
+    await simpanUndanganLokal(daftar);
     return info;
   }
 
