@@ -43,7 +43,11 @@
   "vars": {
     "NEXT_PUBLIC_GA_ID": "G-EBBP80BZWL",
     "NEXT_PUBLIC_SITE_URL": "https://mahadaly-ddimangkoso.ac.id",
-    "NEXT_PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAGOaXBp9UoMW_Hrx"
+    "NEXT_PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAGOaXBp9UoMW_Hrx",
+    "JURNAL_R2_BUCKET": "jurnal-mahadaly",
+    "JURNAL_R2_ENDPOINT": "https://474b78ad5134b8db8bc1f025d36f68f7.r2.cloudflarestorage.com",
+    "JURNAL_R2_ACCESS_KEY_ID": "b86b29d27ee55c43dfcc6d4a86d2c85c",
+    "JURNAL_AKSES": "tertutup"
   },
   "previews": {
     "vars": {

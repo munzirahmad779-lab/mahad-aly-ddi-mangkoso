@@ -33,6 +33,75 @@ export function middleware(request: NextRequest) {
     request.headers.get("cf-connecting-ip") ||
     "127.0.0.1";
 
+  // 0b. Gerbang penutupan jurnal: selama env JURNAL_AKSES bernilai
+  // "tertutup", seluruh jalur /jurnal dan /api/jurnal menjawab 503 untuk
+  // publik. Jalan masuk tim penguji hanya lewat cookie gerbang yang
+  // ditetapkan oleh /api/jurnal/gerbang?k=<JURNAL_GATE_KEY>. Bila env
+  // tidak dipasang atau bernilai lain, gerbang tidak aktif sama sekali.
+  const jalurJurnal =
+    pathname === "/jurnal" ||
+    pathname.startsWith("/jurnal/") ||
+    pathname === "/api/jurnal" ||
+    pathname.startsWith("/api/jurnal/");
+  if (jalurJurnal && process.env.JURNAL_AKSES === "tertutup") {
+    const kunciGerbang = process.env.JURNAL_GATE_KEY || "";
+    if (pathname === "/api/jurnal/gerbang") {
+      const kunci = request.nextUrl.searchParams.get("k") || "";
+      if (kunciGerbang && kunci === kunciGerbang) {
+        const tujuan = request.nextUrl.clone();
+        tujuan.pathname = "/jurnal";
+        tujuan.search = "";
+        const res = NextResponse.redirect(tujuan);
+        res.cookies.set("gerbang_jurnal", kunciGerbang, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "lax",
+          path: "/",
+          maxAge: 60 * 60 * 24 * 30
+        });
+        return res;
+      }
+      return new NextResponse("Tidak ditemukan.", { status: 404 });
+    }
+    const lolos =
+      kunciGerbang !== "" &&
+      request.cookies.get("gerbang_jurnal")?.value === kunciGerbang;
+    if (!lolos) {
+      if (pathname.startsWith("/api/")) {
+        return new NextResponse(
+          JSON.stringify({
+            error:
+              "Jurnal sedang dalam tahap penyiapan dan belum dibuka untuk publik."
+          }),
+          {
+            status: 503,
+            headers: { "Content-Type": "application/json" }
+          }
+        );
+      }
+      return new NextResponse(
+        `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>المجلة قيد الإعداد</title></head>
+<body style="font-family: Georgia, 'Times New Roman', serif; background: #faf7f0; color: #1c2420; display: flex; min-height: 100vh; align-items: center; justify-content: center; margin: 0;">
+<main style="max-width: 34rem; padding: 2rem; text-align: center;">
+<p style="font-size: 1.6rem; margin: 0 0 0.75rem;">المجلة قيد الإعداد</p>
+<p style="font-size: 1rem; line-height: 1.8; margin: 0 0 1.5rem;">مجلة معهد علي دي دي منغكوسو العلمية ما تزال في مرحلة الإعداد، ولم تُفتح للجمهور بعد.</p>
+<p lang="id" dir="ltr" style="font-size: 0.95rem; line-height: 1.7; color: #444;">Jurnal Ma'had Aly DDI Mangkoso sedang dalam tahap penyiapan dan belum dibuka untuk publik.</p>
+</main>
+</body>
+</html>`,
+        {
+          status: 503,
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Retry-After": "86400"
+          }
+        }
+      );
+    }
+  }
+
   // 1. Lapisan Honeypot Trap: Hadang scanner otomatis dan catat telemetri
   const isMaliciousPath = HONEYPOT_PATHS.some(
     (trap) => pathname === trap || pathname.startsWith(trap + "/")
@@ -77,6 +146,9 @@ export const config = {
   // Security headers untuk seluruh situs ditangani next.config.ts headers().
   matcher: [
     "/admin/:path*",
+    "/jurnal",
+    "/jurnal/:path*",
+    "/api/jurnal/:path*",
     "/wp-login.php",
     "/wp-admin/:path*",
     "/wp-content/:path*",
