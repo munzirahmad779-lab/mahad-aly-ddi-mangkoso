@@ -11,12 +11,13 @@ export default function DonasiPage() {
   const [copiedBankId, setCopiedBankId] = useState<string | null>(null);
   const [selectedProgramModal, setSelectedProgramModal] = useState<DonationProgram | null>(null);
 
+  // Hanya program yang benar-benar berjalan yang ditampilkan.
+  // Tiga kategori lama (web_dev, orang_tua_asuh, operasional_umum)
+  // adalah data contoh fiktif dan sudah dihapus atas perintah user
+  // 21 Nov 2026; yang pasti hanya Short Course Mesir.
   const categories = [
     { id: "all", label: "🌟 Semua Program" },
-    { id: "short_course_mesir", label: "✈️ Short Course Mesir" },
-    { id: "web_dev", label: "💻 Pengembangan Web" },
-    { id: "orang_tua_asuh", label: "🤝 Orang Tua Angkat" },
-    { id: "operasional_umum", label: "🏛️ Infaq & Sarana Ma'had" }
+    { id: "short_course_mesir", label: "✈️ Short Course Mesir" }
   ];
 
   const filteredPrograms = donations.filter((p) => {
@@ -54,8 +55,8 @@ export default function DonasiPage() {
           </h1>
 
           <p className="max-w-2xl mx-auto text-slate-300 text-sm sm:text-base leading-relaxed">
-            Salurkan infaq terbaik Anda untuk riset risalah ilmiah ke Mesir, orang tua angkat mahasantri,
-            pengembangan sistem digital dakwah, serta sarana halaqah Ma&apos;had Aly DDI Mangkoso.
+            Salurkan infaq terbaik Anda untuk riset risalah ilmiah dan short course delegasi
+            Ma&apos;had Aly DDI Mangkoso ke Universitas Al-Azhar, Kairo, Mesir.
           </p>
 
           <div className="pt-2">

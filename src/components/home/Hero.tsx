@@ -115,6 +115,16 @@ export default function Hero() {
           </div>
         </div>
 
+        {/* Nama lembaga sebagai judul utama halaman (H1 tetap, tidak ikut berganti slide) */}
+        <motion.h1
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="font-serif font-semibold text-mahad-gold text-xl sm:text-2xl lg:text-3xl tracking-wide mb-4"
+        >
+          Ma'had Aly DDI Mangkoso
+        </motion.h1>
+
         {/* Kaligrafi Basmalah / Motto */}
         {currentSlide.arabicBismillah && (
           <motion.div
@@ -131,7 +141,7 @@ export default function Hero() {
 
         {/* Judul Slide Utama & Subtitle */}
         <div key={currentSlide.id}>
-          <h1 className="font-serif font-bold text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight sm:leading-snug max-w-4xl mx-auto">
+          <h2 className="font-serif font-bold text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight sm:leading-snug max-w-4xl mx-auto">
             {titleWords.map((word, i) => (
               <span key={`t-${i}`} className="inline-block overflow-hidden align-bottom pb-2 -mb-2">
                 <motion.span className="inline-block will-change-transform" {...wordReveal(0.15 + i * 0.05)}>
@@ -155,7 +165,7 @@ export default function Hero() {
                 ))}
               </span>
             )}
-          </h1>
+          </h2>
 
           {/* Deskripsi Subtitle */}
           <motion.p

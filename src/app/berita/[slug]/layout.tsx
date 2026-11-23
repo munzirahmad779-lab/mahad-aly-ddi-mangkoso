@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { data } = await supabaseAnon
       .from("news")
-      .select("judul, konten, tipe, created_at")
+      .select("judul, konten, tipe, created_at, gambar_url")
       .ilike("slug", decodeURIComponent(slug).toLowerCase().trim())
       .maybeSingle();
     n = data;
@@ -37,7 +37,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "article",
       url: `${BASE}/berita/${slug}`,
       siteName: SITE,
-      images: [OG_LOGO_IMAGE]
+      // Berita bergambar: pratinjau WA memakai gambar halamannya
+      // (perintah user 21 Nov 2026). Tanpa gambar: logo situs.
+      images: n.gambar_url
+        ? [{ url: n.gambar_url, alt: n.judul }]
+        : [OG_LOGO_IMAGE]
     }
   };
 }
