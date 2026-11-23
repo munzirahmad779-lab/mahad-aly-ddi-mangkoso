@@ -176,6 +176,37 @@ export async function tulisJsonBerkas(
 
 let memori: CatatanLokal[] | null = null;
 
+// ── Gabung-daftar untuk penyimpanan yang aman dari balapan ─────────────
+// Bundel halaman dan bundel route Next.js memegang salinan modul
+// terpisah (temuan Tahap 4), jadi dua salinan dapat memuat daftar yang
+// sama, mengubahnya, lalu menulisnya kembali secara berurutan: tulisan
+// kedua menimpa tulisan pertama dan entri yang baru dibuat salinan
+// pertama hilang dari berkas (bukti debug regresi gabungan 23 Nov 2026:
+// berkas akun berubah 5 ke 4 ke 5 dalam 33 milidetik dan login sesudah
+// klaim undangan menjawab 401). Karena itu setiap simpan WAJIB membaca
+// ulang berkas dan menggabungkan: entri salinan ini menang untuk kunci
+// yang sama, entri berkas yang tidak dikenal salinan ini dipertahankan.
+// Tidak ada penghapusan keras di lapisan lokal, jadi gabung seperti ini
+// aman untuk semua daftar di berkas ini.
+export function gabungDaftar<T>(
+  lama: T[],
+  baru: T[],
+  kunci: (e: T) => string
+): T[] {
+  const petaBaru = new Map(baru.map((e) => [kunci(e), e]));
+  const hasil: T[] = [];
+  const terlihat = new Set<string>();
+  for (const e of lama) {
+    const k = kunci(e);
+    terlihat.add(k);
+    hasil.push(petaBaru.get(k) ?? e);
+  }
+  for (const e of baru) {
+    if (!terlihat.has(kunci(e))) hasil.push(e);
+  }
+  return hasil;
+}
+
 async function muat(): Promise<CatatanLokal[]> {
   // Selalu baca ulang dari berkas: bundel halaman dan bundel route
   // Next.js memegang salinan modul terpisah, jadi cache memori murni
@@ -237,6 +268,11 @@ async function muat(): Promise<CatatanLokal[]> {
 async function simpan(): Promise<void> {
   if (!memori) return;
   try {
+    const mentah = await bacaJsonBerkas<unknown>(FILE);
+    const diBerkas = Array.isArray(mentah)
+      ? (mentah as CatatanLokal[])
+      : [];
+    memori = gabungDaftar(diBerkas, memori, (n) => n.kode);
     await tulisJsonBerkas(FILE, memori);
   } catch {
     // Sistem berkas tidak bisa ditulis: data tetap hidup di memori proses.
@@ -488,6 +524,11 @@ async function muatAkun(): Promise<AkunLokalTersimpan[]> {
 async function simpanAkun(): Promise<void> {
   if (!memoriAkun) return;
   try {
+    const mentah = await bacaJsonBerkas<unknown>(FILE_AKUN);
+    const diBerkas = Array.isArray(mentah)
+      ? (mentah as AkunLokalTersimpan[])
+      : [];
+    memoriAkun = gabungDaftar(diBerkas, memoriAkun, (a) => a.email);
     await tulisJsonBerkas(FILE_AKUN, memoriAkun);
   } catch {
     // Sama seperti data naskah lokal: tetap hidup di memori proses.
@@ -653,9 +694,17 @@ export async function catatPeristiwaKeamananLokal(
   try {
     const daftar = await muatKeamanan();
     daftar.push({ ...peristiwa, pada: new Date().toISOString() });
-    while (daftar.length > 1000) daftar.shift();
+    const mentah = await bacaJsonBerkas<unknown>(FILE_KEAMANAN);
+    const diBerkas = Array.isArray(mentah)
+      ? (mentah as PeristiwaKeamananLokal[])
+      : [];
+    const kunciPeristiwa = (e: PeristiwaKeamananLokal) =>
+      `${e.pada}|${e.jenis}|${e.email ?? ""}|${e.kode ?? ""}|${e.rincian ?? ""}`;
+    let gabungan = gabungDaftar(diBerkas, daftar, kunciPeristiwa);
+    while (gabungan.length > 1000) gabungan.shift();
+    memoriKeamanan = gabungan;
     try {
-      await tulisJsonBerkas(FILE_KEAMANAN, daftar);
+      await tulisJsonBerkas(FILE_KEAMANAN, gabungan);
     } catch {
       // Sistem berkas tidak bisa ditulis: catatan tetap hidup di memori.
     }
@@ -740,6 +789,30 @@ export async function muatDataReviewLokal(): Promise<DataReviewLokal> {
 export async function simpanDataReviewLokal(): Promise<void> {
   if (!memoriReview) return;
   try {
+    const mentah = await bacaJsonBerkas<Partial<DataReviewLokal>>(FILE_REVIEW);
+    const diBerkas: DataReviewLokal = {
+      putaran:
+        mentah?.putaran && typeof mentah.putaran === "object"
+          ? mentah.putaran
+          : {},
+      penugasan: Array.isArray(mentah?.penugasan) ? mentah.penugasan : [],
+      berkasRevisi: Array.isArray(mentah?.berkasRevisi)
+        ? mentah.berkasRevisi
+        : []
+    };
+    memoriReview = {
+      putaran: { ...diBerkas.putaran, ...memoriReview.putaran },
+      penugasan: gabungDaftar(
+        diBerkas.penugasan,
+        memoriReview.penugasan,
+        (p) => p.id
+      ),
+      berkasRevisi: gabungDaftar(
+        diBerkas.berkasRevisi,
+        memoriReview.berkasRevisi,
+        (b) => b.id
+      )
+    };
     await tulisJsonBerkas(FILE_REVIEW, memoriReview);
   } catch {
     // Sama seperti data lokal lain: tetap hidup di memori proses.
@@ -777,6 +850,13 @@ export async function muatUndanganLokal(): Promise<UndanganLokal[]> {
 export async function simpanUndanganLokal(): Promise<void> {
   if (!memoriUndangan) return;
   try {
+    const mentah = await bacaJsonBerkas<unknown>(FILE_UNDANGAN);
+    const diBerkas = Array.isArray(mentah) ? (mentah as UndanganLokal[]) : [];
+    memoriUndangan = gabungDaftar(
+      diBerkas,
+      memoriUndangan,
+      (u) => u.tokenHash
+    );
     await tulisJsonBerkas(FILE_UNDANGAN, memoriUndangan);
   } catch {
     // Tetap hidup di memori proses.
@@ -886,6 +966,47 @@ export async function muatDataAlurLokal(): Promise<DataAlurLokal> {
 export async function simpanDataAlurLokal(): Promise<void> {
   if (!memoriAlur) return;
   try {
+    const mentah = await bacaJsonBerkas<Partial<DataAlurLokal>>(FILE_ALUR);
+    const diBerkas: DataAlurLokal = {
+      tugasCopy: Array.isArray(mentah?.tugasCopy) ? mentah.tugasCopy : [],
+      tugasProduksi: Array.isArray(mentah?.tugasProduksi)
+        ? mentah.tugasProduksi
+        : [],
+      berkasAlur: Array.isArray(mentah?.berkasAlur) ? mentah.berkasAlur : [],
+      terbitan: Array.isArray(mentah?.terbitan) ? mentah.terbitan : [],
+      penempatan:
+        mentah?.penempatan && typeof mentah.penempatan === "object"
+          ? mentah.penempatan
+          : {},
+      metrik:
+        mentah?.metrik && typeof mentah.metrik === "object"
+          ? mentah.metrik
+          : {}
+    };
+    const metrikGabungan: DataAlurLokal["metrik"] = { ...diBerkas.metrik };
+    for (const [kode, perHari] of Object.entries(memoriAlur.metrik)) {
+      metrikGabungan[kode] = { ...(metrikGabungan[kode] ?? {}), ...perHari };
+    }
+    memoriAlur = {
+      tugasCopy: gabungDaftar(
+        diBerkas.tugasCopy,
+        memoriAlur.tugasCopy,
+        (t) => t.id
+      ),
+      tugasProduksi: gabungDaftar(
+        diBerkas.tugasProduksi,
+        memoriAlur.tugasProduksi,
+        (t) => t.id
+      ),
+      berkasAlur: gabungDaftar(
+        diBerkas.berkasAlur,
+        memoriAlur.berkasAlur,
+        (b) => b.id
+      ),
+      terbitan: gabungDaftar(diBerkas.terbitan, memoriAlur.terbitan, (t) => t.id),
+      penempatan: { ...diBerkas.penempatan, ...memoriAlur.penempatan },
+      metrik: metrikGabungan
+    };
     await tulisJsonBerkas(FILE_ALUR, memoriAlur);
   } catch {
     // Sama seperti data lokal lain: tetap hidup di memori proses.
