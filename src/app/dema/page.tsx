@@ -6,6 +6,38 @@ import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import { DemaMember, DemaDivision } from "@/lib/types";
 
+// Angka Arab-Indic (٠١٢٣...) ditampilkan sebagai angka Latin agar seragam
+const angkaLatin = (teks?: string) =>
+  (teks || "").replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+
+// Foto pengurus: selama berkas foto dimuat (atau bila gagal dimuat), kotak
+// menampilkan huruf awal nama, bukan teks alt nama yang terpotong. Foto
+// tampil penuh sesudah selesai dimuat.
+function FotoPengurus({ src, nama }: { src?: string; nama: string }) {
+  const [tampil, setTampil] = useState(false);
+  const [gagal, setGagal] = useState(false);
+
+  if (!src || gagal) {
+    return <span>{nama.charAt(0)}</span>;
+  }
+
+  return (
+    <>
+      {!tampil && <span>{nama.charAt(0)}</span>}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={nama}
+        onLoad={() => setTampil(true)}
+        onError={() => setGagal(true)}
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+          tampil ? "opacity-100" : "opacity-0"
+        }`}
+      />
+    </>
+  );
+}
+
 export default function DemaPage() {
   const { demaSettings } = useArticles();
   const [selectedDivisionId, setSelectedDivisionId] = useState<string>("all");
@@ -172,7 +204,7 @@ export default function DemaPage() {
                       </span>
                       {leader.nim && (
                         <span className={`text-[10px] font-mono shrink-0 ${isGreenCard ? "text-emerald-300" : "text-slate-400"}`}>
-                          #{leader.nim}
+                          #{angkaLatin(leader.nim)}
                         </span>
                       )}
                     </div>
@@ -180,22 +212,13 @@ export default function DemaPage() {
                     {/* Avatar & Info (Rasio Pas Foto 3:4) */}
                     <div className="flex items-center gap-3.5 mb-3">
                       <div
-                        className={`w-14 aspect-[3/4] rounded-xl flex items-center justify-center shrink-0 font-bold text-lg overflow-hidden border-2 shadow-sm transition-transform group-hover:scale-105 ${
+                        className={`relative w-14 aspect-[3/4] rounded-xl flex items-center justify-center shrink-0 font-bold text-lg overflow-hidden border-2 shadow-sm transition-transform group-hover:scale-105 ${
                           isGreenCard
                             ? "bg-[#064e3b] text-mahad-gold border-mahad-gold/60"
                             : "bg-emerald-100 text-emerald-900 border-emerald-300"
                         }`}
                       >
-                        {leader.photoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={leader.photoUrl}
-                            alt={leader.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span>{leader.name.charAt(0)}</span>
-                        )}
+                        <FotoPengurus src={leader.photoUrl} nama={leader.name} />
                       </div>
 
                       <div className="min-w-0 flex-1">
@@ -423,28 +446,19 @@ export default function DemaPage() {
                         </span>
                         {member.nim && (
                           <span className={`text-[10px] font-mono shrink-0 ${isGreenCard ? "text-emerald-300" : "text-slate-400"}`}>
-                            #{member.nim}
+                            #{angkaLatin(member.nim)}
                           </span>
                         )}
                       </div>
 
                       {/* Avatar Image / Placeholder (Rasio Pas Foto 3:4) */}
                       <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-12 aspect-[3/4] rounded-xl flex items-center justify-center font-bold text-base shrink-0 overflow-hidden shadow-sm border ${
+                        <div className={`relative w-12 aspect-[3/4] rounded-xl flex items-center justify-center font-bold text-base shrink-0 overflow-hidden shadow-sm border ${
                           isGreenCard
                             ? "bg-[#064e3b] text-mahad-gold border-mahad-gold/60"
                             : "bg-gradient-to-tr from-emerald-800 to-emerald-600 text-white border-emerald-300"
                         }`}>
-                          {member.photoUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={member.photoUrl}
-                              alt={member.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            member.name.charAt(0)
-                          )}
+                          <FotoPengurus src={member.photoUrl} nama={member.name} />
                         </div>
 
                         <div className="min-w-0 flex-1">
@@ -520,17 +534,8 @@ export default function DemaPage() {
 
             {/* Profile Header (Avatar and Title placed cleanly on top with white text on dark banner) */}
             <div className="relative pt-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6 z-10">
-              <div className="w-20 sm:w-24 aspect-[3/4] rounded-2xl bg-white shadow-xl border-4 border-white flex items-center justify-center font-bold text-2xl text-emerald-900 overflow-hidden shrink-0 mt-2">
-                {selectedMemberModal.photoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={selectedMemberModal.photoUrl}
-                    alt={selectedMemberModal.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span>{selectedMemberModal.name.charAt(0)}</span>
-                )}
+              <div className="relative w-20 sm:w-24 aspect-[3/4] rounded-2xl bg-white shadow-xl border-4 border-white flex items-center justify-center font-bold text-2xl text-emerald-900 overflow-hidden shrink-0 mt-2">
+                <FotoPengurus src={selectedMemberModal.photoUrl} nama={selectedMemberModal.name} />
               </div>
 
               <div className="text-center sm:text-left min-w-0 flex-1 pt-1 sm:pt-2">
@@ -559,7 +564,7 @@ export default function DemaPage() {
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">NIM / Stambuk</span>
                   <span className="font-mono font-semibold text-slate-800">
-                    {selectedMemberModal.nim || "Resmi Terdaftar"}
+                    {angkaLatin(selectedMemberModal.nim) || "Resmi Terdaftar"}
                   </span>
                 </div>
               </div>
