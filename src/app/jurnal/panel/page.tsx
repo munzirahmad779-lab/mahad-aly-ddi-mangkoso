@@ -242,6 +242,18 @@ export default function PanelRedaksiJurnalPage() {
               >
                 Statistik
               </a>
+              <a
+                href="/jurnal/panel/pengguna"
+                className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-1.5 transition"
+              >
+                Akun
+              </a>
+              <a
+                href="/jurnal/asesor"
+                className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-1.5 transition"
+              >
+                Tampilan Asesor
+              </a>
               <button
                 onClick={handleLogout}
                 className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-1.5 transition"

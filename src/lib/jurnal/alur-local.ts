@@ -363,7 +363,13 @@ export const alurBackendLokal: AlurBackend = {
         abstrak: n.abstrak,
         abstrakEn: n.abstrakEn ?? "",
         kataKunci: n.kataKunci ?? [],
-        halaman: null,
+        halaman:
+          n.halamanMulai != null && n.halamanSelesai != null
+            ? `${n.halamanMulai}-${n.halamanSelesai}`
+            : null,
+        halamanMulai: n.halamanMulai ?? null,
+        halamanSelesai: n.halamanSelesai ?? null,
+        referensi: n.referensi ?? null,
         bahasa: n.bahasa ?? "id",
         doi: n.doi ?? null,
         lisensi: "CC BY 4.0",

@@ -196,6 +196,9 @@ export interface JurnalArtikelPublik {
   abstrakEn: string;
   kataKunci: string[];
   halaman: string | null;
+  halamanMulai: number | null;
+  halamanSelesai: number | null;
+  referensi: string | null;
   bahasa: string;
   tanggalTerbit: string; // ISO datetime terbitan
   doi: string | null;

@@ -50,6 +50,22 @@ export interface Publik5Backend {
   ): Promise<void>;
   hapusPengumuman(id: string): Promise<void>;
   tetapkanDoi(kode: string, doi: string | null): Promise<boolean>;
+  // Tahap Penutup Celah (migrasi 009): metadata artikel dan status
+  // deposit DOI, padanan kolom first_page/last_page/references_text dan
+  // doi_status/crossref_submission_id/doi_deposited_at.
+  tetapkanMetadataArtikel(
+    kode: string,
+    meta: {
+      halamanMulai: number | null;
+      halamanSelesai: number | null;
+      referensi: string | null;
+    }
+  ): Promise<boolean>;
+  tetapkanStatusDoi(
+    kode: string,
+    status: "belum" | "terdeposit" | "gagal",
+    idDeposit: string | null
+  ): Promise<boolean>;
   tarikArtikel(kode: string, alasan: string | null): Promise<boolean>;
   daftarTombstone(): Promise<TombstoneInternal[]>;
   ambilMetrikMentah(): Promise<MetrikMentah[]>;

@@ -77,7 +77,8 @@ export const JURNAL_ROLES = [
   "copyeditor",
   "layout_editor",
   "proofreader",
-  "reader"
+  "reader",
+  "asesor"
 ] as const;
 
 export type JurnalRole = (typeof JURNAL_ROLES)[number];
@@ -91,7 +92,8 @@ export const JURNAL_ROLE_LABEL_ID: Record<JurnalRole, string> = {
   copyeditor: "Copyeditor",
   layout_editor: "Layout Editor",
   proofreader: "Proofreader",
-  reader: "Pembaca"
+  reader: "Pembaca",
+  asesor: "Asesor (akses verifikasi, hanya baca)"
 };
 
 // Peran yang boleh melihat antrean panel dan mengubah status naskah.
@@ -146,4 +148,12 @@ export interface JurnalSubmissionView {
   // Tahap 5: DOI yang diisi journal_manager dan penanda penarikan.
   doi?: string | null;
   ditarikPada?: string | null;
+  // Tahap Penutup Celah (migrasi 009): metadata artikel terbit dan
+  // status deposit DOI.
+  halamanMulai?: number | null;
+  halamanSelesai?: number | null;
+  referensi?: string | null;
+  doiStatus?: "belum" | "terdeposit" | "gagal";
+  idDepositCrossref?: string | null;
+  doiTerdepositPada?: string | null;
 }

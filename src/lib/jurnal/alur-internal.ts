@@ -97,6 +97,9 @@ export interface ArtikelPublikInternal {
   abstrakEn: string;
   kataKunci: string[];
   halaman: string | null;
+  halamanMulai: number | null;
+  halamanSelesai: number | null;
+  referensi: string | null;
   bahasa: string;
   doi: string | null;
   lisensi: string;

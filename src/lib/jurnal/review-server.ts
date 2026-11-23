@@ -50,6 +50,7 @@ import { reviewBackendLokal } from "./review-local";
 import { reviewBackendSupabase } from "./review-supabase";
 import {
   notifKeputusan,
+  notifPengingatReviewer,
   notifReviewDiserahkan,
   notifReviewerDitugaskan
 } from "./notifikasi";
@@ -625,4 +626,41 @@ export async function hasilReviewUntukPenulis(
     });
   }
   return hasil;
+}
+
+// ── Tahap Penutup Celah: pengingat tenggat reviewer terjadwal ───────────
+// Dipanggil rute internal berpenjaga rahasia bersama (pemicu: Worker
+// cron Cloudflare). Satu tahap terurgent yang belum terkirim per
+// penugasan per larian; tahap dicatat sesudah surat dikirim agar
+// larian berikutnya tidak mengulang (idempoten per tahap).
+export type TahapPengingat = "h7" | "h0" | "lewat";
+
+export async function jalankanPengingatReviewer(
+  sekarang: Date = new Date()
+): Promise<{ terkirim: { kode: string; tahap: TahapPengingat }[] }> {
+  const b = await backend();
+  const aktif = await b.daftarPenugasanAktifSemua();
+  const terkirim: { kode: string; tahap: TahapPengingat }[] = [];
+  for (const a of aktif) {
+    if (!a.tenggat) continue;
+    const sisaHari =
+      (new Date(a.tenggat).getTime() - sekarang.getTime()) / 86400000;
+    let tahap: TahapPengingat | null = null;
+    if (sisaHari <= -7 && !a.pengingatLewatPada) tahap = "lewat";
+    else if (sisaHari <= 0 && !a.pengingatH0Pada) tahap = "h0";
+    else if (sisaHari <= 7 && !a.pengingatH7Pada) tahap = "h7";
+    if (!tahap) continue;
+    const naskah = await getSubmission(a.kode);
+    await notifPengingatReviewer({
+      kode: a.kode,
+      judul: naskah?.judul ?? a.kode,
+      reviewerEmail: a.reviewerEmail,
+      putaran: a.putaran,
+      tenggatIso: a.tenggat,
+      tahap
+    });
+    await b.tandaiPengingat(a.id, tahap, sekarang.toISOString());
+    terkirim.push({ kode: a.kode, tahap });
+  }
+  return { terkirim };
 }

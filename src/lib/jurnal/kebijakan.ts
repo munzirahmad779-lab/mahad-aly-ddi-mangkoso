@@ -36,6 +36,12 @@ export const HALAMAN_KEBIJAKAN: HalamanKebijakan[] = [
           "e-ISSN diajukan ke BRIN sesudah situs publik memuat minimal 5 artikel teks penuh",
           "DOI diaktifkan per artikel sesudah e-ISSN terbit"
         ]
+      },
+      {
+        subjudul: "Sistem pengelolaan",
+        paragraf: [
+          "Jurnal dikelola dengan sistem manajemen jurnal open-access satu jurnal yang mencakup alur submisi, telaah sejawat double-blind, copyediting, produksi, dan penerbitan terbitan, dengan metadata Dublin Core, OAI-PMH, dan DOI Crossref; sistem ini dirancang untuk memenuhi persyaratan e-ISSN BRIN, pendaftaran Garuda, dan akreditasi ARJUNA/SINTA. Sistem ini bukan OJS dan tidak mengklaim seluruh fitur OJS."
+        ]
       }
     ]
   },
@@ -140,7 +146,7 @@ export const HALAMAN_KEBIJAKAN: HalamanKebijakan[] = [
     bagian: [
       {
         butir: [
-          "Biaya: gratis bagi penulis pada tahap awal (keputusan dapat ditinjau pimpinan)",
+          "Biaya: Rp0. Jurnal tidak memungut biaya submisi, biaya pemrosesan, maupun biaya publikasi (APC Rp0) dari penulis pada semua tahap.",
           "Lisensi usulan: CC BY 4.0; hak cipta tetap pada penulis dan jurnal memegang hak terbit pertama"
         ]
       }

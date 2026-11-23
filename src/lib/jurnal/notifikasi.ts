@@ -237,6 +237,44 @@ export async function notifReviewerDitugaskan(input: {
   ]);
 }
 
+// 2b. Pengingat tenggat reviewer (Tahap Penutup Celah, butir S3).
+// Dipanggil jalur terjadwal; tahap menentukan bunyi surat. Identitas
+// penulis tidak pernah dicantumkan (double-blind).
+export async function notifPengingatReviewer(input: {
+  kode: string;
+  judul: string;
+  reviewerEmail: string;
+  putaran: number;
+  tenggatIso: string;
+  tahap: "h7" | "h0" | "lewat";
+}): Promise<void> {
+  const tenggat = new Date(input.tenggatIso).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+  const pembuka =
+    input.tahap === "h7"
+      ? `Tenggat penyerahan telaah Anda untuk naskah berikut tinggal tujuh hari lagi, yaitu <strong>${larikanHtml(tenggat)}</strong>.`
+      : input.tahap === "h0"
+        ? `Hari ini adalah tenggat penyerahan telaah Anda untuk naskah berikut (<strong>${larikanHtml(tenggat)}</strong>).`
+        : `Tenggat penyerahan telaah Anda untuk naskah berikut telah lewat tujuh hari (tenggat <strong>${larikanHtml(tenggat)}</strong>). Bila ada kendala, mohon kabari redaksi lewat Dasbor Reviewer.`;
+  await kirimDanCatat(input.kode, `pengingat tenggat telaah (${input.tahap})`, [
+    {
+      ke: input.reviewerEmail,
+      subjek: `[${input.kode}] Pengingat tenggat telaah putaran ${input.putaran}`,
+      html: badanEmail(
+        "Pengingat Tenggat Telaah",
+        `<p>Assalamu'alaikum Warahmatullahi Wabarakatuh,</p>
+         <p>${pembuka}</p>
+         <p>Naskah: <em>"${larikanHtml(input.judul)}"</em> (kode ${larikanHtml(input.kode)}, putaran ${input.putaran}).</p>
+         <p>Silakan serahkan telaah Anda lewat Dasbor Reviewer pada laman jurnal.</p>
+         <p>Wassalamu'alaikum Warahmatullahi Wabarakatuh,<br/><strong>Redaksi ${larikanHtml(NAMA_JURNAL)}</strong></p>`
+      )
+    }
+  ]);
+}
+
 // 3. Review diserahkan: ke editor. Identitas reviewer tidak dicantumkan,
 // sejalan dengan catatan linimasa yang anonim.
 export async function notifReviewDiserahkan(input: {

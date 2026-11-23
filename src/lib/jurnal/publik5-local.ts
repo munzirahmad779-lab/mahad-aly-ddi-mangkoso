@@ -18,6 +18,8 @@ import {
   muatDataAlurLokal,
   tarikArtikelLokal,
   tetapkanDoiLokal,
+  tetapkanMetadataLokal,
+  tetapkanStatusDoiLokal,
   tulisJsonBerkas
 } from "./store-local";
 import type {
@@ -110,6 +112,14 @@ export const publik5BackendLokal: Publik5Backend = {
 
   async tetapkanDoi(kode, doi) {
     return (await tetapkanDoiLokal(kode, doi)) !== null;
+  },
+
+  async tetapkanMetadataArtikel(kode, meta) {
+    return (await tetapkanMetadataLokal(kode, meta)) !== null;
+  },
+
+  async tetapkanStatusDoi(kode, status, idDeposit) {
+    return (await tetapkanStatusDoiLokal(kode, status, idDeposit)) !== null;
   },
 
   async tarikArtikel(kode, alasan) {

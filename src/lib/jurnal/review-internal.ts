@@ -39,6 +39,11 @@ export interface PenugasanInternal {
   komentarPenulis: string | null;
   komentarEditor: string | null;
   diserahkanPada: string | null;
+  // Tahap Penutup Celah: cap waktu pengingat tenggat yang sudah
+  // terkirim per tahap (idempotensi jalur terjadwal).
+  pengingatH7Pada: string | null;
+  pengingatH0Pada: string | null;
+  pengingatLewatPada: string | null;
 }
 
 export interface BerkasInternal {
@@ -82,6 +87,14 @@ export interface ReviewBackend {
     keputusan: JurnalReviewDecision
   ): Promise<void>;
   ambilPenugasanSemua(kode: string): Promise<PenugasanInternal[]>;
+  // Tahap Penutup Celah: daftar penugasan aktif lintas naskah untuk
+  // jalur pengingat terjadwal, dan penanda tahap pengingat terkirim.
+  daftarPenugasanAktifSemua(): Promise<PenugasanInternal[]>;
+  tandaiPengingat(
+    id: string,
+    tahap: "h7" | "h0" | "lewat",
+    pada: string
+  ): Promise<void>;
   ambilPenugasanById(id: string): Promise<PenugasanInternal | null>;
   buatPenugasan(data: {
     kode: string;

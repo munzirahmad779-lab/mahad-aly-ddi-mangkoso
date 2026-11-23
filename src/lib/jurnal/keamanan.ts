@@ -33,7 +33,10 @@ export type JenisPeristiwaKeamanan =
   | "turnstile_gagal"
   | "turnstile_dilewati"
   | "kode_tidak_sah"
-  | "review_ditolak";
+  | "review_ditolak"
+  | "reset_sandi_diminta"
+  | "reset_sandi_gagal"
+  | "reset_sandi_selesai";
 
 export interface DetailPeristiwaKeamanan {
   ip?: string | null;

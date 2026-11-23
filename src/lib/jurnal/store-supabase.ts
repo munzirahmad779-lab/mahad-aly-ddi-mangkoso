@@ -299,11 +299,18 @@ interface BarisNaskahLengkap extends BarisNaskah {
   abstract_en: string | null;
   keywords: string[] | null;
   ai_statement: string | null;
+  doi: string | null;
+  first_page: number | null;
+  last_page: number | null;
+  references_text: string | null;
+  doi_status: string | null;
+  crossref_submission_id: string | null;
+  doi_deposited_at: string | null;
 }
 
 const KOLOM_NASKAH_LENGKAP =
   KOLOM_NASKAH +
-  ", section_id, language, title_en, abstract_en, keywords, ai_statement";
+  ", section_id, language, title_en, abstract_en, keywords, ai_statement, doi, first_page, last_page, references_text, doi_status, crossref_submission_id, doi_deposited_at";
 
 interface BarisPenulisLengkap {
   submission_id: string;
@@ -432,7 +439,17 @@ function keTampilanLengkap(
       bucket: b.r2_bucket,
       kunci: b.r2_key
     })),
-    pernyataanAi: n.ai_statement
+    pernyataanAi: n.ai_statement,
+    doi: n.doi ?? null,
+    halamanMulai: n.first_page ?? null,
+    halamanSelesai: n.last_page ?? null,
+    referensi: n.references_text ?? null,
+    doiStatus:
+      n.doi_status === "terdeposit" || n.doi_status === "gagal"
+        ? n.doi_status
+        : "belum",
+    idDepositCrossref: n.crossref_submission_id ?? null,
+    doiTerdepositPada: n.doi_deposited_at ?? null
   };
 }
 

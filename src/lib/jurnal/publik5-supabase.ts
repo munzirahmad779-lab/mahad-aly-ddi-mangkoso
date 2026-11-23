@@ -107,6 +107,39 @@ export const publik5BackendSupabase: Publik5Backend = {
     return (data ?? []).length > 0;
   },
 
+  async tetapkanMetadataArtikel(kode, meta) {
+    const { data, error } = await supabaseAdmin
+      .from("jurnal_submissions")
+      .update({
+        first_page: meta.halamanMulai,
+        last_page: meta.halamanSelesai,
+        references_text: meta.referensi,
+        pages:
+          meta.halamanMulai != null && meta.halamanSelesai != null
+            ? `${meta.halamanMulai}-${meta.halamanSelesai}`
+            : null
+      })
+      .eq("tracking_code", kode.trim().toUpperCase())
+      .select("id");
+    if (error) throw new Error(`Gagal menetapkan metadata artikel: ${error.message}`);
+    return (data ?? []).length > 0;
+  },
+
+  async tetapkanStatusDoi(kode, status, idDeposit) {
+    const { data, error } = await supabaseAdmin
+      .from("jurnal_submissions")
+      .update({
+        doi_status: status,
+        crossref_submission_id: idDeposit,
+        doi_deposited_at:
+          status === "terdeposit" ? new Date().toISOString() : null
+      })
+      .eq("tracking_code", kode.trim().toUpperCase())
+      .select("id");
+    if (error) throw new Error(`Gagal menetapkan status DOI: ${error.message}`);
+    return (data ?? []).length > 0;
+  },
+
   async tarikArtikel(kode, alasan) {
     const { data, error } = await supabaseAdmin
       .from("jurnal_submissions")

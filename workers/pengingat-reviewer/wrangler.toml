@@ -1,0 +1,9 @@
+name = "jurnal-pengingat-reviewer"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[triggers]
+crons = ["0 1 * * *"]
+
+[vars]
+TARGET_URL = "https://mahadaly-ddimangkoso.ac.id/api/jurnal/internal/pengingat"

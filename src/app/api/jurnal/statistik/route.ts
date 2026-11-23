@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ringkasanStatistik } from "@/lib/jurnal/publik5-server";
+import { ringkasanStatistikEditorial } from "@/lib/jurnal/statistik-editorial";
 import { tuntutStafJurnal } from "@/lib/jurnal/gerbang";
 import { batasiLajuJurnal } from "@/lib/jurnal/keamanan";
 
@@ -17,8 +18,11 @@ export async function GET(req: NextRequest) {
   const gerbang = await tuntutStafJurnal(req, "statistik");
   if (!gerbang.ok) return gerbang.response;
   try {
-    const statistik = await ringkasanStatistik();
-    return NextResponse.json({ statistik });
+    const [statistik, editorial] = await Promise.all([
+      ringkasanStatistik(),
+      ringkasanStatistikEditorial()
+    ]);
+    return NextResponse.json({ statistik, editorial });
   } catch (err) {
     console.error(
       "GET /api/jurnal/statistik gagal:",

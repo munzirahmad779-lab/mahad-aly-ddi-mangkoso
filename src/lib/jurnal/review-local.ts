@@ -46,7 +46,10 @@ function penugasanKeInternal(p: PenugasanReviewLokal): PenugasanInternal {
     rekomendasi: (p.rekomendasi as PenugasanInternal["rekomendasi"]) ?? null,
     komentarPenulis: p.komentarPenulis,
     komentarEditor: p.komentarEditor,
-    diserahkanPada: p.diserahkanPada
+    diserahkanPada: p.diserahkanPada,
+    pengingatH7Pada: p.pengingatH7Pada ?? null,
+    pengingatH0Pada: p.pengingatH0Pada ?? null,
+    pengingatLewatPada: p.pengingatLewatPada ?? null
   };
 }
 
@@ -125,6 +128,23 @@ export const reviewBackendLokal: ReviewBackend = {
     const data = await muatDataReviewLokal();
     const target = data.penugasan.find((p) => p.id === id);
     return target ? penugasanKeInternal(target) : null;
+  },
+
+  async daftarPenugasanAktifSemua() {
+    const data = await muatDataReviewLokal();
+    return data.penugasan
+      .filter((p) => p.status === "accepted" && p.tenggat)
+      .map(penugasanKeInternal);
+  },
+
+  async tandaiPengingat(id, tahap, pada) {
+    const data = await muatDataReviewLokal();
+    const target = data.penugasan.find((p) => p.id === id);
+    if (!target) return;
+    if (tahap === "h7") target.pengingatH7Pada = pada;
+    else if (tahap === "h0") target.pengingatH0Pada = pada;
+    else target.pengingatLewatPada = pada;
+    await simpanDataReviewLokal(data);
   },
 
   async buatPenugasan({ kode, putaran, reviewer, tenggat }) {

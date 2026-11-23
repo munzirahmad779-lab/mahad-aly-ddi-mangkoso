@@ -102,7 +102,13 @@ export async function daftarArtikelDoiStaf(): Promise<JurnalArtikelDoiView[]> {
       judul: n.judul,
       status: n.status,
       doi: n.doi ?? null,
-      ditarikPada: n.ditarikPada ?? null
+      ditarikPada: n.ditarikPada ?? null,
+      halamanMulai: n.halamanMulai ?? null,
+      halamanSelesai: n.halamanSelesai ?? null,
+      referensi: n.referensi ?? null,
+      doiStatus: n.doiStatus ?? "belum",
+      idDepositCrossref: n.idDepositCrossref ?? null,
+      doiTerdepositPada: n.doiTerdepositPada ?? null
     }))
     .sort((a, b) => a.kode.localeCompare(b.kode));
 }
@@ -132,6 +138,95 @@ export async function tetapkanDoiArtikel(
   }
   const ok = await (await backend()).tetapkanDoi(target.kode, doi);
   return ok ? null : "Gagal menyimpan DOI.";
+}
+
+// Tahap Penutup Celah: metadata artikel yang mengunci sebelum deposit
+// (halaman integer awal/akhir dan referensi) serta status deposit DOI.
+// Keduanya hanya untuk artikel terbit yang belum ditarik, sama seperti
+// penetapan DOI.
+export async function tetapkanMetadataArtikel(
+  kode: string,
+  metaMentah: {
+    halamanMulai?: unknown;
+    halamanSelesai?: unknown;
+    referensi?: unknown;
+  }
+): Promise<string | null> {
+  const target = (await listSubmissions()).find(
+    (n) => n.kode === kode.trim().toUpperCase()
+  );
+  if (!target) return "Naskah tidak ditemukan.";
+  if (target.status !== "published") {
+    return "Metadata hanya dapat diisi untuk artikel yang sudah terbit.";
+  }
+  if (target.ditarikPada) return "Artikel sudah ditarik.";
+  const keHalaman = (v: unknown): number | null | "galat" => {
+    if (v === null || v === undefined || v === "") return null;
+    const n = typeof v === "number" ? v : Number(v);
+    return Number.isInteger(n) && n >= 1 && n <= 100000 ? n : "galat";
+  };
+  const mulai = keHalaman(metaMentah.halamanMulai);
+  const selesai = keHalaman(metaMentah.halamanSelesai);
+  if (mulai === "galat" || selesai === "galat") {
+    return "Nomor halaman harus bilangan bulat positif.";
+  }
+  if ((mulai === null) !== (selesai === null)) {
+    return "Halaman awal dan halaman akhir harus diisi berpasangan.";
+  }
+  if (mulai !== null && selesai !== null && selesai < mulai) {
+    return "Halaman akhir tidak boleh lebih kecil dari halaman awal.";
+  }
+  let referensi: string | null = null;
+  if (typeof metaMentah.referensi === "string" && metaMentah.referensi.trim()) {
+    referensi = metaMentah.referensi.trim();
+    if (referensi.length > 20000) return "Daftar referensi terlalu panjang.";
+  } else if (
+    metaMentah.referensi !== null &&
+    metaMentah.referensi !== undefined &&
+    metaMentah.referensi !== ""
+  ) {
+    return "Referensi harus berupa teks atau dikosongkan.";
+  }
+  const ok = await (await backend()).tetapkanMetadataArtikel(target.kode, {
+    halamanMulai: mulai,
+    halamanSelesai: selesai,
+    referensi
+  });
+  return ok ? null : "Gagal menyimpan metadata artikel.";
+}
+
+export async function tetapkanStatusDoiArtikel(
+  kode: string,
+  statusMentah: unknown,
+  idDepositMentah: unknown
+): Promise<string | null> {
+  const target = (await listSubmissions()).find(
+    (n) => n.kode === kode.trim().toUpperCase()
+  );
+  if (!target) return "Naskah tidak ditemukan.";
+  if (target.status !== "published") {
+    return "Status deposit hanya untuk artikel yang sudah terbit.";
+  }
+  if (target.ditarikPada) return "Artikel sudah ditarik.";
+  if (!target.doi) return "Artikel ini belum memiliki DOI.";
+  if (
+    statusMentah !== "belum" &&
+    statusMentah !== "terdeposit" &&
+    statusMentah !== "gagal"
+  ) {
+    return "Status deposit tidak sah.";
+  }
+  let idDeposit: string | null = null;
+  if (typeof idDepositMentah === "string" && idDepositMentah.trim()) {
+    idDeposit = idDepositMentah.trim();
+    if (idDeposit.length > 120) return "ID deposit terlalu panjang.";
+  }
+  const ok = await (await backend()).tetapkanStatusDoi(
+    target.kode,
+    statusMentah,
+    idDeposit
+  );
+  return ok ? null : "Gagal menyimpan status deposit DOI.";
 }
 
 export async function tarikArtikelTerbit(

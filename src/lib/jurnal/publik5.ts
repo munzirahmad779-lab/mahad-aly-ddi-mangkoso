@@ -40,6 +40,13 @@ export interface JurnalArtikelDoiView {
   status: string;
   doi: string | null;
   ditarikPada: string | null;
+  // Tahap Penutup Celah: metadata artikel dan status deposit DOI.
+  halamanMulai: number | null;
+  halamanSelesai: number | null;
+  referensi: string | null;
+  doiStatus: "belum" | "terdeposit" | "gagal";
+  idDepositCrossref: string | null;
+  doiTerdepositPada: string | null;
 }
 
 // Pola DOI: awalan 10.<registrant>/<suffix> tanpa spasi. Suffix boleh

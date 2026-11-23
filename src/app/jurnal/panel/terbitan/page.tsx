@@ -279,6 +279,40 @@ export default function PanelTerbitanPage() {
     setSibuk(false);
   }
 
+  async function unduhXmlCrossref(slug: string) {
+    const token = await ambilToken();
+    if (!token) {
+      setGalat("Sesi manajer jurnal tidak ditemukan. Masuk ulang.");
+      return;
+    }
+    setSibuk(true);
+    setGalat(null);
+    try {
+      const res = await fetch(
+        `/api/jurnal/terbitan/${encodeURIComponent(slug)}/crossref-xml`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setGalat(data?.error || "Gagal membuat XML Crossref.");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `crossref-${slug}.xml`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setPesan(
+        `XML Crossref ${slug} diunduh (${res.headers.get("X-Jumlah-Artikel") ?? "?"} artikel, ${res.headers.get("X-Terlewat-Tanpa-Doi") ?? "0"} terlewat tanpa DOI).`
+      );
+    } catch {
+      setGalat("Gagal menghubungi server.");
+    }
+    setSibuk(false);
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8">
       <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
@@ -519,6 +553,16 @@ export default function PanelTerbitanPage() {
                       ? ` — tanggal terbit: ${t.tanggalTerbit.slice(0, 10)}`
                       : ""}
                   </p>
+                  {t.status === "published" && (
+                    <button
+                      type="button"
+                      disabled={sibuk}
+                      onClick={() => void unduhXmlCrossref(t.slug)}
+                      className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-1.5 transition disabled:opacity-60"
+                    >
+                      Unduh XML Deposit Crossref
+                    </button>
+                  )}
                   {t.uraian && (
                     <p className="text-sm text-slate-600">{t.uraian}</p>
                   )}

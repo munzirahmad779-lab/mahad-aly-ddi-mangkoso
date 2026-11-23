@@ -590,7 +590,7 @@ export const alurBackendSupabase: AlurBackend = {
     const { data, error } = await supabaseAdmin
       .from("jurnal_submissions")
       .select(
-        "id, tracking_code, title_id, abstract_id, abstract_en, keywords, language, pages, doi, license, ai_statement, section_id, issue_id, issue_order"
+        "id, tracking_code, title_id, abstract_id, abstract_en, keywords, language, pages, first_page, last_page, references_text, doi, license, ai_statement, section_id, issue_id, issue_order"
       )
       .eq("status", "published")
       .is("withdrawn_at", null)
@@ -645,6 +645,9 @@ export const alurBackendSupabase: AlurBackend = {
         abstrakEn: (b.abstract_en as string) ?? "",
         kataKunci: (b.keywords as string[]) ?? [],
         halaman: (b.pages as string) ?? null,
+        halamanMulai: (b.first_page as number) ?? null,
+        halamanSelesai: (b.last_page as number) ?? null,
+        referensi: (b.references_text as string) ?? null,
         bahasa: (b.language as string) ?? "id",
         doi: (b.doi as string) ?? null,
         lisensi: (b.license as string) ?? "CC BY 4.0",

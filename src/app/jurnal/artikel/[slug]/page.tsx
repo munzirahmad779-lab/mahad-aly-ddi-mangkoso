@@ -341,6 +341,17 @@ export default async function ArtikelJurnalPage({
           </>
         )}
 
+        {artikel.referensi && (
+          <>
+            <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
+              Daftar Pustaka
+            </h2>
+            <div className="text-sm text-slate-700 leading-relaxed mt-2 whitespace-pre-line">
+              {artikel.referensi}
+            </div>
+          </>
+        )}
+
         <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
           {teks.caraMengutip}
         </h2>

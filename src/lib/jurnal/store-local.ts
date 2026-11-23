@@ -13,7 +13,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
-import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import {
   labelStatus,
   type JurnalRiwayatItem,
@@ -55,6 +55,16 @@ export interface CatatanLokal {
   doi?: string | null;
   ditarikPada?: string | null;
   alasanTarik?: string | null;
+  // Tahap Penutup Celah (migrasi 009): metadata yang mengunci sebelum
+  // Terbitan 1. Halaman disimpan sebagai integer awal/akhir (bukan
+  // dihitung dari urutan daftar isi), referensi untuk deposit Crossref,
+  // dan status deposit DOI per artikel.
+  halamanMulai?: number | null;
+  halamanSelesai?: number | null;
+  referensi?: string | null;
+  doiStatus?: "belum" | "terdeposit" | "gagal";
+  idDepositCrossref?: string | null;
+  doiTerdepositPada?: string | null;
 }
 
 // Catatan lama versi uji memakai label Indonesia sebagai status. Petakan
@@ -117,7 +127,13 @@ function keTampilan(n: CatatanLokal): JurnalSubmissionView {
     })),
     pernyataanAi: n.pernyataanAi ?? null,
     doi: n.doi ?? null,
-    ditarikPada: n.ditarikPada ?? null
+    ditarikPada: n.ditarikPada ?? null,
+    halamanMulai: n.halamanMulai ?? null,
+    halamanSelesai: n.halamanSelesai ?? null,
+    referensi: n.referensi ?? null,
+    doiStatus: n.doiStatus ?? "belum",
+    idDepositCrossref: n.idDepositCrossref ?? null,
+    doiTerdepositPada: n.doiTerdepositPada ?? null
   };
 }
 
@@ -290,6 +306,26 @@ async function muat(): Promise<CatatanLokal[]> {
       pernyataanAi:
         typeof n.pernyataanAi === "string" ? (n.pernyataanAi as string) : null,
       doi: typeof n.doi === "string" ? (n.doi as string) : null,
+      halamanMulai:
+        typeof n.halamanMulai === "number" ? (n.halamanMulai as number) : null,
+      halamanSelesai:
+        typeof n.halamanSelesai === "number"
+          ? (n.halamanSelesai as number)
+          : null,
+      referensi:
+        typeof n.referensi === "string" ? (n.referensi as string) : null,
+      doiStatus:
+        n.doiStatus === "terdeposit" || n.doiStatus === "gagal"
+          ? (n.doiStatus as "terdeposit" | "gagal")
+          : "belum",
+      idDepositCrossref:
+        typeof n.idDepositCrossref === "string"
+          ? (n.idDepositCrossref as string)
+          : null,
+      doiTerdepositPada:
+        typeof n.doiTerdepositPada === "string"
+          ? (n.doiTerdepositPada as string)
+          : null,
       ditarikPada:
         typeof n.ditarikPada === "string" ? (n.ditarikPada as string) : null,
       alasanTarik:
@@ -410,6 +446,44 @@ export async function tetapkanDoiLokal(
   const naskah = data.find((n) => n.kode === target);
   if (!naskah) return null;
   naskah.doi = doi;
+  await simpan(data);
+  return keTampilan(naskah);
+}
+
+// Tahap Penutup Celah: metadata artikel (halaman integer + referensi)
+// dan status deposit DOI. Padanan lokal kolom migrasi 009.
+export async function tetapkanMetadataLokal(
+  kode: string,
+  meta: {
+    halamanMulai: number | null;
+    halamanSelesai: number | null;
+    referensi: string | null;
+  }
+): Promise<JurnalSubmissionView | null> {
+  const data = await muat();
+  const target = kode.trim().toUpperCase();
+  const naskah = data.find((n) => n.kode === target);
+  if (!naskah) return null;
+  naskah.halamanMulai = meta.halamanMulai;
+  naskah.halamanSelesai = meta.halamanSelesai;
+  naskah.referensi = meta.referensi;
+  await simpan(data);
+  return keTampilan(naskah);
+}
+
+export async function tetapkanStatusDoiLokal(
+  kode: string,
+  status: "belum" | "terdeposit" | "gagal",
+  idDeposit: string | null
+): Promise<JurnalSubmissionView | null> {
+  const data = await muat();
+  const target = kode.trim().toUpperCase();
+  const naskah = data.find((n) => n.kode === target);
+  if (!naskah) return null;
+  naskah.doiStatus = status;
+  naskah.idDepositCrossref = idDeposit;
+  naskah.doiTerdepositPada =
+    status === "terdeposit" ? new Date().toISOString() : null;
   await simpan(data);
   return keTampilan(naskah);
 }
@@ -549,6 +623,9 @@ export interface AkunLokal {
   // ["author"]; klaim undangan reviewer memberi "reviewer". Peran staf
   // tidak disimpan di sini: ia diturunkan dari env staf uji di server.
   peran: JurnalRole[];
+  // Tahap Penutup Celah: penanda nonaktif (manajemen akun). Akun lama
+  // tanpa field ini dianggap aktif.
+  aktif?: boolean;
 }
 
 interface AkunLokalTersimpan extends AkunLokal {
@@ -615,7 +692,8 @@ function akunPublik(a: AkunLokalTersimpan): AkunLokal {
     orcid: a.orcid,
     consentVersi: a.consentVersi,
     dibuatPada: a.dibuatPada,
-    peran: Array.isArray(a.peran) && a.peran.length > 0 ? a.peran : ["author"]
+    peran: Array.isArray(a.peran) && a.peran.length > 0 ? a.peran : ["author"],
+    aktif: a.aktif !== false
   };
 }
 
@@ -657,6 +735,7 @@ export async function verifikasiAkunLokal(
   const akun = await muatAkun();
   const target = akun.find((a) => a.email === email.trim().toLowerCase());
   if (!target) return null;
+  if (target.aktif === false) return null;
   return cocokKataSandi(kataSandi, target.kataSandiHash)
     ? akunPublik(target)
     : null;
@@ -692,6 +771,127 @@ export async function tambahPeranAkunLokal(
     await simpanAkun(akun);
   }
   return akunPublik(target);
+}
+
+// ── Tahap Penutup Celah: manajemen akun dan reset kata sandi lokal ──────
+// Padanan lokal manajemen pengguna mode supabase (is_active dan peran di
+// jurnal_users/jurnal_user_roles) serta tabel jurnal_password_resets
+// pada migrasi 009.
+
+export async function tetapkanPeranAkunLokal(
+  email: string,
+  peranBaru: JurnalRole[]
+): Promise<AkunLokal | null> {
+  const akun = await muatAkun();
+  const target = akun.find((a) => a.email === email.trim().toLowerCase());
+  if (!target) return null;
+  target.peran = peranBaru.length > 0 ? peranBaru : ["author"];
+  await simpanAkun(akun);
+  return akunPublik(target);
+}
+
+export async function tetapkanAktifAkunLokal(
+  email: string,
+  aktif: boolean
+): Promise<AkunLokal | null> {
+  const akun = await muatAkun();
+  const target = akun.find((a) => a.email === email.trim().toLowerCase());
+  if (!target) return null;
+  target.aktif = aktif;
+  await simpanAkun(akun);
+  return akunPublik(target);
+}
+
+export async function gantiKataSandiLokal(
+  email: string,
+  kataSandiBaru: string
+): Promise<boolean> {
+  const akun = await muatAkun();
+  const target = akun.find((a) => a.email === email.trim().toLowerCase());
+  if (!target) return false;
+  target.kataSandiHash = hashKataSandi(kataSandiBaru);
+  await simpanAkun(akun);
+  return true;
+}
+
+interface TokenResetLokal {
+  email: string;
+  tokenHash: string;
+  kedaluwarsaPada: string;
+  dipakaiPada: string | null;
+  dibuatPada: string;
+}
+
+const FILE_RESET = path.join(DIR, "reset-sandi.json");
+let memoriReset: TokenResetLokal[] | null = null;
+
+async function muatReset(): Promise<TokenResetLokal[]> {
+  const data = await bacaJsonBerkas<unknown>(FILE_RESET);
+  if (data === null) {
+    if (!memoriReset) memoriReset = [];
+    return memoriReset;
+  }
+  memoriReset = Array.isArray(data) ? (data as TokenResetLokal[]) : [];
+  return memoriReset;
+}
+
+async function simpanReset(baru?: TokenResetLokal[]): Promise<void> {
+  const data = baru ?? memoriReset ?? [];
+  memoriReset = data;
+  await antrianUntuk(FILE_RESET)(async () => {
+    try {
+      await tulisJsonBerkas(FILE_RESET, data);
+    } catch {
+      // Tetap hidup di memori proses, sama seperti store lokal lain.
+    }
+  });
+}
+
+function hashTokenReset(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+// Membuat token reset untuk akun yang ada. Mengembalikan token mentah
+// (hanya hashnya yang disimpan) atau null bila akun tidak ditemukan.
+export async function buatTokenResetLokal(
+  email: string
+): Promise<{ token: string; kedaluwarsaPada: string } | null> {
+  const target = await cariAkunLokal(email);
+  if (!target) return null;
+  const token = randomBytes(32).toString("hex");
+  const kedaluwarsaPada = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  const data = await muatReset();
+  const bersih = data.filter(
+    (t) => t.email !== target.email || t.dipakaiPada !== null
+  );
+  bersih.push({
+    email: target.email,
+    tokenHash: hashTokenReset(token),
+    kedaluwarsaPada,
+    dipakaiPada: null,
+    dibuatPada: new Date().toISOString()
+  });
+  await simpanReset(bersih);
+  return { token, kedaluwarsaPada };
+}
+
+// Memakai token reset: sah bila token cocok, belum dipakai, dan belum
+// kedaluwarsa. Kata sandi diganti dan token ditandai terpakai dalam satu
+// langkah.
+export async function pakaiTokenResetLokal(
+  token: string,
+  kataSandiBaru: string
+): Promise<boolean> {
+  const data = await muatReset();
+  const hash = hashTokenReset(token.trim());
+  const target = data.find((t) => t.tokenHash === hash && !t.dipakaiPada);
+  if (!target) return false;
+  if (new Date(target.kedaluwarsaPada) <= new Date()) return false;
+  const ok = await gantiKataSandiLokal(target.email, kataSandiBaru);
+  if (!ok) return false;
+  target.dipakaiPada = new Date().toISOString();
+  await simpanReset(data);
+  return true;
 }
 
 // Peran lengkap akun uji lokal: gabungan peran tersimpan akun dengan
@@ -805,6 +1005,10 @@ export interface PenugasanReviewLokal {
   komentarPenulis: string | null;
   komentarEditor: string | null;
   diserahkanPada: string | null;
+  // Tahap Penutup Celah: cap pengingat tenggat per tahap.
+  pengingatH7Pada?: string | null;
+  pengingatH0Pada?: string | null;
+  pengingatLewatPada?: string | null;
 }
 
 export interface BerkasRevisiLokal {

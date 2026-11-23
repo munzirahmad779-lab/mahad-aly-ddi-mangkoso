@@ -76,6 +76,10 @@ export default function MasukJurnalPage() {
           naskah Anda. Belum punya akun?{" "}
           <Link href="/jurnal/daftar" className="text-mahad-green font-semibold underline">
             Daftar akun penulis
+          </Link>{" "}
+          Lupa kata sandi?{" "}
+          <Link href="/jurnal/lupa-sandi" className="text-mahad-green font-semibold underline">
+            Atur ulang kata sandi
           </Link>
         </p>
 

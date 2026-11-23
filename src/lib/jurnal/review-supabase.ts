@@ -65,6 +65,9 @@ interface BarisPenugasan {
   recommendation: string | null;
   comments_for_author: string | null;
   comments_for_editor: string | null;
+  reminder_h7_at: string | null;
+  reminder_h0_at: string | null;
+  reminder_overdue_at: string | null;
 }
 
 async function lengkapiPenugasan(
@@ -103,13 +106,16 @@ async function lengkapiPenugasan(
         (b.recommendation as PenugasanInternal["rekomendasi"]) ?? null,
       komentarPenulis: b.comments_for_author,
       komentarEditor: b.comments_for_editor,
-      diserahkanPada: b.date_completed
+      diserahkanPada: b.date_completed,
+      pengingatH7Pada: b.reminder_h7_at,
+      pengingatH0Pada: b.reminder_h0_at,
+      pengingatLewatPada: b.reminder_overdue_at
     };
   });
 }
 
 const KOLOM_PENUGASAN =
-  "id, round_id, reviewer_user_id, status, date_assigned, date_due, date_completed, recommendation, comments_for_author, comments_for_editor";
+  "id, round_id, reviewer_user_id, status, date_assigned, date_due, date_completed, recommendation, comments_for_author, comments_for_editor, reminder_h7_at, reminder_h0_at, reminder_overdue_at";
 
 export const reviewBackendSupabase: ReviewBackend = {
   async daftarPenugasanReviewer(reviewer) {
@@ -243,6 +249,53 @@ export const reviewBackendSupabase: ReviewBackend = {
       .order("date_assigned", { ascending: true });
     if (error) throw new Error(`Gagal membaca penugasan telaah: ${error.message}`);
     return lengkapiPenugasan((data ?? []) as unknown as BarisPenugasan[], peta);
+  },
+
+  async daftarPenugasanAktifSemua() {
+    const { data, error } = await supabaseAdmin
+      .from("jurnal_review_assignments")
+      .select(`${KOLOM_PENUGASAN}, submission_id`)
+      .eq("status", "accepted")
+      .not("date_due", "is", null)
+      .order("date_due", { ascending: true });
+    if (error) throw new Error(`Gagal membaca penugasan aktif: ${error.message}`);
+    const baris = (data ?? []) as unknown as (BarisPenugasan & {
+      submission_id: string;
+    })[];
+    if (baris.length === 0) return [];
+    const submissionIds = [...new Set(baris.map((b) => b.submission_id))];
+    const { data: naskahData, error: galatNaskah } = await supabaseAdmin
+      .from("jurnal_submissions")
+      .select("id, tracking_code")
+      .in("id", submissionIds);
+    if (galatNaskah) {
+      throw new Error(`Gagal membaca naskah penugasan: ${galatNaskah.message}`);
+    }
+    const petaKode = new Map(
+      (naskahData ?? []).map((n) => [n.id as string, n.tracking_code as string])
+    );
+    const peta = new Map<string, { nomor: number; kode: string }>();
+    for (const sid of submissionIds) {
+      const putaran = await ambilBarisPutaran(sid);
+      for (const p of putaran) {
+        peta.set(p.id, { nomor: p.round, kode: petaKode.get(sid) ?? "" });
+      }
+    }
+    return lengkapiPenugasan(baris, peta);
+  },
+
+  async tandaiPengingat(idPenugasan, tahap, pada) {
+    const kolom =
+      tahap === "h7"
+        ? "reminder_h7_at"
+        : tahap === "h0"
+          ? "reminder_h0_at"
+          : "reminder_overdue_at";
+    const { error } = await supabaseAdmin
+      .from("jurnal_review_assignments")
+      .update({ [kolom]: pada })
+      .eq("id", idPenugasan);
+    if (error) throw new Error(`Gagal menandai pengingat: ${error.message}`);
   },
 
   async ambilPenugasanById(idPenugasan) {

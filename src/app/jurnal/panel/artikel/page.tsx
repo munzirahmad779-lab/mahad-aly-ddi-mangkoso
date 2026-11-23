@@ -16,6 +16,15 @@ export default function PanelArtikelPage() {
   const [galat, setGalat] = useState<string | null>(null);
   const [pesan, setPesan] = useState<string | null>(null);
   const [doiInput, setDoiInput] = useState<Record<string, string>>({});
+  const [metaInput, setMetaInput] = useState<
+    Record<string, { mulai: string; selesai: string; referensi: string }>
+  >({});
+  const [statusDoiInput, setStatusDoiInput] = useState<
+    Record<string, string>
+  >({});
+  const [idDepositInput, setIdDepositInput] = useState<
+    Record<string, string>
+  >({});
   const [alasan, setAlasan] = useState<Record<string, string>>({});
   const [sibuk, setSibuk] = useState(false);
 
@@ -155,6 +164,162 @@ export default function PanelArtikelPage() {
                 >
                   Simpan DOI
                 </button>
+              </div>
+            )}
+            {!a.ditarikPada && (
+              <div className="mt-4 border-t border-slate-100 pt-4 space-y-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Metadata Artikel (halaman dan referensi)
+                </p>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <input
+                    type="number"
+                    min={1}
+                    value={
+                      metaInput[a.kode]?.mulai ?? a.halamanMulai ?? ""
+                    }
+                    onChange={(e) =>
+                      setMetaInput({
+                        ...metaInput,
+                        [a.kode]: {
+                          mulai: e.target.value,
+                          selesai:
+                            metaInput[a.kode]?.selesai ??
+                            a.halamanSelesai ??
+                            "",
+                          referensi:
+                            metaInput[a.kode]?.referensi ?? a.referensi ?? ""
+                        }
+                      })
+                    }
+                    placeholder="Halaman awal"
+                    className="w-36 rounded-xl border border-slate-300 px-3.5 py-2 text-sm"
+                  />
+                  <input
+                    type="number"
+                    min={1}
+                    value={
+                      metaInput[a.kode]?.selesai ?? a.halamanSelesai ?? ""
+                    }
+                    onChange={(e) =>
+                      setMetaInput({
+                        ...metaInput,
+                        [a.kode]: {
+                          mulai:
+                            metaInput[a.kode]?.mulai ?? a.halamanMulai ?? "",
+                          selesai: e.target.value,
+                          referensi:
+                            metaInput[a.kode]?.referensi ?? a.referensi ?? ""
+                        }
+                      })
+                    }
+                    placeholder="Halaman akhir"
+                    className="w-36 rounded-xl border border-slate-300 px-3.5 py-2 text-sm"
+                  />
+                </div>
+                <textarea
+                  value={metaInput[a.kode]?.referensi ?? a.referensi ?? ""}
+                  onChange={(e) =>
+                    setMetaInput({
+                      ...metaInput,
+                      [a.kode]: {
+                        mulai: metaInput[a.kode]?.mulai ?? a.halamanMulai ?? "",
+                        selesai:
+                          metaInput[a.kode]?.selesai ?? a.halamanSelesai ?? "",
+                        referensi: e.target.value
+                      }
+                    })
+                  }
+                  placeholder="Daftar pustaka artikel (satu entri per baris), untuk halaman artikel dan deposit Crossref"
+                  rows={4}
+                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm"
+                />
+                <button
+                  disabled={sibuk}
+                  onClick={async () => {
+                    const m = metaInput[a.kode];
+                    if (
+                      await kirim(
+                        `/api/jurnal/artikel/${a.kode}/metadata`,
+                        "PATCH",
+                        {
+                          halamanMulai: m?.mulai ? Number(m.mulai) : null,
+                          halamanSelesai: m?.selesai
+                            ? Number(m.selesai)
+                            : null,
+                          referensi: m?.referensi ?? a.referensi ?? ""
+                        }
+                      )
+                    ) {
+                      setPesan(`Metadata ${a.kode} disimpan.`);
+                      await muat();
+                    }
+                  }}
+                  className="bg-mahad-gold hover:bg-yellow-400 disabled:opacity-60 text-mahad-green-dark font-bold text-sm px-5 py-2 rounded-full shadow transition"
+                >
+                  Simpan Metadata
+                </button>
+              </div>
+            )}
+            {!a.ditarikPada && a.doi && (
+              <div className="mt-4 border-t border-slate-100 pt-4 space-y-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Status Deposit Crossref:{" "}
+                  {a.doiStatus === "terdeposit"
+                    ? `Terdeposit${a.doiTerdepositPada ? ` pada ${new Date(a.doiTerdepositPada).toLocaleDateString("id-ID")}` : ""}`
+                    : a.doiStatus === "gagal"
+                      ? "Gagal"
+                      : "Belum dideposit"}
+                </p>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <select
+                    value={statusDoiInput[a.kode] ?? a.doiStatus}
+                    onChange={(e) =>
+                      setStatusDoiInput({
+                        ...statusDoiInput,
+                        [a.kode]: e.target.value
+                      })
+                    }
+                    className="rounded-xl border border-slate-300 px-3.5 py-2 text-sm"
+                  >
+                    <option value="belum">Belum dideposit</option>
+                    <option value="terdeposit">Terdeposit</option>
+                    <option value="gagal">Gagal</option>
+                  </select>
+                  <input
+                    value={idDepositInput[a.kode] ?? a.idDepositCrossref ?? ""}
+                    onChange={(e) =>
+                      setIdDepositInput({
+                        ...idDepositInput,
+                        [a.kode]: e.target.value
+                      })
+                    }
+                    placeholder="ID pengiriman Crossref (bila ada)"
+                    className="flex-1 min-w-56 rounded-xl border border-slate-300 px-3.5 py-2 text-sm"
+                  />
+                  <button
+                    disabled={sibuk}
+                    onClick={async () => {
+                      if (
+                        await kirim(
+                          `/api/jurnal/artikel/${a.kode}/status-doi`,
+                          "PATCH",
+                          {
+                            status: statusDoiInput[a.kode] ?? a.doiStatus,
+                            idDeposit:
+                              idDepositInput[a.kode] ?? a.idDepositCrossref ?? ""
+                          }
+                        )
+                      ) {
+                        setPesan(`Status deposit ${a.kode} disimpan.`);
+                        await muat();
+                      }
+                    }}
+                    className="bg-mahad-gold hover:bg-yellow-400 disabled:opacity-60 text-mahad-green-dark font-bold text-sm px-5 py-2 rounded-full shadow transition"
+                  >
+                    Simpan Status Deposit
+                  </button>
+                </div>
               </div>
             )}
             {!a.ditarikPada && (
