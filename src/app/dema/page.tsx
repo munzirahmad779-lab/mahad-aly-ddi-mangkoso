@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
@@ -16,24 +16,44 @@ const angkaLatin = (teks?: string) =>
 function FotoPengurus({ src, nama }: { src?: string; nama: string }) {
   const [tampil, setTampil] = useState(false);
   const [gagal, setGagal] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
-  if (!src || gagal) {
+  // Foto yang selesai dimuat sebelum React sempat memasang penangan onLoad
+  // (misalnya dari cache atau dari HTML awal) tidak memicu onLoad lagi, jadi
+  // keadaan selesai dimuat juga diperiksa langsung sesudah komponen terpasang.
+  useEffect(() => {
+    setTampil(false);
+    setGagal(false);
+    const img = imgRef.current;
+    if (img && img.complete) {
+      if (img.naturalWidth > 0) {
+        setTampil(true);
+      } else {
+        setGagal(true);
+      }
+    }
+  }, [src]);
+
+  if (!src) {
     return <span>{nama.charAt(0)}</span>;
   }
 
   return (
     <>
-      {!tampil && <span>{nama.charAt(0)}</span>}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt={nama}
-        onLoad={() => setTampil(true)}
-        onError={() => setGagal(true)}
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
-          tampil ? "opacity-100" : "opacity-0"
-        }`}
-      />
+      {(gagal || !tampil) && <span>{nama.charAt(0)}</span>}
+      {!gagal && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          ref={imgRef}
+          src={src}
+          alt={nama}
+          onLoad={() => setTampil(true)}
+          onError={() => setGagal(true)}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+            tampil ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      )}
     </>
   );
 }
