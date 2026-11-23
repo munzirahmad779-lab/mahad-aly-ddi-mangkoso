@@ -137,17 +137,26 @@ const FILE = path.join(DIR, "submissions.json");
 // sudah memegang data di memori tidak menimpanya dengan keadaan
 // kosong hanya karena satu bacaan gagal.
 export async function bacaJsonBerkas<T>(file: string): Promise<T | null> {
-  for (let percobaan = 0; percobaan < 8; percobaan++) {
+  for (let percobaan = 0; percobaan < 10; percobaan++) {
     let teks: string;
     try {
       teks = await fs.readFile(file, "utf8");
-    } catch {
-      return null;
+    } catch (err) {
+      // Hanya ENOENT yang berarti berkas memang belum ada. Galat baca
+      // sesaat lain (misalnya kehabisan deskriptor berkas di bawah
+      // beban berat) wajib dicoba ulang, bukan diperlakukan sebagai
+      // berkas kosong: temuan regresi 23 Nov 2026, login reviewer
+      // kedua sesudah klaim menjawab 401 karena bacaan sesaatnya
+      // gagal dan pemuat jatuh ke salinan memori yang belum memuat
+      // akun yang baru dibuat.
+      if ((err as NodeJS.ErrnoException)?.code === "ENOENT") return null;
+      await new Promise((r) => setTimeout(r, 50));
+      continue;
     }
     try {
       return JSON.parse(teks) as T;
     } catch {
-      await new Promise((r) => setTimeout(r, 30));
+      await new Promise((r) => setTimeout(r, 50));
     }
   }
   return null;
