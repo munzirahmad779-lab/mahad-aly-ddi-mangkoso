@@ -75,6 +75,15 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    // Batas ukuran metadata: catatan_admin adalah satu kolom teks yang
+    // dibaca utuh oleh banyak jalur; metadata raksasa menanam beban dan
+    // risiko di semuanya.
+    if (JSON.stringify(extraMeta).length > 16 * 1024) {
+      return NextResponse.json(
+        { error: "Ukuran metadata naskah melebihi batas maksimal 16 KB." },
+        { status: 400 }
+      );
+    }
 
     // Tulis memakai klien server (service role), BUKAN klien anon: sesudah
     // gerbang peran di atas, penulisan ini tidak lagi bergantung pada

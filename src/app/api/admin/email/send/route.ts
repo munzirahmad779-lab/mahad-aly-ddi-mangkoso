@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendRawEmail } from "@/lib/email/service";
-import { requireRole } from "@/lib/supabase/admin-guard";
+import { requireSuperAdmin } from "@/lib/supabase/admin-guard";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
-  const auth = await requireRole(req, ["super_admin", "editor"]);
+  // Gerbang dinaikkan ke super_admin saja: route ini mengirim email HTML
+  // bebas ke alamat mana pun dari pengirim resmi kampus, jadi peran
+  // editor tidak lagi cukup (akun editor bocor dapat mengirim phishing
+  // berkedok kampus tanpa jejak).
+  const auth = await requireSuperAdmin(req);
   if (!auth.ok) {
     return auth.response;
   }
+
+  // Batas laju per pemanggil sebagai lapis tambahan.
+  const rl = checkRateLimit(`admin-email-send:${auth.email || getClientIp(req)}`, 10, 60 * 1000);
+  if (!rl.allowed) return rateLimitResponse(rl);
 
   try {
     const body = await req.json();

@@ -117,6 +117,21 @@ export async function POST(request: Request) {
     }
 
     const action = (body.action || "sync").toLowerCase();
+    // Nilai action divalidasi terhadap yang benar-benar dipakai panel
+    // (SpreadsheetSyncPanel mengirim persis "preview" | "sync" |
+    // "rollback"). Perilaku lama memperlakukan nilai tak dikenal apa pun
+    // sebagai sync sungguhan, jadi salah ketik seperti "previe" mengubah
+    // pratinjau aman menjadi penulisan nyata.
+    const VALID_ACTIONS = ["preview", "sync", "rollback"];
+    if (!VALID_ACTIONS.includes(action)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Aksi "${action}" tidak dikenal. Aksi yang sah: ${VALID_ACTIONS.join(", ")}.`
+        },
+        { status: 400 }
+      );
+    }
     const sheetModule = getSheetModule(body.module);
     if (!sheetModule) {
       return NextResponse.json(

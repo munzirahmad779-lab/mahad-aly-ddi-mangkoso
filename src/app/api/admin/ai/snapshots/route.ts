@@ -9,11 +9,22 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const { data } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from("site_content")
       .select("value")
       .eq("key", "ai_content_snapshots")
       .maybeSingle();
+
+    // Galat kueri WAJIB dibaca: perilaku lama menjawab sukses dengan
+    // daftar kosong saat basis data terganggu, menyamarkan gangguan
+    // sebagai "belum ada snapshot".
+    if (error) {
+      console.error("Gagal membaca ai_content_snapshots:", error);
+      return NextResponse.json(
+        { success: false, error: "Gagal mengambil daftar snapshot dari database." },
+        { status: 500 }
+      );
+    }
 
     const snapshots = Array.isArray(data?.value) ? data.value : [];
     return NextResponse.json({

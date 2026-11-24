@@ -3,6 +3,7 @@ import { sendSecurityAlertEmailToAdmins } from "@/lib/email/service";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { SUPER_ADMIN_EMAIL } from "@/lib/admin-constants";
+import { normalizeAdminRole } from "@/lib/supabase/admin-guard";
 
 export async function POST(req: NextRequest) {
   try {
@@ -48,14 +49,23 @@ export async function POST(req: NextRequest) {
     const safeDetails = rawDetails.slice(0, 500).replace(/<[^>]*>?/gm, "");
 
     // 4. Resolusi email penerima dari database (JANGAN percaya input adminEmails dari klien!)
+    // Hanya peran admin (super_admin dan editor) yang menerima peringatan
+    // keamanan; akun penulis aktif TIDAK ikut menerima IP penyerang dan
+    // rincian ancaman (perilaku lama mengirim ke semua akun aktif).
+    // Peran disaring memakai normalizeAdminRole yang sama seperti gerbang
+    // admin, supaya varian penulisan peran di basis data tertangani.
     let verifiedAdminEmails: string[] = [];
     try {
       const { data: dbAdmins } = await supabaseAdmin
         .from("users")
-        .select("email")
+        .select("email, role")
         .eq("is_active", true);
 
       verifiedAdminEmails = (dbAdmins || [])
+        .filter((u: any) => {
+          const role = normalizeAdminRole(u.role);
+          return role === "super_admin" || role === "editor";
+        })
         .map((u: any) => u.email?.trim().toLowerCase())
         .filter(Boolean);
     } catch (fetchErr) {
@@ -67,7 +77,7 @@ export async function POST(req: NextRequest) {
       verifiedAdminEmails.push(defaultAdminEmail);
     }
 
-    const alertResult = await sendSecurityAlertEmailToAdmins({
+    await sendSecurityAlertEmailToAdmins({
       threatType: safeThreatType,
       severity: safeSeverity,
       ip: clientIp,
@@ -82,9 +92,11 @@ export async function POST(req: NextRequest) {
     // mengembalikan { error } dan tidak melempar ke catch di bawah.
     let dbSynced = true;
     try {
+      // Zona Asia/Makassar eksplisit: server berjalan UTC, tanpa ini cap
+      // waktu log ancaman tercatat 8 jam lebih awal dari label WITA-nya.
       const now = new Date();
-      const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
-      const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
+      const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Makassar" });
+      const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Makassar" }) + " WITA";
 
       const newThreat = {
         id: "threat-" + Date.now().toString(),
@@ -107,11 +119,13 @@ export async function POST(req: NextRequest) {
 
       const existingThreats = Array.isArray(existingData?.value) ? existingData.value : [];
 
-      // Auto Pruning: Bersihkan log yang umurnya sudah melebihi 7 hari (7 * 24 * 60 * 60 * 1000 ms)
+      // Auto Pruning: Bersihkan log yang umurnya sudah melebihi 7 hari (7 * 24 * 60 * 60 * 1000 ms).
+      // Entri tanpa createdAt dianggap tertua dan ikut terpangkas; perilaku
+      // lama mempertahankannya selamanya sehingga log tumbuh tanpa batas.
       const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
       const nowMs = now.getTime();
       const validThreats = existingThreats.filter((t: any) => {
-        if (!t.createdAt) return true;
+        if (!t.createdAt) return false;
         const logAge = nowMs - new Date(t.createdAt).getTime();
         return logAge < SEVEN_DAYS_MS;
       });
@@ -172,10 +186,12 @@ export async function POST(req: NextRequest) {
       console.warn("Gagal mencatat log keamanan ke Supabase:", dbErr);
     }
 
+    // Respons ke pemanggil tanpa sesi cukup sukses generik: rincian
+    // pengiriman email (alamat penerima, hasil per alamat) tidak lagi
+    // dimuat karena dapat dipakai memastikan alamat admin yang aktif.
     return NextResponse.json({
       success: true,
       message: "Security alert broadcasted to administrators successfully",
-      details: alertResult,
       dbSynced
     });
   } catch (error: any) {

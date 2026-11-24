@@ -163,8 +163,8 @@ export async function POST(req: NextRequest) {
     // 5. Catat ke arsip Log Aktivitas Admin agar tab Audit Trail langsung terupdate
     try {
       const now = new Date();
-      const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
-      const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
+      const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Makassar" });
+      const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Makassar" }) + " WITA";
       const newAuditLog = {
         id: "log-" + Date.now(),
         user: auth.email || "Super Admin",

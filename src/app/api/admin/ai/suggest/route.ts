@@ -2,12 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/lib/supabase/admin-guard";
 import { isAllowedAiKey, generateContentSuggestion, AllowedAiKey } from "@/lib/ai/editor-service";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+
+const MAX_PROMPT_CHARS = 8000;
 
 export async function POST(req: NextRequest) {
   const auth = await requireRole(req, ["super_admin", "editor"]);
   if (!auth.ok) {
     return auth.response;
   }
+
+  // Batas laju: endpoint ini memanggil layanan AI berbayar, jadi sesi
+  // admin yang bocor tidak boleh membakar kuota tanpa batas.
+  const rl = checkRateLimit(`ai-suggest:${auth.email || getClientIp(req)}`, 20, 60 * 1000);
+  if (!rl.allowed) return rateLimitResponse(rl);
 
   try {
     const body = await req.json().catch(() => ({}));
@@ -16,6 +24,13 @@ export async function POST(req: NextRequest) {
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
       return NextResponse.json(
         { success: false, error: "Prompt atau instruksi wajib diisi." },
+        { status: 400 }
+      );
+    }
+
+    if (prompt.length > MAX_PROMPT_CHARS) {
+      return NextResponse.json(
+        { success: false, error: `Prompt terlalu panjang (${prompt.length} karakter). Maksimal ${MAX_PROMPT_CHARS} karakter.` },
         { status: 400 }
       );
     }

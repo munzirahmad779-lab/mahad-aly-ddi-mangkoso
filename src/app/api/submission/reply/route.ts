@@ -137,9 +137,9 @@ export async function POST(req: NextRequest) {
 
     // 4. Tulis kembali memakai klien server dengan status yang SAMA persis
     // seperti terbaca di langkah 1: endpoint ini tidak dapat menggerakkan
-    // status naskah ke mana pun. Hasil basis data dikembalikan apa adanya:
-    // galat menjadi 500 dengan pesan aslinya, dan nol baris terubah berarti
-    // naskah tidak ada (404).
+    // status naskah ke mana pun. Galat basis data menjadi 500 dengan pesan
+    // generik (rincian hanya di log server; pemanggil endpoint ini tanpa
+    // sesi), dan nol baris terubah berarti naskah tidak ada (404).
     const { data: updated, error: dbError } = await supabaseAdmin
       .from("submissions")
       .update({
@@ -151,8 +151,9 @@ export async function POST(req: NextRequest) {
       .select("id");
 
     if (dbError) {
+      console.error("Balasan penulis gagal tersimpan:", dbError);
       return NextResponse.json(
-        { error: `Balasan gagal tersimpan di database: ${dbError.message}` },
+        { error: "Balasan gagal tersimpan. Silakan coba lagi." },
         { status: 500 }
       );
     }
@@ -167,7 +168,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Submission reply error:", error);
     return NextResponse.json(
-      { error: error?.message || "Internal server error" },
+      { error: "Terjadi kesalahan saat memproses balasan. Silakan coba lagi." },
       { status: 500 }
     );
   }
