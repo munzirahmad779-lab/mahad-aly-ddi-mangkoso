@@ -6,11 +6,18 @@
 //   bila SUPABASE_SERVICE_ROLE_KEY terpasang DAN pemeriksaan ringan ke
 //   tabel jurnal_submissions berhasil (artinya migrasi sudah dijalankan
 //   di proyek tujuan).
-// - "local": berkas JSON uji di .jurnal-uji/ (store-local.ts). Dipakai
-//   bila env tidak tersedia atau tabel belum ada, supaya build dan uji
-//   lokal tidak pernah pecah dan tidak pernah menulis ke basis data
-//   produksi kampus.
+// - "local": berkas JSON uji di .jurnal-uji/ (store-local.ts). Hanya
+//   dipakai bila mode lokal dipilih secara eksplisit
+//   (JURNAL_DATA_MODE=local) atau bila tidak ada konfigurasi supabase
+//   sama sekali (kunci service role tidak terpasang), supaya build dan
+//   uji lokal tidak pernah pecah.
 //
+// GAGAL-TERTUTUP (perbaikan audit Irisan 2): bila konfigurasi
+// menunjukkan supabase yang dipilih (kunci service role terpasang atau
+// JURNAL_DATA_MODE=supabase) tetapi pemeriksaan tabel gagal, deteksi
+// mode MELEMPAR galat yang jelas. Jatuh diam-diam ke berkas JSON lokal
+// pada keadaan itu akan membagi data produksi dan menghidupkan
+// perilaku mode uji tanpa ada yang menyadari.
 // Keputusan mode diperiksa sekali per proses dan disimpan. Kegagalan
 // sesudah mode supabase terpilih dianggap galat sungguhan dan diteruskan
 // ke route, bukan disembunyikan dengan jatuh diam-diam ke lokal.
@@ -52,31 +59,29 @@ async function deteksiMode(): Promise<JurnalDataMode> {
 
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     if (paksa === "supabase") {
-      console.warn(
-        "[jurnal] JURNAL_DATA_MODE=supabase tetapi SUPABASE_SERVICE_ROLE_KEY tidak terpasang; jatuh ke mode lokal."
+      throw new Error(
+        "[jurnal] JURNAL_DATA_MODE=supabase tetapi SUPABASE_SERVICE_ROLE_KEY tidak terpasang. Mode lokal tidak diaktifkan diam-diam; pasang kunci service role atau set JURNAL_DATA_MODE=local secara eksplisit untuk mode uji."
       );
     }
+    // Tidak ada konfigurasi supabase sama sekali: mode lokal adalah
+    // pilihan bawaan yang sah untuk build dan uji.
     return "local";
   }
 
-  try {
-    const { error } = await supabaseAdmin
-      .from("jurnal_submissions")
-      .select("id", { head: true, count: "exact" })
-      .limit(1);
-    if (error) {
-      console.warn(
-        `[jurnal] Tabel jurnal belum tersedia (${error.message}); jatuh ke mode lokal. Jalankan migrasi 004 untuk mengaktifkan mode supabase.`
-      );
-      return "local";
-    }
-    return "supabase";
-  } catch (err) {
-    console.warn(
-      `[jurnal] Pemeriksaan tabel jurnal gagal (${err instanceof Error ? err.message : String(err)}); jatuh ke mode lokal.`
+  // Kunci service role terpasang berarti supabase adalah backend yang
+  // dipilih konfigurasi. Kegagalan pemeriksaan tabel sesudah ini adalah
+  // galat konfigurasi sungguhan dan gagal-tertutup: galat diteruskan ke
+  // pemanggil, bukan ditelan dengan beralih ke berkas lokal.
+  const { error } = await supabaseAdmin
+    .from("jurnal_submissions")
+    .select("id", { head: true, count: "exact" })
+    .limit(1);
+  if (error) {
+    throw new Error(
+      `[jurnal] Mode supabase dipilih tetapi tabel jurnal_submissions tidak dapat diperiksa (${error.message}). Jalankan migrasi 004 di proyek tujuan, atau set JURNAL_DATA_MODE=local secara eksplisit untuk mode uji.`
     );
-    return "local";
   }
+  return "supabase";
 }
 
 export function getJurnalDataMode(): Promise<JurnalDataMode> {

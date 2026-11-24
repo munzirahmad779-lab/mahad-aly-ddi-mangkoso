@@ -4,14 +4,15 @@
 // Pengumuman membaca dan menulis jurnal_announcements (migrasi 004),
 // DOI dan penarikan memakai kolom jurnal_submissions (004 dan 008),
 // metrik membaca jurnal_article_daily_metrics, dan pencarian memakai
-// ilike dengan pelarian \, %, _ sesuai KEAMANAN-OJS-VERSI-KITA.md.
+// ilike dengan pelarian \, %, _ plus karakter struktur or() PostgREST
+// sesuai KEAMANAN-OJS-VERSI-KITA.md.
 // Semua akses lewat service role dari route yang sudah lolos gerbang
 // peran; RLS tabel tidak memberi policy tulis langsung.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { supabaseAdmin } from "@/lib/supabase/server";
 import {
-  larikanPolaIlike,
+  larikanNilaiFilterOr,
   type MetrikMentah,
   type PengumumanInternal,
   type Publik5Backend
@@ -220,7 +221,10 @@ export const publik5BackendSupabase: Publik5Backend = {
   },
 
   async cariKodeIlike(q) {
-    const pola = `%${larikanPolaIlike(q.trim())}%`;
+    // Pola dipakai di dalam string or() PostgREST, jadi selain wildcard
+    // ilike, karakter struktur filter (koma, kurung, kutip) juga harus
+    // diloloskan agar kata pencarian tidak memecah struktur filter.
+    const pola = `%${larikanNilaiFilterOr(q.trim())}%`;
     const hasil = new Set<string>();
     const { data: naskah, error } = await supabaseAdmin
       .from("jurnal_submissions")

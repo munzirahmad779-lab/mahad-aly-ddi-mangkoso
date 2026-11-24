@@ -114,7 +114,7 @@ export interface JurnalRiwayatItem {
 }
 
 export interface JurnalSubmissionView {
-  kode: string; // JRN-YYYY-XXXX
+  kode: string; // JRN-YYYY-XXXXXX (kode lama JRN-YYYY-XXXX tetap sah)
   judul: string;
   penulis: string;
   email: string;

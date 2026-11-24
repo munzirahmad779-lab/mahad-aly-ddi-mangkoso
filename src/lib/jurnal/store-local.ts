@@ -365,12 +365,14 @@ async function simpan(baru?: CatatanLokal[]): Promise<void> {
 
 function buatKodeUnik(existing: CatatanLokal[]): string {
   const tahun = new Date().getFullYear();
+  // Format 6 digit, sama dengan backend supabase (perbaikan audit
+  // 25 Nov 2026); kode lama 4 digit tetap diterima jalur lacak.
   for (let i = 0; i < 50; i++) {
-    const acak = Math.floor(1000 + Math.random() * 9000);
+    const acak = Math.floor(100000 + Math.random() * 900000);
     const kode = `JRN-${tahun}-${acak}`;
     if (!existing.some((n) => n.kode === kode)) return kode;
   }
-  return `JRN-${tahun}-${Date.now() % 10000}`;
+  return `JRN-${tahun}-${String(Date.now() % 1000000).padStart(6, "0")}`;
 }
 
 export async function listLokal(): Promise<JurnalSubmissionView[]> {
