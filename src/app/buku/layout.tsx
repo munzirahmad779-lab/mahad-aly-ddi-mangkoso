@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-// Judul unik + canonical per bagian (temuan audit 27 Okt 2026).
+// Canonical per bagian (temuan audit 27 Okt 2026). Judul TIDAK
+// didefinisikan di sini: page.tsx rute ini mempunyai judulnya sendiri
+// ("Penerbitan Buku & Risalah") yang selalu menang, sehingga judul
+// layout hanya menjadi kode mati yang menyesatkan perawat.
 export const metadata: Metadata = {
-  title: "Buku & Karya Tulis",
   alternates: { canonical: "/buku" }
 };
 

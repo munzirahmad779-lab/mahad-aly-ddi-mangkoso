@@ -143,8 +143,7 @@ export const MASAIL: MasailItem[] = [
   },
   {
     "deskripsi": [
-      "Di suatu daerah telah lama penyelenggaraan shalat Jumat yang diikuti oleh seluruh",
-      "penduduk laki-laki yang memenuhi syarat wajib dan sahnya shalat Jumat. Jumlah mereka sekitar tujuh puluh orang, sehingga pelaksanaan Jumat berjalan sebagaimana mestinya tanpa menimbulkan persoalan.",
+      "Di suatu daerah telah lama penyelenggaraan shalat Jumat yang diikuti oleh seluruh penduduk laki-laki yang memenuhi syarat wajib dan sahnya shalat Jumat. Jumlah mereka sekitar tujuh puluh orang, sehingga pelaksanaan Jumat berjalan sebagaimana mestinya tanpa menimbulkan persoalan.",
       "Beberapa waktu kemudian, pemerintah menetapkan pemekaran wilayah, sehingga daerah tersebut terbagi menjadi dua wilayah administratif yang berdiri sendiri. Akibat pemekaran tersebut, jumlah penduduk laki-laki yang memenuhi syarat penyempurna pelaksanaan shalat Jumat di masing-masing wilayah menjadi kurang dari empat puluh orang.",
       "Secara geografis, kedua wilayah tersebut masih saling berdekatan dan pada awalnya merupakan satu kesatuan permukiman. Tidak ada perubahan selain perubahan batas administrasi.",
       "Perubahan tersebut menimbulkan kebingungan di tengah masyarakat mengenai tata cara pelaksanaan shalat Jumat. Jika masing-masing wilayah menyelenggarakan shalat Jumat sendiri, maka jumlah jamaahnya tidak memenuhi ketentuan yang disyaratkan. Sementara itu, apabila pelaksanaan Jumat tetap digabung sebagaimana sebelumnya, maka muncul keraguan apakah hal tersebut masih dibenarkan setelah adanya pemekaran wilayah."

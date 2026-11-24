@@ -33,16 +33,20 @@ export default function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
+  // Cabang ini hanya tercapai selama katalog belum terkonfirmasi
+  // (keadaan memuat); kategori yang sungguh tidak ada sudah dibalas
+  // notFound() di atas. Panelnya karena itu panel memuat, bukan panel
+  // "tidak ditemukan".
   if (!categoryInfo) {
     return (
       <main className="pt-28 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
         <div className="max-w-2xl mx-auto px-4 text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
           <div className="text-5xl mb-4">📚</div>
           <h1 className="font-serif font-bold text-2xl text-slate-800">
-            Kategori Sedang Diperbarui
+            Memuat Kategori
           </h1>
           <p className="text-slate-500 text-sm mt-2 max-w-md mx-auto">
-            Kategori &ldquo;{cleanSlug}&rdquo; tidak ditemukan atau sedang dalam proses pembaharuan oleh dewan redaksi.
+            Daftar tulisan pada kategori ini sedang dimuat, mohon tunggu sebentar.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link

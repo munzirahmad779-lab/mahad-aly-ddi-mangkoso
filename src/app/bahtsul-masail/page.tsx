@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 export default function BahtsulMasailPage() {
-  const { bahtsulQA, pageTexts } = useArticles();
+  const { bahtsulQA, pageTexts, isCatalogReady } = useArticles();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTheme, setSelectedTheme] = useState("Semua");
@@ -105,15 +105,27 @@ export default function BahtsulMasailPage() {
         {/* Daftar Keputusan Bahtsul Masail */}
         <div className="mt-8 space-y-6">
           {filteredList.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8">
-              <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <h3 className="font-serif font-bold text-lg text-slate-800">
-                Tidak ada risalah fatwa yang cocok
-              </h3>
-              <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-                Silakan ganti kata kunci pencarian atau pilih tema lainnya.
-              </p>
-            </div>
+            !isCatalogReady && publishedList.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8">
+                <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <h3 className="font-serif font-bold text-lg text-slate-800">
+                  Memuat risalah fatwa
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                  Daftar keputusan Bahtsul Masail sedang dimuat, mohon tunggu sebentar.
+                </p>
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8">
+                <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <h3 className="font-serif font-bold text-lg text-slate-800">
+                  Tidak ada risalah fatwa yang cocok
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                  Silakan ganti kata kunci pencarian atau pilih tema lainnya.
+                </p>
+              </div>
+            )
           ) : (
             filteredList.map((item) => {
               const isExpanded = expandedId === item.id;

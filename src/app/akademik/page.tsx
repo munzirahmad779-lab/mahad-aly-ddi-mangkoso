@@ -163,7 +163,7 @@ export default function AkademikPage() {
           <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="font-serif font-bold text-xl text-slate-900 flex items-center gap-2">
               <span>📅</span>
-              <span>{pageTexts?.akademikKalenderTitle || "Kalender Akademik"} ({calendarEvents.length} Agenda)</span>
+              <span>{pageTexts?.akademikKalenderTitle || "Kalender Akademik"} ({!isCatalogReady && calendarEvents.length === 0 ? "Memuat Agenda" : `${calendarEvents.length} Agenda`})</span>
             </h3>
             <div className="space-y-3">
               {calendarEvents.map((ev) => (
@@ -181,6 +181,13 @@ export default function AkademikPage() {
                   </span>
                 </div>
               ))}
+              {calendarEvents.length === 0 && (
+                <p className="text-xs text-slate-500">
+                  {!isCatalogReady
+                    ? "Kalender akademik sedang dimuat, mohon tunggu sebentar."
+                    : "Belum ada agenda pada kalender akademik."}
+                </p>
+              )}
             </div>
           </div>
 

@@ -59,7 +59,7 @@ function FotoPengurus({ src, nama }: { src?: string; nama: string }) {
 }
 
 export default function DemaPage() {
-  const { demaSettings } = useArticles();
+  const { demaSettings, isCatalogReady } = useArticles();
   const [selectedDivisionId, setSelectedDivisionId] = useState<string>("all");
   const [searchMemberQuery, setSearchMemberQuery] = useState<string>("");
   const [selectedMemberModal, setSelectedMemberModal] = useState<DemaMember | null>(null);
@@ -151,11 +151,11 @@ export default function DemaPage() {
           {/* Quick Stats Pill */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-emerald-200">
             <div className="bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-sm flex items-center gap-2">
-              <span className="text-mahad-gold font-bold">🏛️ {divisions.length}</span>
+              <span className="text-mahad-gold font-bold">🏛️ {!isCatalogReady && divisions.length === 0 ? "…" : divisions.length}</span>
               <span>Divisi Fungsional</span>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-sm flex items-center gap-2">
-              <span className="text-mahad-gold font-bold">👥 {members.length}</span>
+              <span className="text-mahad-gold font-bold">👥 {!isCatalogReady && members.length === 0 ? "…" : members.length}</span>
               <span>Pengurus Amanah</span>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-sm flex items-center gap-2">
@@ -194,6 +194,11 @@ export default function DemaPage() {
 
           {/* Org-Chart Hierarchy Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {bphMembers.length === 0 && !isCatalogReady && (
+              <p className="text-sm text-slate-500 col-span-full">
+                Memuat data pengurus, mohon tunggu sebentar.
+              </p>
+            )}
             {bphMembers.map((leader, idx) => {
               // Custom green styling: checked via leader.isHighlighted OR defaults to first 2 leaders (Ketua & Wakil) if not explicitly set
               const isGreenCard = leader.isHighlighted !== undefined
@@ -343,7 +348,7 @@ export default function DemaPage() {
                 : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
             }`}
           >
-            <span>👑 Presidium BPH ({bphMembers.length})</span>
+            <span>👑 Presidium BPH ({!isCatalogReady && bphMembers.length === 0 ? "…" : bphMembers.length})</span>
           </button>
 
           {/* Dynamic Divisions */}
@@ -418,6 +423,15 @@ export default function DemaPage() {
            ══════════════════════════════════════════════════════════════ */}
         <div className="mt-8">
           {filteredMembers.length === 0 ? (
+            !isCatalogReady && members.length === 0 ? (
+              <div className="bg-white rounded-2xl p-12 text-center border border-slate-200">
+                <span className="text-4xl block mb-2">🔍</span>
+                <h3 className="font-bold text-slate-800 text-base">Memuat data pengurus</h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                  Daftar pengurus DeMa sedang dimuat, mohon tunggu sebentar.
+                </p>
+              </div>
+            ) : (
             <div className="bg-white rounded-2xl p-12 text-center border border-slate-200">
               <span className="text-4xl block mb-2">🔍</span>
               <h3 className="font-bold text-slate-800 text-base">Tidak ada pengurus ditemukan</h3>
@@ -435,6 +449,7 @@ export default function DemaPage() {
                 Tampilkan Semua Pengurus
               </button>
             </div>
+            )
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               {filteredMembers.map((member) => {

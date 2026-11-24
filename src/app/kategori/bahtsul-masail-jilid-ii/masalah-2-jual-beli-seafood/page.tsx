@@ -118,6 +118,7 @@ export default function Masalah2SeafoodPage() {
                     <p
                       key={k}
                       dir="rtl"
+                      lang="ar"
                       className="teks-arab text-right text-base sm:text-lg leading-loose text-slate-900"
                     >
                       {paragraf}

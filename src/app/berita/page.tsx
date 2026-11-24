@@ -5,7 +5,7 @@ import { useArticles } from "@/context/ArticleContext";
 import { CardViewCount } from "@/components/common/ViewCount";
 
 export default function BeritaPage() {
-  const { news, pageTexts } = useArticles();
+  const { news, pageTexts, isCatalogReady } = useArticles();
   const safeNews = Array.isArray(news) ? news : [];
 
   return (
@@ -104,6 +104,16 @@ export default function BeritaPage() {
             </article>
           ))}
         </div>
+
+        {safeNews.length === 0 && (
+          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <p className="text-slate-600 font-medium">
+              {!isCatalogReady
+                ? "Memuat daftar berita, mohon tunggu sebentar."
+                : "Belum ada berita yang diterbitkan."}
+            </p>
+          </div>
+        )}
       </div>
     </main>
   );

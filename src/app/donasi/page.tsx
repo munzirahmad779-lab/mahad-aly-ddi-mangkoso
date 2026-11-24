@@ -6,7 +6,7 @@ import { useArticles } from "@/context/ArticleContext";
 import { DonationProgram, DonationCategoryKey } from "@/lib/types";
 
 export default function DonasiPage() {
-  const { donations } = useArticles();
+  const { donations, isCatalogReady } = useArticles();
   const [selectedCategory, setSelectedCategory] = useState<"all" | DonationCategoryKey>("all");
   const [copiedBankId, setCopiedBankId] = useState<string | null>(null);
   const [selectedProgramModal, setSelectedProgramModal] = useState<DonationProgram | null>(null);
@@ -246,6 +246,16 @@ export default function DonasiPage() {
             );
           })}
         </div>
+
+        {filteredPrograms.length === 0 && (
+          <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
+            <p className="text-sm text-slate-600 font-medium">
+              {!isCatalogReady && donations.length === 0
+                ? "Memuat program donasi, mohon tunggu sebentar."
+                : "Belum ada program donasi yang berjalan pada kategori ini."}
+            </p>
+          </div>
+        )}
 
         {/* Accountability & Transparency Section */}
         <section className="mt-16 bg-gradient-to-r from-emerald-900 to-slate-900 rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden">

@@ -9,16 +9,26 @@ import {
   FileText,
   Scale
 } from "lucide-react";
-import { MASAIL, PDF_SK_LENGKAP } from "../data";
+import { MASAIL, PDF_SK_LENGKAP, type MasailItem } from "../data";
 
-const item = MASAIL.find((m) => m.slug === "masalah-3-ittihad-al-baldah")!;
-const prev = MASAIL.find((m) => m.slug === "masalah-2-jual-beli-seafood")!;
-const next = MASAIL.find((m) => m.slug === "masalah-4-konten-digital-aib")!;
+const SLUG = "masalah-3-ittihad-al-baldah";
+
+function ambilItem(): MasailItem {
+  const ditemukan = MASAIL.find((m) => m.slug === SLUG);
+  if (!ditemukan) {
+    throw new Error("Data mas'alah 3 (ittihad al-baldah) tidak ditemukan di data.ts");
+  }
+  return ditemukan;
+}
+
+const item = ambilItem();
+const prev = MASAIL.find((m) => m.slug === "masalah-2-jual-beli-seafood");
+const next = MASAIL.find((m) => m.slug === "masalah-4-konten-digital-aib");
 
 export const metadata: Metadata = {
   title: `${item.judulSingkat} — Hasil Bahtsul Masa'il Jilid II`,
   description: item.spoiler,
-  alternates: { canonical: "/kategori/bahtsul-masail-jilid-ii/masalah-3-ittihad-al-baldah" }
+  alternates: { canonical: `/kategori/bahtsul-masail-jilid-ii/${SLUG}` }
 };
 
 export default function Masalah3IttihadAlBaldahPage() {
@@ -65,9 +75,6 @@ export default function Masalah3IttihadAlBaldahPage() {
             Deskripsi Masalah
           </h2>
           <div className="p-4 sm:p-5 bg-amber-50/60 border border-amber-200/70 rounded-xl mt-5 space-y-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900 block">
-              Mas&apos;alah (Deskripsi Masalah):
-            </span>
             {item.deskripsi.map((paragraf, i) => (
               <p key={i} className="text-sm text-amber-950 leading-relaxed">
                 {paragraf}
@@ -116,6 +123,7 @@ export default function Masalah3IttihadAlBaldahPage() {
                     <p
                       key={k}
                       dir="rtl"
+                      lang="ar"
                       className="teks-arab text-right text-base sm:text-lg leading-loose text-slate-900"
                     >
                       {paragraf}
@@ -175,30 +183,34 @@ export default function Masalah3IttihadAlBaldahPage() {
             Kembali ke Hasil Bahtsul Masa&apos;il Jilid II
           </Link>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link
-              href={`/kategori/bahtsul-masail-jilid-ii/${prev.slug}`}
-              className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition block"
-            >
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 inline-flex items-center gap-1">
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Mas&apos;alah Sebelumnya
-              </span>
-              <span className="font-serif font-bold text-slate-900 leading-snug block mt-1.5">
-                {prev.judulSingkat}
-              </span>
-            </Link>
-            <Link
-              href={`/kategori/bahtsul-masail-jilid-ii/${next.slug}`}
-              className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition block sm:text-right"
-            >
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 inline-flex items-center gap-1">
-                Mas&apos;alah Berikutnya
-                <ArrowRight className="w-3.5 h-3.5" />
-              </span>
-              <span className="font-serif font-bold text-slate-900 leading-snug block mt-1.5">
-                {next.judulSingkat}
-              </span>
-            </Link>
+            {prev && (
+              <Link
+                href={`/kategori/bahtsul-masail-jilid-ii/${prev.slug}`}
+                className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition block"
+              >
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 inline-flex items-center gap-1">
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  Mas&apos;alah Sebelumnya
+                </span>
+                <span className="font-serif font-bold text-slate-900 leading-snug block mt-1.5">
+                  {prev.judulSingkat}
+                </span>
+              </Link>
+            )}
+            {next && (
+              <Link
+                href={`/kategori/bahtsul-masail-jilid-ii/${next.slug}`}
+                className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition block sm:text-right"
+              >
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 inline-flex items-center gap-1">
+                  Mas&apos;alah Berikutnya
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </span>
+                <span className="font-serif font-bold text-slate-900 leading-snug block mt-1.5">
+                  {next.judulSingkat}
+                </span>
+              </Link>
+            )}
           </div>
         </nav>
       </div>
