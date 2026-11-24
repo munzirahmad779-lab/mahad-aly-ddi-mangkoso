@@ -1,23 +1,10 @@
-import type { Metadata } from "next";
-import { articleMetadata, fetchArticleMeta } from "@/lib/seo";
+import type { ReactNode } from "react";
 
-interface Props {
-  params: Promise<{ slug: string }>;
-}
-
-// Metadata per-artikel: title, description, canonical, OpenGraph — dari DB.
-// Menyembuhkan bug canonical global yang membuat Google menolak mengindeks
-// halaman konten.
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const article = await fetchArticleMeta(decodeURIComponent(slug).toLowerCase().trim());
-  return articleMetadata(decodeURIComponent(slug).toLowerCase().trim(), article);
-}
-
-export default function ArtikelLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+// Metadata per-artikel (title, description, canonical, OpenGraph) hanya
+// dibuat satu kali di page.tsx segmen ini lewat generateMetadata.
+// Sebelumnya layout ini mengekspor generateMetadata yang sama persis,
+// sehingga setiap permintaan menjalankan pengambilan metadata yang sama
+// dua kali. Layout di sini hanya meneruskan children.
+export default function ArtikelLayout({ children }: { children: ReactNode }) {
   return children;
 }

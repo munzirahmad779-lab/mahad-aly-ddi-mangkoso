@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pengambilan Ijazah — Ma'had Aly DDI Mangkoso",
+  title: "Pengambilan Ijazah",
   description:
     "Tata cara dan jadwal pengambilan ijazah Ma'had Aly DDI Mangkoso melalui Bagian Akademik.",
   // Canonical sendiri wajib ada: tanpa ini halaman mewarisi canonical

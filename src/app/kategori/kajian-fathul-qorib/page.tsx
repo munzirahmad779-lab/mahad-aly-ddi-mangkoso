@@ -8,13 +8,23 @@ import ArticleCard from "@/components/articles/ArticleCard";
 // Ruang hasil Kajian Fathul Qorib di dalam Kajian & Diskusi
 // (struktur ruang per ketetapan user 15 Nov 2026: setiap hasil kajian
 // tinggal di ruangnya sendiri di bawah /kategori/<ruang>). Isi ruang
-// dibaca dari artikel terbit bertanda "Fathul Qarib", supaya hasil
+// dibaca dari artikel terbit bertanda seri ini, supaya hasil
 // kajian berikutnya yang diterbitkan masuk ke ruang ini dengan
 // sendirinya tanpa menumpuk di indeks /kategori.
+//
+// Ejaan kanonis nama ruang di seluruh situs adalah "Fathul Qorib",
+// tetapi artikel yang sudah terbit bertanda ejaan "Fathul Qarib".
+// Saringan menerima kedua ejaan (huruf besar/kecil dan spasi tepi
+// diabaikan) supaya artikel yang tampil sekarang tidak hilang dan
+// artikel bertanda ejaan kanonis ikut masuk ruang ini.
+const TAG_RUANG = ["fathul qorib", "fathul qarib"];
+
 export default function KajianFathulQoribPage() {
-  const { articles } = useArticles();
+  const { articles, isCatalogReady } = useArticles();
   const tulisan = articles.filter(
-    (a) => a.status !== "draft" && (a.tags || []).includes("Fathul Qarib")
+    (a) =>
+      a.status !== "draft" &&
+      (a.tags || []).some((t) => TAG_RUANG.includes(t.trim().toLowerCase()))
   );
 
   return (
@@ -58,6 +68,10 @@ export default function KajianFathulQoribPage() {
                 <ArticleCard key={art.id} article={art} />
               ))}
             </div>
+          ) : !isCatalogReady ? (
+            <p className="text-sm text-slate-600 leading-relaxed mt-3">
+              Memuat hasil kajian, mohon tunggu sebentar.
+            </p>
           ) : (
             <p className="text-sm text-slate-600 leading-relaxed mt-3">
               Belum ada hasil kajian yang diterbitkan di ruang ini.

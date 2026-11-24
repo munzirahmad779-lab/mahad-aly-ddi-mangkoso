@@ -11,8 +11,10 @@ import {
 } from "lucide-react";
 import { MASAIL, PDF_SK_LENGKAP, type MasailItem } from "../data";
 
+const SLUG = "masalah-4-konten-digital-aib";
+
 function ambilItem(): MasailItem {
-  const ditemukan = MASAIL.find((m) => m.slug === "masalah-4-konten-digital-aib");
+  const ditemukan = MASAIL.find((m) => m.slug === SLUG);
   if (!ditemukan) {
     throw new Error("Data mas'alah 4 (konten digital aib) tidak ditemukan di data.ts");
   }
@@ -26,7 +28,7 @@ export const metadata: Metadata = {
   title: `${item.judulSingkat} — Hasil Bahtsul Masa'il Jilid II`,
   description: item.spoiler,
   alternates: {
-    canonical: "/kategori/bahtsul-masail-jilid-ii/masalah-4-konten-digital-aib"
+    canonical: `/kategori/bahtsul-masail-jilid-ii/${SLUG}`
   }
 };
 
@@ -61,10 +63,10 @@ export default function Masalah4KontenDigitalAibPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
         {/* Deskripsi Masalah */}
         <section className="p-5 sm:p-6 bg-amber-50/60 border border-amber-200/70 rounded-2xl space-y-3">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+          <h2 className="text-[11px] font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
             <HelpCircle className="w-3.5 h-3.5" />
             <span>Deskripsi Masalah</span>
-          </span>
+          </h2>
           {item.deskripsi.map((paragraf, i) => (
             <p key={i} className="text-sm sm:text-base text-amber-950 leading-relaxed">
               {paragraf}
@@ -114,6 +116,7 @@ export default function Masalah4KontenDigitalAibPage() {
                     <p
                       key={k}
                       dir="rtl"
+                      lang="ar"
                       className="teks-arab text-right text-base sm:text-lg leading-loose text-slate-900"
                     >
                       {paragraf}

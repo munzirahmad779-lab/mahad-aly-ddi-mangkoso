@@ -16,7 +16,7 @@ const KOLOM_LABEL_KOSONG: Record<KolomArtikel, string> = {
 };
 
 export default function AllArticlesPage() {
-  const { articles, categories, pageTexts } = useArticles();
+  const { articles, categories, pageTexts, isCatalogReady } = useArticles();
   // Tab "semua" adalah tampilan awal Mimbar Mahad (ketetapan user 8 Nov
   // 2026): campuran seluruh tulisan terbit (artikel, kajian tematik,
   // opini, karya ilmiah fiqh kontemporer, kitab, dan berita), bukan
@@ -325,6 +325,12 @@ export default function AllArticlesPage() {
             {filtered.map((art) => (
               <ArticleCard key={art.id} article={art} />
             ))}
+          </div>
+        ) : !isCatalogReady ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <p className="text-slate-600 font-medium">
+              Memuat daftar tulisan, mohon tunggu sebentar.
+            </p>
           </div>
         ) : (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">

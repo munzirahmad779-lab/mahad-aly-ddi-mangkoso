@@ -4,7 +4,7 @@ import { ArrowRight, BookOpen, Calendar, Download, FileText, Scale } from "lucid
 import { PDF_SK_LENGKAP } from "./bahtsul-masail-jilid-ii/data";
 
 export const metadata: Metadata = {
-  title: "Kajian & Diskusi — Ma'had Aly DDI Mangkoso",
+  title: "Kajian & Diskusi",
   description:
     "Ruang Kajian & Diskusi Ma'had Aly DDI Mangkoso: daftar hasil kajian dan diskusi keilmuan yang diterbitkan, masing-masing dengan ruangnya sendiri. Ruang yang terbit: Hasil Bahtsul Masa'il Jilid II dan Kajian Fathul Qorib.",
 };

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Asesmen — Ma'had Aly DDI Mangkoso",
+  title: "Asesmen",
   description:
     "Asesmen dan pemeringkatan Ma'had Aly DDI Mangkoso oleh Majelis Masyayikh, dasar hukum pendirian, dan asesmen seleksi mahasantri baru.",
   // Canonical sendiri wajib ada: tanpa ini halaman mewarisi canonical

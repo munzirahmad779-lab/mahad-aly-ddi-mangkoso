@@ -6,7 +6,7 @@ import { useArticles } from "@/context/ArticleContext";
 import ThesisCard from "@/components/theses/ThesisCard";
 
 export default function SkripsiListPage() {
-  const { theses, pageTexts } = useArticles();
+  const { theses, pageTexts, isCatalogReady } = useArticles();
   const [search, setSearch] = useState("");
   const [selectedYear, setSelectedYear] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -151,6 +151,12 @@ export default function SkripsiListPage() {
             {filteredTheses.map((thesis) => (
               <ThesisCard key={thesis.id} thesis={thesis} />
             ))}
+          </div>
+        ) : !isCatalogReady ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <p className="text-slate-600 font-medium">
+              Memuat daftar skripsi, mohon tunggu sebentar.
+            </p>
           </div>
         ) : (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">

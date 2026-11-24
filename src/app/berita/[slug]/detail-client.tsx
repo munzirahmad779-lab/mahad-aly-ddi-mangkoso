@@ -31,10 +31,10 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
         <div className="max-w-2xl mx-auto px-4 text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
           <div className="text-5xl mb-4">📰</div>
           <h1 className="font-serif font-bold text-2xl text-slate-800">
-            Warta Berita Tidak Ditemukan
+            Memuat Berita
           </h1>
           <p className="text-slate-500 text-sm mt-2 max-w-md mx-auto">
-            Kabar atau berita yang Anda tuju mungkin telah diperbarui atau diarsipkan.
+            Isi berita sedang dimuat, mohon tunggu sebentar.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link

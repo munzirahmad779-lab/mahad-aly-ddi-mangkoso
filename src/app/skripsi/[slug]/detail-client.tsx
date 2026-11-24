@@ -33,10 +33,10 @@ export default function ThesisDetailPage({ params }: ThesisDetailPageProps) {
         <div className="max-w-2xl mx-auto px-4 text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
           <div className="text-5xl mb-4">🎓</div>
           <h1 className="font-serif font-bold text-2xl text-slate-800">
-            Naskah Skripsi Tidak Ditemukan
+            Memuat Naskah Skripsi
           </h1>
           <p className="text-slate-500 text-sm mt-2 max-w-md mx-auto">
-            Naskah risalah skripsi mahasantri yang Anda cari mungkin belum diarsipkan secara digital atau telah diperbarui.
+            Rincian naskah skripsi sedang dimuat, mohon tunggu sebentar.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
@@ -118,31 +118,44 @@ export default function ThesisDetailPage({ params }: ThesisDetailPageProps) {
             </div>
             <div>
               <span className="text-slate-400 block text-[11px] uppercase font-bold tracking-wider">Berkas Naskah PDF</span>
-              <p className="text-slate-700">Tersedia Full Text &bull; Ukuran: <strong>{thesis.fileSize}</strong></p>
+              {thesis.downloadUrl ? (
+                <p className="text-slate-700">
+                  Tersedia Full Text
+                  {thesis.fileSize && (
+                    <span> &bull; Ukuran: <strong>{thesis.fileSize}</strong></span>
+                  )}
+                </p>
+              ) : (
+                <p className="text-slate-700">Berkas belum tersedia untuk diunduh publik.</p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Download Action Banner */}
-        <div className="bg-gradient-to-r from-emerald-900 to-emerald-950 text-white rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6 border border-mahad-gold/30">
-          <div className="space-y-1 text-center sm:text-left">
-            <h3 className="font-serif font-bold text-xl text-mahad-gold">Unduh Naskah Lengkap Skripsi</h3>
-            <p className="text-xs text-emerald-200">
-              Akses publik file PDF melalui penyimpanan resmi Google Drive Ma&apos;had Aly DDI Mangkoso.
-            </p>
+        {/* Download Action Banner: hanya tampil bila risalah ini memang
+            mempunyai berkas yang dapat diunduh, supaya tidak ada tombol
+            unduh mati dan klaim ketersediaan yang tidak benar. */}
+        {thesis.downloadUrl && (
+          <div className="bg-gradient-to-r from-emerald-900 to-emerald-950 text-white rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6 border border-mahad-gold/30">
+            <div className="space-y-1 text-center sm:text-left">
+              <h3 className="font-serif font-bold text-xl text-mahad-gold">Unduh Naskah Lengkap Skripsi</h3>
+              <p className="text-xs text-emerald-200">
+                Akses publik file PDF melalui penyimpanan resmi Google Drive Ma&apos;had Aly DDI Mangkoso.
+              </p>
+            </div>
+            <a
+              href={thesis.downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold px-6 py-3.5 rounded-xl shadow-lg transition flex items-center gap-2 transform hover:-translate-y-0.5"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>📥 Unduh PDF{thesis.fileSize ? ` (${thesis.fileSize})` : ""}</span>
+            </a>
           </div>
-          <a
-            href={thesis.downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold px-6 py-3.5 rounded-xl shadow-lg transition flex items-center gap-2 transform hover:-translate-y-0.5"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            <span>📥 Unduh PDF ({thesis.fileSize})</span>
-          </a>
-        </div>
+        )}
 
         {/* Abstrak Indonesia */}
         <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-3">
