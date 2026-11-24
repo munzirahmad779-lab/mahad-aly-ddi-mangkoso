@@ -31,8 +31,8 @@ export function HomeDonationSection({ section }: { section: HomeSectionConfigIte
   return (
     <section className="py-20 bg-gradient-to-b from-emerald-950 via-emerald-900 to-emerald-950 text-white relative overflow-hidden">
       {/* Background Decorative Rings */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-mahad-gold/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-700/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-96 h-96 pointer-events-none" style={{ background: "radial-gradient(closest-side, rgba(212,175,55,0.05), transparent)" }} />
+      <div className="absolute bottom-0 left-0 w-96 h-96 pointer-events-none" style={{ background: "radial-gradient(closest-side, rgba(4,120,87,0.10), transparent)" }} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
@@ -270,7 +270,7 @@ export function HomePMBSection({ section }: { section: HomeSectionConfigItem }) 
     <section className="py-20 bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 text-white relative overflow-hidden">
       {/* Pola grid halus + cahaya lembut (Fase 2) */}
       <div className="absolute inset-0 bg-grid-lines [mask-image:radial-gradient(ellipse_65%_65%_at_50%_40%,black,transparent)] pointer-events-none" />
-      <div className="absolute -top-24 right-0 w-96 h-96 bg-mahad-gold/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 right-0 w-96 h-96 pointer-events-none" style={{ background: "radial-gradient(closest-side, rgba(212,175,55,0.10), transparent)" }} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">

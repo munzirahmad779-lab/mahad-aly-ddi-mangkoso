@@ -1,16 +1,16 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode } from "react";
 
-// Pola muncul standar redesign Fase 1 (ala Blur Fade Magic UI): konten naik
-// perlahan sambil fokus dari blur saat pertama kali masuk layar.
+// Pola muncul standar redesign Fase 1: konten naik perlahan sambil memudar
+// masuk saat pertama kali masuk layar.
 // CATATAN PERFORMA (perbaikan lag): menganimasikan filter blur itu MAHAL —
 // browser harus me-raster ulang seluruh isi elemen di setiap frame, dan di
-// seksi padat (mis. kartu-kartu donasi) belasan Reveal menyala bersamaan
-// saat scroll cepat = lag terasa di HP. Jadi di layar kecil blur DIMATIKAN
-// (cukup opacity + naik, tampilannya nyaris sama); efek blur penuh hanya
-// berjalan di layar besar yang GPU-nya kuat.
+// seksi padat belasan Reveal menyala bersamaan saat scroll = lag terasa.
+// Semula blur hanya dimatikan di layar kecil; sejak perbaikan lag 25 Nov
+// 2026 blur dimatikan di SEMUA layar (cukup opacity + naik, tampilannya
+// nyaris sama) supaya scroll mulus juga di desktop.
 export default function Reveal({
   children,
   delay = 0,
@@ -22,16 +22,11 @@ export default function Reveal({
   y?: number;
   className?: string;
 }) {
-  const [ringan, setRingan] = useState(false);
-  useEffect(() => {
-    setRingan(window.matchMedia("(max-width: 768px)").matches);
-  }, []);
-
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y, filter: ringan ? "blur(0px)" : "blur(6px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
     >

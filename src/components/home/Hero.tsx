@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, useScroll, useTransform } from "motion/react";
+import { useState, useEffect, useCallback } from "react";
+import { motion } from "motion/react";
 import NumberTicker from "@/components/common/NumberTicker";
 import Image from "next/image";
 import Link from "next/link";
@@ -60,14 +60,11 @@ export default function Hero() {
 
   const currentSlide = activeSlides[currentIndex] || defaultSlide;
 
-  // Parallax latar hero (redesign Fase 1): lapisan latar bergeser lebih
-  // lambat daripada scroll. Hanya transform yang dianimasikan Motion.
-  const heroRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "16%"]);
+  // Parallax latar hero DILEPAS (perbaikan lag 25 Nov 2026): parallax yang
+  // digerakkan useScroll memaksa hitung dan gambar ulang lapisan latar
+  // seluas layar pada SETIAP gerakan scroll di seksi pertama, dan itulah
+  // yang terasa sebagai lag di awal scroll, terutama di HP. Lapisan latar
+  // kini diam; tampilan, susunan, dan isi hero tidak berubah.
 
   // Judul tampil per kata (efek SplitText ala Magic UI/React Bits)
   const titleWords = (currentSlide.title || "").split(/\s+/).filter(Boolean);
@@ -84,9 +81,9 @@ export default function Hero() {
   // ±48px), lambang hero terlalu rapat ke header — kini ada ruang napas di
   // atasnya (permintaan user 28 Okt 2026).
   return (
-    <section ref={heroRef} className="relative pt-40 pb-20 md:pt-56 md:pb-28 bg-mahad-green-dark text-white overflow-hidden flex items-center min-h-[90vh] select-none">
-      {/* Lapisan latar parallax: pola Islami + gambar slide aktif */}
-      <motion.div style={{ y: bgY }} className="absolute inset-0 scale-[1.15] pointer-events-none">
+    <section className="relative pt-40 pb-20 md:pt-56 md:pb-28 bg-mahad-green-dark text-white overflow-hidden flex items-center min-h-[90vh] select-none">
+      {/* Lapisan latar: pola Islami + gambar slide aktif (diam, tanpa parallax) */}
+      <div className="absolute inset-0 scale-[1.15] pointer-events-none">
         <div className="absolute inset-0 bg-islamic-pattern opacity-60"></div>
         {currentSlide.bgImageUrl && (
           <div
@@ -94,11 +91,13 @@ export default function Hero() {
             style={{ backgroundImage: `url('${currentSlide.bgImageUrl}')` }}
           ></div>
         )}
-      </motion.div>
+      </div>
 
-      {/* Ambient Glow Effects */}
-      <div className="absolute top-1/4 -right-20 w-96 h-96 rounded-full bg-emerald-600/20 blur-3xl pointer-events-none"></div>
-      <div className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full bg-mahad-gold/15 blur-3xl pointer-events-none"></div>
+      {/* Ambient Glow Effects: gradasi radial menggantikan filter blur-3xl
+          (perbaikan lag 25 Nov 2026): cahaya yang sama, digambar sekali,
+          tanpa raster blur seluas 384px yang mahal di setiap repaint. */}
+      <div className="absolute top-1/4 -right-20 w-96 h-96 pointer-events-none" style={{ background: "radial-gradient(closest-side, rgba(5,150,105,0.20), transparent)" }}></div>
+      <div className="absolute -bottom-20 -left-20 w-96 h-96 pointer-events-none" style={{ background: "radial-gradient(closest-side, rgba(212,175,55,0.15), transparent)" }}></div>
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 w-full">
         {/* Logo Ma'had Aly DDI Mangkoso (Clean Original View) */}
