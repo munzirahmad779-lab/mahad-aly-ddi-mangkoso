@@ -13,7 +13,8 @@ import { daftarTerbitanPublik } from "@/lib/jurnal/alur-server";
 import PemilihBahasa from "./pemilih-bahasa";
 
 // Kerangka cabang jurnal mengikuti pola situs jurnal pada umumnya
-// (model OJS 3): spanduk penanda uji ramping, pita masthead berwarna
+// (model OJS 3): panel atas ramping berbahasa Arab menuju web utama
+// kampus, spanduk penanda uji ramping, pita masthead berwarna
 // penuh selebar halaman berisi nama jurnal putih dan tautan akun di
 // sisi atasnya, bilah navigasi putih berisi menu terbitan, arsip,
 // pengumuman, dan tentang plus pencarian, lalu kaki jurnal berisi
@@ -71,6 +72,55 @@ export default async function JurnalLayout({
   return (
     <main className="bg-white">
       <div lang={locale} dir={arahLocale(locale)}>
+        {/* Panel atas ke web utama kampus. Isinya selalu berbahasa
+            Arab apa pun bahasa antarmuka yang dipilih pengunjung,
+            karena jurnal ini seluruhnya berbahasa Arab (ketetapan
+            user 25 Nov 2026). Tautan ke situs utama di kaki jurnal
+            tetap dipertahankan; panel ini jalan tambahan di paling
+            atas laman. */}
+        <div className="bg-jurnal-hijau text-white">
+          <Link
+            href="/"
+            lang="ar"
+            dir="rtl"
+            aria-label="الموقع الرئيسي للمعهد العالي"
+            className="mx-auto flex max-w-7xl items-center gap-2.5 px-3 py-2 transition hover:bg-jurnal-hijau-gelap sm:px-6 lg:px-8"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4 shrink-0 text-jurnal-emas-terang"
+            >
+              <path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
+            </svg>
+            <span className="min-w-0 text-xs leading-relaxed sm:text-sm">
+              <strong className="font-bold">
+                الموقع الرئيسي للمعهد العالي
+              </strong>{" "}
+              <span className="text-white/70">
+                المعهد العالي لدار الدعوة والإرشاد منجكوسو
+              </span>
+            </span>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="ms-auto h-4 w-4 shrink-0"
+            >
+              <path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+          </Link>
+        </div>
+
         {/* Spanduk penanda versi uji, ramping, selalu terlihat */}
         <div className="border-b border-amber-300 bg-amber-50">
           <div

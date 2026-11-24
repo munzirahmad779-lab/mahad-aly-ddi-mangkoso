@@ -118,7 +118,7 @@ const ID = {
   sidebarSelengkapnya: "Selengkapnya",
   sidebarDewanIsi: "Susunan dewan redaksi dan mitra bestari jurnal.",
   fokusPengantar:
-    "Jurnal ini menampung kajian sesuai takhasus Ma'had Aly DDI Mangkoso dan bidang pendukungnya. Bahasa naskah: Bahasa Indonesia, Bahasa Arab, dan Bahasa Inggris.",
+    "Jurnal ini khusus menampung kajian dalam tiga bidang: Fiqh, Fiqh Kontemporer, dan Bahtsul Masail. Bahasa naskah: Bahasa Indonesia, Bahasa Arab, dan Bahasa Inggris.",
   berandaTentangIsi:
     "Jurnal ilmiah Ma'had Aly DDI Mangkoso dengan takhasus Fiqh dan Ushul Fiqh, diterbitkan oleh Lembaga Jurnal Ma'had Aly DDI Mangkoso. Seluruh naskah melewati telaah sejawat double-blind dan diterbitkan sebagai akses terbuka.",
   labelTerbitan: "Terbitan",
@@ -227,7 +227,7 @@ const EN: JurnalDict = {
   sidebarSelengkapnya: "Read more",
   sidebarDewanIsi: "The journal's editorial team and peer reviewers.",
   fokusPengantar:
-    "This journal welcomes studies within the specialization of Ma'had Aly DDI Mangkoso and its supporting fields. Manuscript languages: Indonesian, Arabic, and English.",
+    "This journal specifically welcomes studies in three fields: Fiqh, Contemporary Fiqh, and Bahtsul Masail. Manuscript languages: Indonesian, Arabic, and English.",
   berandaTentangIsi:
     "A scholarly journal of Ma'had Aly DDI Mangkoso specializing in Fiqh and Usul al-Fiqh, published by the Journal Institute of Ma'had Aly DDI Mangkoso. All manuscripts undergo double-blind peer review and are published as open access.",
   labelTerbitan: "Issue",
@@ -334,7 +334,7 @@ const AR: JurnalDict = {
   sidebarSelengkapnya: "قراءة المزيد",
   sidebarDewanIsi: "هيئة تحرير المجلة ومحكموها.",
   fokusPengantar:
-    "تستقبل المجلة الدراسات في تخصص معهد علي دي دي آي مانكوسو والمجالات الداعمة له. لغات البحوث: الإندونيسية والعربية والإنجليزية.",
+    "تستقبل المجلة الدراسات في ثلاثة مجالات خاصة: الفقه، والفقه المعاصر، وبحث المسائل. لغات البحوث: الإندونيسية والعربية والإنجليزية.",
   berandaTentangIsi:
     "مجلة علمية لمعهد علي دي دي آي مانكوسو متخصصة في الفقه وأصول الفقه، تصدرها مؤسسة مجلة معهد علي دي دي آي مانكوسو. تخضع جميع البحوث لتحكيم مزدوج التعمية وتنشر بنظام الوصول المفتوح.",
   labelTerbitan: "العدد",

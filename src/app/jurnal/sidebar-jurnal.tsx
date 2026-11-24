@@ -51,7 +51,8 @@ function BarisTautan({
 }
 
 export async function SidebarJurnal() {
-  const t = tJurnal(await localeJurnalServer());
+  const locale = await localeJurnalServer();
+  const t = tJurnal(locale);
   return (
     <aside className="space-y-6">
       {/* Kirim naskah */}
@@ -145,7 +146,7 @@ export async function SidebarJurnal() {
       {/* Fokus dan ruang lingkup ringkas */}
       <Blok judul={t.fokusDanRuangLingkup}>
         <ul className="space-y-1.5 text-sm text-slate-700">
-          {JURNAL_FOKUS_DAN_RUANG_LINGKUP.slice(0, 4).map((item) => (
+          {JURNAL_FOKUS_DAN_RUANG_LINGKUP[locale].map((item) => (
             <li key={item} className="flex items-start gap-2">
               <span className="font-bold text-jurnal-emas">•</span>
               <span>{item}</span>

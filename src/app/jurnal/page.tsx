@@ -10,7 +10,11 @@ import {
 } from "@/lib/jurnal/konten";
 import { daftarTerbitanPublik } from "@/lib/jurnal/alur-server";
 import { daftarPengumumanPublik } from "@/lib/jurnal/publik5-server";
-import { tJurnal, type JurnalDict } from "@/lib/jurnal/i18n";
+import {
+  tJurnal,
+  type JurnalDict,
+  type JurnalLocale
+} from "@/lib/jurnal/i18n";
 import { localeJurnalServer } from "@/lib/jurnal/i18n-server";
 import { KerangkaPublik } from "./kerangka-publik";
 import { DaftarArtikelPublik } from "./daftar-artikel";
@@ -82,9 +86,11 @@ function BannerJurnal() {
 
 function InfoJurnal({
   teks,
+  locale,
   labelSampul
 }: {
   teks: JurnalDict;
+  locale: JurnalLocale;
   labelSampul: string;
 }) {
   // Blok pembuka beranda mengikuti pola halaman tentang situs jurnal:
@@ -142,7 +148,7 @@ function InfoJurnal({
             {teks.fokusPengantar}
           </p>
           <ul className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2">
-            {JURNAL_FOKUS_DAN_RUANG_LINGKUP.map((item) => (
+            {JURNAL_FOKUS_DAN_RUANG_LINGKUP[locale].map((item) => (
               <li
                 key={item}
                 className="flex items-start gap-2 text-sm text-slate-700"
@@ -213,7 +219,8 @@ function KepalaTerbitan({
 }
 
 export default async function JurnalBerandaPage() {
-  const teks = tJurnal(await localeJurnalServer());
+  const locale = await localeJurnalServer();
+  const teks = tJurnal(locale);
   const terbitan = await daftarTerbitanPublik();
   const pengumuman = (await daftarPengumumanPublik()).slice(0, 3);
   const terkini = terbitan.find((t) => t.isCurrent) ?? terbitan[0] ?? null;
@@ -230,6 +237,7 @@ export default async function JurnalBerandaPage() {
         {/* Tentang jurnal: sampul dan tabel informasi */}
         <InfoJurnal
           teks={teks}
+          locale={locale}
           labelSampul={terkini?.label ?? JURNAL_NAMA_PLACEHOLDER}
         />
 

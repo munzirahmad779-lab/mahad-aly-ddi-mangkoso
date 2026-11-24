@@ -8,6 +8,8 @@
 // Mahadaly; konten jurnal uji berdiri sendiri di sini.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { JurnalLocale } from "./i18n";
+
 export const JURNAL_NAMA_PLACEHOLDER = "Turatsuna";
 export const JURNAL_NAMA_LABEL_UJI = "Turatsuna (Usulan Nama - Versi Uji)";
 export const JURNAL_SUBJUDUL =
@@ -15,14 +17,15 @@ export const JURNAL_SUBJUDUL =
 export const JURNAL_PENERBIT_UJI =
   "Lembaga Jurnal Ma'had Aly DDI Mangkoso (versi uji, belum resmi)";
 
-export const JURNAL_FOKUS_DAN_RUANG_LINGKUP: string[] = [
-  "Fiqh dan Ushul Fiqh (takhasus resmi Ma'had Aly DDI Mangkoso)",
-  "Ilmu Al-Qur'an dan Tafsir",
-  "Kajian kitab turats dan khazanah pesantren",
-  "Bahtsul Masa'il dan fiqh kontemporer",
-  "Bahasa dan sastra Arab",
-  "Pendidikan pesantren dan Ma'had Aly"
-];
+// Fokus dan ruang lingkup jurnal dipersempit atas ketetapan user
+// (25 Nov 2026) menjadi khusus tiga bidang saja: Fiqh, Fiqh
+// Kontemporer, dan Bahtsul Masail. Label disiapkan per bahasa
+// antarmuka; permukaan jurnal berbahasa Arab memakai label Arab.
+export const JURNAL_FOKUS_DAN_RUANG_LINGKUP: Record<JurnalLocale, string[]> = {
+  id: ["Fiqh", "Fiqh Kontemporer", "Bahtsul Masail"],
+  en: ["Fiqh", "Contemporary Fiqh", "Bahtsul Masail"],
+  ar: ["الفقه", "الفقه المعاصر", "بحث المسائل"]
+};
 
 export interface TerbitanUji {
   slug: string;

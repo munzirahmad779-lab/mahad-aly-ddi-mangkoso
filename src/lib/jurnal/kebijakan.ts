@@ -49,16 +49,29 @@ export const HALAMAN_KEBIJAKAN: HalamanKebijakan[] = [
     slug: "fokus-ruang-lingkup",
     judul: "Fokus dan Ruang Lingkup",
     ringkasan:
-      "Bidang kajian yang ditampung jurnal sesuai takhasus Ma'had Aly DDI Mangkoso.",
+      "Jurnal khusus menampung tiga bidang: Fiqh, Fiqh Kontemporer, dan Bahtsul Masail.",
     bagian: [
       {
         paragraf: [
-          "Jurnal menampung kajian sesuai takhasus Ma'had Aly DDI Mangkoso dan bidang pendukungnya:"
-        ],
-        butir: [
-          "Fiqh dan Ushul Fiqh (bidang utama)",
-          "Kajian kitab turats dan khazanah pesantren",
-          "Bahtsul Masa'il dan fiqh kontemporer"
+          "Jurnal khusus menampung kajian dalam tiga bidang berikut. Naskah di luar ketiga bidang ini tidak masuk ruang lingkup jurnal dan tidak diproses ke tahap telaah."
+        ]
+      },
+      {
+        subjudul: "Fiqh",
+        paragraf: [
+          "Kajian fiqh dalam berbagai mazhab dan perbandingannya, meliputi ibadah, muamalah, munakahat, jinayah, dan siyasah, termasuk telaah atas kitab-kitab fiqh klasik dan khazanah turats pesantren."
+        ]
+      },
+      {
+        subjudul: "Fiqh Kontemporer",
+        paragraf: [
+          "Kajian fiqh atas persoalan kekinian, seperti ekonomi dan keuangan syariah, teknologi, kesehatan, lingkungan, dan isu sosial baru, dengan istinbath hukum yang berpijak pada dalil, kaidah fiqh, dan ushul fiqh."
+        ]
+      },
+      {
+        subjudul: "Bahtsul Masail",
+        paragraf: [
+          "Kajian hasil dan metode bahtsul masail: perumusan masalah, telaah referensi kitab, serta keputusan hukum atas persoalan yang dibahas dalam forum bahtsul masail di pesantren dan lembaga keagamaan."
         ]
       }
     ]
