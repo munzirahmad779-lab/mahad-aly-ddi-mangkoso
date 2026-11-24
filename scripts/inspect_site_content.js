@@ -26,9 +26,30 @@ async function dumpContent() {
     }
   }
 
-  console.log('\n=== SUBMISSIONS ===');
-  const subs = await supabase.from('submissions').select('*');
-  console.log(JSON.stringify(subs.data, null, 2));
+  // Submissions berisi data pribadi pengirim (nama, email, nomor HP):
+  // jangan pernah membuang baris mentahnya ke stdout/log. Cukup hitungan
+  // dan rincian teredaksi (domain email saja, tanpa alamat utuh).
+  console.log('\n=== SUBMISSIONS (ringkasan teredaksi) ===');
+  const { data: subRows, error: subError } = await supabase
+    .from('submissions')
+    .select('status, email');
+  if (subError) {
+    console.error('Gagal membaca submissions:', subError.message);
+    return;
+  }
+  const perStatus = {};
+  const perDomain = {};
+  for (const s of subRows || []) {
+    const st = s.status || '(tanpa status)';
+    perStatus[st] = (perStatus[st] || 0) + 1;
+    const domain = typeof s.email === 'string' && s.email.includes('@')
+      ? s.email.split('@').pop().toLowerCase()
+      : '(tidak valid)';
+    perDomain[domain] = (perDomain[domain] || 0) + 1;
+  }
+  console.log(`Total submissions: ${(subRows || []).length}`);
+  console.log('Per status:', perStatus);
+  console.log('Per domain email:', perDomain);
 }
 
 dumpContent();
