@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { formatHijriShort } from "@/lib/hijri-calendar";
-import { kolomDariKategori } from "@/lib/content-mappers";
+import { kolomDariKategori, hitungWaktuBaca } from "@/lib/content-mappers";
 import {
   Article,
   CategoryInfo,
@@ -626,7 +626,7 @@ export function ArticleProvider({
               imageUrl: a.thumbnail_url || undefined,
               date: new Date(a.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
               hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),
-              readTime: "5 menit",
+              readTime: hitungWaktuBaca(a.content),
               views: a.views || 0,
               tags: a.tags || []
               };
@@ -655,7 +655,7 @@ export function ArticleProvider({
               category: "Fiqh Mu'asarah",
               categoryLabel: "Fiqh Mu'asarah",
               downloadUrl: t.pdf_url || "",
-              fileSize: t.pdf_size_mb || "3.5 MB"
+              fileSize: t.pdf_size_mb || ""
             }));
             setTheses(mappedTheses);
           }
@@ -709,12 +709,12 @@ export function ArticleProvider({
                 education: Array.isArray(c.data?.education)
                   ? c.data.education
                   : typeof c.data?.education === "string" && c.data.education.trim().length > 0
-                  ? c.data.education.split("â€¢").map((s: string) => s.trim()).filter(Boolean)
+                  ? c.data.education.split(/•|â€¢/).map((s: string) => s.trim()).filter(Boolean)
                   : [],
                 publications: Array.isArray(c.data?.publications)
                   ? c.data.publications
                   : typeof c.data?.publications === "string" && c.data.publications.trim().length > 0
-                  ? c.data.publications.split("â€¢").map((s: string) => s.trim()).filter(Boolean)
+                  ? c.data.publications.split(/•|â€¢/).map((s: string) => s.trim()).filter(Boolean)
                   : [],
                 order: idx + 1,
                 isActive: c.data?.isActive !== false
@@ -833,7 +833,7 @@ export function ArticleProvider({
                 keyword: s.keyword || [],
                 fileUrl: s.file_url || "",
                 fileNama: extraMeta.fileNama || "Naskah.pdf",
-                fileUkuran: extraMeta.fileUkuran || "1.2 MB",
+                fileUkuran: extraMeta.fileUkuran || "",
                 tanggal: new Date(s.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
                 status: (s.status as any) || "review",
                 reviewNote: extraMeta.feedback || s.catatan_admin || "",
@@ -1870,7 +1870,7 @@ export function ArticleProvider({
       categoryLabel: sub.kategori || (isOpini ? "Opini Santri" : "Fiqh Mu'asarah"),
       date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
       hijriDate: formatHijriShort(new Date()),
-      readTime: "5 menit",
+      readTime: hitungWaktuBaca(articleContent),
       views: 0,
       tags: Array.isArray(sub.keyword)
         ? sub.keyword
@@ -2552,6 +2552,10 @@ export function ArticleProvider({
   };
 
   // Export / Import Backup
+  // users, subscribers, dan emailLogs SENGAJA tidak ikut diekspor: isinya
+  // data pribadi (alamat email dan akun panel) dalam JSON teks biasa yang
+  // mudah diteruskan ke mana-mana. Impor cadangan lama yang masih memuat
+  // ketiga kunci itu tetap diterima seperti biasa.
   const exportBackupJson = () => {
     const fullBackup = {
       articles,
@@ -2560,7 +2564,6 @@ export function ArticleProvider({
       submissions,
       news,
       settings,
-      users,
       media,
       lecturers,
       facilities,
@@ -2570,8 +2573,6 @@ export function ArticleProvider({
       bahtsulQA,
       pmbWaves,
       pmbFAQs,
-      subscribers,
-      emailLogs,
       galleryAlbums,
       comingSoonPages,
       pageSeoList,
