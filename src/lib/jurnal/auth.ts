@@ -107,6 +107,34 @@ export async function requireJurnalRole(
   const email = user.email || "";
   const roles = await getJurnalRolesForUser(user.id, email);
 
+  // Ketentuan bootstrap (pelajaran verifikasi live 24 Nov 2026): setiap
+  // pemegang peran jurnal WAJIB punya baris profil di jurnal_users,
+  // karena semua kolom aktor jurnal (assigned_by, actor_user_id,
+  // created_by, submitter_user_id) ber-FK ke tabel itu. Manajer Jurnal
+  // bootstrap dari admin situs utama lolos pemeriksaan peran lewat
+  // email, tetapi tanpa baris profil ini setiap penulisan aktornya
+  // ditolak FK dan perjalanan editorial berhenti. Lengkapi otomatis
+  // sekali di sini; idempoten karena id adalah kunci utama dan galat
+  // konflik diabaikan.
+  if (roles.length > 0) {
+    const { data: profilJurnal } = await supabaseAdmin
+      .from("jurnal_users")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (!profilJurnal) {
+      const namaMeta =
+        typeof user.user_metadata?.full_name === "string"
+          ? user.user_metadata.full_name.trim()
+          : "";
+      await supabaseAdmin.from("jurnal_users").insert({
+        id: user.id,
+        email: email.toLowerCase(),
+        full_name: namaMeta || email.split("@")[0] || email
+      });
+    }
+  }
+
   if (allowedRoles && allowedRoles.length > 0) {
     const lolos =
       roles.includes("journal_manager") ||
