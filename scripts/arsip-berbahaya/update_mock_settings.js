@@ -1,3 +1,6 @@
+// PERINGATAN: berkas arsip sekali jalan, BERBAHAYA bila dijalankan ulang.
+// Isinya data templat basi yang dapat menimpa produksi dan membatalkan perbaikan Dema 23 Nov 2026.
+// Jangan jalankan tanpa perintah eksplisit user dan pemeriksaan ulang isi. Lihat README.md folder ini.
 const fs = require('fs');
 const path = require('path');
 

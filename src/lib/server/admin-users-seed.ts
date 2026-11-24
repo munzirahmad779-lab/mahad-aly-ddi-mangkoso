@@ -12,7 +12,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     email: "munzirahmad779@gmail.com",
     role: "Super Admin",
     status: "Aktif",
-    lastLogin: "Hari ini, 21:40 WITA"
+    lastLogin: "Belum pernah masuk"
   },
   {
     id: "usr-2",
@@ -20,7 +20,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     email: "bahtsulmasail@ddimangkoso.ac.id",
     role: "Editor",
     status: "Aktif",
-    lastLogin: "Kemarin, 14:12 WITA"
+    lastLogin: "Belum pernah masuk"
   },
   {
     id: "usr-3",
@@ -28,6 +28,6 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     email: "akademik@ddimangkoso.ac.id",
     role: "Penulis",
     status: "Aktif",
-    lastLogin: "3 hari lalu"
+    lastLogin: "Belum pernah masuk"
   }
 ];

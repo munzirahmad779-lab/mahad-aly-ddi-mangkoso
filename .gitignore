@@ -49,3 +49,8 @@ next-env.d.ts
 
 # lapisan data uji cabang jurnal (lokal, bukan data produksi)
 /.jurnal-uji/
+
+# berkas data pribadi/basi: dilarang masuk repo (dihapus 25 Nov 2026, tindak lanjut audit kode ulang)
+scripts/formatted_dema_data.json
+scripts/dema_responses.csv
+scripts/db_site_settings.json

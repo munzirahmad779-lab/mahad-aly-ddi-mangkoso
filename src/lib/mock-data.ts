@@ -49,9 +49,9 @@ export const INITIAL_SEO: SeoSettings = {
   siteTitle: "Ma'had Aly DDI Mangkoso — Takhassus Fiqh wa Usuluhu",
   metaDescription: "Portal resmi Ma'had Aly Pendidikan Tinggi Kader Ulama DDI Abdurrahman Ambo Dalle Mangkoso, Barru. Pusat kajian Fiqh Mu'asarah, turats, dan riset hukum Islam.",
   keywords: "mahad aly ddi mangkoso, fiqh muasarah, fiqh kontemporer, ushul fikih, anregurutta ambo dalle, barru sulawesi selatan",
-  ogImage: "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=1200&q=80",
+  ogImage: "",
   googleAnalyticsId: "G-EBBP80BZWL",
-  searchConsoleCode: "google-site-verification-mangkoso-example",
+  searchConsoleCode: "",
   enableSitemap: true
 };
 
@@ -114,7 +114,7 @@ export const INITIAL_MAINTENANCE_CONFIG: MaintenanceConfig = {
   noticeGreeting: "Assalamu'alaikum Warahmatullahi Wabarakatuh.",
   noticeContent: "Saat ini dewan masyaikh dan tim redaksi sedang menyempurnakan basis data kurikulum kitab turats klasik, repositori risalah ilmiah mahasantri, direktori fatwa bahtsul masail, dan sistem penerimaan mahasantri baru (PMB).",
   noticeNote: "Insya Allah, portal resmi ini akan segera diluncurkan secara penuh untuk masyarakat luas. Bagi mahasantri, alumni, dan calon pendaftar yang membutuhkan informasi resmi, silakan menghubungi narahubung sekretariat di bawah ini.",
-  whatsappNumber: "+62 812-4234-xxxx",
+  whatsappNumber: "+62 857-5479-5186",
   whatsappLabel: "Hubungi WhatsApp Sekretariat",
   email: "redaksi@mahadaly-ddimangkoso.ac.id",
   address: "Kompleks Ponpes DDI Mangkoso, Kec. Soppeng Riaja, Kab. Barru, Sulsel 90752",
@@ -187,7 +187,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
   historyContent: "Berangkat dari keprihatinan atas merosotnya bekal keulamaan di sebagian besar pondok pesantren akibat kurangnya kiyai berkapasitas ulama, akumulasi kurikulum yang menyita porsi ilmu keislaman, serta tantangan zaman dan perkembangan ICT yang berdampak negatif, Pondok Pesantren Pusat Darud Da'wah wal-Irsyad Abdurrahman Ambo Dalle Mangkoso mendirikan Al-Ma'had Al-'Aliy untuk mencetak kader ulama yang berkarakter dan mengintegrasikan ilmu, amal, serta moral.\nPengajian kitab kuning di pondok pesantren ini sudah berjalan sejak berdirinya pada tanggal 21 Desember 1938 dan tidak pernah terhenti sampai sekarang, sehingga budaya membaca kitab kuning bukanlah hal yang baru di pesantren ini.\nPenyelenggaraan ini didukung oleh potensi yang dimiliki pesantren, di antaranya keberadaan ulama dan asatizah yang berkemampuan mengajarkan kitab kuning dan putih, santri dalam jumlah banyak, koleksi kitab mu'tabar yang cukup, serta alumni yang telah menyelesaikan pendidikan tingkat doktor di berbagai disiplin ilmu keislaman baik di dalam maupun luar negeri.",
   historyArabic: "تأسس المعهد العالي لمعهد دار الدعوة والإرشاد عبد الرحمن عبو دالي منغكوسو لمعالجة ندرة العلماء وتحديات العصر، بهدف إعداد كوادر علماء ذوي شخصية متميزة. وتقاليد دراسة الكتب الصفراء في هذا المعهد مستمرة منذ ٢١ ديسمبر ١٩٣٨ حتى الآن.",
   gradingSystemRules: "Sistem penilaian menggabungkan pengujian hafalan matan turats (ikhtibar), penguasaan qawa'id fiqhiyyah, keaktifan halaqah Bahtsul Masail, serta penulisan risalah ilmiah skripsi (munaqasyah) dengan standar kelulusan predikat Mumtaz (Cum Laude).",
-  academicGuideBookUrl: "https://drive.google.com/file/d/pedoman-akademik-mahad-aly-2026/view?usp=sharing",
+  academicGuideBookUrl: "",
   academicGuideBookSize: "4.5 MB",
   academicGuideBookYear: "2026/2027",
   hero: INITIAL_HERO,
@@ -355,7 +355,7 @@ export const INITIAL_NAVBAR_SETTINGS: NavbarSettings = {
   topBar: {
     isActive: true,
     hijriDateText: "Jum'at, 27 Rabi'ul Awwal 1448 H / 9 Oktober 2026",
-    phone: "(0421) 510-123 • WA: 0812-4234-xxxx",
+    phone: "WA: 0857-5479-5186",
     email: "redaksi@mahadaly-ddimangkoso.ac.id",
     announcementText: "Penerimaan Mahasantri Baru (PMB) Marhalah Ula (M.1) Dibuka",
     quickLinkText: "E-Library Turats",

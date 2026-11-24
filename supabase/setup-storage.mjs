@@ -45,7 +45,7 @@ async function setupStorage() {
     const { data, error } = await supabaseAdmin.storage.createBucket("media", {
       public: true,
       fileSizeLimit: 10485760, // 10MB
-      allowedMimeTypes: ["image/png", "image/jpeg", "image/webp", "image/svg+xml", "image/gif", "application/pdf"]
+      allowedMimeTypes: ["image/png", "image/jpeg", "image/webp", "image/gif", "application/pdf"]
     });
 
     if (error) {
@@ -55,11 +55,15 @@ async function setupStorage() {
     }
   } else {
     console.log("✅ Bucket 'media' sudah ada. Memperbarui konfigurasi public...");
-    await supabaseAdmin.storage.updateBucket("media", {
+    const { error: updateError } = await supabaseAdmin.storage.updateBucket("media", {
       public: true,
       fileSizeLimit: 10485760,
-      allowedMimeTypes: ["image/png", "image/jpeg", "image/webp", "image/svg+xml", "image/gif", "application/pdf"]
+      allowedMimeTypes: ["image/png", "image/jpeg", "image/webp", "image/gif", "application/pdf"]
     });
+    if (updateError) {
+      console.error("Gagal memperbarui bucket 'media':", updateError.message);
+      throw updateError;
+    }
     console.log("✅ Bucket 'media' siap digunakan.");
   }
 }
