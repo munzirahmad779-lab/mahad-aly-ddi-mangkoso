@@ -11,10 +11,12 @@ import { getClientIp } from "@/lib/rate-limit";
 // Permintaan reset kata sandi (Tahap Penutup Celah, butir S4).
 // Jawaban selalu generik agar tidak membocorkan keberadaan akun.
 // Mode supabase: tautan pemulihan resmi Supabase Auth dikirim ke email.
-// Mode lokal (uji): token sekali pakai dibuat di store lokal dan, hanya
-// pada mode uji ini, dikembalikan pada badan respons sebagai tokenUji
-// agar alur dapat diuji tanpa kotak surat; mode supabase tidak pernah
-// mengembalikan token apa pun.
+// Mode lokal (uji): token sekali pakai dibuat di store lokal, tetapi
+// TIDAK pernah dikembalikan pada badan respons dalam mode apa pun
+// (perbaikan audit Irisan 2: token yang keluar lewat respons dapat
+// dipakai siapa pun yang tahu email korban). Pada mode lokal token
+// hanya dicatat di log server agar alur tetap dapat diuji tanpa kotak
+// surat; penguji mengambilnya dari log, bukan dari respons API.
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +42,13 @@ export async function POST(req: NextRequest) {
   }
   try {
     const hasil = await mintaResetSandi(email);
+    if (hasil.mode === "local" && hasil.tokenLokal) {
+      // Mode uji saja: token dicatat di log server, tidak pernah di
+      // badan respons. Log server hanya terbaca operator mesin.
+      console.warn(
+        `[jurnal] Token reset mode lokal untuk ${email}: ${hasil.tokenLokal} (buka /jurnal/sandi-baru?token=<token> untuk menguji)`
+      );
+    }
     await catatPeristiwaKeamanan("reset_sandi_diminta", {
       ip: getClientIp(req),
       email,
@@ -47,10 +56,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({
       ok: true,
-      pesan: PESAN_GENERIK,
-      ...(hasil.mode === "local" && hasil.tokenLokal
-        ? { tokenUji: hasil.tokenLokal }
-        : {})
+      pesan: PESAN_GENERIK
     });
   } catch (err) {
     console.error(

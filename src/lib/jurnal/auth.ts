@@ -127,11 +127,22 @@ export async function requireJurnalRole(
         typeof user.user_metadata?.full_name === "string"
           ? user.user_metadata.full_name.trim()
           : "";
-      await supabaseAdmin.from("jurnal_users").insert({
-        id: user.id,
-        email: email.toLowerCase(),
-        full_name: namaMeta || email.split("@")[0] || email
-      });
+      const { error: errProfil } = await supabaseAdmin
+        .from("jurnal_users")
+        .insert({
+          id: user.id,
+          email: email.toLowerCase(),
+          full_name: namaMeta || email.split("@")[0] || email
+        });
+      // Galat kini diperiksa (temuan N1 Mega Audit): bentrok kunci
+      // (23505) berarti profil dibuat permintaan lain yang berlomba,
+      // sesuai sifat idempoten di atas, jadi diabaikan; galat lain
+      // dicatat agar kegagalan pelengkapan profil tidak senyap.
+      if (errProfil && errProfil.code !== "23505") {
+        console.error(
+          `[jurnal] Gagal melengkapi profil jurnal_users untuk ${email}: ${errProfil.message}`
+        );
+      }
     }
   }
 

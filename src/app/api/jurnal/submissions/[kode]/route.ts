@@ -14,7 +14,8 @@ import {
   isJurnalStatus,
   JURNAL_STAFF_ROLES,
   JURNAL_STATUSES,
-  transisiStatusSah
+  transisiStatusSah,
+  type JurnalSubmissionView
 } from "@/lib/jurnal/status";
 import {
   BATAS_TEKS,
@@ -25,9 +26,13 @@ import {
   responsBadanTerlaluBesar
 } from "@/lib/jurnal/keamanan";
 
-// Satu naskah berdasarkan kode lacak JRN-YYYY-XXXX.
+// Satu naskah berdasarkan kode lacak JRN-YYYY-XXXXXX (kode lama
+// JRN-YYYY-XXXX tetap sah).
 // GET dipakai halaman lacak (publik, kode lacak adalah kuncinya) dengan
-// format kode divalidasi ketat sebelum menyentuh lapisan data.
+// format kode divalidasi ketat sebelum menyentuh lapisan data, dan
+// jawabannya DIBATASI ke bentuk publik: email penulis, abstrak, berkas,
+// pernyataan AI, penulis pendamping, dan catatan linimasa staf tidak
+// pernah keluar dari jalur tanpa sesi ini (temuan audit Irisan 2).
 // PATCH dipakai panel redaksi untuk mengubah status mengikuti kosakata
 // alur OJS dan tabel transisi yang diizinkan; wajib sesi berperan staf
 // pada KEDUA mode (mode supabase: peran jurnal; mode lokal: akun staf
@@ -48,10 +53,31 @@ async function tolakKodeTidakSah(
   return NextResponse.json(
     {
       error:
-        "Format kode lacak tidak sah. Kode lacak berformat JRN-YYYY-XXXX (contoh: JRN-2026-1234)."
+        "Format kode lacak tidak sah. Kode lacak berformat JRN-YYYY-XXXXXX (contoh: JRN-2026-123456); kode lama JRN-YYYY-XXXX tetap berlaku."
     },
     { status: 400 }
   );
+}
+
+// Bentuk publik satu naskah untuk halaman lacak: persis bidang yang
+// memang ditampilkan halaman itu (status, judul, penulis, afiliasi,
+// tanggal kirim, dan linimasa status tanpa catatan staf). Tampilan
+// penuh hanya beredar lewat jalur bersesi (panel dan Naskah Saya).
+function tampilanPublik(n: JurnalSubmissionView) {
+  return {
+    kode: n.kode,
+    judul: n.judul,
+    penulis: n.penulis,
+    afiliasi: n.afiliasi,
+    status: n.status,
+    statusLabel: n.statusLabel,
+    dibuatPada: n.dibuatPada,
+    riwayat: n.riwayat.map((r) => ({
+      status: r.status,
+      label: r.label,
+      pada: r.pada
+    }))
+  };
 }
 
 export async function GET(
@@ -75,7 +101,7 @@ export async function GET(
         { status: 404 }
       );
     }
-    return NextResponse.json({ submission: naskah });
+    return NextResponse.json({ submission: tampilanPublik(naskah) });
   } catch (err) {
     console.error(
       "GET /api/jurnal/submissions/[kode] gagal:",

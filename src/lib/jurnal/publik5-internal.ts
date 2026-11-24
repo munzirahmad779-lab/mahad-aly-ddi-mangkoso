@@ -80,3 +80,17 @@ export interface Publik5Backend {
 export function larikanPolaIlike(v: string): string {
   return v.replace(/[\\%_]/g, (ch) => `\\${ch}`);
 }
+
+// Pelarian nilai yang disisipkan ke string filter or() PostgREST.
+// Di dalam or(), koma memisahkan cabang filter dan kurung mengelompokkan
+// cabang, jadi koma atau kurung dari masukan pengguna dapat menyusun
+// cabang filter baru (injeksi filter, temuan audit Irisan 2). Selain
+// pelarian pola ilike di atas, karakter struktur itu diganti spasi dan
+// tanda bintang diloloskan sebagai pola (di dalam or(), * berperan
+// sebagai wildcard seperti %), sehingga masukan hanya pernah menjadi
+// satu nilai ilike utuh.
+export function larikanNilaiFilterOr(v: string): string {
+  return larikanPolaIlike(v)
+    .replace(/\*/g, "\\*")
+    .replace(/[,()"]/g, " ");
+}

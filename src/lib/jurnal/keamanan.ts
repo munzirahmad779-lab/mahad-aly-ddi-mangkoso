@@ -180,7 +180,9 @@ export async function batasiLajuJurnal(
 // yang memuat %, _, atau string mirip SQL) ditolak 400 sebelum menyentuh
 // lapisan data. Lapisan data sendiri memakai pencocokan persis, bukan
 // ilike, jadi tidak ada wildcard yang bisa hidup di jalur ini.
-export const POLA_KODE_LACAK = /^JRN-\d{4}-\d{4}$/;
+// Kode baru berformat 6 digit (JRN-YYYY-XXXXXX, perbaikan audit 25 Nov
+// 2026); kode lama 4 digit yang sudah beredar tetap diterima.
+export const POLA_KODE_LACAK = /^JRN-\d{4}-(\d{4}|\d{6})$/;
 
 export function normalisasiKodeLacak(v: unknown): string | null {
   if (typeof v !== "string") return null;

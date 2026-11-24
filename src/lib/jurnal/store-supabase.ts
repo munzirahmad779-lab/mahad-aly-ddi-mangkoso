@@ -172,10 +172,29 @@ export async function getSupabase(
   );
 }
 
-function buatKode(): string {
+// Kode lacak 6 digit (900.000 kombinasi per tahun), menggantikan format
+// lama 4 digit yang mudah dienumerasi (temuan audit Irisan 2). Keunikan
+// diperiksa ke basis data sebelum kode dipakai, meniru pola kode lacak
+// situs utama; penolakan unik (23505) pada insert tetap menjadi
+// penjaga terakhir bila dua permintaan berlomba di celah antar periksa.
+async function buatKodeUnik(): Promise<string> {
   const tahun = new Date().getFullYear();
-  const acak = Math.floor(1000 + Math.random() * 9000);
-  return `JRN-${tahun}-${acak}`;
+  for (let i = 0; i < 10; i++) {
+    const acak = Math.floor(100000 + Math.random() * 900000);
+    const kandidat = `JRN-${tahun}-${acak}`;
+    const { data, error } = await supabaseAdmin
+      .from("jurnal_submissions")
+      .select("id")
+      .eq("tracking_code", kandidat)
+      .maybeSingle();
+    if (error) {
+      throw new Error(
+        `Gagal memeriksa keunikan kode lacak jurnal: ${error.message}`
+      );
+    }
+    if (!data) return kandidat;
+  }
+  throw new Error("Gagal membuat kode lacak jurnal unik sesudah 10 percobaan.");
 }
 
 export async function createSupabase(input: {
@@ -185,12 +204,13 @@ export async function createSupabase(input: {
   afiliasi: string;
   abstrak: string;
 }): Promise<JurnalSubmissionView> {
-  // Kode lacak unik ditegakkan basis data; bentrok (23505) dicoba ulang.
+  // Kode lacak unik diperiksa ke basis data oleh buatKodeUnik dan
+  // ditegakkan basis data; bentrok (23505) dicoba ulang.
   let kode = "";
   let idBaru = "";
   let lastError: string | null = null;
   for (let i = 0; i < 8 && !idBaru; i++) {
-    kode = buatKode();
+    kode = await buatKodeUnik();
     const { data, error } = await supabaseAdmin
       .from("jurnal_submissions")
       .insert({
@@ -496,7 +516,7 @@ export async function createSupabaseLengkap(
   let idBaru = "";
   let lastError: string | null = null;
   for (let i = 0; i < 8 && !idBaru; i++) {
-    kode = buatKode();
+    kode = await buatKodeUnik();
     const { data, error } = await supabaseAdmin
       .from("jurnal_submissions")
       .insert({
@@ -613,8 +633,13 @@ export async function listSupabaseByOwner(owner: {
     .order("date_submitted", { ascending: false })
     .limit(200);
   if (owner.userId) {
+    // Email disisipkan ke string filter or() PostgREST: karakter
+    // struktur filter (koma, kurung, kutip) dibuang lebih dulu agar
+    // nilai email tidak bisa menyusun cabang filter baru (kelas
+    // injeksi yang sama dengan pencarian publik di publik5-supabase).
+    const emailAman = owner.email.replace(/[,()"]/g, "");
     query = query.or(
-      `submitter_user_id.eq.${owner.userId},submitter_email.eq.${owner.email}`
+      `submitter_user_id.eq.${owner.userId},submitter_email.eq.${emailAman}`
     );
   } else {
     query = query.eq("submitter_email", owner.email);

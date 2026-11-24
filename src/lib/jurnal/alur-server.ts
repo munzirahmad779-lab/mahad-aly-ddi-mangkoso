@@ -860,7 +860,7 @@ export async function artikelPublikDariSlug(
   slug: string
 ): Promise<JurnalArtikelPublik | null> {
   const kode = slug.trim().toUpperCase();
-  if (!/^JRN-\d{4}-\d{4}$/.test(kode)) return null;
+  if (!/^JRN-\d{4}-(\d{4}|\d{6})$/.test(kode)) return null;
   const { artikel } = await kumpulkanPublik();
   return artikel.find((a) => a.kode === kode) ?? null;
 }

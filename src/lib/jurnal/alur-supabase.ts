@@ -547,42 +547,19 @@ export const alurBackendSupabase: AlurBackend = {
     const id = await ambilIdNaskah(kode);
     if (!id) return;
     const tanggal = new Date().toISOString().slice(0, 10);
-    const { data: baris } = await supabaseAdmin
-      .from("jurnal_article_daily_metrics")
-      .select("views, downloads")
-      .eq("submission_id", id)
-      .eq("metric_date", tanggal)
-      .maybeSingle();
-    if (baris) {
-      const pembaruan =
-        jenis === "views"
-          ? { views: ((baris.views as number) ?? 0) + 1 }
-          : { downloads: ((baris.downloads as number) ?? 0) + 1 };
-      await supabaseAdmin
-        .from("jurnal_article_daily_metrics")
-        .update(pembaruan)
-        .eq("submission_id", id)
-        .eq("metric_date", tanggal);
-    } else {
-      await supabaseAdmin.from("jurnal_article_daily_metrics").insert({
-        submission_id: id,
-        metric_date: tanggal,
-        views: jenis === "views" ? 1 : 0,
-        downloads: jenis === "downloads" ? 1 : 0
-      });
-    }
-    // Penghitung kumulatif pada naskah ikut dinaikkan.
-    const { data: naskah } = await supabaseAdmin
-      .from("jurnal_submissions")
-      .select("views, downloads")
-      .eq("id", id)
-      .maybeSingle();
-    if (naskah) {
-      const kolom = jenis === "views" ? "views" : "downloads";
-      await supabaseAdmin
-        .from("jurnal_submissions")
-        .update({ [kolom]: ((naskah[kolom] as number) ?? 0) + 1 })
-        .eq("id", id);
+    // Satu panggilan RPC atomik (migrasi 011): upsert metrik harian
+    // dan kenaikan kumulatif berjalan dalam satu transaksi basis data.
+    // Pola lama baca-ubah-tulis kehilangan kenaikan saat akses
+    // bersamaan dan menelan galat tulis (temuan N1 Mega Audit).
+    // Galat kini dilempar; fasad alur-server menangkapnya sebagai
+    // peringatan agar halaman publik tidak pernah gagal karena metrik.
+    const { error } = await supabaseAdmin.rpc("jurnal_catat_metrik", {
+      p_submission_id: id,
+      p_metric_date: tanggal,
+      p_jenis: jenis
+    });
+    if (error) {
+      throw new Error(`Gagal mencatat metrik jurnal: ${error.message}`);
     }
   },
 
