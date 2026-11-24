@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Amiri, Cinzel, Scheherazade_New } from "next/font/google";
 import MaintenanceGate from "@/components/common/MaintenanceGate";
 import GoogleAnalytics from "@/components/common/GoogleAnalytics";
+import AdSenseScript from "@/components/common/AdSenseScript";
 import { ArticleProvider } from "@/context/ArticleContext";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import { supabaseAnon } from "@/lib/supabase/server";
@@ -40,7 +41,13 @@ async function fetchInitialContent(): Promise<Record<string, unknown>> {
     "home_sections", "home_priorities", "category_rows", "history_timeline_entries", "about_page", "page_texts", "dema_settings", "masyayikh_list",
     "courses_list", "sarana_list", "accreditations", "calendar_events",
     "bahtsul_masail", "pmb_settings", "pmb_waves", "pmb_faqs",
-    "gallery_albums", "donations", "email_templates", "admin_permissions"
+    "gallery_albums", "donations"
+    // "email_templates" dan "admin_permissions" SENGAJA tidak ikut seed:
+    // seed tertanam di HTML publik setiap halaman, jadi isinya tidak boleh
+    // memuat templat email maupun peta izin admin. Keduanya tetap terbaca
+    // lewat jalur yang sah: panel mengambilnya dari Supabase sesudah admin
+    // masuk (ArticleContext), dan pengiriman email di server membacanya
+    // langsung dari basis data lewat supabaseAdmin.
   ];
 
   // 1. Cache segar → instan
@@ -79,11 +86,26 @@ async function fetchInitialContent(): Promise<Record<string, unknown>> {
         .from("articles")
         .select("id, slug, title, excerpt, author_name, author_role, category_id, status, thumbnail_url, created_at, views, tags")
         .order("created_at", { ascending: false })
-        .then(r => (r.data as any[]) || []),
-      supabaseAnon.from("theses").select("*").order("created_at", { ascending: false }).then(r => mapDbTheses((r.data as any[]) || [])),
-      supabaseAnon.from("categories").select("*").then(r => (r.data as any[]) || []),
-      supabaseAnon.from("news").select("*").order("created_at", { ascending: false }).then(r => mapDbNews((r.data as any[]) || [])),
-      supabaseAnon.from("collections").select("*").then(r => mapDbCollections((r.data as any[]) || []))
+        .then(r => {
+          if (r.error) console.error("[seed] kueri articles gagal:", r.error.message);
+          return (r.data as any[]) || [];
+        }),
+      supabaseAnon.from("theses").select("*").order("created_at", { ascending: false }).then(r => {
+        if (r.error) console.error("[seed] kueri theses gagal:", r.error.message);
+        return mapDbTheses((r.data as any[]) || []);
+      }),
+      supabaseAnon.from("categories").select("*").then(r => {
+        if (r.error) console.error("[seed] kueri categories gagal:", r.error.message);
+        return (r.data as any[]) || [];
+      }),
+      supabaseAnon.from("news").select("*").order("created_at", { ascending: false }).then(r => {
+        if (r.error) console.error("[seed] kueri news gagal:", r.error.message);
+        return mapDbNews((r.data as any[]) || []);
+      }),
+      supabaseAnon.from("collections").select("*").then(r => {
+        if (r.error) console.error("[seed] kueri collections gagal:", r.error.message);
+        return mapDbCollections((r.data as any[]) || []);
+      })
     ]);
 
     const timeout = new Promise<null>((resolve) =>
@@ -294,12 +316,10 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
-        {/* Google AdSense: kode verifikasi kepemilikan situs dan pemuat iklan untuk akun penayang Ma'had Aly DDI Mangkoso (ca-pub-8103100253301122), dipasang 8 Nov 2026. */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8103100253301122"
-          crossOrigin="anonymous"
-        />
+        {/* Google AdSense dimuat lewat komponen <AdSenseScript /> di body:
+            hanya untuk halaman publik (termasuk beranda, tempat verifikasi
+            kepemilikan situs dibaca), tidak ikut di panel admin dan
+            cabang jurnal. */}
         {/* GA4 dimuat SEKALI lewat komponen <GoogleAnalytics /> (afterInteractive).
             Duplikat di head dihapus — sebelumnya gtag 353 KiB terunduh dua kali
             dan memperlambat LCP seluruh halaman. */}
@@ -311,6 +331,7 @@ export default async function RootLayout({
         <link rel="image_src" href="https://mahadaly-ddimangkoso.ac.id/og-logo.jpg" />
         <ArticleProvider initialContent={initialContent}>
           <SmoothScroll />
+          <AdSenseScript />
           <GoogleAnalytics />
           <MaintenanceGate>{children}</MaintenanceGate>
         </ArticleProvider>
