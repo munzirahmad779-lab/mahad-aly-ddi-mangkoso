@@ -69,12 +69,32 @@ export default function LatestNews() {
               className="h-full bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-emerald-700 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group"
             >
               <div>
-                {item.imageUrl && (
+                {item.imageUrl ? (
                   <div className="relative w-full h-48 overflow-hidden bg-slate-100">
                     <img
                       src={item.imageUrl}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    {item.attachmentUrl && (
+                      <span className="absolute top-3 right-3 bg-amber-500 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                        <span>📎 Dokumen Lampiran</span>
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  // Berita tanpa foto sampul: tampilkan sampul penanda resmi
+                  // (lambang kampus di atas pola) setinggi sampul foto, supaya
+                  // kartu tidak menyisakan ruang putih kosong besar karena
+                  // kartu setinggi kartu berfoto di baris yang sama
+                  // (perbaikan bug 25 Nov 2026).
+                  <div className="relative w-full h-48 overflow-hidden bg-emerald-900 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-islamic-pattern opacity-40"></div>
+                    <img
+                      src="/image_067524.png"
+                      alt=""
+                      className="relative h-24 w-24 object-contain opacity-90"
                       loading="lazy"
                     />
                     {item.attachmentUrl && (
