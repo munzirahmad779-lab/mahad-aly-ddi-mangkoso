@@ -58,6 +58,8 @@ const JURNAL_PRIVATE_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // Jangan bocorkan tumpukan teknologi lewat header X-Powered-By.
+  poweredByHeader: false,
   // KHUSUS KLON UJI di VM lambat ini: generasi halaman statis membaca data
   // lewat proxy egress yang lambat sehingga batas bawaan 60 detik terlampaui
   // pada halaman web utama (bukan halaman jurnal). Nilai ini penyesuaian

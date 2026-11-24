@@ -39,9 +39,9 @@ function timelineStatusFor(
 
 export async function POST(req: NextRequest) {
   // Batas laju lebih dulu, sebelum pekerjaan basis data apa pun.
-  // checkRateLimit berbasis memori proses (di Workers tidak berbagi antar
-  // isolat), jadi ini lapis sementara, bukan penyelesaian akhir.
-  const rl = checkRateLimit(`submission-reply:${getClientIp(req)}`, 30, 60 * 1000);
+  // checkRateLimit memakai penyimpanan bersama (RPC Supabase) dengan
+  // cadangan in-memory bila RPC gagal.
+  const rl = await checkRateLimit(`submission-reply:${getClientIp(req)}`, 30, 60 * 1000);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   try {

@@ -8,7 +8,7 @@ import { normalizeAdminRole } from "@/lib/supabase/admin-guard";
 export async function POST(req: NextRequest) {
   try {
     // Endpoint ini mengirim email nyata ke admin: tanpa batas, bot bisa membanjiri inbox.
-    const rl = checkRateLimit(`alert:${getClientIp(req)}`, 5, 5 * 60 * 1000);
+    const rl = await checkRateLimit(`alert:${getClientIp(req)}`, 5, 5 * 60 * 1000);
     if (!rl.allowed) return rateLimitResponse(rl);
 
     const body = await req.json().catch(() => ({}));

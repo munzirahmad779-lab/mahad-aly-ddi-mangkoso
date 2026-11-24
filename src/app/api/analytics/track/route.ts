@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   // Rate limit: telemetri publik, batasi banjir bot
-  const rl = checkRateLimit(`track:${getClientIp(req)}`, 120, 60 * 1000);
+  const rl = await checkRateLimit(`track:${getClientIp(req)}`, 120, 60 * 1000);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   try {

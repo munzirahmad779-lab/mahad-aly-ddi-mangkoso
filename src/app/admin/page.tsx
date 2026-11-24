@@ -8,6 +8,7 @@ import KartuAksesJurnal from "@/components/admin/KartuAksesJurnal";
 import { useArticles } from "@/context/ArticleContext";
 import ImageUploader from "@/components/common/ImageUploader";
 import { entriesFromText } from "@/components/common/HistoryTimeline";
+import { hitungWaktuBaca } from "@/lib/content-mappers";
 import dynamic from "next/dynamic";
 
 // Panel berat yang hanya tampil pada satu menu admin dimuat malas:
@@ -1279,7 +1280,7 @@ export default function AdminPage() {
     featuredImage: "",
     date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
     hijriDate: formatHijriShort(new Date()),
-    readTime: "5 menit",
+    readTime: "",
     isSpecial: false,
     tags: "",
     arabicSnippet: ""
@@ -1313,7 +1314,7 @@ export default function AdminPage() {
     category: categories[0]?.name || "Fiqh Muamalah Kontemporer",
     categoryLabel: categories[0]?.name || "Fiqh Muamalah Kontemporer",
     downloadUrl: "",
-    fileSize: "3.5 MB"
+    fileSize: ""
   });
 
   // 4. Lecturer Form State
@@ -1734,6 +1735,8 @@ export default function AdminPage() {
 
     const payload = {
       ...articleForm,
+      // Waktu baca selalu dihitung dari isi sebenarnya, bukan nilai tanam.
+      readTime: hitungWaktuBaca(articleForm.content),
       tags: articleForm.tags ? articleForm.tags.split(",").map((t) => t.trim()) : []
     };
 
@@ -1762,7 +1765,7 @@ export default function AdminPage() {
       featuredImage: "",
       date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
       hijriDate: formatHijriShort(new Date()),
-      readTime: "5 menit",
+      readTime: "",
       isSpecial: false,
       tags: "",
       arabicSnippet: ""
@@ -1832,7 +1835,7 @@ export default function AdminPage() {
       category: categories[0]?.name || "Fiqh Muamalah Kontemporer",
       categoryLabel: categories[0]?.name || "Fiqh Muamalah Kontemporer",
       downloadUrl: "",
-      fileSize: "3.5 MB"
+      fileSize: ""
     });
   };
 

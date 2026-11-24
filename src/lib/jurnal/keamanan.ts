@@ -143,7 +143,7 @@ export async function batasiLajuJurnal(
   akun?: string | null
 ): Promise<Response | null> {
   const ip = getClientIp(req);
-  const ipRl = checkRateLimit(
+  const ipRl = await checkRateLimit(
     `jurnal:${cakupan}:ip:${ip}`,
     opsi.perIp.limit,
     opsi.perIp.windowMs
@@ -157,7 +157,7 @@ export async function batasiLajuJurnal(
     return rateLimitResponse(ipRl);
   }
   if (opsi.perAkun && akun) {
-    const akunRl = checkRateLimit(
+    const akunRl = await checkRateLimit(
       `jurnal:${cakupan}:akun:${akun.trim().toLowerCase()}`,
       opsi.perAkun.limit,
       opsi.perAkun.windowMs

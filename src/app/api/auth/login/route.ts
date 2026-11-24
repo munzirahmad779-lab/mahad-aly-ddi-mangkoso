@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     const ip = getClientIp(req);
 
     // Lapis 1: rate limit per IP (mencegah spraying & bot massal)
-    const ipRl = checkRateLimit(`login:ip:${ip}`, MAX_ATTEMPTS_PER_IP, IP_WINDOW_MS);
+    const ipRl = await checkRateLimit(`login:ip:${ip}`, MAX_ATTEMPTS_PER_IP, IP_WINDOW_MS);
     if (!ipRl.allowed) return rateLimitResponse(ipRl);
 
     const body = await req.json().catch(() => ({}));

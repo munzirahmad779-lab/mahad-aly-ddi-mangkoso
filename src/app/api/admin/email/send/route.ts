@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Batas laju per pemanggil sebagai lapis tambahan.
-  const rl = checkRateLimit(`admin-email-send:${auth.email || getClientIp(req)}`, 10, 60 * 1000);
+  const rl = await checkRateLimit(`admin-email-send:${auth.email || getClientIp(req)}`, 10, 60 * 1000);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   try {

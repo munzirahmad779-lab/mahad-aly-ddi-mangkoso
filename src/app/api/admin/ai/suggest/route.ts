@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
   // Batas laju: endpoint ini memanggil layanan AI berbayar, jadi sesi
   // admin yang bocor tidak boleh membakar kuota tanpa batas.
-  const rl = checkRateLimit(`ai-suggest:${auth.email || getClientIp(req)}`, 20, 60 * 1000);
+  const rl = await checkRateLimit(`ai-suggest:${auth.email || getClientIp(req)}`, 20, 60 * 1000);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   try {

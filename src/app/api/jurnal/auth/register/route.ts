@@ -40,7 +40,7 @@ function bersih(v: unknown): string {
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
-    const ipRl = checkRateLimit(
+    const ipRl = await checkRateLimit(
       `jurnal-register:ip:${ip}`,
       MAX_ATTEMPTS_PER_IP,
       IP_WINDOW_MS
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const emailRl = checkRateLimit(
+    const emailRl = await checkRateLimit(
       `jurnal-register:email:${data.email}`,
       MAX_ATTEMPTS_PER_EMAIL,
       ATTEMPT_WINDOW_MS

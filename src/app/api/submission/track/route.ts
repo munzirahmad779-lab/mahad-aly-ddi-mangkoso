@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   // Rate limit: pelacakan publik, cegah enumerasi kode tracking massal
-  const rl = checkRateLimit(`track-sub:${getClientIp(req)}`, 30, 60 * 1000);
+  const rl = await checkRateLimit(`track-sub:${getClientIp(req)}`, 30, 60 * 1000);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   try {

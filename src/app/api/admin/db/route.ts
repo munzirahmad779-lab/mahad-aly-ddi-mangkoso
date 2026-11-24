@@ -49,7 +49,7 @@ const USERS_WRITABLE_COLUMNS = new Set([
 
 export async function POST(request: Request) {
   try {
-    const rl = checkRateLimit(`db:${getClientIp(request)}`, 120, 60 * 1000);
+    const rl = await checkRateLimit(`db:${getClientIp(request)}`, 120, 60 * 1000);
     if (!rl.allowed) return rateLimitResponse(rl);
 
     const auth = await requireRole(request, ["super_admin", "editor"]);

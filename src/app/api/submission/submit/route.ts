@@ -16,7 +16,7 @@ const ALLOWED_MIME_TYPES = [
 
 export async function POST(req: NextRequest) {
   // Rate limit: form publik, cegah spam submission bot
-  const rl = checkRateLimit(`submit:${getClientIp(req)}`, 5, 10 * 60 * 1000);
+  const rl = await checkRateLimit(`submit:${getClientIp(req)}`, 5, 10 * 60 * 1000);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   try {

@@ -33,9 +33,9 @@ const VALID_STATUSES = new Set([
 
 export async function POST(req: NextRequest) {
   // Batas laju lebih dulu, sebelum pekerjaan sesi/basis data apa pun.
-  // checkRateLimit berbasis memori proses (di Workers tidak berbagi antar
-  // isolat), jadi ini lapis sementara, bukan penyelesaian akhir.
-  const rl = checkRateLimit(`submission-status:${getClientIp(req)}`, 30, 60 * 1000);
+  // checkRateLimit memakai penyimpanan bersama (RPC Supabase) dengan
+  // cadangan in-memory bila RPC gagal.
+  const rl = await checkRateLimit(`submission-status:${getClientIp(req)}`, 30, 60 * 1000);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   // Gerbang sesi admin yang sah di sisi server (pola admin-guard yang sama
