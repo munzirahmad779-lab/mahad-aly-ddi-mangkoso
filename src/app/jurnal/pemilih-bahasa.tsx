@@ -16,7 +16,7 @@ import {
   type JurnalLocale
 } from "@/lib/jurnal/i18n";
 
-export default function PemilihBahasa() {
+export default function PemilihBahasa({ gelap = false }: { gelap?: boolean }) {
   const [locale, setLocale] = useState<JurnalLocale>("ar");
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function PemilihBahasa() {
     <div className="flex items-center gap-2" data-testid="pemilih-bahasa">
       <label
         htmlFor="jurnal-pilih-bahasa"
-        className="text-xs font-semibold text-slate-600"
+        className={`text-xs font-semibold ${gelap ? "text-white/85" : "text-slate-600"}`}
       >
         {t.pilihBahasa}
       </label>
@@ -58,7 +58,11 @@ export default function PemilihBahasa() {
         id="jurnal-pilih-bahasa"
         value={locale}
         onChange={(e) => ganti(e.target.value as JurnalLocale)}
-        className="text-xs sm:text-sm font-semibold rounded-full border border-slate-300 bg-white px-3 py-1.5 text-slate-700"
+        className={`text-xs sm:text-sm font-semibold rounded-md border px-2.5 py-1.5 ${
+          gelap
+            ? "border-white/25 bg-jurnal-hijau text-white"
+            : "border-slate-300 bg-white text-slate-700"
+        }`}
       >
         {JURNAL_LOCALES.map((l) => (
           <option key={l} value={l}>

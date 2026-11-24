@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { JURNAL_BAGIAN } from "@/lib/jurnal/wizard";
 import { cariArtikelPublik } from "@/lib/jurnal/publik5-server";
 import { DaftarArtikelPublik } from "../../daftar-artikel";
+import { KerangkaPublik } from "../../kerangka-publik";
 import { tJurnal } from "@/lib/jurnal/i18n";
 import { localeJurnalServer } from "@/lib/jurnal/i18n-server";
 
@@ -39,11 +40,11 @@ export default async function BagianJurnalPage({
   const teks = tJurnal(await localeJurnalServer());
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
-      <h1 className="font-serif font-bold text-2xl sm:text-3xl text-mahad-green-dark">
+    <KerangkaPublik>
+      <h1 className="border-b-2 border-jurnal-hijau-gelap pb-2 font-serif text-2xl font-bold text-jurnal-hijau-gelap sm:text-3xl">
         {teks.artikelPadaBagian}: {bagian.judulId}
       </h1>
-      <p className="text-sm text-slate-500 mt-2">
+      <p className="mt-2 text-sm text-slate-500">
         {bagian.judulEn} • Singkatan {bagian.singkatan}
       </p>
       <nav className="mt-5 flex flex-wrap gap-2" aria-label="Bagian lain">
@@ -51,7 +52,7 @@ export default async function BagianJurnalPage({
           <Link
             key={b.slug}
             href={`/jurnal/bagian/${b.slug}`}
-            className="px-3.5 py-2 rounded-full bg-white border border-slate-300 text-xs sm:text-sm font-semibold hover:border-mahad-gold transition"
+            className="border border-slate-300 px-3.5 py-2 text-xs font-semibold transition hover:border-jurnal-hijau-gelap hover:text-jurnal-hijau-gelap sm:text-sm"
           >
             {b.judulId}
           </Link>
@@ -63,6 +64,6 @@ export default async function BagianJurnalPage({
           kosong="Belum ada artikel terbit pada bagian ini."
         />
       </div>
-    </div>
+    </KerangkaPublik>
   );
 }

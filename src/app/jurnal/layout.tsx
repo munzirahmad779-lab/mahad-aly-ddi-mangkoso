@@ -1,15 +1,44 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { arahLocale, tJurnal } from "@/lib/jurnal/i18n";
 import { localeJurnalServer } from "@/lib/jurnal/i18n-server";
+import {
+  JURNAL_NAMA_LABEL_UJI,
+  JURNAL_PENERBIT_UJI,
+  JURNAL_SUBJUDUL
+} from "@/lib/jurnal/konten";
+import { HALAMAN_KEBIJAKAN } from "@/lib/jurnal/kebijakan";
+import { daftarTerbitanPublik } from "@/lib/jurnal/alur-server";
 import PemilihBahasa from "./pemilih-bahasa";
 
-// Kerangka cabang jurnal VERSI UJI: spanduk penanda uji yang selalu tampil
-// di semua halaman /jurnal, plus navigasi internal jurnal. Navbar dan
-// Footer web utama tetap datang dari MaintenanceGate di layout akar.
-// Tahap 6: kerangka diterjemahkan ke id, en, dan ar; bahasa dipilih
-// pemilih bahasa (persisten lewat cookie) dan Arab dirender RTL pada
+// Kerangka cabang jurnal mengikuti pola situs jurnal pada umumnya
+// (model OJS 3): spanduk penanda uji ramping, pita masthead berwarna
+// penuh selebar halaman berisi nama jurnal putih dan tautan akun di
+// sisi atasnya, bilah navigasi putih berisi menu terbitan, arsip,
+// pengumuman, dan tentang plus pencarian, lalu kaki jurnal berisi
+// penerbit, alamat redaksi, dan tautan kebijakan serta OAI-PMH.
+// Palet memakai warna terukur lambang Ma'had Aly (token jurnal-* di
+// globals.css). Navbar dan Footer web utama tetap datang dari layout
+// akar. Bahasa persisten lewat cookie dan Arab dirender RTL pada
 // wadah jurnal ini.
+
+const ALAMAT_REDAKSI =
+  "Mangkoso, Kecamatan Soppeng Riaja, Kabupaten Barru, Sulawesi Selatan, Indonesia";
+
+async function tautanTerbitanTerkini(): Promise<string> {
+  // Tautan "Terbitan Terkini" menunjuk halaman terbitan berjalan bila
+  // ada; selain itu jatuh ke jangkar seksi terbitan terkini di beranda.
+  // Kegagalan membaca lapisan data tidak boleh menggagalkan kerangka.
+  try {
+    const terbitan = await daftarTerbitanPublik();
+    const berjalan = terbitan.find((t) => t.isCurrent) ?? terbitan[0];
+    if (berjalan) return `/jurnal/terbitan/${berjalan.slug}`;
+  } catch {
+    // Abaikan: tautan jangkar di bawah tetap berfungsi.
+  }
+  return "/jurnal#terbitan-terkini";
+}
 
 export default async function JurnalLayout({
   children
@@ -18,61 +47,202 @@ export default async function JurnalLayout({
 }) {
   const locale = await localeJurnalServer();
   const t = tJurnal(locale);
-  const tautan: { href: string; label: string }[] = [
-    { href: "/jurnal", label: t.navBeranda },
-    { href: "/jurnal/cari", label: t.navCari },
+  const hrefTerbitanTerkini = await tautanTerbitanTerkini();
+
+  const navigasiUtama: { href: string; label: string }[] = [
+    { href: hrefTerbitanTerkini, label: t.navTerbitanTerkini },
+    { href: "/jurnal#arsip-terbitan", label: t.navArsip },
     { href: "/jurnal/pengumuman", label: t.navPengumuman },
-    { href: "/jurnal/halaman/tentang", label: t.navTentang },
-    { href: "/jurnal/halaman/fokus-ruang-lingkup", label: t.navFokus },
-    { href: "/jurnal/halaman/dewan-redaksi", label: t.navDewan },
-    { href: "/jurnal/halaman/pedoman-penulis", label: t.navPedoman },
-    { href: "/jurnal/halaman/etika-publikasi", label: t.navEtika },
-    { href: "/jurnal/halaman/biaya-lisensi", label: t.navBiaya },
-    { href: "/jurnal/terbitan/vol-1-no-1-versi-uji", label: t.navTerbitan },
+    { href: "/jurnal/halaman/tentang", label: t.navTentang }
+  ];
+
+  const navigasiKaki: { href: string; label: string }[] = [
+    { href: "/jurnal", label: t.navBeranda },
     { href: "/jurnal/kirim", label: t.navKirim },
     { href: "/jurnal/lacak", label: t.navLacak },
-    { href: "/jurnal/daftar", label: t.navDaftar },
-    { href: "/jurnal/masuk", label: t.navMasuk },
     { href: "/jurnal/naskah-saya", label: t.navNaskahSaya },
     { href: "/jurnal/review", label: t.navReviewer },
-    { href: "/jurnal/panel", label: t.navPanel },
-    { href: "/jurnal/oai?verb=Identify", label: "OAI-PMH" }
+    { href: "/jurnal/panel", label: t.navPanel }
   ];
 
   return (
-    <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50">
+    <main className="bg-white pt-32 md:pt-40 lg:pt-60">
       <div lang={locale} dir={arahLocale(locale)}>
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          {/* Spanduk penanda versi uji — wajib selalu terlihat */}
+        {/* Spanduk penanda versi uji, ramping, selalu terlihat */}
+        <div className="border-b border-amber-300 bg-amber-50">
           <div
             role="note"
-            className="mb-6 rounded-xl border-2 border-amber-500 bg-amber-100 px-4 py-3 text-amber-900 shadow-sm"
+            className="mx-auto max-w-7xl px-3 py-2 text-amber-900 sm:px-6 lg:px-8"
           >
-            <p className="text-sm sm:text-base font-bold tracking-wide">
-              {t.spandukJudul}
+            <p className="text-xs leading-relaxed sm:text-sm">
+              <strong className="font-bold tracking-wide">
+                {t.spandukJudul}
+              </strong>
+              {": "}
+              {t.spandukIsi}
             </p>
-            <p className="text-xs sm:text-sm mt-1">{t.spandukIsi}</p>
           </div>
-
-          {/* Pemilih bahasa (Tahap 6) */}
-          <div className="mb-4 flex justify-end">
-            <PemilihBahasa />
-          </div>
-
-          {/* Navigasi internal jurnal */}
-          <nav aria-label={t.navigasiLabel} className="mb-8 flex flex-wrap gap-2">
-            {tautan.map((x) => (
-              <Link
-                key={x.href}
-                href={x.href}
-                className="px-3.5 py-2 rounded-full bg-mahad-green-dark text-emerald-100 text-xs sm:text-sm font-semibold hover:bg-mahad-green hover:text-white transition"
-              >
-                {x.label}
-              </Link>
-            ))}
-          </nav>
         </div>
+
+        {/* Pita masthead berwarna penuh: nama jurnal putih, tautan
+            akun dan pemilih bahasa di sisi atas pita */}
+        <div className="border-b-4 border-jurnal-emas bg-jurnal-hijau-gelap text-white">
+          <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pt-2.5">
+              <nav
+                aria-label={t.navigasiLabel}
+                className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold sm:text-sm"
+              >
+                <Link href="/jurnal/masuk" className="hover:text-jurnal-emas-terang">
+                  {t.navMasuk}
+                </Link>
+                <Link href="/jurnal/daftar" className="hover:text-jurnal-emas-terang">
+                  {t.navDaftar}
+                </Link>
+                <Link href="/jurnal/lacak" className="hover:text-jurnal-emas-terang">
+                  {t.navLacak}
+                </Link>
+              </nav>
+              <PemilihBahasa gelap />
+            </div>
+            <div className="flex items-center gap-4 pb-6 pt-3 sm:gap-5">
+              <Image
+                src="/image_067524.png"
+                alt="Logo Ma'had Aly DDI Mangkoso"
+                width={512}
+                height={512}
+                className="h-14 w-14 shrink-0 rounded-full bg-white p-0.5 sm:h-20 sm:w-20"
+              />
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-jurnal-emas-terang">
+                  {t.publikasiIlmiah}
+                </p>
+                <Link
+                  href="/jurnal"
+                  className="mt-0.5 block font-serif text-3xl font-bold leading-tight text-white sm:text-5xl"
+                >
+                  {JURNAL_NAMA_LABEL_UJI}
+                </Link>
+                <p className="mt-1.5 font-serif text-sm text-white/85 sm:text-lg">
+                  {JURNAL_SUBJUDUL}
+                </p>
+                <p className="mt-1 text-xs text-white/65 sm:text-sm">
+                  {t.diterbitkanOleh} {JURNAL_PENERBIT_UJI}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bilah navigasi putih dan kotak cari */}
+        <div className="border-b border-slate-200 bg-white">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center px-3 sm:px-6 lg:px-8">
+            <nav
+              aria-label={t.navigasiLabel}
+              className="flex flex-wrap items-center"
+            >
+              {navigasiUtama.map((x) => (
+                <Link
+                  key={x.label}
+                  href={x.href}
+                  className="px-3 py-3 text-[13px] font-bold uppercase tracking-wide text-jurnal-hijau-gelap transition hover:bg-jurnal-hijau/5 hover:text-jurnal-hijau sm:px-4 sm:text-sm"
+                >
+                  {x.label}
+                </Link>
+              ))}
+            </nav>
+            <form
+              action="/jurnal/cari"
+              method="get"
+              className="ms-auto flex items-center py-2"
+            >
+              <input
+                type="search"
+                name="q"
+                aria-label={t.navCari}
+                placeholder={t.navCariPlaceholder}
+                className="w-36 rounded-s-md border border-slate-300 px-3 py-1.5 text-sm text-slate-800 focus:border-jurnal-hijau focus:outline-none sm:w-52"
+              />
+              <button
+                type="submit"
+                className="rounded-e-md bg-jurnal-hijau px-3.5 py-1.5 text-sm font-bold text-white transition hover:bg-jurnal-hijau-gelap"
+              >
+                {t.cariTombol}
+              </button>
+            </form>
+          </div>
+        </div>
+
         {children}
+
+        {/* Kaki jurnal */}
+        <footer className="mt-16 bg-jurnal-hijau-gelap text-white/75">
+          <div className="mx-auto grid max-w-7xl gap-10 px-3 py-12 sm:px-6 md:grid-cols-3 lg:px-8">
+            <div>
+              <p className="font-serif text-xl font-bold leading-snug text-white">
+                {JURNAL_NAMA_LABEL_UJI}
+              </p>
+              <p className="mt-2 font-serif text-sm text-white/85">
+                {JURNAL_SUBJUDUL}
+              </p>
+              <p className="mt-4 text-sm leading-relaxed">
+                <span className="font-semibold text-white">
+                  {t.alamatRedaksiLabel}
+                </span>
+                <br />
+                {ALAMAT_REDAKSI}
+              </p>
+              <p className="mt-3 text-sm leading-relaxed">
+                {t.diterbitkanOleh} {JURNAL_PENERBIT_UJI}
+              </p>
+            </div>
+            <nav aria-label={t.kakiNavigasi}>
+              <p className="font-serif text-base font-bold text-white">
+                {t.kakiNavigasi}
+              </p>
+              <ul className="mt-3 space-y-2 text-sm">
+                {navigasiKaki.map((x) => (
+                  <li key={x.href}>
+                    <Link href={x.href} className="hover:text-jurnal-emas-terang">
+                      {x.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <nav aria-label={t.kakiKebijakan}>
+              <p className="font-serif text-base font-bold text-white">
+                {t.kakiKebijakan}
+              </p>
+              <ul className="mt-3 space-y-2 text-sm">
+                {HALAMAN_KEBIJAKAN.map((h) => (
+                  <li key={h.slug}>
+                    <Link
+                      href={`/jurnal/halaman/${h.slug}`}
+                      className="hover:text-jurnal-emas-terang"
+                    >
+                      {h.judul}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <a
+                    href="/jurnal/oai?verb=Identify"
+                    className="hover:text-jurnal-emas-terang"
+                  >
+                    OAI-PMH
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          <div className="border-t border-white/15">
+            <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-3 py-4 text-xs sm:px-6 lg:px-8">
+              <p>{t.kakiLisensiTeks}</p>
+              <p className="font-semibold tracking-wide">{t.spandukJudul}</p>
+            </div>
+          </div>
+        </footer>
       </div>
     </main>
   );

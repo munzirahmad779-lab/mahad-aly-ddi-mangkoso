@@ -5,6 +5,7 @@ import {
 } from "@/lib/jurnal/publik5-server";
 import { daftarTerbitanPublik } from "@/lib/jurnal/alur-server";
 import { DaftarArtikelPublik } from "../daftar-artikel";
+import { KerangkaPublik } from "../kerangka-publik";
 import { tJurnal } from "@/lib/jurnal/i18n";
 import { localeJurnalServer } from "@/lib/jurnal/i18n-server";
 
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 const kelasInput =
-  "rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:border-mahad-gold";
+  "rounded-md border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:border-jurnal-hijau-gelap";
 
 export default async function CariArtikelPage({
   searchParams
@@ -45,13 +46,13 @@ export default async function CariArtikelPage({
   const teks = tJurnal(await localeJurnalServer());
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
-      <h1 className="font-serif font-bold text-2xl sm:text-3xl text-mahad-green-dark">
+    <KerangkaPublik>
+      <h1 className="border-b-2 border-jurnal-hijau-gelap pb-2 font-serif text-2xl font-bold text-jurnal-hijau-gelap sm:text-3xl">
         {teks.cariJudul}
       </h1>
       <form
         method="get"
-        className="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-wrap gap-3 items-end"
+        className="mt-6 flex flex-wrap items-end gap-3 border border-slate-200 p-5"
       >
         <label className="flex-1 min-w-56 block">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -100,23 +101,20 @@ export default async function CariArtikelPage({
         </label>
         <button
           type="submit"
-          className="bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-sm px-5 py-2.5 rounded-full shadow transition"
+          className="bg-jurnal-hijau-gelap px-5 py-2.5 text-sm font-bold text-white transition hover:bg-jurnal-hijau"
         >
           {teks.cariTombol}
         </button>
       </form>
 
       <div className="mt-8">
-        <p className="text-sm text-slate-500 mb-4">
+        <p className="mb-4 text-sm text-slate-500">
           {mencari
             ? `${hasil.length} ${teks.hasilDitemukan}.`
             : `${hasil.length} ${teks.hasilDitemukan}.`}
         </p>
-        <DaftarArtikelPublik
-          artikel={hasil}
-          kosong={teks.tidakDitemukan}
-        />
+        <DaftarArtikelPublik artikel={hasil} kosong={teks.tidakDitemukan} />
       </div>
-    </div>
+    </KerangkaPublik>
   );
 }

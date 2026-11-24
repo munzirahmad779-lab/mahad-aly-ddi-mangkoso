@@ -12,9 +12,9 @@ import {
 } from "@/lib/jurnal/alur-server";
 import { infoPenarikanDariSlug } from "@/lib/jurnal/publik5-server";
 import { teksKutipan } from "@/lib/jurnal/publik5";
-import { tJurnal } from "@/lib/jurnal/i18n";
+import { tJurnal, type JurnalDict } from "@/lib/jurnal/i18n";
 import { localeJurnalServer } from "@/lib/jurnal/i18n-server";
-import type { JurnalArtikelPublik } from "@/lib/jurnal/alur";
+import { KerangkaPublik } from "../../kerangka-publik";
 
 // Halaman artikel jurnal dengan metadata lengkap:
 // - tag citation_* (Google Scholar) lewat Metadata.other, termasuk
@@ -22,10 +22,13 @@ import type { JurnalArtikelPublik } from "@/lib/jurnal/alur";
 //   halaman artikel ini
 // - meta Dublin Core (DC.*) lewat Metadata.other
 // - JSON-LD ScholarlyArticle di badan halaman
-// Sejak Tahap 4 isinya membaca basis data lewat lapisan store: hanya
-// artikel published di dalam terbitan published yang punya halaman;
-// selain itu 404. DOI tampil sebagai belum diterbitkan sampai DOI
-// sungguhan didepositkan (pekerjaan sesudah e-ISSN, lihat rancangan).
+// Isinya membaca basis data lewat lapisan store: hanya artikel
+// published di dalam terbitan published yang punya halaman; selain
+// itu 404. DOI tampil sebagai belum diterbitkan sampai DOI sungguhan
+// didepositkan (pekerjaan sesudah e-ISSN, lihat rancangan). Tampilan
+// mengikuti pola halaman artikel situs jurnal pada umumnya: judul,
+// penulis, tombol galley, kotak keterangan, abstrak, kata kunci,
+// daftar pustaka, dan blok sitasi.
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +52,14 @@ function labelBahasa(kode: string): string {
   if (kode === "en") return "Bahasa Inggris";
   if (kode === "ar") return "Bahasa Arab";
   return "Bahasa Indonesia";
+}
+
+function JudulBagian({ children }: { children: string }) {
+  return (
+    <h2 className="mt-10 border-b border-slate-200 pb-1.5 font-serif text-lg font-bold text-jurnal-hijau-gelap">
+      {children}
+    </h2>
+  );
 }
 
 export async function generateMetadata({
@@ -113,7 +124,7 @@ export default async function ArtikelJurnalPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const teks = tJurnal(await localeJurnalServer());
+  const teks: JurnalDict = tJurnal(await localeJurnalServer());
   const artikel = await artikelPublikDariSlug(slug);
   if (!artikel) {
     // Artikel yang ditarik sesudah terbit tidak hilang diam-diam:
@@ -121,15 +132,15 @@ export default async function ArtikelJurnalPage({
     const penarikan = await infoPenarikanDariSlug(slug);
     if (penarikan) {
       return (
-        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
-          <article className="bg-white rounded-2xl shadow-sm border border-red-200 p-6 sm:p-10">
-            <span className="text-[11px] font-bold uppercase tracking-wider bg-red-50 text-red-700 border border-red-200 px-2.5 py-0.5 rounded-full">
+        <KerangkaPublik>
+          <article className="border border-red-300 bg-red-50 p-6 sm:p-8">
+            <span className="bg-red-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-red-700">
               Artikel Ditarik (Retracted)
             </span>
-            <h1 className="font-serif font-bold text-2xl text-slate-800 leading-snug mt-4">
+            <h1 className="mt-4 font-serif text-2xl font-bold leading-snug text-slate-900">
               {penarikan.judul}
             </h1>
-            <p className="text-sm sm:text-base text-slate-700 leading-relaxed mt-4">
+            <p className="mt-4 text-sm leading-relaxed text-slate-700 sm:text-base">
               Artikel ini telah ditarik dari publikasi oleh redaksi pada{" "}
               {new Date(penarikan.ditarikPada).toLocaleDateString("id-ID", {
                 day: "numeric",
@@ -139,17 +150,17 @@ export default async function ArtikelJurnalPage({
               .
             </p>
             {penarikan.alasanTarik && (
-              <p className="text-sm text-slate-600 mt-3">
+              <p className="mt-3 text-sm text-slate-600">
                 Alasan penarikan: {penarikan.alasanTarik}
               </p>
             )}
-            <p className="text-sm text-slate-500 mt-3">
+            <p className="mt-3 text-sm text-slate-500">
               Catatan bibliografis artikel tetap dipertahankan dan rekod
               OAI-PMH-nya ditandai sebagai terhapus (deleted) sesuai
               kebijakan koreksi dan penarikan jurnal.
             </p>
           </article>
-        </div>
+        </KerangkaPublik>
       );
     }
     notFound();
@@ -196,30 +207,30 @@ export default async function ArtikelJurnalPage({
   if (artikel.doi) jsonLd.identifier = `https://doi.org/${artikel.doi}`;
 
   return (
-    <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
+    <KerangkaPublik>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c")
         }}
       />
-      <article className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-10">
+      <article>
         <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-wider">
           {artikel.bagianLabel && (
-            <span className="bg-mahad-gold-light text-mahad-green-dark px-2.5 py-0.5 rounded-full">
+            <span className="bg-jurnal-emas-muda px-2.5 py-0.5 text-jurnal-hijau-gelap">
               {artikel.bagianLabel}
             </span>
           )}
-          <span className="bg-emerald-50 text-mahad-green-dark border border-emerald-200 px-2.5 py-0.5 rounded-full">
-            Artikel Terbit — Versi Uji
+          <span className="bg-emerald-50 px-2.5 py-0.5 text-jurnal-hijau-gelap">
+            {teks.artikelTerbitLabel} — {teks.spandukJudul}
           </span>
         </div>
 
-        <h1 className="font-serif font-bold text-2xl sm:text-3xl text-slate-800 leading-snug mt-4">
+        <h1 className="mt-4 font-serif text-2xl font-bold leading-snug text-slate-900 sm:text-3xl">
           {artikel.judul}
         </h1>
 
-        <div className="text-sm text-slate-600 mt-4 space-y-1">
+        <div className="mt-4 space-y-1 text-sm text-slate-700">
           {artikel.penulis.map((p, i) => (
             <p key={i}>
               <span className="font-semibold">{p.nama}</span>
@@ -230,59 +241,12 @@ export default async function ArtikelJurnalPage({
           ))}
         </div>
 
-        <dl className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm mt-6 border-y border-slate-200 py-4">
-          <div className="flex gap-2">
-            <dt className="font-semibold text-slate-500 w-24 shrink-0">Terbitan</dt>
-            <dd>
-              <Link
-                href={`/jurnal/terbitan/${artikel.terbitanSlug}`}
-                className="text-mahad-green hover:underline"
-              >
-                {artikel.terbitanLabel}
-              </Link>
-            </dd>
-          </div>
-          <div className="flex gap-2">
-            <dt className="font-semibold text-slate-500 w-24 shrink-0">Halaman</dt>
-            <dd>{artikel.halaman ?? "-"}</dd>
-          </div>
-          <div className="flex gap-2">
-            <dt className="font-semibold text-slate-500 w-24 shrink-0">Tanggal</dt>
-            <dd>{tanggal}</dd>
-          </div>
-          <div className="flex gap-2">
-            <dt className="font-semibold text-slate-500 w-24 shrink-0">Bahasa</dt>
-            <dd>{labelBahasa(artikel.bahasa)}</dd>
-          </div>
-          <div className="flex gap-2">
-            <dt className="font-semibold text-slate-500 w-24 shrink-0">Lisensi</dt>
-            <dd>{artikel.lisensi}</dd>
-          </div>
-          <div className="flex gap-2 sm:col-span-2">
-            <dt className="font-semibold text-slate-500 w-24 shrink-0">DOI</dt>
-            <dd>
-              {artikel.doi ? (
-                <a
-                  href={`https://doi.org/${artikel.doi}`}
-                  className="text-mahad-green hover:underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  https://doi.org/{artikel.doi}
-                </a>
-              ) : (
-                "Belum diterbitkan (kolom DOI disiapkan sejak awal; DOI diterbitkan sesudah e-ISSN aktif)"
-              )}
-            </dd>
-          </div>
-        </dl>
-
         {(artikel.punyaPdf || artikel.punyaHtml) && (
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap gap-2.5">
             {artikel.punyaPdf && (
               <a
                 href={`/jurnal/artikel/${artikel.slug}/pdf`}
-                className="bg-mahad-gold hover:bg-yellow-400 text-mahad-green-dark font-bold text-sm px-5 py-2.5 rounded-full shadow transition"
+                className="bg-jurnal-hijau-gelap px-5 py-2.5 text-sm font-bold text-white transition hover:bg-jurnal-hijau"
               >
                 {teks.bacaPdf}
               </a>
@@ -292,7 +256,7 @@ export default async function ArtikelJurnalPage({
                 href={`/jurnal/artikel/${artikel.slug}/html`}
                 target="_blank"
                 rel="noreferrer"
-                className="bg-white border border-slate-300 hover:border-mahad-gold font-bold text-sm px-5 py-2.5 rounded-full transition"
+                className="border border-slate-300 px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-jurnal-hijau-gelap hover:text-jurnal-hijau-gelap"
               >
                 {teks.bacaHtml}
               </a>
@@ -300,62 +264,103 @@ export default async function ArtikelJurnalPage({
           </div>
         )}
 
-        <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
-          {teks.abstrak}
-        </h2>
-        <p className="text-sm sm:text-base text-slate-700 leading-relaxed mt-2 text-justify">
+        <dl className="mt-7 grid gap-x-8 gap-y-2.5 border-y border-slate-200 py-4 text-sm sm:grid-cols-2">
+          <div className="flex gap-2">
+            <dt className="w-28 shrink-0 font-semibold text-slate-500">
+              {teks.labelTerbitan}
+            </dt>
+            <dd>
+              <Link
+                href={`/jurnal/terbitan/${artikel.terbitanSlug}`}
+                className="text-jurnal-hijau hover:underline"
+              >
+                {artikel.terbitanLabel}
+              </Link>
+            </dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-28 shrink-0 font-semibold text-slate-500">
+              {teks.labelHalaman}
+            </dt>
+            <dd>{artikel.halaman ?? "-"}</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-28 shrink-0 font-semibold text-slate-500">
+              {teks.labelTanggal}
+            </dt>
+            <dd>{tanggal}</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-28 shrink-0 font-semibold text-slate-500">
+              {teks.labelBahasa}
+            </dt>
+            <dd>{labelBahasa(artikel.bahasa)}</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-28 shrink-0 font-semibold text-slate-500">
+              {teks.labelLisensi}
+            </dt>
+            <dd>{artikel.lisensi}</dd>
+          </div>
+          <div className="flex gap-2 sm:col-span-2">
+            <dt className="w-28 shrink-0 font-semibold text-slate-500">DOI</dt>
+            <dd>
+              {artikel.doi ? (
+                <a
+                  href={`https://doi.org/${artikel.doi}`}
+                  className="text-jurnal-hijau hover:underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  https://doi.org/{artikel.doi}
+                </a>
+              ) : (
+                teks.doiBelum +
+                " (kolom DOI disiapkan sejak awal; DOI diterbitkan sesudah e-ISSN aktif)"
+              )}
+            </dd>
+          </div>
+        </dl>
+
+        <JudulBagian>{teks.abstrak}</JudulBagian>
+        <p className="mt-3 text-justify text-sm leading-relaxed text-slate-700 sm:text-base">
           {artikel.abstrak}
         </p>
 
         {artikel.abstrakEn && (
           <>
-            <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
-              Abstract
-            </h2>
-            <p className="text-sm sm:text-base text-slate-700 leading-relaxed mt-2 text-justify">
+            <JudulBagian>Abstract</JudulBagian>
+            <p className="mt-3 text-justify text-sm leading-relaxed text-slate-700 sm:text-base">
               {artikel.abstrakEn}
             </p>
           </>
         )}
 
-        <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
-          {teks.kataKunci}
-        </h2>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {artikel.kataKunci.map((k) => (
-            <span
-              key={k}
-              className="text-xs bg-slate-100 border border-slate-200 text-slate-600 rounded-full px-3 py-1"
-            >
-              {k}
-            </span>
-          ))}
-        </div>
+        <JudulBagian>{teks.kataKunci}</JudulBagian>
+        <p className="mt-3 text-sm text-slate-700">
+          {artikel.kataKunci.join(", ")}
+        </p>
 
         {artikel.pernyataanAi && (
           <>
-            <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
-              Pernyataan Pemakaian AI
-            </h2>
-            <p className="text-sm text-slate-600 mt-2">{artikel.pernyataanAi}</p>
+            <JudulBagian>{teks.pernyataanAiJudul}</JudulBagian>
+            <p className="mt-3 text-sm text-slate-600">
+              {artikel.pernyataanAi}
+            </p>
           </>
         )}
 
         {artikel.referensi && (
           <>
-            <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
-              Daftar Pustaka
-            </h2>
-            <div className="text-sm text-slate-700 leading-relaxed mt-2 whitespace-pre-line">
+            <JudulBagian>{teks.daftarPustaka}</JudulBagian>
+            <div className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-700">
               {artikel.referensi}
             </div>
           </>
         )}
 
-        <h2 className="font-serif font-bold text-lg text-mahad-green-dark mt-8">
-          {teks.caraMengutip}
-        </h2>
-        <p className="text-sm text-slate-700 leading-relaxed mt-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+        <JudulBagian>{teks.caraMengutip}</JudulBagian>
+        <p className="mt-3 border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700">
           {teksKutipan({
             judul: artikel.judul,
             penulis: artikel.penulis,
@@ -367,21 +372,21 @@ export default async function ArtikelJurnalPage({
             slug: artikel.slug
           })}
         </p>
-        <div className="mt-3 flex flex-wrap gap-3">
+        <div className="mt-3 flex flex-wrap gap-2.5">
           <a
             href={`/api/jurnal/artikel/${artikel.kode}/sitasi?format=bibtex`}
-            className="bg-white border border-slate-300 hover:border-mahad-gold font-bold text-sm px-5 py-2 rounded-full transition"
+            className="border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-jurnal-hijau-gelap hover:text-jurnal-hijau-gelap"
           >
             {teks.unduhSitasiBibtex}
           </a>
           <a
             href={`/api/jurnal/artikel/${artikel.kode}/sitasi?format=ris`}
-            className="bg-white border border-slate-300 hover:border-mahad-gold font-bold text-sm px-5 py-2 rounded-full transition"
+            className="border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-jurnal-hijau-gelap hover:text-jurnal-hijau-gelap"
           >
             {teks.unduhSitasiRis}
           </a>
         </div>
       </article>
-    </div>
+    </KerangkaPublik>
   );
 }

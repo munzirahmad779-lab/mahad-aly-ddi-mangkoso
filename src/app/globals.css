@@ -7,6 +7,18 @@
   --color-mahad-gold: #d4af37;
   --color-mahad-gold-light: #f4e8c1;
 
+  /* Palet tampilan jurnal: diukur dari lambang Ma'had Aly pada
+     public/image_067524.png (sampel piksel PIL, 24 Nov 2026).
+     Hijau cakram dominan #147B3B (klaster terbesar + sampel tengah
+     cakram), emas sinar rata-rata #D0BD3D dan titik sinar terang
+     #E1BC35. Hijau gelap dan emas muda adalah turunan penggelapan
+     dan pencerahan dari dua warna terukur itu. */
+  --color-jurnal-hijau: #147b3b;
+  --color-jurnal-hijau-gelap: #0f5c2c;
+  --color-jurnal-emas: #d0bd3d;
+  --color-jurnal-emas-terang: #e1bc35;
+  --color-jurnal-emas-muda: #f8f5e2;
+
   /* Font Resmi */
   --font-sans: var(--font-inter), sans-serif;
   --font-serif: var(--font-amiri), serif;
