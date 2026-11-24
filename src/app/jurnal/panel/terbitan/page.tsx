@@ -48,6 +48,15 @@ export default function PanelTerbitanPage() {
   const [pesan, setPesan] = useState<string | null>(null);
   const [galat, setGalat] = useState<string | null>(null);
   const [sibuk, setSibuk] = useState(false);
+  // Konfirmasi penerbitan dirender di dalam halaman, BUKAN window.confirm:
+  // dialog bawaan peramban terbukti tidak dapat diterima oleh peramban
+  // otomatis pada verifikasi live 24 Nov 2026 (delapan klik tanpa hasil),
+  // dan juga terblokir di sebagian konteks sematan. Keadaan ini memegang
+  // terbitan yang menunggu konfirmasi.
+  const [konfirmasiTerbit, setKonfirmasiTerbit] = useState<{
+    slug: string;
+    label: string;
+  } | null>(null);
   const [baru, setBaru] = useState({
     volume: "",
     nomor: "",
@@ -257,13 +266,6 @@ export default function PanelTerbitanPage() {
   }
 
   async function terbitkanTerbitan(slug: string, label: string) {
-    if (
-      !window.confirm(
-        `Terbitkan ${label}? Semua artikel berstatus production di dalamnya menjadi published dan tampil di halaman publik.`
-      )
-    ) {
-      return;
-    }
     setSibuk(true);
     setGalat(null);
     setPesan(null);
@@ -272,6 +274,7 @@ export default function PanelTerbitanPage() {
       "POST",
       {}
     );
+    setKonfirmasiTerbit(null);
     if (ok) {
       setPesan(`${label} diterbitkan.`);
       await muat();
@@ -665,7 +668,10 @@ export default function PanelTerbitanPage() {
                       </button>
                       <button
                         onClick={() =>
-                          void terbitkanTerbitan(t.slug, t.label)
+                          setKonfirmasiTerbit({
+                            slug: t.slug,
+                            label: t.label
+                          })
                         }
                         disabled={sibuk || t.artikel.length === 0}
                         className="bg-mahad-gold hover:bg-yellow-400 disabled:opacity-60 text-mahad-green-dark font-bold text-sm px-5 py-2.5 rounded-full shadow transition"
@@ -674,6 +680,37 @@ export default function PanelTerbitanPage() {
                       </button>
                     </div>
                   )}
+                  {t.status !== "published" &&
+                    konfirmasiTerbit?.slug === t.slug && (
+                      <div className="mt-3 rounded-2xl border border-mahad-gold bg-yellow-50 p-4">
+                        <p className="text-sm text-slate-700">
+                          Terbitkan {konfirmasiTerbit.label}? Semua artikel
+                          berstatus production di dalamnya menjadi published
+                          dan tampil di halaman publik.
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            onClick={() =>
+                              void terbitkanTerbitan(
+                                konfirmasiTerbit.slug,
+                                konfirmasiTerbit.label
+                              )
+                            }
+                            disabled={sibuk}
+                            className="bg-mahad-gold hover:bg-yellow-400 disabled:opacity-60 text-mahad-green-dark font-bold text-sm px-5 py-2 rounded-full shadow transition"
+                          >
+                            Ya, Terbitkan
+                          </button>
+                          <button
+                            onClick={() => setKonfirmasiTerbit(null)}
+                            disabled={sibuk}
+                            className="bg-white border border-slate-300 hover:border-slate-400 disabled:opacity-60 font-bold text-sm px-5 py-2 rounded-full transition"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   {t.status === "published" && (
                     <p className="text-sm text-slate-600">
                       Terbitan ini sudah diterbitkan dan tampil di halaman
