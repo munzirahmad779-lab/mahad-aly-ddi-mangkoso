@@ -48,7 +48,12 @@ export function kolomDariKategori(
 export function dalamSeriKajianFathulQorib(a: {
   tags?: string[] | null;
 }): boolean {
-  return (a?.tags || []).includes("Fathul Qarib");
+  // Terima kedua ejaan tag seri ini (kanonis "Fathul Qorib" pada nama ruang,
+  // "Fathul Qarib" pada artikel terbit lama), selaras saringan ruang kajiannya.
+  return (a?.tags || []).some((t) => {
+    const n = (t || "").trim().toLowerCase();
+    return n === "fathul qorib" || n === "fathul qarib";
+  });
 }
 
 // Mapper data dari tabel Supabase → tipe aplikasi.
