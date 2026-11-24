@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 
 interface ComingSoonProps {
@@ -11,17 +10,6 @@ interface ComingSoonProps {
 }
 
 export default function ComingSoon({ title, badge, description, icon }: ComingSoonProps) {
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      setSubscribed(true);
-      setEmail("");
-    }
-  };
-
   return (
     <main className="pt-28 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-[85vh] flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-3xl p-8 sm:p-12 border border-slate-200 shadow-xl text-center space-y-6">
@@ -48,33 +36,17 @@ export default function ComingSoon({ title, badge, description, icon }: ComingSo
           </p>
         </div>
 
-        {/* Notification Subscription Form */}
+        {/* Info Ketersediaan. Dulu di sini ada formulir "Beritahu Saya"
+            yang membuang alamat email tanpa menyimpannya di mana pun,
+            padahal teksnya menjanjikan pemberitahuan. Formulir itu dicabut
+            agar halaman ini tidak menjanjikan yang tidak terjadi. */}
         <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-3">
           <h3 className="font-bold text-xs uppercase tracking-wider text-slate-700">
-            Dapatkan Notifikasi Saat Layanan Ini Dibuka
+            Layanan Sedang Disiapkan
           </h3>
-          {subscribed ? (
-            <p className="text-xs text-emerald-700 font-bold bg-emerald-50 p-3 rounded-xl border border-emerald-200">
-              ✓ Terima kasih! Kami akan mengirimkan pemberitahuan ke email Anda saat layanan ini resmi diluncurkan.
-            </p>
-          ) : (
-            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-              <input
-                type="email"
-                required
-                placeholder="Masukkan alamat email Anda..."
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 px-4 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-mahad-gold"
-              />
-              <button
-                type="submit"
-                className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs rounded-xl shadow transition"
-              >
-                Beritahu Saya
-              </button>
-            </form>
-          )}
+          <p className="text-xs text-slate-600 leading-relaxed max-w-md mx-auto">
+            Halaman ini akan tersedia setelah layanan resmi dibuka. Silakan kunjungi kembali halaman ini secara berkala untuk melihat perkembangannya.
+          </p>
         </div>
 
         {/* Back Link */}

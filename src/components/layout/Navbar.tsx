@@ -10,7 +10,7 @@ import { NavbarLink } from "@/lib/types";
 import { getRealtimeHijriDate } from "@/lib/hijri-calendar";
 
 export default function Navbar() {
-  const { categories, navbarSettings } = useArticles();
+  const { navbarSettings } = useArticles();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -35,10 +35,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
   const headerRef = useRef<HTMLElement>(null);
-
-  const safeCategories = Array.isArray(categories) ? categories : [];
-  const fiqhCategories = safeCategories.filter((c) => c.type !== "opini");
-  const opiniCategories = safeCategories.filter((c) => c.type === "opini");
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => {
@@ -115,7 +111,7 @@ export default function Navbar() {
   // Tier 1: Top Bar Config
   const topBarConfig = navbarSettings?.topBar ?? INITIAL_NAVBAR_SETTINGS.topBar;
   const isTopBarActive = topBarConfig?.isActive !== false;
-  const hotlinePhone = topBarConfig?.phone || "(0421) 510-123 • WA: 0812-4234-xxxx";
+  const hotlinePhone = topBarConfig?.phone || "+62 857-5479-5186";
   const hotlineEmail = topBarConfig?.email || "redaksi@mahadaly-ddimangkoso.ac.id";
   const quickLinkText = topBarConfig?.quickLinkText || "E-Library Turats";
   const quickLinkUrl = topBarConfig?.quickLinkUrl || "/elibrary";
@@ -175,11 +171,6 @@ export default function Navbar() {
   // panel membuat SELURUH baris bergeser dan tetap persis di tengah
   // (menu paling kiri ikut bergeser ke kiri) — bukan menumpuk di satu sisi.
   const primaryLinks = navLinksTampil;
-  const overflowLinks: typeof navLinks = [];
-  const hasOverflow = overflowLinks.length > 0;
-  const isAnyOverflowActive = overflowLinks.some(
-    (l) => isLinkActive(l.url) || l.children?.some((c) => isLinkActive(c.url))
-  );
 
   return (
     <header ref={headerRef} className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? "shadow-2xl" : "shadow-md"}`}>
@@ -286,7 +277,6 @@ export default function Navbar() {
               // Kajian & Diskusi berstatus Segera Hadir (ketetapan user
               // 8 Nov 2026): menunya tautan biasa ke /kategori, TANPA
               // dropdown kategori, sampai hasil kajian pertama terbit.
-              const isKajianMenu: boolean = false;
 
               // 1. Dropdown with custom children from Admin (e.g. Akademik, Profil)
               if (hasChildren) {
@@ -370,96 +360,6 @@ export default function Navbar() {
                 );
               }
 
-              // 2. Special Dynamic Kajian Menu with Categories
-              if (isKajianMenu) {
-                const isKajianOpen = desktopDropdown === "kajian";
-                return (
-                  <div
-                    key={link.id}
-                    className="relative group shrink-0"
-                    onMouseLeave={() => {
-                      if (dipaksaTutup === "kajian") setDipaksaTutup(null);
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleDesktopDropdown("kajian");
-                      }}
-                      className={`flex items-center gap-1 px-2 xl:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-                        isLinkActive("/kategori") || isKajianOpen
-                          ? "text-mahad-gold font-bold bg-white/10 border border-mahad-gold/40"
-                          : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
-                      }`}
-                    >
-                      <span>{link.label}</span>
-                      <svg
-                        className={kelasPanahDesktop("kajian", isKajianOpen)}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    <div
-                      className={`absolute left-0 top-full mt-1.5 ${kelasDropdownDesktop(
-                        "kajian",
-                        isKajianOpen
-                      )} w-72 bg-[#064e3b] border border-emerald-700/80 rounded-xl shadow-2xl py-2 z-[70] max-h-96 overflow-y-auto divide-y divide-emerald-800/60 backdrop-blur-md animate-fadeIn`}
-                    >
-                      <div className="py-1">
-                        <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold flex items-center justify-between">
-                          <span>🏛️ Kajian Fiqh Mu&apos;asarah</span>
-                          <Link
-                            href="/kategori"
-                            onClick={closeMenu}
-                            className="text-[10px] text-emerald-200 hover:text-white underline"
-                          >
-                            Semua →
-                          </Link>
-                        </div>
-                        {fiqhCategories.map((cat) => (
-                          <Link
-                            key={cat.id}
-                            href={`/kategori/${cat.slug}`}
-                            onClick={closeMenu}
-                            className="block px-4 py-1.5 text-xs hover:bg-white/10 hover:text-mahad-gold transition"
-                          >
-                            {cat.name}
-                          </Link>
-                        ))}
-                      </div>
-                      {opiniCategories.length > 0 && (
-                        <div className="py-1">
-                          <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold flex items-center justify-between">
-                            <span>✍️ Opini &amp; Refleksi Santri</span>
-                            <Link
-                              href="/kategori"
-                              onClick={closeMenu}
-                              className="text-[10px] text-emerald-200 hover:text-white underline"
-                            >
-                              Semua →
-                            </Link>
-                          </div>
-                          {opiniCategories.map((cat) => (
-                            <Link
-                              key={cat.id}
-                              href={`/kategori/${cat.slug}`}
-                              onClick={closeMenu}
-                              className="block px-4 py-1.5 text-xs hover:bg-white/10 hover:text-mahad-gold transition"
-                            >
-                              {cat.name}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              }
-
               // 3. Regular Top-Level Navigation Link (including Infaq & Donasi and DeMa!)
               return (
                 <Link
@@ -477,90 +377,6 @@ export default function Navbar() {
               );
             })}
 
-            {/* 4. Sleek "Lainnya ▾" Dropdown (Only appears if active links exceed 8!) */}
-            {hasOverflow && (
-              <div
-                className="relative group shrink-0"
-                onMouseLeave={() => {
-                  if (dipaksaTutup === "overflow") setDipaksaTutup(null);
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleDesktopDropdown("overflow");
-                  }}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-                    isAnyOverflowActive || desktopDropdown === "overflow"
-                      ? "text-mahad-gold font-bold bg-white/10 border border-mahad-gold/40"
-                      : "text-emerald-100 hover:text-mahad-gold hover:bg-white/5"
-                  }`}
-                >
-                  <span>Lainnya</span>
-                  <span className="text-[10px] bg-mahad-gold/20 text-mahad-gold px-1.5 py-0.2 rounded-full font-bold ml-0.5">
-                    +{overflowLinks.length}
-                  </span>
-                  <svg
-                    className={kelasPanahDesktop("overflow", desktopDropdown === "overflow")}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                <div
-                  className={`absolute right-0 top-full mt-1.5 ${kelasDropdownDesktop(
-                    "overflow",
-                    desktopDropdown === "overflow"
-                  )} w-64 bg-[#064e3b] border border-emerald-700/80 rounded-2xl shadow-2xl py-2 z-[70] backdrop-blur-md animate-fadeIn`}
-                >
-                  <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-mahad-gold border-b border-emerald-800/80 mb-1">
-                    Menu Tambahan
-                  </div>
-                  {overflowLinks.map((link) => (
-                    <div key={link.id} className="px-1">
-                      <Link
-                        href={link.url}
-                        onClick={closeMenu}
-                        className={`block px-3.5 py-2 rounded-xl text-xs transition flex items-center justify-between ${
-                          isLinkActive(link.url)
-                            ? "bg-white/10 text-mahad-gold font-bold"
-                            : "text-emerald-100 hover:bg-white/10 hover:text-mahad-gold"
-                        }`}
-                      >
-                        <span>{link.label}</span>
-                        {link.children && link.children.length > 0 && (
-                          <span className="text-[10px] text-slate-400">›</span>
-                        )}
-                      </Link>
-                      {link.children && link.children.length > 0 && (
-                        <div className="pl-4 pr-1 py-1 space-y-0.5 bg-black/20 rounded-lg my-1">
-                          {link.children
-                            .filter((c) => c.isActive !== false)
-                            .map((child) => (
-                              <Link
-                                key={child.id}
-                                href={child.url}
-                                onClick={closeMenu}
-                                className={`block px-3 py-1.5 rounded-lg text-[11px] transition ${
-                                  isLinkActive(child.url)
-                                    ? "text-mahad-gold font-bold"
-                                    : "text-emerald-200 hover:text-mahad-gold"
-                                }`}
-                              >
-                                {child.label}
-                              </Link>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* ACTION BUTTON & SEARCH */}
@@ -700,7 +516,6 @@ export default function Navbar() {
             const hasChildren = link.children && link.children.length > 0;
             // Sama seperti navigasi desktop: Kajian & Diskusi tautan
             // biasa selama halamannya berstatus Segera Hadir.
-            const isKajianMenu: boolean = false;
 
             // Accordion Dropdown with Custom Children
             if (hasChildren) {
@@ -763,67 +578,6 @@ export default function Navbar() {
               );
             }
 
-            // Accordion Kajian Menu with Categories
-            if (isKajianMenu) {
-              const isExpanded = activeDropdown === "kajian";
-              return (
-                <div key={link.id}>
-                  <button
-                    type="button"
-                    onClick={() => toggleDropdown("kajian")}
-                    className="w-full flex items-center justify-between py-2 px-3 rounded-lg text-emerald-100 hover:bg-white/5 hover:text-mahad-gold"
-                  >
-                    <span>{link.label}</span>
-                    <svg
-                      className={`w-4 h-4 transform transition-transform ${
-                        isExpanded ? "rotate-180 text-mahad-gold" : ""
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  {isExpanded && (
-                    <div className="pl-6 py-2 space-y-2 bg-black/20 rounded-lg text-xs max-h-56 overflow-y-auto">
-                      <div>
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-mahad-gold mb-1">
-                          🏛️ Fiqh Mu&apos;asarah
-                        </div>
-                        {fiqhCategories.map((cat) => (
-                          <Link
-                            key={cat.id}
-                            href={`/kategori/${cat.slug}`}
-                            onClick={closeMenu}
-                            className="block py-1 text-emerald-200 hover:text-mahad-gold"
-                          >
-                            {cat.name}
-                          </Link>
-                        ))}
-                      </div>
-                      {opiniCategories.length > 0 && (
-                        <div className="pt-1.5 border-t border-emerald-900/60">
-                          <div className="text-[10px] font-bold uppercase tracking-wider text-mahad-gold mb-1">
-                            ✍️ Opini &amp; Refleksi
-                          </div>
-                          {opiniCategories.map((cat) => (
-                            <Link
-                              key={cat.id}
-                              href={`/kategori/${cat.slug}`}
-                              onClick={closeMenu}
-                              className="block py-1 text-emerald-200 hover:text-mahad-gold"
-                            >
-                              {cat.name}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            }
 
             // Regular Link
             return (

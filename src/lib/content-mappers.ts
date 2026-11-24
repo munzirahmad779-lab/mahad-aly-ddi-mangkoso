@@ -56,6 +56,15 @@ export function dalamSeriKajianFathulQorib(a: {
 // tanpa akses browser. Tanggal memakai timezone Asia/Makassar secara eksplisit
 // agar hasil format identik di server maupun browser.
 
+// Perkiraan waktu baca dari isi teks sebenarnya (200 kata per menit,
+// dibulatkan ke atas, minimal 1 menit). Menggantikan label karangan
+// "5 menit" yang dulu ditempel ke semua artikel tanpa memandang panjangnya.
+export function hitungWaktuBaca(konten?: string | null): string {
+  const kata = (konten || "").trim().split(/\s+/).filter(Boolean).length;
+  const menit = Math.max(1, Math.ceil(kata / 200));
+  return `${menit} menit`;
+}
+
 export function tanggalIndoId(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString("id-ID", {
@@ -94,7 +103,7 @@ export function mapDbArticles(rows: any[], categoryRows?: any[]): any[] {
     imageUrl: a.thumbnail_url || undefined,
     date: tanggalIndoId(a.created_at),
     hijriDate: formatHijriShort(a.created_at ? new Date(a.created_at) : new Date()),
-    readTime: "5 menit",
+    readTime: hitungWaktuBaca(a.content),
     views: a.views || 0,
     tags: a.tags || []
     };
@@ -118,7 +127,7 @@ export function mapDbTheses(rows: any[]): any[] {
     category: "Fiqh Mu'asarah",
     categoryLabel: "Fiqh Mu'asarah",
     downloadUrl: t.pdf_url || "",
-    fileSize: t.pdf_size_mb || "3.5 MB"
+    fileSize: t.pdf_size_mb || ""
   }));
 }
 

@@ -20,7 +20,7 @@ export default function OfficialComingSoon() {
   };
 
   // Format nomor WhatsApp narahubung
-  const rawWa = cfg.whatsappNumber || "+62 812-4234-xxxx";
+  const rawWa = cfg.whatsappNumber || "+62 857-5479-5186";
   const cleanDigits = rawWa.replace(/[^0-9]/g, "");
   const waNumber = cleanDigits.startsWith("0") ? "62" + cleanDigits.slice(1) : cleanDigits;
   const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(
