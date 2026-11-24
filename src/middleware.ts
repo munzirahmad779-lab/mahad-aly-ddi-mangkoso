@@ -19,6 +19,64 @@ const HONEYPOT_PATHS = [
 // middleware tidak memanggil basis data pada setiap permintaan.
 let cacheAksesJurnal: { tertutup: boolean; pada: number } | null = null;
 
+// Nilai cookie gerbang jurnal adalah turunan HMAC-SHA256 dari kunci
+// gerbang dengan pesan tetap di bawah ini, BUKAN kunci gerbang itu
+// sendiri. Cookie yang bocor (tangkapan layar, log, perangkat bersama)
+// tidak lagi membocorkan kunci induk, dan kunci dapat diganti untuk
+// mencabut semua cookie lama sekaligus. Middleware berjalan di edge
+// runtime, jadi perhitungan memakai Web Crypto (crypto.subtle) dan
+// pemeriksaan memakai subtle.verify yang berwaktu tetap.
+const PESAN_COOKIE_GERBANG = "gerbang-jurnal-v1";
+
+async function hitungNilaiCookieGerbang(kunciGerbang: string): Promise<string> {
+  const enc = new TextEncoder();
+  const kunci = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(kunciGerbang),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const tanda = await crypto.subtle.sign(
+    "HMAC",
+    kunci,
+    enc.encode(PESAN_COOKIE_GERBANG)
+  );
+  return Array.from(new Uint8Array(tanda))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function cookieGerbangSah(
+  kunciGerbang: string,
+  nilaiCookie: string | undefined
+): Promise<boolean> {
+  if (!kunciGerbang || !nilaiCookie || !/^[0-9a-f]{64}$/i.test(nilaiCookie)) {
+    return false;
+  }
+  try {
+    const enc = new TextEncoder();
+    const kunci = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(kunciGerbang),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"]
+    );
+    const tanda = new Uint8Array(
+      nilaiCookie.match(/.{2}/g)!.map((h) => parseInt(h, 16))
+    );
+    return await crypto.subtle.verify(
+      "HMAC",
+      kunci,
+      tanda,
+      enc.encode(PESAN_COOKIE_GERBANG)
+    );
+  } catch {
+    return false;
+  }
+}
+
 // Keadaan gerbang jurnal. Urutan keputusan:
 // 1. Env JURNAL_AKSES = "terbuka" membuka paksa, "tertutup" menutup
 //    paksa (penimpa darurat ops, di atas segalanya).
@@ -80,8 +138,8 @@ export async function middleware(request: NextRequest) {
   // gerbang diputuskan jurnalTertutupUntukPublik(): penimpa env
   // JURNAL_AKSES, atau bendera jurnal_pengaturan yang diatur Manajer
   // Jurnal dari panel admin. Jalan masuk tim penguji hanya lewat
-  // cookie gerbang yang ditetapkan oleh
-  // /api/jurnal/gerbang?k=<JURNAL_GATE_KEY>.
+  // /api/jurnal/gerbang?k=<JURNAL_GATE_KEY>, yang menetapkan cookie
+  // gerbang berisi turunan HMAC dari kunci (bukan kuncinya sendiri).
   const jalurJurnal =
     pathname === "/jurnal" ||
     pathname.startsWith("/jurnal/") ||
@@ -96,20 +154,25 @@ export async function middleware(request: NextRequest) {
         tujuan.pathname = "/jurnal";
         tujuan.search = "";
         const res = NextResponse.redirect(tujuan);
-        res.cookies.set("gerbang_jurnal", kunciGerbang, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "lax",
-          path: "/",
-          maxAge: 60 * 60 * 24 * 30
-        });
+        res.cookies.set(
+          "gerbang_jurnal",
+          await hitungNilaiCookieGerbang(kunciGerbang),
+          {
+            httpOnly: true,
+            secure: true,
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 60 * 24 * 30
+          }
+        );
         return res;
       }
       return new NextResponse("Tidak ditemukan.", { status: 404 });
     }
-    const lolos =
-      kunciGerbang !== "" &&
-      request.cookies.get("gerbang_jurnal")?.value === kunciGerbang;
+    const lolos = await cookieGerbangSah(
+      kunciGerbang,
+      request.cookies.get("gerbang_jurnal")?.value
+    );
     if (!lolos) {
       if (pathname.startsWith("/api/")) {
         return new NextResponse(

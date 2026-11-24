@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
+import { supabase } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import OfficialComingSoon from "./OfficialComingSoon";
@@ -22,17 +23,42 @@ export default function MaintenanceGate({ children }: { children: React.ReactNod
 
   useEffect(() => {
     setMounted(true);
-    if (typeof window !== "undefined") {
-      const isPreview =
-        localStorage.getItem("mahad_admin_preview") === "true" ||
-        window.location.search.includes("preview=true");
+    if (typeof window === "undefined") return;
+    let batal = false;
 
-      if (window.location.search.includes("preview=true")) {
-        localStorage.setItem("mahad_admin_preview", "true");
+    (async () => {
+      const dariUrl = window.location.search.includes("preview=true");
+      const dariSimpanan =
+        localStorage.getItem("mahad_admin_preview") === "true";
+      if (!dariUrl && !dariSimpanan) {
+        setIsAdminPreview(false);
+        return;
       }
 
-      setIsAdminPreview(isPreview);
-    }
+      // Parameter pratinjau sendirian TIDAK cukup: pratinjau hanya sah
+      // bila peramban ini memegang sesi admin Supabase yang aktif (sesi
+      // yang sama dengan yang diterbitkan server saat admin masuk lewat
+      // /admin/login). Tanpa sesi, bendera pratinjau dibuang agar tidak
+      // bisa dipakai pengunjung untuk menembus layar Coming Soon.
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+      if (batal) return;
+
+      if (session) {
+        if (dariUrl) {
+          localStorage.setItem("mahad_admin_preview", "true");
+        }
+        setIsAdminPreview(true);
+      } else {
+        localStorage.removeItem("mahad_admin_preview");
+        setIsAdminPreview(false);
+      }
+    })();
+
+    return () => {
+      batal = true;
+    };
   }, []);
 
   const handleExitPreview = () => {
