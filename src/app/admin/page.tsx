@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+import KartuAksesJurnal from "@/components/admin/KartuAksesJurnal";
 import { useArticles } from "@/context/ArticleContext";
 import ImageUploader from "@/components/common/ImageUploader";
 import { entriesFromText } from "@/components/common/HistoryTimeline";
@@ -2450,6 +2451,8 @@ export default function AdminPage() {
                 <span>&rarr;</span>
               </button>
             </div>
+            {/* Sakelar buka/tutup akses publik jurnal (perintah user 25 Nov 2026) */}
+            <KartuAksesJurnal />
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
                 <span className="text-xs text-slate-400 font-bold uppercase">Artikel Terbit</span>
