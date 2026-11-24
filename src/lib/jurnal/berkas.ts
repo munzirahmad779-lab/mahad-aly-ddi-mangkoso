@@ -24,12 +24,6 @@ import { promises as fs } from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
 import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand
-} from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import {
   ekstensiBerkas,
   mimeKanonisBerkas,
   validasiBerkasMeta,
@@ -103,6 +97,114 @@ export function buatKunciObjek(
   return `jurnal/naskah/${batch}/${kategori}/${randomUUID()}${ekstensiBerkas(namaAsli)}`;
 }
 
+// ── Penandatangan SigV4 tulisan sendiri (WebCrypto) ─────────────────────
+// Pelajaran verifikasi live 24 Nov 2026: pustaka @aws-sdk di dalam
+// runtime Cloudflare Workers memanggil fs.readFile (stub unenv) saat
+// menerbitkan URL bertanda tangan, sehingga SETIAP unggahan gagal di
+// produksi dengan "[unenv] fs.readFile is not implemented yet!" walau
+// seluruh uji lokal lulus. Penandatangan ini murni WebCrypto
+// (crypto.subtle), tanpa dependensi Node sama sekali, dan bekerja sama
+// di Workers maupun Node. Skema: AWS Signature Version 4 presigned URL,
+// payload UNSIGNED-PAYLOAD, wilayah "auto" dan layanan "s3" (R2).
+async function hmacSha256(kunci: BufferSource, data: string): Promise<ArrayBuffer> {
+  const k = await crypto.subtle.importKey(
+    "raw",
+    kunci,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  return crypto.subtle.sign("HMAC", k, new TextEncoder().encode(data));
+}
+
+function keHex(buf: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function sha256Hex(data: string): Promise<string> {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(data));
+  return keHex(d);
+}
+
+function encodeSegmenJalur(s: string): string {
+  return encodeURIComponent(s).replace(
+    /[!'()*]/g,
+    (c) => "%" + c.charCodeAt(0).toString(16).toUpperCase()
+  );
+}
+
+export async function urlBertandaTanganS3(input: {
+  cfg: KonfigurasiR2;
+  metode: "PUT" | "GET";
+  kunci: string;
+  kedaluwarsaDetik: number;
+  contentType?: string;
+  contentLength?: number;
+}): Promise<string> {
+  const { cfg } = input;
+  const endpoint = new URL(cfg.endpoint);
+  const host = endpoint.host;
+  const sekarang = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const tanggal =
+    `${sekarang.getUTCFullYear()}${pad(sekarang.getUTCMonth() + 1)}${pad(sekarang.getUTCDate())}`;
+  const amzDate =
+    `${tanggal}T${pad(sekarang.getUTCHours())}${pad(sekarang.getUTCMinutes())}${pad(sekarang.getUTCSeconds())}Z`;
+  const cakupan = `${tanggal}/auto/s3/aws4_request`;
+  const uriKanonis =
+    "/" +
+    encodeSegmenJalur(cfg.bucket) +
+    "/" +
+    input.kunci.split("/").map(encodeSegmenJalur).join("/");
+  const headerTanda: [string, string][] = [["host", host]];
+  if (input.metode === "PUT") {
+    if (input.contentType) headerTanda.push(["content-type", input.contentType]);
+    if (typeof input.contentLength === "number") {
+      headerTanda.push(["content-length", String(input.contentLength)]);
+    }
+  }
+  headerTanda.sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  const namaHeader = headerTanda.map(([n]) => n).join(";");
+  const query: [string, string][] = [
+    ["X-Amz-Algorithm", "AWS4-HMAC-SHA256"],
+    ["X-Amz-Credential", `${cfg.accessKeyId}/${cakupan}`],
+    ["X-Amz-Date", amzDate],
+    ["X-Amz-Expires", String(input.kedaluwarsaDetik)],
+    ["X-Amz-SignedHeaders", namaHeader]
+  ];
+  query.sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  const queryKanonis = query
+    .map(([k, v]) => `${encodeSegmenJalur(k)}=${encodeSegmenJalur(v)}`)
+    .join("&");
+  const headerKanonis =
+    headerTanda.map(([n, v]) => `${n}:${v.trim()}\n`).join("");
+  const permintaanKanonis = [
+    input.metode,
+    uriKanonis,
+    queryKanonis,
+    headerKanonis,
+    namaHeader,
+    "UNSIGNED-PAYLOAD"
+  ].join("\n");
+  const stringUntukDitanda = [
+    "AWS4-HMAC-SHA256",
+    amzDate,
+    cakupan,
+    await sha256Hex(permintaanKanonis)
+  ].join("\n");
+  const kTanggal = await hmacSha256(
+    new TextEncoder().encode(`AWS4${cfg.secretAccessKey}`),
+    tanggal
+  );
+  const kWilayah = await hmacSha256(kTanggal, "auto");
+  const kLayanan = await hmacSha256(kWilayah, "s3");
+  const kTanda = await hmacSha256(kLayanan, "aws4_request");
+  const tandaTangan = keHex(await hmacSha256(kTanda, stringUntukDitanda));
+  return `${cfg.endpoint.replace(/\/+$/, "")}${uriKanonis}?${queryKanonis}&X-Amz-Signature=${tandaTangan}`;
+}
+
 export interface HasilTandaTangan {
   mode: "r2";
   uploadUrl: string;
@@ -129,26 +231,17 @@ export async function tandaTanganiUnggahan(input: {
     );
   }
   const kunci = buatKunciObjek(input.batchId, input.kategori, input.namaAsli);
-  const klien = new S3Client({
-    region: "auto",
-    endpoint: cfg.endpoint,
-    credentials: {
-      accessKeyId: cfg.accessKeyId,
-      secretAccessKey: cfg.secretAccessKey
-    }
-  });
-  const perintah = new PutObjectCommand({
-    Bucket: cfg.bucket,
-    Key: kunci,
-    // Content-Type dikunci ke MIME kanonis dari ekstensi yang sudah
-    // divalidasi, bukan ke MIME kiriman klien, dan Content-Length
-    // dikunci ke ukuran yang dinyatakan; URL bertanda tangan menolak
-    // unggahan yang menyimpang dari keduanya.
-    ContentType: mimeKanonisBerkas(input.namaAsli),
-    ContentLength: input.ukuran
-  });
-  const uploadUrl = await getSignedUrl(klien, perintah, {
-    expiresIn: URL_KEDALUWARSA_DETIK
+  // Content-Type dikunci ke MIME kanonis dari ekstensi yang sudah
+  // divalidasi, bukan ke MIME kiriman klien, dan Content-Length dikunci
+  // ke ukuran yang dinyatakan; keduanya ikut ditandatangani, jadi URL
+  // menolak unggahan yang menyimpang dari keduanya.
+  const uploadUrl = await urlBertandaTanganS3({
+    cfg,
+    metode: "PUT",
+    kunci,
+    kedaluwarsaDetik: URL_KEDALUWARSA_DETIK,
+    contentType: mimeKanonisBerkas(input.namaAsli),
+    contentLength: input.ukuran
   });
   return {
     mode: "r2",
@@ -182,17 +275,11 @@ export async function tandaTanganiUnduhan(
   if (bucket !== cfg.bucket) {
     throw new Error("Bucket berkas tidak cocok dengan bucket R2 jurnal.");
   }
-  const klien = new S3Client({
-    region: "auto",
-    endpoint: cfg.endpoint,
-    credentials: {
-      accessKeyId: cfg.accessKeyId,
-      secretAccessKey: cfg.secretAccessKey
-    }
-  });
-  const perintah = new GetObjectCommand({ Bucket: bucket, Key: kunci });
-  return getSignedUrl(klien, perintah, {
-    expiresIn: URL_UNDUH_KEDALUWARSA_DETIK
+  return urlBertandaTanganS3({
+    cfg,
+    metode: "GET",
+    kunci,
+    kedaluwarsaDetik: URL_UNDUH_KEDALUWARSA_DETIK
   });
 }
 
