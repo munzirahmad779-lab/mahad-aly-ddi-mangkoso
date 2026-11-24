@@ -19,9 +19,12 @@ import PemilihBahasa from "./pemilih-bahasa";
 // pengumuman, dan tentang plus pencarian, lalu kaki jurnal berisi
 // penerbit, alamat redaksi, dan tautan kebijakan serta OAI-PMH.
 // Palet memakai warna terukur lambang Ma'had Aly (token jurnal-* di
-// globals.css). Navbar dan Footer web utama tetap datang dari layout
-// akar. Bahasa persisten lewat cookie dan Arab dirender RTL pada
-// wadah jurnal ini.
+// globals.css). Cabang jurnal tampil penuh sebagai laman jurnal itu
+// sendiri: gerbang kerangka situs (MaintenanceGate) tidak merender
+// topbar, Navbar, ticker, dan Footer kampus pada rute /jurnal, jadi
+// layout ini tidak lagi membutuhkan bantalan atas kompensasi navbar
+// tetap kampus. Bahasa persisten lewat cookie dan Arab dirender RTL
+// pada wadah jurnal ini.
 
 const ALAMAT_REDAKSI =
   "Mangkoso, Kecamatan Soppeng Riaja, Kabupaten Barru, Sulawesi Selatan, Indonesia";
@@ -66,7 +69,7 @@ export default async function JurnalLayout({
   ];
 
   return (
-    <main className="bg-white pt-32 md:pt-40 lg:pt-60">
+    <main className="bg-white">
       <div lang={locale} dir={arahLocale(locale)}>
         {/* Spanduk penanda versi uji, ramping, selalu terlihat */}
         <div className="border-b border-amber-300 bg-amber-50">
@@ -194,6 +197,14 @@ export default async function JurnalLayout({
               </p>
               <p className="mt-3 text-sm leading-relaxed">
                 {t.diterbitkanOleh} {JURNAL_PENERBIT_UJI}
+              </p>
+              <p className="mt-4 text-sm">
+                <Link
+                  href="/"
+                  className="font-semibold text-white underline-offset-4 transition hover:text-jurnal-emas-terang hover:underline"
+                >
+                  {t.kakiSitusUtama}
+                </Link>
               </p>
             </div>
             <nav aria-label={t.kakiNavigasi}>

@@ -310,9 +310,9 @@ export default async function JurnalBerandaPage() {
                 <div key={t.slug} className="flex gap-4 py-4">
                   <Link
                     href={`/jurnal/terbitan/${t.slug}`}
-                    className="w-14 shrink-0"
+                    className="w-20 shrink-0"
                   >
-                    <SampulTerbitan label={t.label} />
+                    <SampulTerbitan label={t.label} mini />
                   </Link>
                   <div className="min-w-0">
                     <h3 className="font-serif text-lg font-bold leading-snug text-slate-900">

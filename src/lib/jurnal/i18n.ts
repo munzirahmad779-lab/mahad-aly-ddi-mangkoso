@@ -133,7 +133,8 @@ const ID = {
   alamatRedaksiLabel: "Alamat Redaksi",
   kakiNavigasi: "Navigasi",
   kakiKebijakan: "Kebijakan Jurnal",
-  kakiLisensiTeks: "Seluruh artikel dalam jurnal ini berlisensi CC BY 4.0."
+  kakiLisensiTeks: "Seluruh artikel dalam jurnal ini berlisensi CC BY 4.0.",
+  kakiSitusUtama: "Situs Utama Ma'had Aly"
 } as const;
 
 export type JurnalDict = Record<keyof typeof ID, string>;
@@ -241,7 +242,8 @@ const EN: JurnalDict = {
   alamatRedaksiLabel: "Editorial Address",
   kakiNavigasi: "Navigation",
   kakiKebijakan: "Journal Policies",
-  kakiLisensiTeks: "All articles in this journal are licensed under CC BY 4.0."
+  kakiLisensiTeks: "All articles in this journal are licensed under CC BY 4.0.",
+  kakiSitusUtama: "Ma'had Aly Main Website"
 };
 
 const AR: JurnalDict = {
@@ -347,7 +349,8 @@ const AR: JurnalDict = {
   alamatRedaksiLabel: "عنوان التحرير",
   kakiNavigasi: "التنقل",
   kakiKebijakan: "سياسات المجلة",
-  kakiLisensiTeks: "جميع المقالات في هذه المجلة مرخصة بموجب CC BY 4.0."
+  kakiLisensiTeks: "جميع المقالات في هذه المجلة مرخصة بموجب CC BY 4.0.",
+  kakiSitusUtama: "الموقع الرئيسي للمعهد العالي"
 };
 
 export const JURNAL_I18N: Record<JurnalLocale, JurnalDict> = {

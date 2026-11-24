@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { JurnalArtikelPublik } from "@/lib/jurnal/alur";
 import { tJurnal } from "@/lib/jurnal/i18n";
 import { localeJurnalServer } from "@/lib/jurnal/i18n-server";
+import { RentangHalaman } from "./rentang-halaman";
 
 // Daftar artikel publik bersama untuk beranda, daftar isi terbitan,
 // pencarian, dan jelajah bagian. Tampilannya mengikuti pola daftar isi
@@ -41,7 +42,13 @@ export async function DaftarArtikelPublik({
             )}
             <span className="text-slate-500">
               {a.terbitanLabel}
-              {a.halaman ? ` • ${t.halamanLabel} ${a.halaman}` : ""}
+              {a.halaman && (
+                <>
+                  {" • "}
+                  {t.halamanLabel}{" "}
+                  <RentangHalaman halaman={a.halaman} />
+                </>
+              )}
             </span>
           </div>
           <h3 className="mt-2 font-serif text-lg font-bold leading-snug text-slate-900">

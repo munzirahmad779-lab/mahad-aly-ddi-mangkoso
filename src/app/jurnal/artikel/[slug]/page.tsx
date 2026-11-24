@@ -15,6 +15,7 @@ import { teksKutipan } from "@/lib/jurnal/publik5";
 import { tJurnal, type JurnalDict } from "@/lib/jurnal/i18n";
 import { localeJurnalServer } from "@/lib/jurnal/i18n-server";
 import { KerangkaPublik } from "../../kerangka-publik";
+import { RentangHalaman } from "../../rentang-halaman";
 
 // Halaman artikel jurnal dengan metadata lengkap:
 // - tag citation_* (Google Scholar) lewat Metadata.other, termasuk
@@ -282,7 +283,13 @@ export default async function ArtikelJurnalPage({
             <dt className="w-28 shrink-0 font-semibold text-slate-500">
               {teks.labelHalaman}
             </dt>
-            <dd>{artikel.halaman ?? "-"}</dd>
+            <dd>
+              {artikel.halaman ? (
+                <RentangHalaman halaman={artikel.halaman} />
+              ) : (
+                "-"
+              )}
+            </dd>
           </div>
           <div className="flex gap-2">
             <dt className="w-28 shrink-0 font-semibold text-slate-500">
@@ -360,7 +367,13 @@ export default async function ArtikelJurnalPage({
         )}
 
         <JudulBagian>{teks.caraMengutip}</JudulBagian>
-        <p className="mt-3 border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700">
+        {/* Teks sitasi berformat Latin; dir="auto" membuat arah dasar
+            paragraf mengikuti huruf kuat pertamanya, sehingga urutan
+            nama, tahun, dan rentang halaman tidak terbalik di RTL. */}
+        <p
+          dir="auto"
+          className="mt-3 border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700"
+        >
           {teksKutipan({
             judul: artikel.judul,
             penulis: artikel.penulis,

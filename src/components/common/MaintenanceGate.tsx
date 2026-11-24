@@ -10,6 +10,12 @@ import OfficialComingSoon from "./OfficialComingSoon";
 
 export default function MaintenanceGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  // Cabang jurnal tampil penuh sebagai laman jurnal itu sendiri:
+  // kerangka situs kampus (topbar, Navbar beserta ticker, dan Footer)
+  // tidak dirender pada rute /jurnal; pengunjung yang menekan menu
+  // Jurnal langsung melihat tampilan jurnal saja. Perilaku gerbang
+  // pemeliharaan di bawah tidak berubah untuk rute jurnal.
+  const diJurnal = pathname.startsWith("/jurnal");
   const { settings, isSettingsLoaded } = useArticles();
   const [mounted, setMounted] = useState(false);
   const [isAdminPreview, setIsAdminPreview] = useState(false);
@@ -94,9 +100,15 @@ export default function MaintenanceGate({ children }: { children: React.ReactNod
             </div>
           </div>
 
-          <Navbar />
-          <div className="flex-1">{children}</div>
-          <Footer />
+          {diJurnal ? (
+            <div className="flex-1">{children}</div>
+          ) : (
+            <>
+              <Navbar />
+              <div className="flex-1">{children}</div>
+              <Footer />
+            </>
+          )}
         </>
       );
     }
@@ -105,7 +117,11 @@ export default function MaintenanceGate({ children }: { children: React.ReactNod
     return <OfficialComingSoon />;
   }
 
-  // 5. Mode Normal (Live Publik): Tampilkan Website Lengkap
+  // 5. Mode Normal (Live Publik): Tampilkan Website Lengkap.
+  //    Rute jurnal dikecualikan dari kerangka kampus (lihat diJurnal).
+  if (diJurnal) {
+    return <div className="flex-1">{children}</div>;
+  }
   return (
     <>
       <Navbar />
