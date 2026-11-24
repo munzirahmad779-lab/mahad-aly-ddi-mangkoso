@@ -3,8 +3,9 @@ import { supabaseAnon, supabaseAdmin } from "@/lib/supabase/server";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 // Proxy login server-side. Semua percobaan masuk melewati sini agar:
-// 1. Rate limit & penguncian akun berlaku di SERVER (tidak bisa dihapus dari
-//    localStorage browser seperti implementasi lama).
+// 1. Pembatasan percobaan masuk (per IP dan percobaan GAGAL per email)
+//    berlaku di SERVER (tidak bisa dihapus dari localStorage browser
+//    seperti implementasi lama).
 // 2. Kredensial diverifikasi via client anon, status akun dicek via service
 //    role sebelum sesi diberikan.
 // 3. Percobaan brute-force tercatat terpusat dan memicu notifikasi admin.
@@ -13,7 +14,22 @@ const MAX_ATTEMPTS_PER_EMAIL = 5;
 const ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS_PER_IP = 20;
 const IP_WINDOW_MS = 10 * 60 * 1000;
-const LOCK_DURATION_MS = 15 * 60 * 1000;
+
+// Penghitung percobaan GAGAL per email (memori proses, pola yang sama
+// seperti alertCooldown di bawah). Hanya kegagalan yang dihitung:
+// percobaan BERHASIL tidak mengurangi jatah dan menghapus catatan gagal
+// email itu. Yang bekerja adalah jendela pembatasan ini; tidak ada
+// keadaan "terkunci" terpisah yang disimpan di server.
+const failedAttempts = new Map<string, number[]>();
+
+function recentFailures(email: string, now: number): number[] {
+  const kept = (failedAttempts.get(email) || []).filter(
+    (t) => now - t < ATTEMPT_WINDOW_MS
+  );
+  if (kept.length > 0) failedAttempts.set(email, kept);
+  else failedAttempts.delete(email);
+  return kept;
+}
 
 // Cooldown notifikasi agar inbox admin tidak banjir (1 email / 15 menit / email target)
 const alertCooldown = new Map<string, number>();
@@ -38,7 +54,7 @@ async function sendBruteForceAlert(email: string, ip: string) {
         threatType: "brute_force",
         severity: "high",
         endpoint: "/api/auth/login",
-        details: `Terdeteksi percobaan login berulang gagal untuk akun [${email}] dari IP ${ip}. Akun dikunci sementara ${LOCK_DURATION_MS / 60000} menit.`,
+        details: `Terdeteksi percobaan login berulang gagal untuk akun [${email}] dari IP ${ip}. Percobaan masuk untuk akun ini dibatasi selama ${ATTEMPT_WINDOW_MS / 60000} menit sesudah batas percobaan gagal tercapai.`,
         ip
       })
     });
@@ -66,12 +82,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Lapis 2: rate limit per email
-    const emailRl = checkRateLimit(`login:email:${email}`, MAX_ATTEMPTS_PER_EMAIL, ATTEMPT_WINDOW_MS);
-    if (!emailRl.allowed) {
+    // Lapis 2: batas percobaan GAGAL per email. checkRateLimit tidak
+    // dipakai di lapis ini karena ia menghitung SEMUA percobaan termasuk
+    // yang berhasil, sehingga pemilik sah dapat terkunci oleh loginnya
+    // sendiri; penghitung lokal di atas hanya mencatat kegagalan.
+    const failures = recentFailures(email, Date.now());
+    if (failures.length >= MAX_ATTEMPTS_PER_EMAIL) {
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((ATTEMPT_WINDOW_MS - (Date.now() - failures[0])) / 1000)
+      );
       return NextResponse.json(
         {
-          error: `Terlalu banyak percobaan gagal untuk akun ini. Coba lagi dalam ${emailRl.retryAfterSeconds} detik atau hubungi Super Admin.`,
+          error: `Terlalu banyak percobaan gagal untuk akun ini. Coba lagi dalam ${retryAfterSeconds} detik atau hubungi Super Admin.`,
           locked: true
         },
         { status: 429 }
@@ -85,7 +108,10 @@ export async function POST(req: NextRequest) {
     });
 
     if (error || !data?.session || !data?.user) {
-      const remaining = emailRl.remaining;
+      const failNow = Date.now();
+      const updatedFailures = [...recentFailures(email, failNow), failNow];
+      failedAttempts.set(email, updatedFailures);
+      const remaining = Math.max(0, MAX_ATTEMPTS_PER_EMAIL - updatedFailures.length);
       if (remaining <= 2) {
         await sendBruteForceAlert(email, ip);
       }
@@ -115,6 +141,10 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       );
     }
+
+    // Masuk berhasil: catatan percobaan gagal email ini dihapus, karena
+    // hanya kegagalan yang dihitung oleh Lapis 2.
+    failedAttempts.delete(email);
 
     return NextResponse.json({
       success: true,

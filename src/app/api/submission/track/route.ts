@@ -69,7 +69,9 @@ export async function GET(req: NextRequest) {
         meta = JSON.parse(row.catatan_admin);
       }
     } catch {
-      meta = { feedback: row.catatan_admin };
+      // Metadata rusak tidak diteruskan apa pun ke publik: catatan_admin
+      // mentah dapat memuat data pribadi penulis (HP, NIM, kode akses).
+      meta = {};
     }
 
     // Map internal status to standardized timeline status
@@ -103,7 +105,9 @@ export async function GET(req: NextRequest) {
         fileName: meta.fileName || row.file_url?.replace("attachment:", ""),
         fileSize: meta.fileSize || "",
         status: mappedStatus,
-        feedback: meta.feedback || meta.catatanRevisi || row.catatan_admin,
+        // Hanya feedback terstruktur yang tampil. catatan_admin mentah
+        // TIDAK PERNAH menjadi cadangan: isinya metadata internal.
+        feedback: meta.feedback || meta.catatanRevisi || "",
         submittedAt: row.created_at,
         updatedAt: row.updated_at,
         timeline: timeline

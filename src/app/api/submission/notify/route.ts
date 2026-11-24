@@ -94,7 +94,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const trackingCode = extraMeta.trackingCode || `MAD-${new Date().getFullYear()}-${id.slice(0, 4)}`;
+    // Kode lacak HANYA dari metadata tersimpan. Bila tidak ada, email
+    // menampilkan keterangan bahwa kode tidak tersedia; kode TIDAK PERNAH
+    // dikarang dari potongan UUID (perilaku lama menyesatkan penulis
+    // karena kode karangan itu tidak akan pernah cocok di halaman lacak).
+    const trackingCode = extraMeta.trackingCode || "tidak tersedia";
 
     // 2. Ambil templat email kustom bila ada (juga lewat klien server)
     let customTemplates: EmailTemplateItem[] | undefined;

@@ -81,7 +81,52 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. Catat entri rollback baru ke snapshot
+    // 3. Sinkronkan juga ke tabel collections bila modul bertipe koleksi,
+    // mencerminkan langkah sinkronisasi yang sama di route apply. Tanpa
+    // langkah ini site_content hasil rollback dan tabel collections
+    // berbeda pendapat dan halaman yang membaca collections tetap
+    // menampilkan versi yang dibatalkan.
+    const collectionTypeByKey: Record<string, string> = {
+      masyayikh: "masyayikh",
+      facilities: "sarana",
+      academic: "courses"
+    };
+    const collectionType = collectionTypeByKey[targetSnapshot.targetKey];
+    if (collectionType) {
+      try {
+        if (Array.isArray(restoreValue)) {
+          for (const item of restoreValue) {
+            if (item.id && item.name) {
+              const { error: colErr } = await supabaseAdmin.from("collections").upsert({
+                id: item.id,
+                collection_type: collectionType,
+                data: item,
+                order_index: item.order || 1,
+                is_published:
+                  targetSnapshot.targetKey === "masyayikh" ? item.isActive !== false : true
+              }, { onConflict: "id" });
+              if (colErr) {
+                console.warn("Sinkron collections rollback gagal:", colErr.message);
+              }
+            }
+          }
+        } else if (restoreValue === null) {
+          // Nilai sebelumnya memang kosong: baris collections untuk tipe
+          // ini ikut dikosongkan agar kedua sumber data sepakat.
+          const { error: colDelErr } = await supabaseAdmin
+            .from("collections")
+            .delete()
+            .eq("collection_type", collectionType);
+          if (colDelErr) {
+            console.warn("Pembersihan collections rollback gagal:", colDelErr.message);
+          }
+        }
+      } catch {
+        // Abaikan jika tabel collections belum ada
+      }
+    }
+
+    // 4. Catat entri rollback baru ke snapshot
     const rollbackLogSnapshot = {
       id: `snap-rb-${Date.now()}`,
       targetKey: targetSnapshot.targetKey,
@@ -103,11 +148,11 @@ export async function POST(req: NextRequest) {
       throw new Error(`Gagal mencatat riwayat rollback: ${snapLogErr.message}`);
     }
 
-    // 4. Catat aksi rollback ke arsip Log Aktivitas Admin
+    // 5. Catat aksi rollback ke arsip Log Aktivitas Admin
     try {
       const now = new Date();
-      const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
-      const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
+      const formattedDate = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Makassar" });
+      const formattedTime = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Makassar" }) + " WITA";
       const newAuditLog = {
         id: "log-rb-" + Date.now(),
         user: auth.email || "Super Admin",

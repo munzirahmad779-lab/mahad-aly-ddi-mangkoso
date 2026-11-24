@@ -12,6 +12,10 @@ export async function GET() {
       data
     });
   } catch (error: any) {
-    return NextResponse.json({ status: false, error: error.message }, { status: 500 });
+    console.error("Hijri API error:", error);
+    return NextResponse.json(
+      { status: false, error: "Gagal memuat tanggal Hijriah. Silakan coba lagi." },
+      { status: 500 }
+    );
   }
 }

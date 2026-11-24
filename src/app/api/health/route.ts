@@ -44,12 +44,18 @@ export async function GET() {
     if (restError) console.error("Health check REST:", restError.message);
     // Respons publik dibuat ramping (audit E8): tanpa URL proyek, format
     // kunci, atau status environment — cukup status & latensi.
-    return NextResponse.json({
-      status: isConnected ? "SUCCESS" : "ERROR",
-      timestamp: new Date().toISOString(),
-      latency: `${latencyMs}ms`,
-      databaseConnection: isConnected ? "Terhubung" : "Gangguan"
-    });
+    // Kode HTTP mengikuti status: ERROR menjawab 503, bukan 200, supaya
+    // pemantau uptime yang membaca kode HTTP tidak menganggap situs
+    // sehat saat basis data terputus. Bentuk badan JSON tidak berubah.
+    return NextResponse.json(
+      {
+        status: isConnected ? "SUCCESS" : "ERROR",
+        timestamp: new Date().toISOString(),
+        latency: `${latencyMs}ms`,
+        databaseConnection: isConnected ? "Terhubung" : "Gangguan"
+      },
+      { status: isConnected ? 200 : 503 }
+    );
   } catch (err: any) {
     console.error("Health check exception:", err?.message || String(err));
     return NextResponse.json(

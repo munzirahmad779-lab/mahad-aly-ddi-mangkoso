@@ -134,25 +134,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 7. Rate Limiting: Maksimal 3 submission per email per hari
-    try {
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
+    // 7. Rate Limiting: Maksimal 3 submission per email per hari.
+    // Gagal-tertutup: bila kueri hitung galat, pengiriman ditolak dengan
+    // 500 generik, BUKAN melewatkan pemeriksaan (perilaku lama gagal-terbuka).
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
-      const { data: recentSubmissions, error: countErr } = await supabaseAdmin
-        .from("submissions")
-        .select("id, created_at")
-        .eq("email", email)
-        .gte("created_at", startOfDay.toISOString());
+    const { data: recentSubmissions, error: countErr } = await supabaseAdmin
+      .from("submissions")
+      .select("id, created_at")
+      .eq("email", email)
+      .gte("created_at", startOfDay.toISOString());
 
-      if (!countErr && recentSubmissions && recentSubmissions.length >= 3) {
-        return NextResponse.json(
-          { error: "Batas pengiriman harian tercapai! Maksimal 3 naskah per alamat email per hari untuk mencegah spam." },
-          { status: 429 }
-        );
-      }
-    } catch (e) {
-      console.warn("Rate limit check notice:", e);
+    if (countErr) {
+      console.error("Gagal memeriksa batas harian submission:", countErr);
+      return NextResponse.json(
+        { error: "Terjadi kesalahan sistem saat memeriksa batas pengiriman. Silakan coba lagi." },
+        { status: 500 }
+      );
+    }
+
+    if (recentSubmissions && recentSubmissions.length >= 3) {
+      return NextResponse.json(
+        { error: "Batas pengiriman harian tercapai! Maksimal 3 naskah per alamat email per hari untuk mencegah spam." },
+        { status: 429 }
+      );
     }
 
     // 8. Generate Kode Tracking Unik (Format: MAD-YYYY-XXXXXX, 6 digit;
@@ -204,40 +210,12 @@ export async function POST(req: NextRequest) {
       // Ignore fallback
     }
 
-    // 11. Kirim Email Langsung ke Admin dengan Lampiran File Word
-    const adminEmailResult = await sendSubmissionEmailToAdmin({
-      submission: {
-        trackingCode,
-        nama,
-        email,
-        hp,
-        afiliasi,
-        tipeNaskah,
-        kategori: kategoriFinal,
-        judul,
-        abstrak,
-        keywords: keywordsList.join(", "),
-        fileSizeStr
-      },
-      fileBuffer,
-      fileName: file.name,
-      customTemplates
-    });
-
-    // 12. Kirim Email Konfirmasi ke Author
-    const authorEmailResult = await sendConfirmationEmailToAuthor({
-      authorEmail: email,
-      authorName: nama,
-      title: judul,
-      trackingCode,
-      customTemplates
-    });
-
-    // 13. Simpan Metadata ke Tabel Submissions di Database
-    const timelineNote = adminEmailResult.success
-      ? `Naskah '${judul}' berhasil diterima sistem dan berkas Word telah diteruskan ke email Dewan Redaksi.`
-      : `Naskah '${judul}' berhasil diterima dan tersimpan di sistem. Pengiriman email ke redaksi: ${adminEmailResult.error || "Gagal"}.`;
-
+    // 11. Simpan Metadata ke Tabel Submissions di Database DULU.
+    // Urutan dibalik dari perilaku lama (email dulu, simpan kemudian):
+    // bila simpan gagal, TIDAK ADA email yang terkirim, jadi tidak ada
+    // kode lacak yatim di tangan penulis dan redaksi tidak menerima
+    // naskah yang tidak tercatat. Status email pada metadata diisi
+    // sesudah pengiriman pada langkah 14.
     const metadataPayload = {
       trackingCode,
       tipeNaskah,
@@ -253,15 +231,15 @@ export async function POST(req: NextRequest) {
       kategoriNama: kategoriFinal,
       kategoriUsulan: kategoriUsulan || null,
       isUsulanKategori,
-      adminEmailSent: adminEmailResult.success,
-      adminEmailError: adminEmailResult.success ? null : adminEmailResult.error,
-      authorEmailSent: authorEmailResult.success,
-      authorEmailError: authorEmailResult.success ? null : authorEmailResult.error,
+      adminEmailSent: false,
+      adminEmailError: null as string | null,
+      authorEmailSent: false,
+      authorEmailError: null as string | null,
       timeline: [
         {
           status: "submitted",
           date: new Date().toISOString(),
-          note: timelineNote
+          note: `Naskah '${judul}' berhasil diterima dan tersimpan di sistem.`
         }
       ]
     };
@@ -295,18 +273,86 @@ export async function POST(req: NextRequest) {
     if (dbErr) {
       console.error("Gagal menyimpan metadata submission ke DB:", dbErr);
       return NextResponse.json(
-        { error: "Pencatatan naskah ke database gagal: " + dbErr.message },
+        { error: "Pencatatan naskah ke database gagal. Silakan coba lagi." },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({
-      success: true,
+    // 12. Kirim Email Langsung ke Admin dengan Lampiran File Word
+    const adminEmailResult = await sendSubmissionEmailToAdmin({
+      submission: {
+        trackingCode,
+        nama,
+        email,
+        hp,
+        afiliasi,
+        tipeNaskah,
+        kategori: kategoriFinal,
+        judul,
+        abstrak,
+        keywords: keywordsList.join(", "),
+        fileSizeStr
+      },
+      fileBuffer,
+      fileName: file.name,
+      customTemplates
+    });
+    if (!adminEmailResult.success) {
+      console.error("Email submission ke admin gagal:", adminEmailResult.error);
+    }
+
+    // 13. Kirim Email Konfirmasi ke Author
+    const authorEmailResult = await sendConfirmationEmailToAuthor({
+      authorEmail: email,
+      authorName: nama,
+      title: judul,
       trackingCode,
+      customTemplates
+    });
+    if (!authorEmailResult.success) {
+      console.error("Email konfirmasi ke penulis gagal:", authorEmailResult.error);
+    }
+
+    // 14. Perbarui metadata tersimpan dengan hasil pengiriman email.
+    // Kegagalan pembaruan ini hanya tercatat di log server: naskah sudah
+    // tersimpan dan email sudah terkirim, jadi pengiriman penulis tidak
+    // boleh digagalkan olehnya.
+    const timelineNote = adminEmailResult.success
+      ? `Naskah '${judul}' berhasil diterima sistem dan berkas Word telah diteruskan ke email Dewan Redaksi.`
+      : `Naskah '${judul}' berhasil diterima dan tersimpan di sistem. Pengiriman email ke redaksi terkendala.`;
+
+    const finalMetadata = {
+      ...metadataPayload,
       adminEmailSent: adminEmailResult.success,
       adminEmailError: adminEmailResult.success ? null : adminEmailResult.error,
       authorEmailSent: authorEmailResult.success,
       authorEmailError: authorEmailResult.success ? null : authorEmailResult.error,
+      timeline: [
+        {
+          status: "submitted",
+          date: new Date().toISOString(),
+          note: timelineNote
+        }
+      ]
+    };
+
+    const { error: metaErr } = await supabaseAdmin
+      .from("submissions")
+      .update({ catatan_admin: JSON.stringify(finalMetadata) })
+      .eq("id", savedData.id);
+    if (metaErr) {
+      console.error("Gagal memperbarui metadata hasil email submission:", metaErr);
+    }
+
+    // Respons publik TIDAK memuat pesan galat internal layanan email
+    // atau basis data; rinciannya cukup di log server.
+    return NextResponse.json({
+      success: true,
+      trackingCode,
+      adminEmailSent: adminEmailResult.success,
+      adminEmailError: null,
+      authorEmailSent: authorEmailResult.success,
+      authorEmailError: null,
       message: adminEmailResult.success
         ? "Naskah berhasil terkirim langsung ke email dewan redaksi!"
         : "Naskah berhasil disimpan di sistem, namun pengiriman email otomatis terkendala konfigurasi server.",
@@ -324,7 +370,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Submission error:", error);
     return NextResponse.json(
-      { error: error?.message || "Terjadi kesalahan sistem saat memproses pengiriman naskah." },
+      { error: "Terjadi kesalahan sistem saat memproses pengiriman naskah. Silakan coba lagi." },
       { status: 500 }
     );
   }

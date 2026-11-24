@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { action, target, user } = body;
+    const { action, target } = body;
 
     if (!action || !target) {
       return NextResponse.json(
@@ -57,21 +57,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Cap waktu dihitung pada zona Asia/Makassar secara eksplisit: server
+    // berjalan UTC, jadi tanpa timeZone label "WITA" bohong 8 jam.
     const now = new Date();
     const formattedDate = now.toLocaleDateString("id-ID", {
       day: "numeric",
       month: "short",
-      year: "numeric"
+      year: "numeric",
+      timeZone: "Asia/Makassar"
     });
     const formattedTime =
       now.toLocaleTimeString("id-ID", {
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
+        timeZone: "Asia/Makassar"
       }) + " WITA";
 
     const newLog = {
       id: "log-" + Date.now().toString(),
-      user: user || auth.email || "Administrator",
+      // Nama pelaku SELALU dari sesi hasil guard, tidak pernah dari body:
+      // body dapat diisi nama orang lain dan meracuni jejak audit.
+      user: auth.email || "Administrator",
       action,
       target,
       timestamp: `${formattedDate}, ${formattedTime}`

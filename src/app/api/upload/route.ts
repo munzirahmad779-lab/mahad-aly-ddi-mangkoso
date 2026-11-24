@@ -41,7 +41,10 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const requestedFolder = ((formData.get("folder") as string) || "umum").trim();
-    const uploadedBy = auth.email || auth.userId;
+    // Utamakan UUID userId dari guard: kolom uploaded_by diuji
+    // isValidUuid saat simpan, dan email selalu gagal uji itu sehingga
+    // jejak pengunggah selalu kosong pada perilaku lama.
+    const uploadedBy = auth.userId || auth.email;
 
     if (!file) {
       return NextResponse.json(
@@ -243,14 +246,37 @@ export async function DELETE(req: NextRequest) {
       }
     }
 
-    // 1. Hapus dari Cloudflare R2
+    // Tanpa penunjuk berkas apa pun tidak ada yang dapat dihapus: jawab
+    // 400, bukan sukses kosong (perilaku lama menyesatkan admin).
+    if (!id && !url && !key) {
+      return NextResponse.json(
+        { error: "Parameter 'id', 'url', atau 'key' wajib disertakan untuk menghapus berkas." },
+        { status: 400 }
+      );
+    }
+
+    // 1. Hapus dari Cloudflare R2. Status HTTP penghapusan diperiksa dan
+    // kegagalannya dilaporkan jujur dengan menghentikan proses, kecuali
+    // 404: objek memang tidak ada di R2 (berkas jalur fallback hanya
+    // tersimpan di Supabase Storage dan dihapus pada langkah 2).
     if (key && isR2Configured && r2Client && r2Endpoint) {
       try {
         const cleanEndpoint = r2Endpoint.replace(/\/+$/, "");
         const deleteUrl = `${cleanEndpoint}/${r2BucketName}/${key}`;
-        await r2Client.fetch(deleteUrl, { method: "DELETE" });
+        const r2DelRes = await r2Client.fetch(deleteUrl, { method: "DELETE" });
+        if (!r2DelRes.ok && r2DelRes.status !== 404) {
+          console.error("R2 delete gagal dengan status:", r2DelRes.status);
+          return NextResponse.json(
+            { error: `Gagal menghapus berkas dari penyimpanan R2 (status ${r2DelRes.status}).` },
+            { status: 500 }
+          );
+        }
       } catch (r2Err) {
-        console.warn("R2 delete notice:", r2Err);
+        console.error("R2 delete error:", r2Err);
+        return NextResponse.json(
+          { error: "Gagal menghapus berkas dari penyimpanan R2." },
+          { status: 500 }
+        );
       }
     }
 
