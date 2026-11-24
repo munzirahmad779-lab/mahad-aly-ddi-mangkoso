@@ -155,10 +155,32 @@ export async function POST(req: NextRequest) {
       console.warn("Rate limit check notice:", e);
     }
 
-    // 8. Generate Kode Tracking Unik (Format: MAD-YYYY-XXXX)
+    // 8. Generate Kode Tracking Unik (Format: MAD-YYYY-XXXXXX, 6 digit;
+    // perintah user 25 Nov 2026 menggantikan format lama 4 digit).
+    // Keunikan diperiksa ke basis data dengan pola pencarian yang sama
+    // seperti route lacak, dan kode digambar ulang bila bertabrakan,
+    // supaya naskah lama tidak tertutup naskah baru yang berkode sama.
     const currentYear = new Date().getFullYear();
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const trackingCode = `MAD-${currentYear}-${randomSuffix}`;
+    let trackingCode = "";
+    for (let percobaan = 0; percobaan < 10; percobaan++) {
+      const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+      const kandidat = `MAD-${currentYear}-${randomSuffix}`;
+      const { data: sudahAda } = await supabaseAdmin
+        .from("submissions")
+        .select("id")
+        .ilike("catatan_admin", `%${kandidat}%`)
+        .limit(1);
+      if (!sudahAda || sudahAda.length === 0) {
+        trackingCode = kandidat;
+        break;
+      }
+    }
+    if (!trackingCode) {
+      return NextResponse.json(
+        { error: "Gagal membuat kode pelacakan unik. Silakan coba lagi." },
+        { status: 500 }
+      );
+    }
 
     // 9. Persiapan Data Berkas untuk Attachment Email
     const arrayBuffer = await file.arrayBuffer();

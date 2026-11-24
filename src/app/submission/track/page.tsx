@@ -54,7 +54,7 @@ function TrackingContent() {
   const fetchTracking = async (codeToQuery: string) => {
     const cleanCode = codeToQuery.trim().toUpperCase();
     if (!cleanCode) {
-      setError("Masukkan kode tracking naskah Anda (contoh: MAD-2026-0001).");
+      setError("Masukkan kode tracking naskah Anda (contoh: MAD-2026-000001).");
       return;
     }
 
@@ -132,7 +132,7 @@ function TrackingContent() {
               type="text"
               value={trackingCodeInput}
               onChange={(e) => setTrackingCodeInput(e.target.value.toUpperCase())}
-              placeholder="Masukkan Kode Pelacakan (Contoh: MAD-2026-0001)..."
+              placeholder="Masukkan Kode Pelacakan (Contoh: MAD-2026-000001)..."
               className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-700"
             />
             <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5" />

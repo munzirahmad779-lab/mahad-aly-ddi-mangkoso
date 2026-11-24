@@ -15,21 +15,22 @@ export async function GET(req: NextRequest) {
 
     if (!kode) {
       return NextResponse.json(
-        { error: "Parameter kode pelacakan (?kode=MAD-YYYY-XXXX) wajib disertakan." },
+        { error: "Parameter kode pelacakan (?kode=MAD-YYYY-XXXXXX) wajib disertakan." },
         { status: 400 }
       );
     }
 
     // Validasi format ketat SEBELUM menyentuh basis data: hanya kode
-    // pelacakan utuh MAD-YYYY-XXXX atau UUID sah yang diterima. Input di
+    // pelacakan utuh MAD-YYYY-XXXXXX (kode lama 4 digit tetap diterima)
+    // atau UUID sah yang diterima. Input di
     // luar pola ini (termasuk "%", "_", dan potongan kode) ditolak 400.
     // Ini menutup kebocoran wildcard ilike: sebelumnya kode "%" berfungsi
     // sebagai pola tangkap-semua dan mengembalikan kiriman terbaru.
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(kode);
-    const isTrackingCode = /^MAD-\d{4}-\d{4}$/.test(kode);
+    const isTrackingCode = /^MAD-\d{4}-(\d{4}|\d{6})$/.test(kode);
     if (!isUuid && !isTrackingCode) {
       return NextResponse.json(
-        { error: "Format kode pelacakan tidak valid. Gunakan kode utuh yang Anda terima saat mengirim naskah (contoh: MAD-2026-0001)." },
+        { error: "Format kode pelacakan tidak valid. Gunakan kode utuh yang Anda terima saat mengirim naskah (contoh: MAD-2026-000001)." },
         { status: 400 }
       );
     }
@@ -54,7 +55,7 @@ export async function GET(req: NextRequest) {
 
     if (error || !rows || rows.length === 0) {
       return NextResponse.json(
-        { error: `Naskah dengan kode pelacakan "${kode}" tidak ditemukan di database. Pastikan format kode benar (contoh: MAD-2026-0001).` },
+        { error: `Naskah dengan kode pelacakan "${kode}" tidak ditemukan di database. Pastikan format kode benar (contoh: MAD-2026-000001).` },
         { status: 404 }
       );
     }

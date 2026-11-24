@@ -438,7 +438,7 @@ export default function KirimTulisanPage() {
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-slate-100 text-[11px] text-emerald-800 font-medium">
-                Dapatkan: <strong>Kode Tracking (MAD-YYYY-XXXX)</strong>
+                Dapatkan: <strong>Kode Tracking (MAD-YYYY-XXXXXX)</strong>
               </div>
             </div>
 
