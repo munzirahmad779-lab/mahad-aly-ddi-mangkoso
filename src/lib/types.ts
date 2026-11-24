@@ -90,7 +90,7 @@ export interface SubmissionFullPaper {
 
 export interface Submission {
   id: string;
-  trackingCode?: string; // MAD-YYYY-XXXX
+  trackingCode?: string; // MAD-YYYY-XXXXXX (kode lama 4 digit tetap berlaku)
   accessCode?: string; // MAD2-YYYY-XXXX untuk Tahap 2
   nama: string;
   email: string;

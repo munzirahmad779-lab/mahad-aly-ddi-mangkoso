@@ -12488,7 +12488,7 @@ export default function AdminPage() {
                   {[
                     { tag: "{nama}", desc: "Nama Penulis" },
                     { tag: "{judul}", desc: "Judul Naskah" },
-                    { tag: "{kode}", desc: "Kode Pelacakan (MAD-YYYY-XXXX)" },
+                    { tag: "{kode}", desc: "Kode Pelacakan (MAD-YYYY-XXXXXX)" },
                     { tag: "{catatan}", desc: "Catatan Redaksi / Revisi" },
                     { tag: "{link}", desc: "Tautan Halaman Lacak / Artikel Terbit" }
                   ].map((v, i) => (
@@ -12828,7 +12828,7 @@ export default function AdminPage() {
                         {[
                           { tag: "{nama}", desc: "Nama Penulis" },
                           { tag: "{judul}", desc: "Judul Naskah" },
-                          { tag: "{kode}", desc: "Kode Pelacakan / Akses (MAD-YYYY-XXXX / MAD2-...)" },
+                          { tag: "{kode}", desc: "Kode Pelacakan / Akses (MAD-YYYY-XXXXXX / MAD2-...)" },
                           { tag: "{catatan}", desc: "Catatan Redaksi / Revisi" },
                           { tag: "{link}", desc: "Tautan Halaman Lacak / Artikel Terbit" }
                         ].map((v, i) => (
