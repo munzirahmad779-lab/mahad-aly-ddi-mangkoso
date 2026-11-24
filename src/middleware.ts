@@ -15,7 +15,49 @@ const HONEYPOT_PATHS = [
   "/eval-stdin.php"
 ];
 
-export function middleware(request: NextRequest) {
+// Cache bendera akses publik jurnal per isolat Worker (30 detik), supaya
+// middleware tidak memanggil basis data pada setiap permintaan.
+let cacheAksesJurnal: { tertutup: boolean; pada: number } | null = null;
+
+// Keadaan gerbang jurnal. Urutan keputusan:
+// 1. Env JURNAL_AKSES = "terbuka" membuka paksa, "tertutup" menutup
+//    paksa (penimpa darurat ops, di atas segalanya).
+// 2. Tanpa SUPABASE_SERVICE_ROLE_KEY (mode lokal/uji): gerbang tidak
+//    aktif, sama seperti perilaku rangkaian uji selama ini.
+// 3. Selain itu nilai dibaca dari tabel jurnal_pengaturan
+//    (kunci 'akses_publik', migrasi 010) yang diatur Manajer Jurnal
+//    dari panel admin. Gagal baca berarti tetap tertutup (fail closed).
+async function jurnalTertutupUntukPublik(): Promise<boolean> {
+  const env = process.env.JURNAL_AKSES;
+  if (env === "terbuka") return false;
+  if (env === "tertutup") return true;
+  const kunci = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!kunci) return false;
+  const sekarang = Date.now();
+  if (cacheAksesJurnal && sekarang - cacheAksesJurnal.pada < 30_000) {
+    return cacheAksesJurnal.tertutup;
+  }
+  let tertutup = true;
+  try {
+    const url =
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      "https://ymxijorgoucpsxgcvtgu.supabase.co";
+    const res = await fetch(
+      `${url}/rest/v1/jurnal_pengaturan?kunci=eq.akses_publik&select=nilai`,
+      { headers: { apikey: kunci, Authorization: `Bearer ${kunci}` } }
+    );
+    if (res.ok) {
+      const baris = (await res.json()) as Array<{ nilai?: string }>;
+      tertutup = baris?.[0]?.nilai !== "terbuka";
+    }
+  } catch {
+    // Basis data tidak terjangkau: jurnal tetap tertutup.
+  }
+  cacheAksesJurnal = { tertutup, pada: sekarang };
+  return tertutup;
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const proto = request.headers.get("x-forwarded-proto");
   const host = request.headers.get("host") || "";
@@ -33,17 +75,19 @@ export function middleware(request: NextRequest) {
     request.headers.get("cf-connecting-ip") ||
     "127.0.0.1";
 
-  // 0b. Gerbang penutupan jurnal: selama env JURNAL_AKSES bernilai
-  // "tertutup", seluruh jalur /jurnal dan /api/jurnal menjawab 503 untuk
-  // publik. Jalan masuk tim penguji hanya lewat cookie gerbang yang
-  // ditetapkan oleh /api/jurnal/gerbang?k=<JURNAL_GATE_KEY>. Bila env
-  // tidak dipasang atau bernilai lain, gerbang tidak aktif sama sekali.
+  // 0b. Gerbang penutupan jurnal: selama akses publik tertutup, seluruh
+  // jalur /jurnal dan /api/jurnal menjawab 503 untuk publik. Keadaan
+  // gerbang diputuskan jurnalTertutupUntukPublik(): penimpa env
+  // JURNAL_AKSES, atau bendera jurnal_pengaturan yang diatur Manajer
+  // Jurnal dari panel admin. Jalan masuk tim penguji hanya lewat
+  // cookie gerbang yang ditetapkan oleh
+  // /api/jurnal/gerbang?k=<JURNAL_GATE_KEY>.
   const jalurJurnal =
     pathname === "/jurnal" ||
     pathname.startsWith("/jurnal/") ||
     pathname === "/api/jurnal" ||
     pathname.startsWith("/api/jurnal/");
-  if (jalurJurnal && process.env.JURNAL_AKSES === "tertutup") {
+  if (jalurJurnal && (await jurnalTertutupUntukPublik())) {
     const kunciGerbang = process.env.JURNAL_GATE_KEY || "";
     if (pathname === "/api/jurnal/gerbang") {
       const kunci = request.nextUrl.searchParams.get("k") || "";

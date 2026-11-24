@@ -36,7 +36,8 @@ export type JenisPeristiwaKeamanan =
   | "review_ditolak"
   | "reset_sandi_diminta"
   | "reset_sandi_gagal"
-  | "reset_sandi_selesai";
+  | "reset_sandi_selesai"
+  | "akses_publik_diubah";
 
 export interface DetailPeristiwaKeamanan {
   ip?: string | null;

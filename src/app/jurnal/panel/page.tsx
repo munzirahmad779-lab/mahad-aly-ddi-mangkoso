@@ -95,6 +95,73 @@ export default function PanelRedaksiJurnalPage() {
     muatDaftar();
   }, [muatDaftar]);
 
+  // Akses publik jurnal (hanya Manajer Jurnal): buka/tutup dari panel
+  // tanpa deploy ulang; nilai tinggal di jurnal_pengaturan dan dibaca
+  // middleware. Konfirmasi memakai kotak di dalam halaman, bukan
+  // dialog bawaan peramban.
+  const [aksesPublik, setAksesPublik] = useState<
+    "terbuka" | "tertutup" | null
+  >(null);
+  const [konfirmasiAkses, setKonfirmasiAkses] = useState<
+    "terbuka" | "tertutup" | null
+  >(null);
+  const [aksesMenyimpan, setAksesMenyimpan] = useState(false);
+
+  const adalahManajer = (viewer?.roles ?? []).includes("journal_manager");
+
+  const muatAksesPublik = useCallback(async () => {
+    try {
+      const token = await ambilToken();
+      const res = await fetch("/api/jurnal/pengaturan/akses", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && (data?.akses === "terbuka" || data?.akses === "tertutup")) {
+        setAksesPublik(data.akses);
+      }
+    } catch {
+      // Kartu akses hanya tidak tampil; panel tetap berfungsi.
+    }
+  }, [ambilToken]);
+
+  useEffect(() => {
+    if (adalahManajer) {
+      muatAksesPublik();
+    }
+  }, [adalahManajer, muatAksesPublik]);
+
+  async function ubahAksesPublik(target: "terbuka" | "tertutup") {
+    setAksesMenyimpan(true);
+    try {
+      const token = await ambilToken();
+      const res = await fetch("/api/jurnal/pengaturan/akses", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ akses: target })
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setGalat(data?.error || "Gagal mengubah akses publik.");
+      } else {
+        setAksesPublik(target);
+        setPesan(
+          target === "terbuka"
+            ? "Akses publik jurnal DIBUKA. Perubahan berlaku dalam waktu kurang dari satu menit."
+            : "Akses publik jurnal DITUTUP. Perubahan berlaku dalam waktu kurang dari satu menit."
+        );
+      }
+    } catch {
+      setGalat("Tidak dapat menghubungi server.");
+    } finally {
+      setAksesMenyimpan(false);
+      setKonfirmasiAkses(null);
+    }
+  }
+
+
   async function handleLogin(e: FormEvent) {
     e.preventDefault();
     setMasukLoading(true);
@@ -273,6 +340,71 @@ export default function PanelRedaksiJurnalPage() {
           <p className="mt-4 rounded-xl border border-red-300 bg-red-50 text-red-700 text-sm px-4 py-3">
             {galat}
           </p>
+        )}
+
+        {adalahManajer && aksesPublik && (
+          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="font-serif font-bold text-base text-slate-800">
+                  Akses Publik Jurnal
+                </h2>
+                <p className="text-sm text-slate-600 mt-1">
+                  Keadaan sekarang:{" "}
+                  <strong>
+                    {aksesPublik === "terbuka"
+                      ? "TERBUKA untuk publik"
+                      : "TERTUTUP (hanya tim penguji)"}
+                  </strong>
+                  . Perubahan berlaku dalam waktu kurang dari satu menit
+                  tanpa deploy ulang.
+                </p>
+              </div>
+              {konfirmasiAkses === null && (
+                <button
+                  onClick={() =>
+                    setKonfirmasiAkses(
+                      aksesPublik === "terbuka" ? "tertutup" : "terbuka"
+                    )
+                  }
+                  className="text-xs font-bold bg-white border border-slate-300 hover:border-mahad-gold rounded-full px-4 py-2 transition"
+                >
+                  {aksesPublik === "terbuka"
+                    ? "Tutup Akses Publik"
+                    : "Buka Akses Publik"}
+                </button>
+              )}
+            </div>
+            {konfirmasiAkses !== null && (
+              <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+                <p className="text-sm text-amber-900">
+                  {konfirmasiAkses === "terbuka"
+                    ? "Buka jurnal untuk publik? Semua halaman jurnal, termasuk formulir pendaftaran dan pengiriman naskah, akan dapat diakses siapa pun."
+                    : "Tutup akses publik jurnal? Halaman jurnal akan kembali hanya dapat dibuka oleh tim penguji."}
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => ubahAksesPublik(konfirmasiAkses)}
+                    disabled={aksesMenyimpan}
+                    className="text-xs font-bold bg-amber-600 text-white rounded-full px-4 py-2 disabled:opacity-50"
+                  >
+                    {aksesMenyimpan
+                      ? "Menyimpan..."
+                      : konfirmasiAkses === "terbuka"
+                        ? "Ya, Buka untuk Publik"
+                        : "Ya, Tutup Akses"}
+                  </button>
+                  <button
+                    onClick={() => setKonfirmasiAkses(null)}
+                    disabled={aksesMenyimpan}
+                    className="text-xs font-bold bg-white border border-slate-300 rounded-full px-4 py-2 disabled:opacity-50"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {memuat ? (
