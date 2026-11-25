@@ -20,6 +20,7 @@
 // Setiap peristiwa dicatat ke linimasa naskah lewat fasad store.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { cache } from "react";
 import {
   catatPeristiwaNaskah,
   getJurnalDataMode,
@@ -786,10 +787,16 @@ export async function terbitkanTerbitan(
 // terbitannya published. Artikel pada terbitan draf, artikel yang belum
 // diterbitkan, dan kode yang tidak dikenal semuanya tidak ditemukan.
 
-async function kumpulkanPublik(): Promise<{
+// Dibungkus cache() React: dalam satu permintaan, layout dan halaman
+// sama-sama meminta permukaan publik (dan generateMetadata + komponen
+// halaman artikel juga), jadi tanpa dedupe kumpulan ini diambil penuh
+// dua kali untuk satu tampilan. cache() hanya menggabungkan panggilan
+// di dalam permintaan yang sama; permintaan berikutnya tetap mengambil
+// data segar dari backend.
+const kumpulkanPublik = cache(async (): Promise<{
   terbitan: JurnalTerbitanPublik[];
   artikel: JurnalArtikelPublik[];
-}> {
+}> => {
   const b = await backend();
   const [terbitanSemua, artikelInternal] = await Promise.all([
     b.daftarTerbitan(),
@@ -850,7 +857,7 @@ async function kumpulkanPublik(): Promise<{
     }))
     .sort((x, z) => (x.tanggalTerbit ?? "") < (z.tanggalTerbit ?? "") ? 1 : -1);
   return { terbitan, artikel };
-}
+});
 
 export async function daftarTerbitanPublik(): Promise<JurnalTerbitanPublik[]> {
   return (await kumpulkanPublik()).terbitan;
