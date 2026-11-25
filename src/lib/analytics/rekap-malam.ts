@@ -138,6 +138,11 @@ export async function jalankanRekapMalam(): Promise<HasilRekapMalam> {
   const { error: tulisError } = await supabaseAdmin.from("site_content").upsert(
     {
       key: "daily_read_counts",
+      // group_name dan label WAJIB ikut: keduanya NOT NULL tanpa nilai
+      // bawaan di site_content (pola tulis yang sama di sync-service.ts).
+      // Tanpa keduanya, sisipan kunci baru ditolak basis data.
+      group_name: "analytics",
+      label: "Rekap Bacaan Harian",
       value: {
         date: tanggal,
         tanggalLabel,
