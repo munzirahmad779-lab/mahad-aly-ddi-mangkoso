@@ -185,11 +185,11 @@ export default function PenulisDashboardPage() {
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
+                <label htmlFor="pn-nama" className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-emerald-700" />
                   <span>Nama Lengkap Penulis</span>
                 </label>
-                <input
+                <input id="pn-nama"
                   type="text"
                   required
                   value={authorName}
@@ -200,11 +200,11 @@ export default function PenulisDashboardPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
+                <label htmlFor="pn-kode-akses" className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
                   <Key className="w-3.5 h-3.5 text-emerald-700" />
                   <span>Kode Tracking / Kode Akses</span>
                 </label>
-                <input
+                <input id="pn-kode-akses"
                   type="text"
                   required
                   value={accessCode}
@@ -301,7 +301,7 @@ export default function PenulisDashboardPage() {
                           </span>
                           {getStatusBadge(sub.status)}
                         </div>
-                        <span className="text-[11px] text-slate-400">Diajukan: {sub.tanggal}</span>
+                        <span className="text-[11px] text-slate-500">Diajukan: {sub.tanggal}</span>
                       </div>
 
                       <div>
@@ -421,19 +421,19 @@ export default function PenulisDashboardPage() {
                 <h3 className="font-serif font-bold text-lg text-slate-800">Profil &amp; Afiliasi Penulis</h3>
                 <div className="space-y-2 text-xs">
                   <div>
-                    <span className="text-slate-400 block font-bold uppercase text-[10px]">Nama Lengkap</span>
+                    <span className="text-slate-500 block font-bold uppercase text-[10px]">Nama Lengkap</span>
                     <p className="font-bold text-slate-800 text-sm">{authorName}</p>
                   </div>
                   <div>
-                    <span className="text-slate-400 block font-bold uppercase text-[10px]">Status Penulis</span>
+                    <span className="text-slate-500 block font-bold uppercase text-[10px]">Status Penulis</span>
                     <p className="text-emerald-700 font-semibold">Kontributor Terdaftar</p>
                   </div>
                   <div>
-                    <span className="text-slate-400 block font-bold uppercase text-[10px]">Total Naskah Diajukan</span>
+                    <span className="text-slate-500 block font-bold uppercase text-[10px]">Total Naskah Diajukan</span>
                     <p className="text-slate-700">{authorSubmissions.length} Naskah</p>
                   </div>
                   <div>
-                    <span className="text-slate-400 block font-bold uppercase text-[10px]">Total Karya Diterbitkan</span>
+                    <span className="text-slate-500 block font-bold uppercase text-[10px]">Total Karya Diterbitkan</span>
                     <p className="text-slate-700">{authorArticles.length} Artikel</p>
                   </div>
                 </div>

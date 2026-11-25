@@ -172,7 +172,7 @@ function TrackingContent() {
           <div className="p-6 sm:p-8 bg-slate-50/70 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">KODE TRACKING:</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">KODE TRACKING:</span>
                 <span className="px-3 py-1 bg-emerald-100 text-emerald-900 font-mono font-bold text-sm rounded-lg border border-emerald-200">
                   {result.trackingCode}
                 </span>
@@ -221,7 +221,7 @@ function TrackingContent() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               {/* Step 1: Submitted */}
               <div className={`p-4 rounded-xl border transition ${
-                currentStep >= 1 ? "bg-emerald-50 border-emerald-300 text-emerald-950" : "bg-slate-50 border-slate-200 text-slate-400"
+                currentStep >= 1 ? "bg-emerald-50 border-emerald-300 text-emerald-950" : "bg-slate-50 border-slate-200 text-slate-500"
               }`}>
                 <div className={`w-8 h-8 rounded-full mx-auto flex items-center justify-center font-bold text-xs mb-2 ${
                   currentStep >= 1 ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-500"
@@ -234,7 +234,7 @@ function TrackingContent() {
 
               {/* Step 2: Under Review */}
               <div className={`p-4 rounded-xl border transition ${
-                currentStep >= 2 ? "bg-emerald-50 border-emerald-300 text-emerald-950" : "bg-slate-50 border-slate-200 text-slate-400"
+                currentStep >= 2 ? "bg-emerald-50 border-emerald-300 text-emerald-950" : "bg-slate-50 border-slate-200 text-slate-500"
               }`}>
                 <div className={`w-8 h-8 rounded-full mx-auto flex items-center justify-center font-bold text-xs mb-2 ${
                   currentStep >= 2 ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-500"
@@ -253,7 +253,7 @@ function TrackingContent() {
                   ? "bg-rose-50 border-rose-300 text-rose-950"
                   : currentStep >= 3
                   ? "bg-emerald-50 border-emerald-300 text-emerald-950"
-                  : "bg-slate-50 border-slate-200 text-slate-400"
+                  : "bg-slate-50 border-slate-200 text-slate-500"
               }`}>
                 <div className={`w-8 h-8 rounded-full mx-auto flex items-center justify-center font-bold text-xs mb-2 ${
                   result.status === "revision"
@@ -274,7 +274,7 @@ function TrackingContent() {
 
               {/* Step 4: Published */}
               <div className={`p-4 rounded-xl border transition ${
-                result.status === "published" ? "bg-emerald-50 border-emerald-300 text-emerald-950" : "bg-slate-50 border-slate-200 text-slate-400"
+                result.status === "published" ? "bg-emerald-50 border-emerald-300 text-emerald-950" : "bg-slate-50 border-slate-200 text-slate-500"
               }`}>
                 <div className={`w-8 h-8 rounded-full mx-auto flex items-center justify-center font-bold text-xs mb-2 ${
                   result.status === "published" ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-500"
@@ -358,14 +358,14 @@ function TrackingContent() {
                       <div className="w-2 h-2 rounded-full bg-emerald-600 mt-1.5 shrink-0"></div>
                       <div className="flex-1">
                         <p className="font-semibold text-slate-900">{evt.note}</p>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-slate-500">
                           {new Date(evt.date).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}
                         </span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-slate-400 italic">Belum ada riwayat aktivitas tambahan.</p>
+                  <p className="text-xs text-slate-500 italic">Belum ada riwayat aktivitas tambahan.</p>
                 )}
               </div>
             </div>

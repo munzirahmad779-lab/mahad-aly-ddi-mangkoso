@@ -70,7 +70,7 @@ export default function BahtsulMasailPage() {
                 placeholder="Cari tema, pertanyaan hukum, atau kata kunci..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-white text-slate-800 rounded-xl shadow-lg border-0 text-sm focus:ring-2 focus:ring-mahad-gold placeholder:text-slate-400"
+                className="w-full pl-11 pr-4 py-3 bg-white text-slate-800 rounded-xl shadow-lg border-0 text-sm focus:ring-2 focus:ring-mahad-gold placeholder:text-slate-500"
               />
               <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
             </div>
@@ -145,7 +145,7 @@ export default function BahtsulMasailPage() {
                         <span className="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
                           {item.theme}
                         </span>
-                        <span className="text-slate-400 text-xs flex items-center gap-1">
+                        <span className="text-slate-500 text-xs flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           <span>{item.date}</span>
                         </span>

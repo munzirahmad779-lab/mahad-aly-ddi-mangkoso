@@ -176,7 +176,7 @@ export default function Masalah1NisabZakatMalPage() {
                 href={`/kategori/bahtsul-masail-jilid-ii/${next.slug}`}
                 className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition block sm:text-right sm:col-start-2"
               >
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 inline-flex items-center gap-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 inline-flex items-center gap-1">
                   Mas&apos;alah Berikutnya
                   <ArrowRight className="w-3.5 h-3.5" />
                 </span>

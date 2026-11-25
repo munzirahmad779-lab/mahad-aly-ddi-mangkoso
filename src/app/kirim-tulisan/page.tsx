@@ -676,10 +676,10 @@ export default function KirimTulisanPage() {
               {/* Data Diri Penulis */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <label htmlFor="kt-nama" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                     Nama Lengkap Penulis <span className="text-rose-500">*</span>
                   </label>
-                  <input
+                  <input id="kt-nama"
                     type="text"
                     required
                     value={formData.nama}
@@ -689,10 +689,10 @@ export default function KirimTulisanPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <label htmlFor="kt-email" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                     Alamat Email Aktif <span className="text-rose-500">*</span>
                   </label>
-                  <input
+                  <input id="kt-email"
                     type="email"
                     required
                     value={formData.email}
@@ -705,10 +705,10 @@ export default function KirimTulisanPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <label htmlFor="kt-hp" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                     No. Handphone / WhatsApp (Opsional)
                   </label>
-                  <input
+                  <input id="kt-hp"
                     type="text"
                     value={formData.hp}
                     onChange={(e) => setFormData({ ...formData, hp: e.target.value })}
@@ -717,10 +717,10 @@ export default function KirimTulisanPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <label htmlFor="kt-afiliasi" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                     Afiliasi / Institusi / Asal Pesantren
                   </label>
-                  <input
+                  <input id="kt-afiliasi"
                     type="text"
                     value={formData.afiliasi}
                     onChange={(e) => setFormData({ ...formData, afiliasi: e.target.value })}
@@ -733,10 +733,10 @@ export default function KirimTulisanPage() {
               {/* Klasifikasi Naskah */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <label htmlFor="kt-tipe-naskah" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                     Tipe Naskah <span className="text-rose-500">*</span>
                   </label>
-                  <select
+                  <select id="kt-tipe-naskah"
                     value={formData.tipeNaskah}
                     onChange={(e) => handleTipeChange(e.target.value)}
                     className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-700 focus:outline-none"
@@ -760,11 +760,11 @@ export default function KirimTulisanPage() {
                   </p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <label htmlFor="kt-kategori" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                     {isSkripsiType ? "Kategori Kajian Fikih" : LABEL_KATEGORI[kolomAktif]}{" "}
                     <span className="text-rose-500">*</span>
                   </label>
-                  <select
+                  <select id="kt-kategori"
                     value={formData.kategori}
                     onChange={(e) =>
                       setFormData({
@@ -806,10 +806,10 @@ export default function KirimTulisanPage() {
               {/* Usulan Kategori Baru (pilihan Lain-lain) */}
               {isLainLainKategori && (
                 <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-2 animate-fadeIn">
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <label htmlFor="kt-kategori-usulan" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                     Usulkan kategori baru <span className="text-rose-500">*</span>
                   </label>
-                  <input
+                  <input id="kt-kategori-usulan"
                     type="text"
                     required
                     value={formData.kategoriUsulan}
@@ -835,10 +835,10 @@ export default function KirimTulisanPage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                      <label htmlFor="kt-nim" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                         NIM (Nomor Induk Mahasantri) <span className="text-rose-500">*</span>
                       </label>
-                      <input
+                      <input id="kt-nim"
                         type="text"
                         required={isSkripsiType}
                         value={formData.nim}
@@ -848,10 +848,10 @@ export default function KirimTulisanPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                      <label htmlFor="kt-angkatan" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                         Angkatan Mahasantri
                       </label>
-                      <input
+                      <input id="kt-angkatan"
                         type="text"
                         value={formData.angkatan}
                         onChange={(e) => setFormData({ ...formData, angkatan: e.target.value })}
@@ -860,10 +860,10 @@ export default function KirimTulisanPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                      <label htmlFor="kt-tahun-lulus" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                         Tahun Kelulusan Munaqasyah
                       </label>
-                      <input
+                      <input id="kt-tahun-lulus"
                         type="text"
                         value={formData.year}
                         onChange={(e) => setFormData({ ...formData, year: e.target.value })}
@@ -874,10 +874,10 @@ export default function KirimTulisanPage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                      <label htmlFor="kt-pembimbing-1" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                         Dosen Pembimbing I
                       </label>
-                      <input
+                      <input id="kt-pembimbing-1"
                         type="text"
                         value={formData.advisor1}
                         onChange={(e) => setFormData({ ...formData, advisor1: e.target.value })}
@@ -886,10 +886,10 @@ export default function KirimTulisanPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                      <label htmlFor="kt-pembimbing-2" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                         Dosen Pembimbing II
                       </label>
-                      <input
+                      <input id="kt-pembimbing-2"
                         type="text"
                         value={formData.advisor2}
                         onChange={(e) => setFormData({ ...formData, advisor2: e.target.value })}
@@ -899,10 +899,10 @@ export default function KirimTulisanPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    <label htmlFor="kt-drive-url" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                       Link Google Drive Naskah Lengkap PDF (Opsional)
                     </label>
-                    <input
+                    <input id="kt-drive-url"
                       type="url"
                       value={formData.driveUrl}
                       onChange={(e) => setFormData({ ...formData, driveUrl: e.target.value })}
@@ -919,14 +919,14 @@ export default function KirimTulisanPage() {
               {/* Judul Naskah */}
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-bold text-slate-700 uppercase">
+                  <label htmlFor="kt-judul" className="block text-xs font-bold text-slate-700 uppercase">
                     Judul Naskah Riset / Artikel <span className="text-rose-500">*</span>
                   </label>
-                  <span className={`text-[11px] font-mono ${formData.judul.length > 200 ? "text-rose-600 font-bold" : "text-slate-400"}`}>
+                  <span className={`text-[11px] font-mono ${formData.judul.length > 200 ? "text-rose-600 font-bold" : "text-slate-500"}`}>
                     {formData.judul.length}/200
                   </span>
                 </div>
-                <input
+                <input id="kt-judul"
                   type="text"
                   required
                   maxLength={200}
@@ -940,7 +940,7 @@ export default function KirimTulisanPage() {
               {/* Abstrak */}
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-bold text-slate-700 uppercase">
+                  <label htmlFor="kt-abstrak" className="block text-xs font-bold text-slate-700 uppercase">
                     Abstrak Naskah (200–300 Kata) <span className="text-rose-500">*</span>
                   </label>
                   <span className={`text-[11px] font-mono ${
@@ -949,7 +949,7 @@ export default function KirimTulisanPage() {
                     {abstractCharCount} karakter • {abstractWordCount} kata (Min. 200)
                   </span>
                 </div>
-                <textarea
+                <textarea id="kt-abstrak"
                   required
                   rows={6}
                   value={formData.abstrak}
@@ -961,10 +961,10 @@ export default function KirimTulisanPage() {
 
               {/* Keyword */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                <label htmlFor="kt-keyword" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                   Kata Kunci / Keyword (3–5 kata, dipisah koma) <span className="text-rose-500">*</span>
                 </label>
-                <input
+                <input id="kt-keyword"
                   type="text"
                   required
                   value={formData.keyword}
@@ -976,11 +976,11 @@ export default function KirimTulisanPage() {
 
               {/* Berkas Naskah (.doc / .docx, Maks 10 MB) */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                <label htmlFor="kt-berkas" className="block text-xs font-bold text-slate-700 uppercase mb-1">
                   Lampirkan Berkas Naskah (Word .doc / .docx saja) <span className="text-rose-500">*</span>
                 </label>
 
-                <input
+                <input id="kt-berkas"
                   ref={fileInputRef}
                   type="file"
                   accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -1039,7 +1039,7 @@ export default function KirimTulisanPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedFile(null)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
                       title="Hapus berkas"
                     >
                       <X className="w-4 h-4" />
@@ -1057,8 +1057,8 @@ export default function KirimTulisanPage() {
 
               {/* Checkbox Integritas & Originalitas */}
               <div className="pt-2 border-t border-slate-200">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
+                <label htmlFor="kt-originalitas" className="flex items-start gap-3 cursor-pointer">
+                  <input id="kt-originalitas"
                     type="checkbox"
                     checked={formData.originalitas}
                     onChange={(e) => setFormData({ ...formData, originalitas: e.target.checked })}

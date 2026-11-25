@@ -228,7 +228,7 @@ export default function DemaPage() {
                         {leader.role}
                       </span>
                       {leader.nim && (
-                        <span className={`text-[10px] font-mono shrink-0 ${isGreenCard ? "text-emerald-300" : "text-slate-400"}`}>
+                        <span className={`text-[10px] font-mono shrink-0 ${isGreenCard ? "text-emerald-300" : "text-slate-500"}`}>
                           #{angkaLatin(leader.nim)}
                         </span>
                       )}
@@ -315,7 +315,7 @@ export default function DemaPage() {
               <button
                 type="button"
                 onClick={() => setSearchMemberQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 text-xs"
               >
                 ✕
               </button>
@@ -480,7 +480,7 @@ export default function DemaPage() {
                           {isBph ? "👑 Presidium" : memberDiv?.name || "Divisi DeMa"}
                         </span>
                         {member.nim && (
-                          <span className={`text-[10px] font-mono shrink-0 ${isGreenCard ? "text-emerald-300" : "text-slate-400"}`}>
+                          <span className={`text-[10px] font-mono shrink-0 ${isGreenCard ? "text-emerald-300" : "text-slate-500"}`}>
                             #{angkaLatin(member.nim)}
                           </span>
                         )}
@@ -591,13 +591,13 @@ export default function DemaPage() {
               {/* Meta Grid */}
               <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Divisi Naungan</span>
+                  <span className="text-slate-500 block text-[10px] uppercase font-bold">Divisi Naungan</span>
                   <span className="font-semibold text-slate-800">
                     {divisions.find((d) => d.id === selectedMemberModal.divisionId)?.name || "Presidium BPH"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">NIM / Stambuk</span>
+                  <span className="text-slate-500 block text-[10px] uppercase font-bold">NIM / Stambuk</span>
                   <span className="font-mono font-semibold text-slate-800">
                     {angkaLatin(selectedMemberModal.nim) || "Resmi Terdaftar"}
                   </span>

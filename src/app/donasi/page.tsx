@@ -166,7 +166,7 @@ export default function DonasiPage() {
 
                     {/* Bank Accounts Section */}
                     <div className="space-y-2 pt-1">
-                      <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400 block">
+                      <span className="text-[11px] uppercase tracking-wider font-bold text-slate-500 block">
                         Rekening Donasi Resmi:
                       </span>
                       <div className="space-y-2">
