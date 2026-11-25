@@ -5,6 +5,7 @@ import { useArticles } from "@/context/ArticleContext";
 import { hitungWaktuBaca } from "@/lib/content-mappers";
 import { PanelSaran } from "@/components/common/PanelSaran";
 import ViewCount from "@/components/common/ViewCount";
+import IsiTulisan from "@/components/common/IsiTulisan";
 import type { NewsItem } from "@/lib/types";
 
 // Registri penulis Open Tulisan Hari Guru.
@@ -48,41 +49,6 @@ function inisialNama(nama: string): string {
     .slice(0, 2)
     .map((kata) => kata[0]?.toUpperCase() || "")
     .join("");
-}
-
-// Render badan tulisan dengan aturan yang sama seperti detail berita:
-// blok dipisah baris kosong menjadi paragraf, "## " menjadi h2, dan
-// "### " menjadi h3.
-function IsiTulisan({ konten }: { konten: string }) {
-  return (
-    <>
-      {(konten || "").split(/\n\s*\n/).map((block: string, i: number) => {
-        const t = block.trim();
-        if (!t) return null;
-        if (t.startsWith("## ")) {
-          return (
-            <h2
-              key={i}
-              className="font-serif font-bold text-xl sm:text-2xl text-mahad-green-dark pt-2"
-            >
-              {t.slice(3)}
-            </h2>
-          );
-        }
-        if (t.startsWith("### ")) {
-          return (
-            <h3
-              key={i}
-              className="font-serif font-bold text-lg sm:text-xl text-mahad-green-dark pt-1"
-            >
-              {t.slice(4)}
-            </h3>
-          );
-        }
-        return <p key={i}>{t}</p>;
-      })}
-    </>
-  );
 }
 
 export default function HariGuruPage() {
@@ -132,32 +98,33 @@ export default function HariGuruPage() {
   return (
     <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Kepala laman */}
-        <div className="text-center">
+      </div>
+
+      {/* Kop laman: pita hijau tua berpola seperti kepala laman
+          artikel dan berita (perintah user 26 Nov 2026: kopnya tidak
+          ada dan layoutnya tidak bagus). */}
+      <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="inline-block bg-mahad-gold text-mahad-green-dark text-xs font-bold px-3.5 py-1 rounded-full tracking-widest">
             KHUSUS • HARI GURU
           </span>
-          <h1 className="font-serif font-bold text-3xl sm:text-5xl text-mahad-green-dark mt-4">
+          <h1 className="font-serif font-bold text-3xl sm:text-5xl text-white mt-4">
             Open Tulisan Hari Guru
           </h1>
-          <p className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto mt-3">
+          <p className="text-emerald-100/90 text-sm sm:text-base max-w-2xl mx-auto mt-3">
             Kumpulan tulisan refleksi mahasantri dalam memperingati Hari Guru.
             Pilih nama penulis untuk membaca karyanya.
           </p>
-          {/* Jumlah dilihat TOTAL laman ini (perintah user 26 Nov 2026:
-              tampilkan juga jumlah dilihatnya di laman tulisan Hari
-              Guru, langsung total yang membuka laman ini, tanpa
-              perincian per tulisan). Lencana ViewCount membaca jalur
-              laman ini sendiri dari peta kunjungan gabungan dan
-              menyegar tiap 60 detik; bungkus hijau tua karena lencana
-              itu dirancang untuk permukaan gelap. */}
+          {/* Jumlah dilihat TOTAL laman ini (perintah user 26 Nov
+              2026: langsung total yang membuka laman ini, tanpa
+              perincian per tulisan). */}
           <div className="mt-5 flex justify-center">
-            <span className="inline-flex bg-mahad-green-dark rounded-full px-2 py-1 shadow">
-              <ViewCount />
-            </span>
+            <ViewCount />
           </div>
         </div>
+      </section>
 
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
         {!isCatalogReady ? (
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm text-center py-16 px-6 mt-10">
             <div className="w-10 h-10 mx-auto rounded-full border-4 border-slate-200 border-t-mahad-gold animate-spin" />
@@ -223,11 +190,11 @@ export default function HariGuruPage() {
                 bertumpuk di HP */}
             <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] mt-8">
               {terpilih && (
-                <article className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 sm:p-12">
+                <article className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-10 lg:p-12">
                   <h2 className="font-serif font-bold text-2xl sm:text-3xl text-mahad-green-dark text-center leading-snug">
                     {terpilih.item.title}
                   </h2>
-                  <div className="flex items-center justify-center gap-3 mt-6">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6 text-center sm:text-left">
                     <div className="w-11 h-11 shrink-0 rounded-full bg-mahad-green-dark text-mahad-gold flex items-center justify-center font-serif font-bold">
                       {inisialNama(terpilih.nama)}
                     </div>
@@ -250,8 +217,8 @@ export default function HariGuruPage() {
                     </div>
                   </div>
                   <div className="w-24 h-0.5 bg-mahad-gold rounded mx-auto my-8" />
-                  <div className="space-y-6 text-slate-800 leading-relaxed text-base sm:text-lg">
-                    <IsiTulisan konten={terpilih.item.content} />
+                  <div className="badan-tulisan space-y-6 text-slate-800 text-[1.0625rem] leading-[1.85] sm:text-lg sm:leading-[1.85] [overflow-wrap:anywhere]">
+                    <IsiTulisan content={terpilih.item.content} />
                   </div>
                 </article>
               )}

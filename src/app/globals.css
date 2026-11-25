@@ -185,3 +185,17 @@
     animation: none;
   }
 }
+/* Keamanan tampilan badan tulisan (audit layout 26 Nov 2026):
+   gambar dan tabel yang tertanam di dalam isi tidak boleh mendorong
+   halaman melebar di layar HP. */
+.badan-tulisan img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+}
+
+.badan-tulisan table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}

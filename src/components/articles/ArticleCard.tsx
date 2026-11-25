@@ -84,19 +84,19 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             </Link>
             {article.type === "opini" || article.kolom === "esai" ? (
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
-                ✍️ Opini &amp; Refleksi
+                Opini &amp; Refleksi
               </span>
             ) : article.kolom === "kitab" ? (
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                📖 Kitab &amp; Pengajian
+                Kitab &amp; Pengajian
               </span>
             ) : article.kolom === "tematik" ? (
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                📚 Kajian Tematik
+                Kajian Tematik
               </span>
             ) : (
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                📚 Kajian Fiqh
+                Kajian Fiqh
               </span>
             )}
           </div>

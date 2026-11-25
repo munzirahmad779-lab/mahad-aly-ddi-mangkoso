@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, use, useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
@@ -10,165 +10,10 @@ import ArticleCard from "@/components/articles/ArticleCard";
 import ReadingBeam from "@/components/common/ReadingBeam";
 import ViewCount from "@/components/common/ViewCount";
 import GambarAman from "@/components/common/GambarAman";
+import IsiTulisan from "@/components/common/IsiTulisan";
 
 interface ArticleDetailPageProps {
   params: Promise<{ slug: string }>;
-}
-
-/* ── Render terstruktur isi artikel ──────────────────────────────────
-   Isi artikel di database adalah teks polos. Di sini ia dipecah per
-   baris: baris subbab dirender sebagai heading, baris yang mayoritas
-   aksara Arab dirender sebagai paragraf Arab (RTL), sisanya paragraf
-   biasa dengan rentang Arab di dalamnya dibungkus span.teks-arab.
-   Teks artikelnya sendiri TIDAK diubah. */
-
-const ARABIC_CHAR_RE =
-  /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
-const ARABIC_RUN_RE =
-  /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+(?:[ \t.,;:!?'"()\-\u2013\u2014\u060C\u061B\u061F]+[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)*/g;
-
-function arabicRatio(text: string): number {
-  let arab = 0;
-  let total = 0;
-  for (const ch of text) {
-    if (/\s/.test(ch)) continue;
-    total++;
-    if (ARABIC_CHAR_RE.test(ch)) arab++;
-  }
-  return total === 0 ? 0 : arab / total;
-}
-
-const KATA_BAB = [
-  "pendahuluan",
-  "latar belakang",
-  "pembahasan",
-  "kesimpulan",
-  "penutup",
-  "abstrak",
-  "metode",
-  "rumusan masalah",
-  "daftar pustaka",
-  "sumber referensi",
-  "kata pengantar",
-  "saran",
-];
-
-// Entitas HTML pada naskah sumber (&apos;, &quot;, dsb.) dinetralkan
-// HANYA untuk keperluan uji pola; teks yang dirender tetap aslinya.
-function bersihUntukUji(line: string): string {
-  return line
-    .replace(/&[a-zA-Z]+;/g, "'")
-    .replace(/&#\d+;/g, "'")
-    .trim();
-}
-
-// Aturan heading yang konservatif, dari pola nyata naskah mahasiswa.
-function isHeading(rawLine: string): boolean {
-  const line = bersihUntukUji(rawLine);
-  if (!line) return false;
-  // Baris Arab tidak pernah jadi heading.
-  if (arabicRatio(line) > 0.5) return false;
-
-  // "BAB I" / "Bab 2"
-  if (/^(BAB|Bab)\s+([IVXLC]{1,6}|\d{1,3})\b/.test(line)) return true;
-
-  // Pola "A. Judul": maks 80 karakter; satu titik di akhir ditoleransi
-  // (mahasiswa kerap mengakhiri judul subbab dengan titik,
-  // mis. "C. Hanya Berharap kepada Allah SWT.")
-  if (/^[A-Z]\.\s+\S/.test(line) && line.length <= 80 && !/[,;]$/.test(line))
-    return true;
-
-  // Pola "1. Judul": maks 80 karakter, tidak diakhiri . , ;
-  if (
-    /^\d{1,2}\.\s+\S/.test(line) &&
-    line.length <= 80 &&
-    !/[.,;]$/.test(line)
-  )
-    return true;
-
-  // Kata pembuka bab persis sebagai baris tersendiri
-  const lower = line
-    .toLowerCase()
-    .replace(/[:.]$/, "")
-    .trim();
-  if (KATA_BAB.includes(lower)) return true;
-
-  // Kata pembuka bab diikuti subjudul singkat
-  for (const k of KATA_BAB) {
-    if (lower.startsWith(k)) {
-      const rest = lower.slice(k.length);
-      if (
-        (rest.startsWith(":") || rest.startsWith(" ")) &&
-        line.length <= 60 &&
-        !/[.,;]$/.test(line)
-      )
-        return true;
-    }
-  }
-
-  // Seluruhnya HURUF KAPITAL: minimal 2 kata, atau kata kunci bab
-  const huruf = line.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, "");
-  if (
-    huruf.length >= 3 &&
-    /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(line) &&
-    line === line.toUpperCase()
-  ) {
-    const kata = line.split(/\s+/).filter(Boolean);
-    if (kata.length >= 2 || KATA_BAB.includes(lower)) return true;
-  }
-
-  return false;
-}
-
-// Bungkus rentang aksara Arab di dalam teks Latin dengan span.teks-arab.
-function renderCampuran(text: string, kunci: string) {
-  const potongan = text.split(new RegExp(`(${ARABIC_RUN_RE.source})`, "g"));
-  return potongan.map((bagian, i) =>
-    bagian && ARABIC_CHAR_RE.test(bagian) ? (
-      <span key={`${kunci}-${i}`} className="teks-arab">
-        {bagian}
-      </span>
-    ) : (
-      <Fragment key={`${kunci}-${i}`}>{bagian}</Fragment>
-    )
-  );
-}
-
-function IsiArtikel({ content }: { content: string }) {
-  const elemen: React.ReactNode[] = [];
-  (content || "").split(/\n\s*\n/).forEach((blok) => {
-    blok.split(/\r?\n/).forEach((mentah) => {
-      const baris = mentah.trim();
-      if (!baris) return;
-      const kunci = `isi-${elemen.length}`;
-      if (isHeading(baris)) {
-        elemen.push(
-          <h2
-            key={kunci}
-            className={`font-serif font-bold text-emerald-900 text-xl sm:text-2xl leading-snug border-l-4 border-amber-500 pl-3 sm:pl-4 ${
-              elemen.length > 0 ? "mt-12" : ""
-            }`}
-          >
-            {renderCampuran(baris, kunci)}
-          </h2>
-        );
-      } else if (arabicRatio(bersihUntukUji(baris)) > 0.7) {
-        elemen.push(
-          <p
-            key={kunci}
-            dir="rtl"
-            className="teks-arab blok-arab text-right"
-            style={{ marginTop: "2rem", marginBottom: "2rem" }}
-          >
-            {baris}
-          </p>
-        );
-      } else {
-        elemen.push(<p key={kunci}>{renderCampuran(baris, kunci)}</p>);
-      }
-    });
-  });
-  return <>{elemen}</>;
 }
 
 export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
@@ -244,7 +89,7 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
     return (
       <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
         <div className="max-w-2xl mx-auto px-4 text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
-          <div className="text-5xl mb-4">📖</div>
+          <div className="w-10 h-10 mx-auto rounded-full border-4 border-slate-200 border-t-mahad-gold animate-spin mb-4" />
           <h1 className="font-serif font-bold text-2xl text-slate-800">
             Memuat Artikel
           </h1>
@@ -313,7 +158,7 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
       
       {/* Header Artikel */}
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[52rem] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-4">
             <Link
               href={article.type === "opini" ? "/opini" : diSeriKajian ? "/kategori/kajian-fathul-qorib" : "/artikel"}
@@ -336,17 +181,17 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
             {article.title}
           </h1>
 
-          <div className="mt-6 pt-6 border-t border-emerald-800/80 flex flex-wrap items-center justify-between gap-4 text-xs text-emerald-200">
+          <div className="mt-6 pt-6 border-t border-emerald-800/80 flex flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between text-xs text-emerald-200">
             <div>
               <p className="font-bold text-white text-sm">{article.author}</p>
               <p className="text-emerald-300">{article.authorRole}</p>
             </div>
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               <p>{article.date} ({article.hijriDate})</p>
               <p className="text-mahad-gold font-semibold">
                 Waktu baca: &plusmn; {article.readTime}
               </p>
-              <div className="mt-1.5 flex justify-end">
+              <div className="mt-1.5 flex justify-start sm:justify-end">
                 <ViewCount />
               </div>
             </div>
@@ -355,7 +200,7 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
       </section>
 
       {/* Badan Tulisan & Sidebar */}
-      <div ref={bodyRef} className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+      <div ref={bodyRef} className="relative max-w-[52rem] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
         <ReadingBeam targetRef={bodyRef} />
 
         {/* Foto utama artikel dari thumbnail_url basis data, bila ada */}
@@ -370,7 +215,7 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
         )}
         
         {/* Konten Utama */}
-        <article className="bg-white rounded-2xl p-8 sm:p-12 border border-slate-200 shadow-sm space-y-6">
+        <article className="bg-white rounded-2xl p-5 sm:p-10 lg:p-12 border border-slate-200 shadow-sm space-y-6">
           
           {/* Kotak Pokok Pikiran */}
           <div className="bg-emerald-50 border-l-4 border-emerald-700 p-5 rounded-r-xl">
@@ -383,8 +228,8 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
           </div>
 
           {/* Isi Teks Lengkap */}
-          <div className="text-slate-800 leading-relaxed text-base sm:text-lg space-y-5 font-sans">
-            <IsiArtikel content={article.content || isiLokal} />
+          <div className="badan-tulisan text-slate-800 text-[1.0625rem] leading-[1.85] sm:text-lg sm:leading-[1.85] space-y-5 font-sans [overflow-wrap:anywhere]">
+            <IsiTulisan content={article.content || isiLokal} />
           </div>
 
           {/* Tags */}
