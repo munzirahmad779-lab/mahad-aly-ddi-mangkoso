@@ -1,0 +1,11 @@
+# Worker cron rekap bacaan malam: "0 16 * * *" dalam UTC sama dengan
+# pukul 00:00 WITA (tengah malam Asia/Makassar).
+name = "rekap-bacaan-malam"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[triggers]
+crons = ["0 16 * * *"]
+
+[vars]
+TARGET_URL = "https://mahadaly-ddimangkoso.ac.id/api/analytics/internal/rekap-malam"

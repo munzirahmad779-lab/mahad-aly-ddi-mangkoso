@@ -12,6 +12,7 @@ const StudyCategories = dynamic(() => import("@/components/home/StudyCategories"
 const LatestArticles = dynamic(() => import("@/components/home/LatestArticles"));
 const LatestTheses = dynamic(() => import("@/components/home/LatestTheses"));
 const LatestNews = dynamic(() => import("@/components/home/LatestNews"));
+const BacaanHariIni = dynamic(() => import("@/components/home/BacaanHariIni"));
 const KalamSection = dynamic(() => import("@/components/home/KalamSection"));
 const HomeDonationSection = dynamic(() =>
   import("@/components/home/HomeDynamicSections").then((m) => m.HomeDonationSection)
@@ -83,6 +84,8 @@ export default function HomePage() {
       case "news":
       case "warta_terbaru":
         return <LatestNews key={sec.id} />;
+      case "bacaan_hari_ini":
+        return <BacaanHariIni key={sec.id} />;
       default:
         // Any custom / banner / user added section
         return <HomeCustomSection key={sec.id} section={sec} />;

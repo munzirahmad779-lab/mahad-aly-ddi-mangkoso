@@ -102,16 +102,21 @@ export function muatPetaKunjungan(): Promise<Record<string, number>> {
   return petaKunjungan;
 }
 
-// Muat ulang peta tiap 60 detik selama halaman dibiarkan terbuka dan
-// tab sedang terlihat, lalu teruskan potret terbarunya ke penampil.
-// Cache TTL di muatPetaKunjungan memastikan banyak penampil di satu
-// halaman berbagi satu ambilan yang sama, bukan membanjiri server.
-// Nilai kembali adalah fungsi berhenti untuk cleanup useEffect.
+// Muat ulang peta tiap 60 detik selama halaman dibiarkan terbuka, lalu
+// teruskan potret terbarunya ke penampil. Cache TTL di
+// muatPetaKunjungan memastikan banyak penampil di satu halaman berbagi
+// satu ambilan yang sama, bukan membanjiri server. Nilai kembali
+// adalah fungsi berhenti untuk cleanup useEffect.
+//
+// Sengaja TANPA syarat visibilityState: uji peramban 26 Nov 2026
+// membuktikan tab yang dilaporkan "tidak terlihat" oleh peramban uji
+// membuat penyegaran terlewat dan angka di panel tertinggal dari
+// angka tersimpan, padahal penghitungnya sendiri aktif. Ambilan ini
+// kecil dan terbagi, jadi berjalan terus lebih aman daripada berhenti.
 export function segarkanPetaBerkala(
   teruskan: (pages: Record<string, number>) => void
 ): () => void {
   const id = setInterval(() => {
-    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
     muatPetaKunjungan()
       .then(teruskan)
       .catch(() => {});
