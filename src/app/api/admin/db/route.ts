@@ -26,7 +26,8 @@ const ALLOWED_TABLES = new Set([
   "collections",
   "site_settings",
   "site_content",
-  "users"
+  "users",
+  "subscriber"
 ]);
 
 const ALLOWED_OPS = new Set(["insert", "update", "delete", "upsert"]);
@@ -45,6 +46,16 @@ const USERS_WRITABLE_COLUMNS = new Set([
   "is_active",
   "invited_by",
   "updated_at"
+]);
+
+// Kolom yang boleh ditulis pada tabel subscriber (sesuai skema
+// public.subscriber; id dan created_at dibangkitkan server). Gerbang rute
+// ini (requireRole super_admin/editor) setara kebijakan RLS pengelola
+// subscriber, jadi tidak perlu gerbang kedua.
+const SUBSCRIBER_WRITABLE_COLUMNS = new Set([
+  "email",
+  "nama",
+  "source"
 ]);
 
 export async function POST(request: Request) {
@@ -93,6 +104,19 @@ export async function POST(request: Request) {
               { status: 403 }
             );
           }
+        }
+      }
+    }
+
+    // Tabel subscriber: saring kolom tulis (id/created_at tidak boleh
+    // dipalsukan dari klien).
+    if (table === "subscriber" && payload && typeof payload === "object") {
+      for (const col of Object.keys(payload)) {
+        if (!SUBSCRIBER_WRITABLE_COLUMNS.has(col)) {
+          return NextResponse.json(
+            { error: `Kolom "${col}" tidak boleh ditulis pada tabel subscriber.` },
+            { status: 403 }
+          );
         }
       }
     }
