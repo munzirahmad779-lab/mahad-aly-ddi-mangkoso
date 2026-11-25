@@ -118,7 +118,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
       <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between text-xs text-slate-500">
         <div>
           <p className="font-semibold text-slate-800">{article.author}</p>
-          <p className="text-[11px] text-slate-400">{article.date}</p>
+          <p className="text-[11px] text-slate-500">{article.date}</p>
           <CardViewCount slug={article.slug} />
         </div>
         <Link

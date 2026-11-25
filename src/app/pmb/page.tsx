@@ -408,7 +408,7 @@ export default function PmbPage() {
 
                   <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                     <div className="text-right">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Kuota Penerimaan:</span>
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Kuota Penerimaan:</span>
                       <span className="text-base font-bold text-emerald-950">{selectedWave.quota}</span>
                     </div>
                   </div>

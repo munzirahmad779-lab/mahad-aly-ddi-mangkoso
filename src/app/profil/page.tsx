@@ -381,7 +381,7 @@ export default function ProfilPage() {
                           <dl className="space-y-3 border-t border-slate-100 pt-4 text-[13px] leading-relaxed">
                             {educations.length > 0 && (
                               <div>
-                                <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                                <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
                                   Riwayat Pendidikan
                                 </dt>
                                 <dd className="mt-1.5 space-y-1 text-slate-700">
@@ -397,7 +397,7 @@ export default function ProfilPage() {
 
                             {publications.length > 0 && (
                               <div>
-                                <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                                <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
                                   Karya &amp; Publikasi
                                 </dt>
                                 <dd className="mt-1.5 space-y-1 text-slate-700">

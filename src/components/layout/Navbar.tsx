@@ -422,7 +422,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={toggleMenu}
-              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl text-emerald-100 hover:text-white hover:bg-white/10 transition focus:outline-none focus:ring-2 focus:ring-mahad-gold shrink-0"
+              className="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl text-emerald-100 hover:text-white hover:bg-white/10 transition focus:outline-none focus:ring-2 focus:ring-mahad-gold shrink-0"
               aria-label="Buka menu navigasi"
               aria-expanded={isOpen}
             >

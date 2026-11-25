@@ -146,7 +146,7 @@ export default function AkademikPage() {
                       {crs.mainBook ? (
                         <p><strong>Maraji&apos; Kitab:</strong> {crs.mainBook}</p>
                       ) : (
-                        <p className="italic text-slate-400">Maraji&apos; kitab belum diisi.</p>
+                        <p className="italic text-slate-500">Maraji&apos; kitab belum diisi.</p>
                       )}
                       {crs.supportBook && <p><strong>Kitab Pendukung:</strong> {crs.supportBook}</p>}
                     </div>

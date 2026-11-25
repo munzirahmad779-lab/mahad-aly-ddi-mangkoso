@@ -188,7 +188,7 @@ export default function Masalah3IttihadAlBaldahPage() {
                 href={`/kategori/bahtsul-masail-jilid-ii/${prev.slug}`}
                 className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition block"
               >
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 inline-flex items-center gap-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 inline-flex items-center gap-1">
                   <ArrowLeft className="w-3.5 h-3.5" />
                   Mas&apos;alah Sebelumnya
                 </span>
@@ -202,7 +202,7 @@ export default function Masalah3IttihadAlBaldahPage() {
                 href={`/kategori/bahtsul-masail-jilid-ii/${next.slug}`}
                 className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition block sm:text-right"
               >
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 inline-flex items-center gap-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 inline-flex items-center gap-1">
                   Mas&apos;alah Berikutnya
                   <ArrowRight className="w-3.5 h-3.5" />
                 </span>

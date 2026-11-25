@@ -100,24 +100,24 @@ export default function ThesisDetailPage({ params }: ThesisDetailPageProps) {
         <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs sm:text-sm">
           <div className="space-y-3">
             <div>
-              <span className="text-slate-400 block text-[11px] uppercase font-bold tracking-wider">Penulis / Mahasantri</span>
+              <span className="text-slate-500 block text-[11px] uppercase font-bold tracking-wider">Penulis / Mahasantri</span>
               <p className="font-bold text-slate-900 text-base">{thesis.author}</p>
               <p className="text-slate-500">NIM: {thesis.nim} &bull; {thesis.angkatan}</p>
             </div>
             <div>
-              <span className="text-slate-400 block text-[11px] uppercase font-bold tracking-wider">Jenjang &amp; Takhassus</span>
+              <span className="text-slate-500 block text-[11px] uppercase font-bold tracking-wider">Jenjang &amp; Takhassus</span>
               <p className="font-semibold text-slate-800">Marhalah Ula (M.1) &bull; Fiqh wa Usuluhu</p>
             </div>
           </div>
 
           <div className="space-y-3">
             <div>
-              <span className="text-slate-400 block text-[11px] uppercase font-bold tracking-wider">Dewan Pembimbing</span>
+              <span className="text-slate-500 block text-[11px] uppercase font-bold tracking-wider">Dewan Pembimbing</span>
               <p className="font-semibold text-slate-800">1. {thesis.advisor1}</p>
               <p className="font-semibold text-slate-800">2. {thesis.advisor2}</p>
             </div>
             <div>
-              <span className="text-slate-400 block text-[11px] uppercase font-bold tracking-wider">Berkas Naskah PDF</span>
+              <span className="text-slate-500 block text-[11px] uppercase font-bold tracking-wider">Berkas Naskah PDF</span>
               {thesis.downloadUrl ? (
                 <p className="text-slate-700">
                   Tersedia Full Text

@@ -65,13 +65,13 @@ export default function BeritaPage() {
                         </span>
                       )}
                     </div>
-                    <span className="text-slate-400">{item.date}</span>
+                    <span className="text-slate-500">{item.date}</span>
                   </div>
                 )}
 
                 <div className="p-6 pt-4">
                   {item.imageUrl && (
-                    <div className="flex items-center justify-between text-xs mb-2 text-slate-400">
+                    <div className="flex items-center justify-between text-xs mb-2 text-slate-500">
                       <span>{item.date}</span>
                     </div>
                   )}

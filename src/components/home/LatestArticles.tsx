@@ -104,7 +104,7 @@ export default function LatestArticles() {
             <div className="flex items-center gap-2 mb-4">
               <span className="text-lg">📈</span>
               <h3 className="font-serif font-bold text-lg text-emerald-950">Paling Dibaca</h3>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 berdasarkan pembaca riil
               </span>
             </div>
@@ -124,7 +124,7 @@ export default function LatestArticles() {
                       <span className="block text-xs font-bold text-slate-800 group-hover:text-emerald-900 leading-snug line-clamp-2">
                         {art.title}
                       </span>
-                      <span className="block text-[10px] text-slate-400 mt-1">
+                      <span className="block text-[10px] text-slate-500 mt-1">
                         {art.author} · {art.views} pembaca
                       </span>
                     </span>

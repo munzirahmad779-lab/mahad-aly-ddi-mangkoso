@@ -244,11 +244,11 @@ export default function FullPaperSubmissionPage() {
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
+                <label htmlFor="fp-nama" className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-emerald-700" />
                   <span>Nama Lengkap Penulis</span>
                 </label>
-                <input
+                <input id="fp-nama"
                   type="text"
                   required
                   value={authorName}
@@ -259,11 +259,11 @@ export default function FullPaperSubmissionPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
+                <label htmlFor="fp-kode-akses" className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
                   <Key className="w-3.5 h-3.5 text-emerald-700" />
                   <span>Kode Akses Tahap 2 (MAD2-YYYY-XXXX)</span>
                 </label>
-                <input
+                <input id="fp-kode-akses"
                   type="text"
                   required
                   value={accessCode}
@@ -337,7 +337,7 @@ export default function FullPaperSubmissionPage() {
                   <span className="text-xs font-bold uppercase tracking-wider text-mahad-green-dark bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
                     {activeSubmission?.tipeNaskah || "Artikel Ilmiah"}
                   </span>
-                  <span className="text-xs text-slate-400">&bull;</span>
+                  <span className="text-xs text-slate-500">&bull;</span>
                   <span className="text-xs text-slate-600 font-medium">Kategori: {activeSubmission?.kategori}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -425,7 +425,7 @@ export default function FullPaperSubmissionPage() {
                   <p className="text-sm text-slate-600">
                     <strong>{activeSubmission?.nama}</strong>
                   </p>
-                  <p className="text-xs text-slate-400">{activeSubmission?.afiliasi}</p>
+                  <p className="text-xs text-slate-500">{activeSubmission?.afiliasi}</p>
                 </div>
 
                 {/* Abstrak Box */}
@@ -450,7 +450,7 @@ export default function FullPaperSubmissionPage() {
                         {sec.content.trim() ? (
                           sec.content
                         ) : (
-                          <span className="italic text-slate-400">Bagian ini belum diisi konten.</span>
+                          <span className="italic text-slate-500">Bagian ini belum diisi konten.</span>
                         )}
                       </div>
                     </section>
@@ -497,7 +497,7 @@ export default function FullPaperSubmissionPage() {
                           type="button"
                           onClick={() => moveSection(index, "up")}
                           disabled={index === 0}
-                          className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded disabled:opacity-30"
+                          className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded disabled:opacity-30"
                           title="Geser ke atas"
                         >
                           <MoveUp className="w-3.5 h-3.5" />
@@ -506,7 +506,7 @@ export default function FullPaperSubmissionPage() {
                           type="button"
                           onClick={() => moveSection(index, "down")}
                           disabled={index === sections.length - 1}
-                          className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded disabled:opacity-30"
+                          className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded disabled:opacity-30"
                           title="Geser ke bawah"
                         >
                           <MoveDown className="w-3.5 h-3.5" />
@@ -515,7 +515,7 @@ export default function FullPaperSubmissionPage() {
                           type="button"
                           onClick={() => removeSection(sec.id)}
                           disabled={sections.length <= 1}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded disabled:opacity-30 ml-1"
+                          className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded disabled:opacity-30 ml-1"
                           title="Hapus bagian ini"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -532,7 +532,7 @@ export default function FullPaperSubmissionPage() {
                         placeholder={`Tuliskan uraian ${sec.title} di sini...`}
                         className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 leading-relaxed focus:bg-white focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                       />
-                      <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1 px-1">
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1 px-1">
                         <span>{sec.content.length} karakter &bull; {sec.content.trim() ? sec.content.trim().split(/\s+/).length : 0} kata</span>
                         <span>Mendukung kutipan Arab langsung (RTL)</span>
                       </div>
@@ -547,7 +547,7 @@ export default function FullPaperSubmissionPage() {
                       <BookOpen className="w-4 h-4 text-emerald-700" />
                       <span>Catatan Kaki (Footnotes) &amp; Rujukan Tambahan</span>
                     </h3>
-                    <span className="text-[11px] text-slate-400">Opsional</span>
+                    <span className="text-[11px] text-slate-500">Opsional</span>
                   </div>
                   <textarea
                     rows={4}
@@ -565,7 +565,7 @@ export default function FullPaperSubmissionPage() {
                       <FileText className="w-4 h-4 text-emerald-700" />
                       <span>Tautan Berkas Word Final (Google Drive / Cloud Storage)</span>
                     </h3>
-                    <span className="text-[11px] text-slate-400">Opsional</span>
+                    <span className="text-[11px] text-slate-500">Opsional</span>
                   </div>
                   <input
                     type="url"

@@ -109,7 +109,7 @@ export default function LatestNews() {
                     <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">
                       {item.category}
                     </span>
-                    <span className="text-slate-400">{item.date}</span>
+                    <span className="text-slate-500">{item.date}</span>
                   </div>
                   <h3 className="font-serif font-bold text-xl text-slate-900 leading-snug mb-3 group-hover:text-emerald-800 transition">
                     <Link href={`/berita/${item.slug}`}>{item.title}</Link>

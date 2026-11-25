@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useId } from "react";
 import { 
   UploadCloud, 
   X, 
@@ -51,6 +51,9 @@ export default function ImageUploader({
     : "PNG, JPG, WebP, SVG";
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Id unik per instans agar label terhubung ke bidangnya; hanya satu dari
+  // dua input (URL / berkas) yang tampil pada satu waktu, jadi tidak ganda.
+  const fieldId = useId();
 
   const handleCopy = () => {
     if (!value) return;
@@ -171,7 +174,7 @@ export default function ImageUploader({
       {/* Header / Mode Switcher */}
       <div className="flex items-center justify-between">
         {label && (
-          <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
+          <label htmlFor={fieldId} className="text-xs font-semibold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
             <ImageIcon className="w-3.5 h-3.5 text-emerald-600" />
             {label}
           </label>
@@ -209,6 +212,7 @@ export default function ImageUploader({
         <div className="space-y-2">
           <div className="relative">
             <input
+              id={fieldId}
               type="url"
               value={value}
               onChange={(e) => onChange(e.target.value)}
@@ -231,6 +235,7 @@ export default function ImageUploader({
         /* Mode Upload File */
         <div className="space-y-2">
           <input
+            id={fieldId}
             ref={fileInputRef}
             type="file"
             accept={accept}
