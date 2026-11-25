@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useArticles } from "@/context/ArticleContext";
 import { hitungWaktuBaca } from "@/lib/content-mappers";
+import { PanelSaran } from "@/components/common/PanelSaran";
 import type { NewsItem } from "@/lib/types";
 
 // Registri penulis Open Tulisan Hari Guru.
@@ -129,7 +130,7 @@ export default function HariGuruPage() {
 
   return (
     <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Kepala laman */}
         <div className="text-center">
           <span className="inline-block bg-mahad-gold text-mahad-green-dark text-xs font-bold px-3.5 py-1 rounded-full tracking-widest">
@@ -173,7 +174,9 @@ export default function HariGuruPage() {
                   <button
                     key={p.slug}
                     type="button"
-                    onClick={() => setSlugAktif(p.slug)}
+                    onClick={() => {
+                      setSlugAktif(p.slug);
+                    }}
                     aria-pressed={aktif}
                     className={
                       aktif
@@ -203,40 +206,51 @@ export default function HariGuruPage() {
               })}
             </div>
 
-            {/* Kartu baca */}
-            {terpilih && (
-              <article className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 sm:p-12 mt-8">
-                <h2 className="font-serif font-bold text-2xl sm:text-3xl text-mahad-green-dark text-center leading-snug">
-                  {terpilih.item.title}
-                </h2>
-                <div className="flex items-center justify-center gap-3 mt-6">
-                  <div className="w-11 h-11 shrink-0 rounded-full bg-mahad-green-dark text-mahad-gold flex items-center justify-center font-serif font-bold">
-                    {inisialNama(terpilih.nama)}
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-700">
-                      oleh{" "}
-                      <span className="font-bold text-mahad-green-dark">
-                        {terpilih.nama}
-                      </span>
-                      {" • "}
-                      {terpilih.item.date}
-                      {" • "}
-                      {hitungWaktuBaca(terpilih.item.content)} membaca
-                    </p>
-                    {terpilih.keterangan && (
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {terpilih.keterangan}
+            {/* Kartu baca dan panel saran: bersampingan di layar besar,
+                bertumpuk di HP */}
+            <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] mt-8">
+              {terpilih && (
+                <article className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 sm:p-12">
+                  <h2 className="font-serif font-bold text-2xl sm:text-3xl text-mahad-green-dark text-center leading-snug">
+                    {terpilih.item.title}
+                  </h2>
+                  <div className="flex items-center justify-center gap-3 mt-6">
+                    <div className="w-11 h-11 shrink-0 rounded-full bg-mahad-green-dark text-mahad-gold flex items-center justify-center font-serif font-bold">
+                      {inisialNama(terpilih.nama)}
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-700">
+                        oleh{" "}
+                        <span className="font-bold text-mahad-green-dark">
+                          {terpilih.nama}
+                        </span>
+                        {" • "}
+                        {terpilih.item.date}
+                        {" • "}
+                        {hitungWaktuBaca(terpilih.item.content)} membaca
                       </p>
-                    )}
+                      {terpilih.keterangan && (
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {terpilih.keterangan}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="w-24 h-0.5 bg-mahad-gold rounded mx-auto my-8" />
-                <div className="space-y-6 text-slate-800 leading-relaxed text-base sm:text-lg">
-                  <IsiTulisan konten={terpilih.item.content} />
-                </div>
-              </article>
-            )}
+                  <div className="w-24 h-0.5 bg-mahad-gold rounded mx-auto my-8" />
+                  <div className="space-y-6 text-slate-800 leading-relaxed text-base sm:text-lg">
+                    <IsiTulisan konten={terpilih.item.content} />
+                  </div>
+                </article>
+              )}
+
+              <PanelSaran
+                pilihan={peserta.map((p) => ({
+                  slug: p.slug,
+                  judul: p.item.title
+                }))}
+                slugAktif={terpilih?.slug ?? ""}
+              />
+            </div>
 
             {/* Bagikan */}
             <div className="text-center mt-8">

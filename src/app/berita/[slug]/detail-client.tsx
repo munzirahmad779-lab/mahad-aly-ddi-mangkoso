@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
 import ViewCount from "@/components/common/ViewCount";
+import { PanelSaran } from "@/components/common/PanelSaran";
 
 interface BeritaDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -135,6 +136,14 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
             return <p key={i}>{t}</p>;
           })}
         </article>
+
+        {/* Panel saran khusus tulisan Hari Guru: saran terkunci ke
+            tulisan ini, tanpa pilihan judul lain. */}
+        {(item.category as string) === "Hari Guru" && (
+          <PanelSaran
+            terkunci={{ slug: item.slug, judul: item.title }}
+          />
+        )}
 
         {/* Berkas Lampiran / File Unduhan Resmi (Opsional) */}
         {item.attachmentUrl && (
