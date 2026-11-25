@@ -219,10 +219,15 @@ function KepalaTerbitan({
 }
 
 export default async function JurnalBerandaPage() {
-  const locale = await localeJurnalServer();
+  // Tiga panggilan data ini saling bebas: jalankan paralel agar waktu
+  // tunggu server adalah panggilan terlambat saja, bukan jumlah ketiganya.
+  const [locale, terbitan, pengumumanSemua] = await Promise.all([
+    localeJurnalServer(),
+    daftarTerbitanPublik(),
+    daftarPengumumanPublik()
+  ]);
   const teks = tJurnal(locale);
-  const terbitan = await daftarTerbitanPublik();
-  const pengumuman = (await daftarPengumumanPublik()).slice(0, 3);
+  const pengumuman = pengumumanSemua.slice(0, 3);
   const terkini = terbitan.find((t) => t.isCurrent) ?? terbitan[0] ?? null;
   const artikelTerbaru = terbitan
     .flatMap((t) => t.artikel)

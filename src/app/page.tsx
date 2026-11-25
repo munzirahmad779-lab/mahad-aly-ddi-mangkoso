@@ -1,21 +1,36 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Hero from "@/components/home/Hero";
-import QuoteSection from "@/components/home/QuoteSection";
-import AboutPreview from "@/components/home/AboutPreview";
-import StudyCategories from "@/components/home/StudyCategories";
-import LatestArticles from "@/components/home/LatestArticles";
-import LatestTheses from "@/components/home/LatestTheses";
-import LatestNews from "@/components/home/LatestNews";
-import KalamSection from "@/components/home/KalamSection";
-import {
-  HomeDonationSection,
-  HomeBahtsulSection,
-  HomePMBSection,
-  HomeSubmissionSection,
-  HomeMasyayikhSection,
-  HomeCustomSection
-} from "@/components/home/HomeDynamicSections";
+
+// Seksi di bawah lipatan pertama dimuat sebagai potongan terpisah
+// (next/dynamic, ssr tetap menyala) supaya JS awal beranda hanya memuat
+// Hero dan kerangka; HTML server tidak berubah karena ssr: true bawaan.
+const QuoteSection = dynamic(() => import("@/components/home/QuoteSection"));
+const AboutPreview = dynamic(() => import("@/components/home/AboutPreview"));
+const StudyCategories = dynamic(() => import("@/components/home/StudyCategories"));
+const LatestArticles = dynamic(() => import("@/components/home/LatestArticles"));
+const LatestTheses = dynamic(() => import("@/components/home/LatestTheses"));
+const LatestNews = dynamic(() => import("@/components/home/LatestNews"));
+const KalamSection = dynamic(() => import("@/components/home/KalamSection"));
+const HomeDonationSection = dynamic(() =>
+  import("@/components/home/HomeDynamicSections").then((m) => m.HomeDonationSection)
+);
+const HomeBahtsulSection = dynamic(() =>
+  import("@/components/home/HomeDynamicSections").then((m) => m.HomeBahtsulSection)
+);
+const HomePMBSection = dynamic(() =>
+  import("@/components/home/HomeDynamicSections").then((m) => m.HomePMBSection)
+);
+const HomeSubmissionSection = dynamic(() =>
+  import("@/components/home/HomeDynamicSections").then((m) => m.HomeSubmissionSection)
+);
+const HomeMasyayikhSection = dynamic(() =>
+  import("@/components/home/HomeDynamicSections").then((m) => m.HomeMasyayikhSection)
+);
+const HomeCustomSection = dynamic(() =>
+  import("@/components/home/HomeDynamicSections").then((m) => m.HomeCustomSection)
+);
 import { useArticles } from "@/context/ArticleContext";
 import { HomeSectionConfigItem } from "@/lib/types";
 

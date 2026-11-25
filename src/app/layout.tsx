@@ -38,10 +38,14 @@ const SEED_FETCH_TIMEOUT_MS = 6_000;
 async function fetchInitialContent(): Promise<Record<string, unknown>> {
   const KEYS = [
     "footer", "footer_nav", "footer_focus", "header", "home.hero", "site_settings",
-    "home_sections", "home_priorities", "category_rows", "history_timeline_entries", "about_page", "page_texts", "dema_settings", "masyayikh_list",
+    "home_sections", "category_rows", "history_timeline_entries", "about_page", "page_texts", "dema_settings", "masyayikh_list",
     "courses_list", "sarana_list", "accreditations", "calendar_events",
     "bahtsul_masail", "pmb_settings", "pmb_waves", "pmb_faqs",
-    "gallery_albums", "donations"
+    "donations"
+    // "home_priorities" dan "gallery_albums" SENGAJA tidak ikut seed:
+    // keduanya hanya dibaca panel admin, bukan komponen publik mana pun
+    // sebelum hidrasi. ArticleContext memuatnya sendiri dari Supabase saat
+    // hidrasi klien, jadi panel tetap menerima nilai yang sama.
     // "email_templates" dan "admin_permissions" SENGAJA tidak ikut seed:
     // seed tertanam di HTML publik setiap halaman, jadi isinya tidak boleh
     // memuat templat email maupun peta izin admin. Keduanya tetap terbaca
@@ -90,19 +94,33 @@ async function fetchInitialContent(): Promise<Record<string, unknown>> {
           if (r.error) console.error("[seed] kueri articles gagal:", r.error.message);
           return (r.data as any[]) || [];
         }),
-      supabaseAnon.from("theses").select("*").order("created_at", { ascending: false }).then(r => {
+      // Kolom eksplisit sesuai yang dibaca pemetaan kartu/daftar.
+      // Abstrak Arab skripsi (abstrak_ar) tidak diambil: hanya halaman
+      // detail yang menampilkannya dan ia memuatnya dari sinkronisasi
+      // klien. Abstrak Indonesia dipotong 300 aksara pada hasil pemetaan
+      // di bawah: kartu hanya menampilkan pratinjau 3 baris (line-clamp-3),
+      // sedangkan abstrak penuh tiba lewat sinkronisasi klien.
+      supabaseAnon.from("theses").select("id, slug, judul, penulis, nim, angkatan, tahun, pembimbing_1, pembimbing_2, abstrak_id, keyword, pdf_url, pdf_size_mb").order("created_at", { ascending: false }).then(r => {
         if (r.error) console.error("[seed] kueri theses gagal:", r.error.message);
-        return mapDbTheses((r.data as any[]) || []);
+        return mapDbTheses((r.data as any[]) || []).map((t: any) => ({
+          ...t,
+          abstractId: typeof t.abstractId === "string" ? t.abstractId.slice(0, 300) : t.abstractId
+        }));
       }),
-      supabaseAnon.from("categories").select("*").then(r => {
+      supabaseAnon.from("categories").select("id, slug, nama, deskripsi, icon").then(r => {
         if (r.error) console.error("[seed] kueri categories gagal:", r.error.message);
         return (r.data as any[]) || [];
       }),
-      supabaseAnon.from("news").select("*").order("created_at", { ascending: false }).then(r => {
+      // Kolom konten berita tetap diambil di server karena ringkasan
+      // kartu (excerpt) diturunkan darinya dan tabel tidak punya kolom
+      // ringkasan. Isi penuhnya TIDAK ikut tertanam: bidang content pada
+      // hasil pemetaan dikosongkan sebelum masuk seed, halaman detail
+      // memuat isi dari sinkronisasi klien.
+      supabaseAnon.from("news").select("id, slug, judul, konten, tipe, tanggal, gambar_url, created_at").order("created_at", { ascending: false }).then(r => {
         if (r.error) console.error("[seed] kueri news gagal:", r.error.message);
-        return mapDbNews((r.data as any[]) || []);
+        return mapDbNews((r.data as any[]) || []).map((n: any) => ({ ...n, content: "" }));
       }),
-      supabaseAnon.from("collections").select("*").then(r => {
+      supabaseAnon.from("collections").select("id, collection_type, data").then(r => {
         if (r.error) console.error("[seed] kueri collections gagal:", r.error.message);
         return mapDbCollections((r.data as any[]) || []);
       })

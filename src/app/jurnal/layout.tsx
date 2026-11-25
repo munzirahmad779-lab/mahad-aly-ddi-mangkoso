@@ -49,9 +49,12 @@ export default async function JurnalLayout({
 }: {
   children: ReactNode;
 }) {
-  const locale = await localeJurnalServer();
+  // Locale dan tautan terbitan terkini saling bebas: jalankan paralel.
+  const [locale, hrefTerbitanTerkini] = await Promise.all([
+    localeJurnalServer(),
+    tautanTerbitanTerkini()
+  ]);
   const t = tJurnal(locale);
-  const hrefTerbitanTerkini = await tautanTerbitanTerkini();
 
   const navigasiUtama: { href: string; label: string }[] = [
     { href: hrefTerbitanTerkini, label: t.navTerbitanTerkini },
