@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
-import { muatPetaKunjungan } from "@/components/common/ViewCount";
+import { muatPetaKunjungan, segarkanPetaBerkala } from "@/components/common/ViewCount";
 import Reveal from "@/components/common/Reveal";
 import { urutkanPrioritas } from "@/lib/priorities";
 import { dalamSeriKajianFathulQorib } from "@/lib/content-mappers";
@@ -17,11 +17,14 @@ export default function LatestArticles() {
 
   useEffect(() => {
     let alive = true;
-    muatPetaKunjungan().then((p) => {
+    const pakai = (p: Record<string, number>) => {
       if (alive) setPages(p);
-    });
+    };
+    muatPetaKunjungan().then(pakai);
+    const berhenti = segarkanPetaBerkala(pakai);
     return () => {
       alive = false;
+      berhenti();
     };
   }, []);
 

@@ -17,19 +17,27 @@ import { usePathname } from "next/navigation";
 // klik sendiri ikut terhitung, dan justru membuat angka di dalam selalu
 // lebih besar satu daripada di kartu.
 // Angka ditampilkan diam sebagai angka akhir, tanpa animasi hitung naik
-// (aturan tetap web kampus).
+// (aturan tetap web kampus). Sejak 26 Nov 2026 peta dimuat ulang secara
+// berkala selama halaman terbuka (lihat muatPetaKunjungan di bawah),
+// supaya angka yang tampil bergerak sendiri mengikuti bacaan terbaru
+// tanpa pengunjung harus memuat ulang halaman (perintah user); aturan
+// kesesuaian di atas tetap berlaku karena semua penampil membaca
+// potret yang sama dari cache bersama yang sama.
 export default function ViewCount({ className = "" }: { className?: string }) {
   const pathname = usePathname();
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
-    muatPetaKunjungan().then((pages) => {
+    const pakai = (pages: Record<string, number>) => {
       if (!alive) return;
       setCount(typeof pages[pathname] === "number" ? pages[pathname] : 0);
-    });
+    };
+    muatPetaKunjungan().then(pakai);
+    const berhenti = segarkanPetaBerkala(pakai);
     return () => {
       alive = false;
+      berhenti();
     };
   }, [pathname]);
 
@@ -71,19 +79,44 @@ export default function ViewCount({ className = "" }: { className?: string }) {
 // dibuka pada penghitung berjalan (ketetapan user 8 Nov 2026: masing
 // masing tulisan harus ada angkanya di tampilan awal).
 let petaKunjungan: Promise<Record<string, number>> | null = null;
+let petaDimuatPada = 0;
+const PETA_TTL_MS = 30_000;
+
+function ambilPetaDariServer(): Promise<Record<string, number>> {
+  return fetch("/api/analytics/stats", { cache: "no-store" })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) =>
+      d && d.stats && d.stats.pages && typeof d.stats.pages === "object"
+        ? (d.stats.pages as Record<string, number>)
+        : {}
+    )
+    .catch(() => ({}));
+}
 
 export function muatPetaKunjungan(): Promise<Record<string, number>> {
-  if (!petaKunjungan) {
-    petaKunjungan = fetch("/api/analytics/stats", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) =>
-        d && d.stats && d.stats.pages && typeof d.stats.pages === "object"
-          ? (d.stats.pages as Record<string, number>)
-          : {}
-      )
-      .catch(() => ({}));
+  const kini = Date.now();
+  if (!petaKunjungan || kini - petaDimuatPada > PETA_TTL_MS) {
+    petaDimuatPada = kini;
+    petaKunjungan = ambilPetaDariServer();
   }
   return petaKunjungan;
+}
+
+// Muat ulang peta tiap 60 detik selama halaman dibiarkan terbuka dan
+// tab sedang terlihat, lalu teruskan potret terbarunya ke penampil.
+// Cache TTL di muatPetaKunjungan memastikan banyak penampil di satu
+// halaman berbagi satu ambilan yang sama, bukan membanjiri server.
+// Nilai kembali adalah fungsi berhenti untuk cleanup useEffect.
+export function segarkanPetaBerkala(
+  teruskan: (pages: Record<string, number>) => void
+): () => void {
+  const id = setInterval(() => {
+    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+    muatPetaKunjungan()
+      .then(teruskan)
+      .catch(() => {});
+  }, 60_000);
+  return () => clearInterval(id);
 }
 
 export function CardViewCount({ slug, basePath = "/artikel" }: { slug: string; basePath?: string }) {
@@ -91,13 +124,16 @@ export function CardViewCount({ slug, basePath = "/artikel" }: { slug: string; b
 
   useEffect(() => {
     let hidup = true;
-    muatPetaKunjungan().then((pages) => {
+    const pakai = (pages: Record<string, number>) => {
       if (!hidup) return;
       const n = pages[`${basePath}/${slug}`];
       setJumlah(typeof n === "number" ? n : 0);
-    });
+    };
+    muatPetaKunjungan().then(pakai);
+    const berhenti = segarkanPetaBerkala(pakai);
     return () => {
       hidup = false;
+      berhenti();
     };
   }, [slug, basePath]);
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import Reveal from "@/components/common/Reveal";
-import { CardViewCount, muatPetaKunjungan } from "@/components/common/ViewCount";
+import { CardViewCount, muatPetaKunjungan, segarkanPetaBerkala } from "@/components/common/ViewCount";
 
 export default function LatestNews() {
   const { news } = useArticles();
@@ -12,11 +12,14 @@ export default function LatestNews() {
 
   useEffect(() => {
     let alive = true;
-    muatPetaKunjungan().then((p) => {
+    const pakai = (p: Record<string, number>) => {
       if (alive) setPages(p);
-    });
+    };
+    muatPetaKunjungan().then(pakai);
+    const berhenti = segarkanPetaBerkala(pakai);
     return () => {
       alive = false;
+      berhenti();
     };
   }, []);
 
