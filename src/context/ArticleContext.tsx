@@ -119,9 +119,9 @@ interface DataContextType {
 
   // Users & Roles
   users: AdminUser[];
-  addUser: (user: Omit<AdminUser, "id">) => void;
-  updateUser: (id: string, updatedData: Partial<AdminUser>) => void;
-  deleteUser: (id: string) => void;
+  addUser: (user: Omit<AdminUser, "id">) => Promise<void>;
+  updateUser: (id: string, updatedData: Partial<AdminUser>) => Promise<void>;
+  deleteUser: (id: string) => Promise<void>;
 
   // Activity Logs
   logs: ActivityLog[];
@@ -184,8 +184,8 @@ interface DataContextType {
 
   // Subscribers
   subscribers: EmailSubscriber[];
-  addSubscriber: (subscriber: Omit<EmailSubscriber, "id" | "subscribedAt">) => void;
-  deleteSubscriber: (id: string) => void;
+  addSubscriber: (subscriber: Omit<EmailSubscriber, "id" | "subscribedAt">) => Promise<void>;
+  deleteSubscriber: (id: string) => Promise<void>;
 
   // Email Logs & Real Dispatch
   emailLogs: EmailLog[];
@@ -1065,6 +1065,12 @@ export function ArticleProvider({
             }
           }
         }
+        // Daftar pengguna dan pelanggan dimuat dari tabelnya sendiri
+        // (bukan site_content, bukan cermin lokal). Keduanya melewati
+        // pemeriksaan sesi di dalam pemuatnya, jadi pengunjung publik
+        // tidak memicu kueri apa pun ke dua tabel terbatas ini.
+        await muatUsersDariServer();
+        await muatSubscribersDariServer();
       } catch (err) {
         console.error("Gagal sinkronisasi data Supabase:", err);
       }
@@ -1188,6 +1194,68 @@ export function ArticleProvider({
     setUsers(data);
     localStorage.setItem("mahad_users", JSON.stringify(data));
   };
+  // Muat daftar pengguna ASLI dari tabel users Supabase: server adalah
+  // sumber kebenaran dan saveUsers hanya menulis cermin lokalnya. Hanya
+  // berjalan bila ada sesi masuk; RLS memberi super_admin seluruh daftar,
+  // peran lain barisnya sendiri, dan pengunjung tanpa sesi dilewati diam
+  // (daftar pengguna memang bukan data publik). Kegagalan muat membiarkan
+  // cermin lokal apa adanya, tidak menampilkan galat ke pengunjung.
+  const muatUsersDariServer = async (): Promise<boolean> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return false;
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, email, nama_lengkap, role, is_active")
+        .order("created_at", { ascending: false });
+      if (error || !Array.isArray(data)) return false;
+      const terpetakan: AdminUser[] = data.map((row: any) => ({
+        id: row.id,
+        name: row.nama_lengkap || (row.email ? row.email.split("@")[0] : ""),
+        email: row.email || "",
+        // Istilah UI "admin" adalah peran "editor" di database.
+        role: row.role === "super_admin" ? "super_admin" : row.role === "penulis" ? "penulis" : "admin",
+        status: row.is_active === false ? "Nonaktif" : "Aktif",
+        // Tabel users tidak mencatat login terakhir; dikosongkan, bukan dikarang.
+        lastLogin: ""
+      }));
+      saveUsers(terpetakan);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  // Panggil /api/admin/users (gerbang super_admin) dengan token sesi.
+  // Kegagalan ditampilkan terbuka lewat alert, pola yang sama dengan
+  // dbWriteAlert: perubahan yang gagal tidak pernah diam-diam dianggap
+  // tersimpan.
+  const panggilApiUsers = async (payload: Record<string, unknown>): Promise<boolean> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (session?.access_token) {
+        headers.Authorization = `Bearer ${session.access_token}`;
+      }
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        alert(
+          `⚠️ PERUBAHAN PENGGUNA BELUM TERSIMPAN KE SERVER!\n\n${errJson.error || "Gagal menyimpan ke server."}\n\nSilakan coba lagi atau hubungi Super Admin.`
+        );
+        return false;
+      }
+      return true;
+    } catch (e: any) {
+      alert(
+        `⚠️ PERUBAHAN PENGGUNA BELUM TERSIMPAN KE SERVER!\n\n${e?.message || "Koneksi ke server terputus."}\n\nSilakan coba lagi atau hubungi Super Admin.`
+      );
+      return false;
+    }
+  };
   const saveLogs = (data: ActivityLog[]) => {
     setLogs(data);
     if (typeof window !== "undefined") {
@@ -1257,6 +1325,39 @@ export function ArticleProvider({
   const saveSubscribers = (data: EmailSubscriber[]) => {
     setSubscribers(data);
     localStorage.setItem("mahad_subscribers", JSON.stringify(data));
+  };
+  // Muat daftar pelanggan ASLI dari tabel subscriber Supabase: server
+  // adalah sumber kebenaran dan saveSubscribers hanya menulis cermin
+  // lokalnya. Hanya berjalan bila ada sesi masuk (RLS hanya mengizinkan
+  // super_admin dan editor membaca tabel ini); tanpa sesi atau saat
+  // gagal, cermin lokal dibiarkan apa adanya tanpa galat ke pengunjung.
+  const muatSubscribersDariServer = async (): Promise<boolean> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return false;
+      const { data, error } = await supabase
+        .from("subscriber")
+        .select("id, email, nama, source, created_at")
+        .order("created_at", { ascending: false });
+      if (error || !Array.isArray(data)) return false;
+      const terpetakan: EmailSubscriber[] = data.map((row: any) => ({
+        id: row.id,
+        email: row.email || "",
+        name: row.nama || undefined,
+        pageTarget: row.source || "",
+        subscribedAt: row.created_at
+          ? new Date(row.created_at).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+              year: "numeric"
+            })
+          : ""
+      }));
+      saveSubscribers(terpetakan);
+      return true;
+    } catch {
+      return false;
+    }
   };
   const saveEmailLogs = (data: EmailLog[]) => {
     setEmailLogs(data);
@@ -2036,26 +2137,43 @@ export function ArticleProvider({
   };
 
   // User Actions
-  const addUser = (data: Omit<AdminUser, "id">) => {
-    const newUser: AdminUser = {
-      ...data,
-      id: "usr-" + Date.now().toString()
-    };
-    saveUsers([...users, newUser]);
-    addLog("Menambah Pengguna Admin", data.name);
+  // Manajemen akun yang sesungguhnya berjalan di panel admin lewat
+  // /api/admin/users (gerbang super_admin) dan daftar dbUsers dari tabel
+  // users. Tiga fungsi context ini diselaraskan ke jalur yang sama agar
+  // tidak ada lagi penulisan pengguna yang berhenti di localStorage.
+  const addUser = async (data: Omit<AdminUser, "id">) => {
+    // Membuat akun masuk wajib menyetel sandi akun Auth, sesuatu yang
+    // tidak dibawa data context ini. Jalur lama mengarang pengguna lokal
+    // ber-id "usr-..." yang tidak bisa masuk sama sekali; sekarang
+    // pembuatan dari jalur ini ditolak secara terbuka, bukan pura-pura
+    // tersimpan.
+    alert(
+      `Akun ${data.email} tidak dibuat dari jalur ini.\n\nPembuatan akun wajib lewat menu Pengguna di panel admin agar akun dibuat lengkap dengan sandinya.`
+    );
   };
 
-  const updateUser = (id: string, updatedData: Partial<AdminUser>) => {
-    const updated = users.map((u) => (u.id === id ? { ...u, ...updatedData } : u));
-    saveUsers(updated);
-    addLog("Memperbarui Pengguna", updatedData.name || id);
+  const updateUser = async (id: string, updatedData: Partial<AdminUser>) => {
+    const payload: Record<string, unknown> = { action: "update_profile", userId: id };
+    if (updatedData.name !== undefined) payload.nama_lengkap = updatedData.name;
+    if (updatedData.role !== undefined) {
+      const peran = String(updatedData.role).toLowerCase();
+      payload.role = peran === "admin" || peran === "editor" ? "editor" : peran === "super admin" ? "super_admin" : peran;
+    }
+    if (updatedData.status !== undefined) payload.is_active = updatedData.status === "Aktif";
+    const ok = await panggilApiUsers(payload);
+    if (ok) {
+      addLog("Memperbarui Pengguna", updatedData.name || id);
+      await muatUsersDariServer();
+    }
   };
 
-  const deleteUser = (id: string) => {
+  const deleteUser = async (id: string) => {
     const target = users.find((u) => u.id === id);
-    const filtered = users.filter((u) => u.id !== id);
-    saveUsers(filtered);
-    addLog("Menghapus Pengguna", target?.name || id);
+    const ok = await panggilApiUsers({ action: "delete_user", userId: id });
+    if (ok) {
+      addLog("Menghapus Pengguna", target?.name || id);
+      await muatUsersDariServer();
+    }
   };
 
   // Media Actions
@@ -2308,21 +2426,27 @@ export function ArticleProvider({
   };
 
   // Subscriber Actions
-  const addSubscriber = (data: Omit<EmailSubscriber, "id" | "subscribedAt">) => {
-    const newSub: EmailSubscriber = {
-      ...data,
-      id: "sub-" + Date.now().toString(),
-      subscribedAt: new Date().toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "short",
-        year: "numeric"
-      })
-    };
-    saveSubscribers([newSub, ...subscribers]);
+  // Tulis ke tabel subscriber lewat gerbang server /api/admin/db
+  // (dbWriteAlert menampilkan galat secara terbuka bila gagal), lalu
+  // muat ulang daftar dari server sebagai sumber kebenaran. Kolom phone
+  // pada tipe klien tidak punya padanan di tabel subscriber, jadi yang
+  // tersimpan hanya email, nama, dan sumber halaman.
+  const addSubscriber = async (data: Omit<EmailSubscriber, "id" | "subscribedAt">) => {
+    const ok = await dbWriteAlert("subscriber", "insert", {
+      email: data.email,
+      nama: data.name ?? null,
+      source: data.pageTarget || "panel"
+    });
+    if (ok) {
+      await muatSubscribersDariServer();
+    }
   };
-  const deleteSubscriber = (id: string) => {
-    saveSubscribers(subscribers.filter((s) => s.id !== id));
-    addLog("Menghapus Subscriber", id);
+  const deleteSubscriber = async (id: string) => {
+    const ok = await dbWriteAlert("subscriber", "delete", undefined, { id });
+    if (ok) {
+      addLog("Menghapus Subscriber", id);
+      await muatSubscribersDariServer();
+    }
   };
 
   // Real Email Notification Sender via Resend API
