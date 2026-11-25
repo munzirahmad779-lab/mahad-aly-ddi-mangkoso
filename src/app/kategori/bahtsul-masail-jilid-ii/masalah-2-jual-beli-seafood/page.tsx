@@ -19,7 +19,7 @@ const sebelumnya = MASAIL.find((m) => m.slug === "masalah-1-nisab-zakat-mal");
 const berikutnya = MASAIL.find((m) => m.slug === "masalah-3-ittihad-al-baldah");
 
 export const metadata: Metadata = {
-  title: `${item.judulSingkat} — Hasil Bahtsul Masa'il Jilid II`,
+  title: `${item.judulSingkat} - Hasil Bahtsul Masa'il Jilid II`,
   description: item.spoiler,
   alternates: { canonical: `/kategori/bahtsul-masail-jilid-ii/${SLUG}` }
 };
@@ -32,7 +32,7 @@ export default function Masalah2SeafoodPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <span className="text-xs font-bold uppercase tracking-widest text-mahad-gold bg-white/10 px-3.5 py-1 rounded-full inline-flex items-center gap-1.5">
             <Scale className="w-3.5 h-3.5" />
-            <span>Mas&apos;alah {item.nomor} — Hasil Bahtsul Masa&apos;il Jilid II</span>
+            <span>Mas&apos;alah {item.nomor} - Hasil Bahtsul Masa&apos;il Jilid II</span>
           </span>
           {item.headline && (
             <p className="font-serif italic font-bold text-mahad-gold text-xl sm:text-2xl mt-4">

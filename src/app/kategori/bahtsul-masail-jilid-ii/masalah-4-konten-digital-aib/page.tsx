@@ -25,7 +25,7 @@ const item = ambilItem();
 const prev = MASAIL.find((m) => m.slug === "masalah-3-ittihad-al-baldah");
 
 export const metadata: Metadata = {
-  title: `${item.judulSingkat} — Hasil Bahtsul Masa'il Jilid II`,
+  title: `${item.judulSingkat} - Hasil Bahtsul Masa'il Jilid II`,
   description: item.spoiler,
   alternates: {
     canonical: `/kategori/bahtsul-masail-jilid-ii/${SLUG}`

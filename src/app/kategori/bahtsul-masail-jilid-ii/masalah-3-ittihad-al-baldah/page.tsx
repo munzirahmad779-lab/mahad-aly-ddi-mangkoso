@@ -26,7 +26,7 @@ const prev = MASAIL.find((m) => m.slug === "masalah-2-jual-beli-seafood");
 const next = MASAIL.find((m) => m.slug === "masalah-4-konten-digital-aib");
 
 export const metadata: Metadata = {
-  title: `${item.judulSingkat} — Hasil Bahtsul Masa'il Jilid II`,
+  title: `${item.judulSingkat} - Hasil Bahtsul Masa'il Jilid II`,
   description: item.spoiler,
   alternates: { canonical: `/kategori/bahtsul-masail-jilid-ii/${SLUG}` }
 };
