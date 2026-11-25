@@ -134,6 +134,62 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 6b. Tegakkan daftar MIME yang dinyatakan di kepala berkas ini.
+    // Selama ini ALLOWED_MIME_TYPES hanya dinyatakan tanpa pernah
+    // diperiksa. Bila browser melaporkan tipe berkas dan tipe itu di
+    // luar daftar, berkas ditolak. Bila browser tidak melaporkan tipe
+    // (string kosong), pemeriksaan isi pada langkah 6c yang memutuskan.
+    const declaredMime = (file.type || "").trim().toLowerCase();
+    if (declaredMime && !ALLOWED_MIME_TYPES.includes(declaredMime)) {
+      return NextResponse.json(
+        { error: "Tipe berkas tidak didukung! File naskah/skripsi harus berupa dokumen Microsoft Word (.doc, .docx) atau PDF (.pdf)." },
+        { status: 400 }
+      );
+    }
+
+    // 6c. Periksa isi berkas dari magic bytes, bukan hanya nama dan
+    // ekstensinya, supaya berkas lain yang diganti nama ekstensinya
+    // menjadi .pdf, .doc, atau .docx tidak ikut lolos.
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+    const head = fileBuffer.subarray(0, 8);
+    const isPdf = fileBuffer.subarray(0, 5).toString("latin1") === "%PDF-";
+    const isOleDoc = head.equals(
+      Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])
+    );
+    const isZipPackage =
+      head[0] === 0x50 &&
+      head[1] === 0x4b &&
+      ((head[2] === 0x03 && head[3] === 0x04) ||
+        (head[2] === 0x05 && head[3] === 0x06) ||
+        (head[2] === 0x07 && head[3] === 0x08));
+    // DOCX adalah paket ZIP OOXML: di dalam arsipnya selalu ada entri
+    // [Content_Types].xml dan folder word/. Nama entri tersimpan apa
+    // adanya pada arsip, jadi keduanya bisa dicari pada isi berkas.
+    const isDocx =
+      isZipPackage &&
+      fileBuffer.includes("[Content_Types].xml") &&
+      fileBuffer.includes("word/");
+
+    let contentMatches = false;
+    let expectedFormatLabel = "";
+    if (fileName.endsWith(".pdf")) {
+      contentMatches = isPdf;
+      expectedFormatLabel = "PDF (.pdf)";
+    } else if (fileName.endsWith(".docx")) {
+      contentMatches = isDocx;
+      expectedFormatLabel = "Microsoft Word (.docx)";
+    } else if (fileName.endsWith(".doc")) {
+      contentMatches = isOleDoc;
+      expectedFormatLabel = "Microsoft Word (.doc)";
+    }
+
+    if (!contentMatches) {
+      return NextResponse.json(
+        { error: `Isi berkas tidak cocok dengan format ${expectedFormatLabel}. Pastikan berkas yang diunggah benar-benar berformat ${expectedFormatLabel}, bukan berkas lain yang diganti nama ekstensinya.` },
+        { status: 400 }
+      );
+    }
+
     // 7. Rate Limiting: Maksimal 3 submission per email per hari.
     // Gagal-tertutup: bila kueri hitung galat, pengiriman ditolak dengan
     // 500 generik, BUKAN melewatkan pemeriksaan (perilaku lama gagal-terbuka).
@@ -189,8 +245,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 9. Persiapan Data Berkas untuk Attachment Email
-    const arrayBuffer = await file.arrayBuffer();
-    const fileBuffer = Buffer.from(arrayBuffer);
+    // Buffer berkas sudah dibaca satu kali pada pemeriksaan isi langkah 6c.
     const fileSizeStr = file.size > 1024 * 1024
       ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
       : `${Math.round(file.size / 1024)} KB`;
