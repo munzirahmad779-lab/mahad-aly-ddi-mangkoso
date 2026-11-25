@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import Reveal from "@/components/common/Reveal";
 
 // Bagian Kalam Anregurutta di beranda (pemasangan kalam hikmah,
@@ -9,10 +8,13 @@ import Reveal from "@/components/common/Reveal";
 // Farid; keterangan foto memakai nama lengkap bergelar pilihan user
 // 19 Nov 2026: Prof. Dr. KH. Muhammad Faried Wadjedy, Lc., M.A.)
 // di samping kalam beliau. Yang tampil
-// hanya kalam Anregurutta, tiap kalam wajib menyertakan nama beliau,
-// dan semuanya tertaut ke artikel Mutiara Hikmah Para Masyayikh. Isi
-// kalam sama dengan yang berjalan di ticker navbar (kalam pendek
-// pilihan dari artikel yang sama). Pergantian kalam tiap 1 menit
+// hanya kalam Anregurutta, tiap kalam wajib menyertakan nama beliau.
+// Tombol "Baca Mutiara Hikmah Para Masyayikh" yang dulu tertaut ke
+// artikel himpunan kalam para masyayikh sudah dibuang 26 Nov 2026
+// mengikuti penghapusan artikel itu atas perintah user (user sudah
+// memerintahkannya sejak 21 Nov 2026 dan mengulanginya 26 Nov);
+// bagian ini kini berdiri sendiri tanpa tautan ke artikel mana pun.
+// Pergantian kalam tiap 1 menit
 // (perintah user 19 Nov 2026 pukul 01:26, menggantikan tiap beberapa
 // detik lalu tiap 3 jam): pergantiannya hanya menukar teks di
 // peramban pengunjung, tanpa memanggil server sama sekali, jadi
@@ -25,7 +27,6 @@ const KALAM_ANREGURUTTA: string[] = [
   "Jika ushul sudah melekat dihati maka fiqih akan menjelma di lisan",
 ];
 
-const TAUTAN_ARTIKEL = "/artikel/mutiara-hikmah-para-masyayikh-ddi-mangkoso";
 const JEDA_PUTAR_MS = 60_000;
 
 export default function KalamSection() {
@@ -111,18 +112,6 @@ export default function KalamSection() {
                     }`}
                   />
                 ))}
-              </div>
-
-              <div className="mt-8">
-                <Link
-                  href={TAUTAN_ARTIKEL}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-mahad-gold text-mahad-green-dark font-bold text-xs rounded-full shadow hover:bg-yellow-400 transition"
-                >
-                  Baca Mutiara Hikmah Para Masyayikh
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
               </div>
             </div>
           </div>
