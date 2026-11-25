@@ -28,6 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/donasi`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${baseUrl}/dema`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/kirim-tulisan`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${baseUrl}/hari-guru`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${baseUrl}/kontak`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${baseUrl}/opini`, changeFrequency: "weekly", priority: 0.8 },
     // Halaman publik yang sebelumnya hilang dari sitemap (temuan audit
