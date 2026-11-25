@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useArticles } from "@/context/ArticleContext";
 import { hitungWaktuBaca } from "@/lib/content-mappers";
 import { PanelSaran } from "@/components/common/PanelSaran";
+import ViewCount from "@/components/common/ViewCount";
 import type { NewsItem } from "@/lib/types";
 
 // Registri penulis Open Tulisan Hari Guru.
@@ -143,6 +144,18 @@ export default function HariGuruPage() {
             Kumpulan tulisan refleksi mahasantri dalam memperingati Hari Guru.
             Pilih nama penulis untuk membaca karyanya.
           </p>
+          {/* Jumlah dilihat TOTAL laman ini (perintah user 26 Nov 2026:
+              tampilkan juga jumlah dilihatnya di laman tulisan Hari
+              Guru, langsung total yang membuka laman ini, tanpa
+              perincian per tulisan). Lencana ViewCount membaca jalur
+              laman ini sendiri dari peta kunjungan gabungan dan
+              menyegar tiap 60 detik; bungkus hijau tua karena lencana
+              itu dirancang untuk permukaan gelap. */}
+          <div className="mt-5 flex justify-center">
+            <span className="inline-flex bg-mahad-green-dark rounded-full px-2 py-1 shadow">
+              <ViewCount />
+            </span>
+          </div>
         </div>
 
         {!isCatalogReady ? (
