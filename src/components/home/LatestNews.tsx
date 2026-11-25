@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import Reveal from "@/components/common/Reveal";
 import { CardViewCount, muatPetaKunjungan, segarkanPetaBerkala } from "@/components/common/ViewCount";
+import {
+  KARTU_GABUNGAN_HARI_GURU,
+  adalahTulisanHariGuru,
+  tautanItemBerita
+} from "@/lib/hari-guru";
 
 export default function LatestNews() {
   const { news } = useArticles();
@@ -39,7 +44,12 @@ export default function LatestNews() {
   // warta yang tercatat dibaca, kandidat kembali ke perilaku lama:
   // empat warta pertama menurut urutan data awal. Putaran berhenti
   // sementara selama pointer atau fokus keyboard berada di bagian ini.
-  const terurut = [...news].sort(
+  // Perintah user 26 Nov 2026: tiga tulisan Hari Guru tidak ikut
+  // berputar satu-satu di panel ini; panel menampilkan satu kartu
+  // gabungan tertaut ke laman /hari-guru, ditambahkan sebagai
+  // kandidat terakhir sesudah kandidat populer terpilih.
+  const kabarBiasa = news.filter((item) => !adalahTulisanHariGuru(item));
+  const terurut = [...kabarBiasa].sort(
     (a, b) =>
       (pages[`/berita/${b.slug}`] || 0) - (pages[`/berita/${a.slug}`] || 0)
   );
@@ -47,6 +57,14 @@ export default function LatestNews() {
     (item) => (pages[`/berita/${item.slug}`] || 0) > 0
   );
   const kandidat = populer.length > 0 ? populer.slice(0, 8) : terurut.slice(0, 4);
+  if (news.some(adalahTulisanHariGuru)) {
+    // NewsItem membatasi category ke Berita/Pengumuman/Agenda, padahal
+    // tipe "Hari Guru" memang hidup di basis data dan dipetakan konteks
+    // apa adanya; kartu gabungan dicast mengikuti bentuk kandidat.
+    kandidat.push(
+      KARTU_GABUNGAN_HARI_GURU as unknown as (typeof kandidat)[number]
+    );
+  }
 
   const PER_PUTARAN = 2;
   const jumlahPutaran = Math.ceil(kandidat.length / PER_PUTARAN);
@@ -155,7 +173,7 @@ export default function LatestNews() {
                     <span className="text-slate-500">{item.date}</span>
                   </div>
                   <h3 className="font-serif font-bold text-xl text-slate-900 leading-snug mb-3 group-hover:text-emerald-800 transition">
-                    <Link href={`/berita/${item.slug}`}>{item.title}</Link>
+                    <Link href={tautanItemBerita(item)}>{item.title}</Link>
                   </h3>
                   <p className="text-slate-600 text-sm leading-relaxed line-clamp-2">
                     {item.excerpt}
@@ -167,10 +185,13 @@ export default function LatestNews() {
                 <div className="pt-4 mt-6 border-t border-slate-100 flex items-center justify-between text-xs">
                   <div>
                     <span className="text-slate-500">Oleh: <strong>{item.author}</strong></span>
-                    <CardViewCount slug={item.slug} basePath="/berita" />
+                    <CardViewCount
+                      slug={item.slug}
+                      basePath={item.id === KARTU_GABUNGAN_HARI_GURU.id ? "" : "/berita"}
+                    />
                   </div>
                   <Link
-                    href={`/berita/${item.slug}`}
+                    href={tautanItemBerita(item)}
                     className="font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
                   >
                     <span>Baca Selengkapnya</span>

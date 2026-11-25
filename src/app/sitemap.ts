@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { supabaseAnon } from "@/lib/supabase/server";
+import { SLUG_TULISAN_HARI_GURU } from "@/lib/hari-guru";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://mahadaly-ddimangkoso.ac.id";
@@ -97,7 +98,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Error fetching news for sitemap:", error);
   }
 
-  const newsRoutes: MetadataRoute.Sitemap = newsList.map((news: any) => {
+  const newsRoutes: MetadataRoute.Sitemap = newsList
+    // Tiga tulisan Hari Guru tidak diiklankan satu-satu: alamatnya
+    // mengalihkan ke laman gabungan /hari-guru (sudah ada di rute
+    // statis sitemap ini), dan sitemap tidak boleh mengiklankan URL
+    // yang mengalihkan (perintah user 26 Nov 2026).
+    .filter((news: any) => !SLUG_TULISAN_HARI_GURU.includes(news.slug))
+    .map((news: any) => {
     const tgl = news.createdAt;
     return {
       url: `${baseUrl}/berita/${news.slug}`,

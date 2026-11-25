@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { slugExistsInTable, OG_LOGO_IMAGE } from "@/lib/seo";
 import { supabaseAnon } from "@/lib/supabase/server";
+import { SLUG_TULISAN_HARI_GURU, TAUTAN_HARI_GURU } from "@/lib/hari-guru";
 import DetailClient from "./detail-client";
 
 const BASE = "https://mahadaly-ddimangkoso.ac.id";
@@ -68,6 +69,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BeritaDetailPage({ params }: Props) {
   const { slug } = await params;
   const cleanSlug = decodeURIComponent(slug || "").toLowerCase().trim();
+  // Perintah user 26 Nov 2026: tiga tulisan Hari Guru tidak lagi
+  // berdiri sebagai berita satu-satu; alamat lamanya mengalihkan ke
+  // laman gabungan /hari-guru tempat pembaca memilih tulisannya.
+  if (SLUG_TULISAN_HARI_GURU.includes(cleanSlug)) {
+    redirect(TAUTAN_HARI_GURU);
+  }
   const exists = await slugExistsInTable("news", cleanSlug);
   if (exists === false) {
     notFound();

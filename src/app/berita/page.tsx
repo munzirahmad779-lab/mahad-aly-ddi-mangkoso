@@ -3,10 +3,24 @@
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import { CardViewCount } from "@/components/common/ViewCount";
+import {
+  KARTU_GABUNGAN_HARI_GURU,
+  adalahTulisanHariGuru,
+  tautanItemBerita
+} from "@/lib/hari-guru";
 
 export default function BeritaPage() {
   const { news, pageTexts, isCatalogReady } = useArticles();
   const safeNews = Array.isArray(news) ? news : [];
+
+  // Perintah user 26 Nov 2026: tiga tulisan Hari Guru TIDAK tampil
+  // satu-satu di daftar ini; yang tampil hanya satu kartu gabungan
+  // tertaut ke laman /hari-guru tempat pembaca memilih tulisannya.
+  // Baris beritanya tetap di basis data sebagai sumber isi laman itu.
+  const daftarBiasa = safeNews.filter((item) => !adalahTulisanHariGuru(item));
+  const daftarTampil = safeNews.some(adalahTulisanHariGuru)
+    ? [KARTU_GABUNGAN_HARI_GURU, ...daftarBiasa]
+    : daftarBiasa;
 
   return (
     <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
@@ -27,7 +41,7 @@ export default function BeritaPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {safeNews.map((item) => (
+          {daftarTampil.map((item) => (
             <article
               key={item.id}
               className="bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-emerald-700 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
@@ -76,7 +90,7 @@ export default function BeritaPage() {
                     </div>
                   )}
                   <h3 className="font-serif font-bold text-xl text-slate-900 leading-snug mb-3 group-hover:text-emerald-800 transition">
-                    <Link href={`/berita/${item.slug}`}>{item.title}</Link>
+                    <Link href={tautanItemBerita(item)}>{item.title}</Link>
                   </h3>
                   <p className="text-slate-600 text-sm leading-relaxed line-clamp-3">
                     {item.excerpt}
@@ -88,10 +102,13 @@ export default function BeritaPage() {
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
                   <div>
                     <span>Oleh: <strong>{item.author}</strong></span>
-                    <CardViewCount slug={item.slug} basePath="/berita" />
+                    <CardViewCount
+                      slug={item.slug}
+                      basePath={item.id === KARTU_GABUNGAN_HARI_GURU.id ? "" : "/berita"}
+                    />
                   </div>
                   <Link
-                    href={`/berita/${item.slug}`}
+                    href={tautanItemBerita(item)}
                     className="font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 group-hover:translate-x-1 transition-transform"
                   >
                     <span>Baca Selengkapnya</span>
@@ -105,7 +122,7 @@ export default function BeritaPage() {
           ))}
         </div>
 
-        {safeNews.length === 0 && (
+        {daftarTampil.length === 0 && (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
             <p className="text-slate-600 font-medium">
               {!isCatalogReady
