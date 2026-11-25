@@ -22,22 +22,58 @@ export default function LatestNews() {
 
   // Panel Warta & Berita berdiri sendiri, terpisah dari panel Mimbar
   // (perintah user 10 Nov 2026). Sejak 13 Nov 2026 panel ini adalah
-  // panel PALING POPULER (perintah user): empat warta dengan pembaca
+  // panel PALING POPULER (perintah user): warta dengan pembaca
   // terbanyak menurut peta kunjungan server yang sama dengan lencana
   // jumlah pembaca di kartu; bila views seri, urutan data awal yang
   // dipertahankan (terbaru dulu). Panel ini tampil di beranda SEBELUM
   // panel Mimbar Kajian (urutan home_sections di basis data).
-  const tampil = [...news]
-    .sort(
-      (a, b) =>
-        (pages[`/berita/${b.slug}`] || 0) - (pages[`/berita/${a.slug}`] || 0)
-    )
-    .slice(0, 4);
+  //
+  // Sejak 26 Nov 2026 tampilannya BERGILIR menurut kepopuleran
+  // (perintah user): kandidat adalah delapan warta teratas yang
+  // pembacanya lebih dari nol, ditampilkan dua kartu dalam satu waktu
+  // dan berganti tiap 6 detik mengikuti urutan peringkat (1-2, lalu
+  // 3-4, lalu 5-6, lalu 7-8, lalu kembali ke awal). Bila belum ada
+  // warta yang tercatat dibaca, kandidat kembali ke perilaku lama:
+  // empat warta pertama menurut urutan data awal. Putaran berhenti
+  // sementara selama pointer atau fokus keyboard berada di bagian ini.
+  const terurut = [...news].sort(
+    (a, b) =>
+      (pages[`/berita/${b.slug}`] || 0) - (pages[`/berita/${a.slug}`] || 0)
+  );
+  const populer = terurut.filter(
+    (item) => (pages[`/berita/${item.slug}`] || 0) > 0
+  );
+  const kandidat = populer.length > 0 ? populer.slice(0, 8) : terurut.slice(0, 4);
+
+  const PER_PUTARAN = 2;
+  const jumlahPutaran = Math.ceil(kandidat.length / PER_PUTARAN);
+  const [indeksPutaran, setIndeksPutaran] = useState(0);
+  const [jedaPutaran, setJedaPutaran] = useState(false);
+
+  useEffect(() => {
+    if (jumlahPutaran <= 1 || jedaPutaran) return;
+    const id = setInterval(() => {
+      setIndeksPutaran((i) => (i + 1) % jumlahPutaran);
+    }, 6000);
+    return () => clearInterval(id);
+  }, [jumlahPutaran, jedaPutaran]);
+
+  const putaranAktif = jumlahPutaran > 0 ? indeksPutaran % jumlahPutaran : 0;
+  const tampil = kandidat.slice(
+    putaranAktif * PER_PUTARAN,
+    putaranAktif * PER_PUTARAN + PER_PUTARAN
+  );
 
   return (
-    <section className="py-20 bg-slate-50 border-t border-slate-200">
+    <section
+      className="py-20 bg-slate-50 border-t border-slate-200"
+      onMouseEnter={() => setJedaPutaran(true)}
+      onMouseLeave={() => setJedaPutaran(false)}
+      onFocus={() => setJedaPutaran(true)}
+      onBlur={() => setJedaPutaran(false)}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <Reveal>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
@@ -62,10 +98,14 @@ export default function LatestNews() {
         </div>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {tampil.map((item, idx) => (
-            <Reveal key={item.id} delay={idx * 0.1} className="h-full">
+        <div
+          key={putaranAktif}
+          aria-live="off"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-500 animate-kalam-masuk"
+        >
+          {tampil.map((item) => (
             <article
+              key={item.id}
               className="h-full bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-emerald-700 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group"
             >
               <div>
@@ -138,9 +178,24 @@ export default function LatestNews() {
                 </div>
               </div>
             </article>
-            </Reveal>
           ))}
         </div>
+
+        {jumlahPutaran > 1 && (
+          <div className="mt-6 flex justify-center gap-2">
+            {Array.from({ length: jumlahPutaran }).map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Putaran populer ke-${i + 1}`}
+                onClick={() => setIndeksPutaran(i)}
+                className={`h-2 w-2 rounded-full transition-colors ${
+                  i === putaranAktif ? "bg-emerald-800" : "bg-slate-300"
+                }`}
+              />
+            ))}
+          </div>
+        )}
 
       </div>
     </section>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { supabase } from "@/lib/supabase/client";
 
 export interface PilihanSaran {
   slug: string;
@@ -20,9 +19,10 @@ type PanelSaranProps =
       slugAktif?: never;
     };
 
-// Panel kirim saran. Saran disimpan ke tabel hari_guru_saran
-// (pengunjung anonim hanya boleh menyisipkan, tidak boleh membaca),
-// jadi panel ini tidak pernah menampilkan saran orang lain.
+// Panel kirim saran. Saran dikirim ke route /api/saran-hari-guru yang
+// menyimpannya ke tabel hari_guru_saran dan meneruskannya sebagai
+// email ke admin, jadi panel ini tidak pernah menampilkan saran
+// orang lain.
 //
 // Dua modus:
 // - pilihan: ada select berisi daftar tulisan; pilihannya mengikuti
@@ -77,14 +77,27 @@ export function PanelSaran(props: PanelSaranProps) {
     }
     setGalat("");
     setMengirim(true);
-    const { error } = await supabase.from("hari_guru_saran").insert({
-      nama: namaBersih,
-      slug_tulisan: target.slug,
-      judul_tulisan: target.judul,
-      saran: saranBersih
-    });
+    let berhasil = false;
+    try {
+      const respons = await fetch("/api/saran-hari-guru", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama: namaBersih,
+          slug_tulisan: target.slug,
+          judul_tulisan: target.judul,
+          saran: saranBersih
+        })
+      });
+      if (respons.ok) {
+        const data = await respons.json().catch(() => null);
+        berhasil = Boolean(data && data.success === true);
+      }
+    } catch {
+      berhasil = false;
+    }
     setMengirim(false);
-    if (error) {
+    if (!berhasil) {
       // Gagal tersimpan di basis data: jangan tampilkan keadaan berhasil.
       setGagalKirim(true);
       return;

@@ -43,11 +43,41 @@ export default function LatestArticles() {
     const n = pages[`/artikel/${a.slug}`];
     return typeof n === "number" ? n : a.views || 0;
   };
-  const palingDibaca = [...publicArticles]
+
+  // Kandidat panel Paling Dibaca: sepuluh artikel teratas menurut
+  // pembaca riil yang jumlah pembacanya lebih dari nol. Sejak 26 Nov
+  // 2026 panel menampilkannya BERGILIR menurut kepopuleran (perintah
+  // user): lima artikel dalam satu waktu sebagai daftar peringkat
+  // bernomor asli, berganti tiap 6 detik bila kandidat lebih dari
+  // lima (putaran pertama peringkat 1-5, putaran kedua 6-10, lalu
+  // kembali ke awal). Putaran berhenti sementara selama pointer atau
+  // fokus keyboard berada di panel. Panel hanya tampil bila kandidat
+  // sedikitnya tiga; kandidat tiga sampai lima tampil semua tanpa
+  // putaran.
+  const kandidatPalingDibaca = [...publicArticles]
     .map((a) => ({ ...a, views: pembacaRiil(a) }))
     .sort((a, b) => b.views - a.views)
-    .slice(0, 5)
+    .slice(0, 10)
     .filter((a) => a.views > 0);
+
+  const PER_PUTARAN = 5;
+  const jumlahPutaran = Math.ceil(kandidatPalingDibaca.length / PER_PUTARAN);
+  const [indeksPutaran, setIndeksPutaran] = useState(0);
+  const [jedaPutaran, setJedaPutaran] = useState(false);
+
+  useEffect(() => {
+    if (jumlahPutaran <= 1 || jedaPutaran) return;
+    const id = setInterval(() => {
+      setIndeksPutaran((i) => (i + 1) % jumlahPutaran);
+    }, 6000);
+    return () => clearInterval(id);
+  }, [jumlahPutaran, jedaPutaran]);
+
+  const putaranAktif = jumlahPutaran > 0 ? indeksPutaran % jumlahPutaran : 0;
+  const palingDibaca = kandidatPalingDibaca.slice(
+    putaranAktif * PER_PUTARAN,
+    putaranAktif * PER_PUTARAN + PER_PUTARAN
+  );
 
   // Prioritas admin (panel Prioritas Beranda) tampil lebih dulu;
   // sisanya mengikuti urutan asal (terbaru dulu).
@@ -69,7 +99,7 @@ export default function LatestArticles() {
   return (
     <section id="mimbar-kajian" className="py-24 bg-emerald-50/60 border-t border-emerald-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header Bagian Artikel */}
         <Reveal>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -98,9 +128,15 @@ export default function LatestArticles() {
         </div>
         </Reveal>
 
-        {/* Paling Dibaca: peringkat berdasarkan pembaca riil */}
-        {palingDibaca.length >= 3 && (
-          <div className="mt-8 bg-white rounded-2xl border border-emerald-100 shadow-sm p-5 sm:p-6">
+        {/* Paling Dibaca: peringkat berdasarkan pembaca riil, tampil bergilir */}
+        {kandidatPalingDibaca.length >= 3 && (
+          <div
+            className="mt-8 bg-white rounded-2xl border border-emerald-100 shadow-sm p-5 sm:p-6"
+            onMouseEnter={() => setJedaPutaran(true)}
+            onMouseLeave={() => setJedaPutaran(false)}
+            onFocus={() => setJedaPutaran(true)}
+            onBlur={() => setJedaPutaran(false)}
+          >
             <div className="flex items-center gap-2 mb-4">
               <span className="text-lg">📈</span>
               <h3 className="font-serif font-bold text-lg text-emerald-950">Paling Dibaca</h3>
@@ -108,36 +144,56 @@ export default function LatestArticles() {
                 berdasarkan pembaca riil
               </span>
             </div>
-            <ol className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
-              {palingDibaca.map((art, idx) => (
-                <li key={art.id}>
-                  <Link
-                    href={`/artikel/${art.slug}`}
-                    className="group flex gap-3 items-start p-3 rounded-xl hover:bg-emerald-50 transition h-full"
-                  >
-                    <span className={`font-serif font-bold text-xl leading-none mt-0.5 ${
-                      idx === 0 ? "text-mahad-gold" : "text-slate-300 group-hover:text-emerald-700"
-                    }`}>
-                      {idx + 1}
-                    </span>
-                    <span>
-                      <span className="block text-xs font-bold text-slate-800 group-hover:text-emerald-900 leading-snug line-clamp-2">
-                        {art.title}
-                      </span>
-                      <span className="block text-[10px] text-slate-500 mt-1">
-                        {art.author} · {art.views} pembaca
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
+            <div key={putaranAktif} aria-live="off" className="transition-opacity duration-500 animate-kalam-masuk">
+              <ol className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
+                {palingDibaca.map((art, idx) => {
+                  const peringkat = putaranAktif * PER_PUTARAN + idx + 1;
+                  return (
+                    <li key={art.id}>
+                      <Link
+                        href={`/artikel/${art.slug}`}
+                        className="group flex gap-3 items-start p-3 rounded-xl hover:bg-emerald-50 transition h-full"
+                      >
+                        <span className={`font-serif font-bold text-xl leading-none mt-0.5 ${
+                          peringkat === 1 ? "text-mahad-gold" : "text-slate-300 group-hover:text-emerald-700"
+                        }`}>
+                          {peringkat}
+                        </span>
+                        <span>
+                          <span className="block text-xs font-bold text-slate-800 group-hover:text-emerald-900 leading-snug line-clamp-2">
+                            {art.title}
+                          </span>
+                          <span className="block text-[10px] text-slate-500 mt-1">
+                            {art.author} · {art.views} pembaca
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+            {jumlahPutaran > 1 && (
+              <div className="mt-4 flex justify-center gap-2">
+                {Array.from({ length: jumlahPutaran }).map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-label={`Putaran populer ke-${i + 1}`}
+                    onClick={() => setIndeksPutaran(i)}
+                    className={`h-2 w-2 rounded-full transition-colors ${
+                      i === putaranAktif ? "bg-emerald-800" : "bg-slate-300"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         {/* Filter Tombol & Input Pencarian */}
         <div className="mt-10 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-          
+
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
