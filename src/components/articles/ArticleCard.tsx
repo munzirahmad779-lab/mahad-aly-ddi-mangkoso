@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Article } from "@/lib/types";
 import { CardViewCount } from "@/components/common/ViewCount";
+import GambarAman from "@/components/common/GambarAman";
 
 interface ArticleCardProps {
   article: Article;
@@ -57,7 +58,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             href={`/artikel/${article.slug}`}
             className="block relative aspect-video w-full overflow-hidden bg-slate-100"
           >
-            <img
+            <GambarAman
               src={article.imageUrl}
               alt={article.title}
               loading="lazy"

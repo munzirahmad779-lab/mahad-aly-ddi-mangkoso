@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
 import ViewCount from "@/components/common/ViewCount";
+import GambarAman from "@/components/common/GambarAman";
 import { PanelSaran } from "@/components/common/PanelSaran";
 
 interface BeritaDetailPageProps {
@@ -92,7 +93,7 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
         {/* Gambar Utama Berita (Opsional) */}
         {item.imageUrl && (
           <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-slate-100">
-            <img
+            <GambarAman
               src={item.imageUrl}
               alt={item.title}
               className="absolute inset-0 w-full h-full object-cover"

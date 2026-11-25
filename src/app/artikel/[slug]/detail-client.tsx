@@ -9,6 +9,7 @@ import { dalamSeriKajianFathulQorib } from "@/lib/content-mappers";
 import ArticleCard from "@/components/articles/ArticleCard";
 import ReadingBeam from "@/components/common/ReadingBeam";
 import ViewCount from "@/components/common/ViewCount";
+import GambarAman from "@/components/common/GambarAman";
 
 interface ArticleDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -360,7 +361,7 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
         {/* Foto utama artikel dari thumbnail_url basis data, bila ada */}
         {article.imageUrl && (
           <figure className="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-100">
-            <img
+            <GambarAman
               src={article.imageUrl}
               alt={article.title}
               className="absolute inset-0 w-full h-full object-cover"

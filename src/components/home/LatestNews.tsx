@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import Reveal from "@/components/common/Reveal";
 import { CardViewCount, muatPetaKunjungan, segarkanPetaBerkala } from "@/components/common/ViewCount";
+import GambarAman from "@/components/common/GambarAman";
 import {
   KARTU_GABUNGAN_HARI_GURU,
   adalahTulisanHariGuru,
@@ -132,7 +133,7 @@ export default function LatestNews() {
               <div>
                 {item.imageUrl ? (
                   <div className="relative w-full h-48 overflow-hidden bg-slate-100">
-                    <img
+                    <GambarAman
                       src={item.imageUrl}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -140,7 +141,7 @@ export default function LatestNews() {
                     />
                     {item.attachmentUrl && (
                       <span className="absolute top-3 right-3 bg-amber-500 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-                        <span>📎 Dokumen Lampiran</span>
+                        <span>Dokumen Lampiran</span>
                       </span>
                     )}
                   </div>
@@ -160,7 +161,7 @@ export default function LatestNews() {
                     />
                     {item.attachmentUrl && (
                       <span className="absolute top-3 right-3 bg-amber-500 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-                        <span>📎 Dokumen Lampiran</span>
+                        <span>Dokumen Lampiran</span>
                       </span>
                     )}
                   </div>

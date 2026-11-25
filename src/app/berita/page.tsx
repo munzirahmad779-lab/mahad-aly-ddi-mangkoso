@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import { CardViewCount } from "@/components/common/ViewCount";
+import GambarAman from "@/components/common/GambarAman";
 import {
   KARTU_GABUNGAN_HARI_GURU,
   adalahTulisanHariGuru,
@@ -50,7 +51,7 @@ export default function BeritaPage() {
                 {/* Gambar Sampul (Opsional) */}
                 {item.imageUrl ? (
                   <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
-                    <img
+                    <GambarAman
                       src={item.imageUrl}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -62,7 +63,7 @@ export default function BeritaPage() {
                       </span>
                       {item.attachmentUrl && (
                         <span className="bg-amber-500/90 text-white font-bold text-[11px] px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-                          <span>📎 Lampiran</span>
+                          <span>Lampiran</span>
                         </span>
                       )}
                     </div>
@@ -75,7 +76,7 @@ export default function BeritaPage() {
                       </span>
                       {item.attachmentUrl && (
                         <span className="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <span>📎 Lampiran</span>
+                          <span>Lampiran</span>
                         </span>
                       )}
                     </div>
