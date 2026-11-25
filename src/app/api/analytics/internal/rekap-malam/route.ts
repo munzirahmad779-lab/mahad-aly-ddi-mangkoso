@@ -31,7 +31,13 @@ export async function POST(req: NextRequest) {
       err instanceof Error ? err.message : err
     );
     return NextResponse.json(
-      { error: "Gagal menjalankan rekap malam." },
+      {
+        error: "Gagal menjalankan rekap malam.",
+        // SEMENTARA (diagnosis 26 Nov 2026): pesan galat diteruskan ke
+        // pemanggil berahasia supaya penyebab 500 pertama terbaca.
+        // Hapus baris detail ini sesudah penyebabnya ditemukan.
+        detail: err instanceof Error ? err.message : String(err)
+      },
       { status: 500 }
     );
   }
