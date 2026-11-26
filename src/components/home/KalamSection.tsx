@@ -36,6 +36,7 @@ const JEDA_PUTAR_MS = 60_000;
 export default function KalamSection() {
   const [aktif, setAktif] = useState(0);
   const geserAwalX = useRef<number | null>(null);
+  const geserSudahPindah = useRef(false);
 
   const pindahKalam = (i: number) => {
     const n = KALAM_ANREGURUTTA.length;
@@ -53,15 +54,24 @@ export default function KalamSection() {
     return () => clearTimeout(timer);
   }, [aktif]);
 
+  // Geseran memakai Pointer Events (satu jalur untuk sentuh,
+  // tetikus, dan pena) dan berpindah begitu jarak geser melewati
+  // ambang selama gerakan, bukan menunggu lepas: cara pertama yang
+  // menunggu lepas tetikus terbukti gagal pada uji hidup 26 Nov
+  // 2026 pukul 08:22, seretannya tidak mengubah kalam sama sekali.
   const mulaiGeser = (x: number) => {
     geserAwalX.current = x;
+    geserSudahPindah.current = false;
   };
-  const akhiriGeser = (x: number) => {
-    if (geserAwalX.current === null) return;
+  const selamaGeser = (x: number) => {
+    if (geserAwalX.current === null || geserSudahPindah.current) return;
     const selisih = x - geserAwalX.current;
-    geserAwalX.current = null;
-    if (Math.abs(selisih) < 40) return;
+    if (Math.abs(selisih) < 30) return;
+    geserSudahPindah.current = true;
     pindahKalam(aktif + (selisih < 0 ? 1 : -1));
+  };
+  const akhiriGeser = () => {
+    geserAwalX.current = null;
   };
 
   return (
@@ -98,11 +108,12 @@ export default function KalamSection() {
               </span>
 
               <div
-                className="mt-6 min-h-32 sm:min-h-36 flex items-center justify-center md:justify-start cursor-grab active:cursor-grabbing select-none"
-                onTouchStart={(e) => mulaiGeser(e.touches[0]?.clientX ?? 0)}
-                onTouchEnd={(e) => akhiriGeser(e.changedTouches[0]?.clientX ?? 0)}
-                onMouseDown={(e) => mulaiGeser(e.clientX)}
-                onMouseUp={(e) => akhiriGeser(e.clientX)}
+                className="mt-6 min-h-32 sm:min-h-36 flex items-center justify-center md:justify-start cursor-grab active:cursor-grabbing select-none touch-pan-y"
+                onPointerDown={(e) => mulaiGeser(e.clientX)}
+                onPointerMove={(e) => selamaGeser(e.clientX)}
+                onPointerUp={akhiriGeser}
+                onPointerCancel={akhiriGeser}
+                onPointerLeave={akhiriGeser}
               >
                 <blockquote
                   key={aktif}
