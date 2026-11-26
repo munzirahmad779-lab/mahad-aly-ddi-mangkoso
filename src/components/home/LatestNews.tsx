@@ -70,15 +70,18 @@ export default function LatestNews() {
   const PER_PUTARAN = 2;
   const jumlahPutaran = Math.ceil(kandidat.length / PER_PUTARAN);
   const [indeksPutaran, setIndeksPutaran] = useState(0);
-  const [jedaPutaran, setJedaPutaran] = useState(false);
 
+  // Putaran berjalan terus tanpa jeda arahkan/fokus (koreksi user
+  // 26 Nov 2026 pukul 07:58 untuk semua panel bergilir beranda):
+  // jeda versi awal membekukan putaran selama kursor pengunjung
+  // diam di atas bagian ini, yang hampir selalu terjadi.
   useEffect(() => {
-    if (jumlahPutaran <= 1 || jedaPutaran) return;
+    if (jumlahPutaran <= 1) return;
     const id = setInterval(() => {
       setIndeksPutaran((i) => (i + 1) % jumlahPutaran);
     }, 6000);
     return () => clearInterval(id);
-  }, [jumlahPutaran, jedaPutaran]);
+  }, [jumlahPutaran]);
 
   const putaranAktif = jumlahPutaran > 0 ? indeksPutaran % jumlahPutaran : 0;
   const tampil = kandidat.slice(
@@ -89,10 +92,6 @@ export default function LatestNews() {
   return (
     <section
       className="py-20 bg-slate-50 border-t border-slate-200"
-      onMouseEnter={() => setJedaPutaran(true)}
-      onMouseLeave={() => setJedaPutaran(false)}
-      onFocus={() => setJedaPutaran(true)}
-      onBlur={() => setJedaPutaran(false)}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 

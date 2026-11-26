@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useArticles } from "@/context/ArticleContext";
 import ArticleCard from "@/components/articles/ArticleCard";
@@ -53,10 +53,13 @@ export default function LatestArticles() {
   // user): lima artikel dalam satu waktu sebagai daftar peringkat
   // bernomor asli, berganti tiap 6 detik bila kandidat lebih dari
   // lima (putaran pertama peringkat 1-5, putaran kedua 6-10, lalu
-  // kembali ke awal). Putaran berhenti sementara selama pointer atau
-  // fokus keyboard berada di panel. Panel hanya tampil bila kandidat
-  // sedikitnya tiga; kandidat tiga sampai lima tampil semua tanpa
-  // putaran.
+  // kembali ke awal). Putaran TIDAK PERNAH berhenti tetap (koreksi
+  // user 26 Nov 2026 pukul 07:58): jeda arahkan/fokus versi awal
+  // membuat panel membeku di putaran 6-10 begitu kursor pengunjung
+  // diam di atas panel, jadi jeda itu dibuang; titik penunjuk dan
+  // geseran hanya memindahkan putaran, lalu penghitung waktu mulai
+  // lagi dari awal. Panel hanya tampil bila kandidat sedikitnya
+  // tiga; kandidat tiga sampai lima tampil semua tanpa putaran.
   const kandidatPalingDibaca = [...publicArticles]
     .map((a) => ({ ...a, views: pembacaRiil(a) }))
     .sort((a, b) => b.views - a.views)
@@ -66,15 +69,22 @@ export default function LatestArticles() {
   const PER_PUTARAN = 5;
   const jumlahPutaran = Math.ceil(kandidatPalingDibaca.length / PER_PUTARAN);
   const [indeksPutaran, setIndeksPutaran] = useState(0);
-  const [jedaPutaran, setJedaPutaran] = useState(false);
+  const [penandaSiklus, setPenandaSiklus] = useState(0);
+  const sentuhAwalX = useRef<number | null>(null);
 
   useEffect(() => {
-    if (jumlahPutaran <= 1 || jedaPutaran) return;
+    if (jumlahPutaran <= 1) return;
     const id = setInterval(() => {
       setIndeksPutaran((i) => (i + 1) % jumlahPutaran);
     }, 6000);
     return () => clearInterval(id);
-  }, [jumlahPutaran, jedaPutaran]);
+  }, [jumlahPutaran, penandaSiklus]);
+
+  const pindahPutaran = (i: number) => {
+    if (jumlahPutaran <= 0) return;
+    setIndeksPutaran(((i % jumlahPutaran) + jumlahPutaran) % jumlahPutaran);
+    setPenandaSiklus((p) => p + 1);
+  };
 
   const putaranAktif = jumlahPutaran > 0 ? indeksPutaran % jumlahPutaran : 0;
   const palingDibaca = kandidatPalingDibaca.slice(
@@ -135,13 +145,19 @@ export default function LatestArticles() {
         {kandidatPalingDibaca.length >= 3 && (
           <div
             className="mt-8 bg-white rounded-2xl border border-emerald-100 shadow-sm p-5 sm:p-6"
-            onMouseEnter={() => setJedaPutaran(true)}
-            onMouseLeave={() => setJedaPutaran(false)}
-            onFocus={() => setJedaPutaran(true)}
-            onBlur={() => setJedaPutaran(false)}
+            onTouchStart={(e) => {
+              sentuhAwalX.current = e.touches[0]?.clientX ?? null;
+            }}
+            onTouchEnd={(e) => {
+              if (sentuhAwalX.current === null) return;
+              const akhir = e.changedTouches[0]?.clientX ?? sentuhAwalX.current;
+              const selisih = akhir - sentuhAwalX.current;
+              sentuhAwalX.current = null;
+              if (Math.abs(selisih) < 40 || jumlahPutaran <= 1) return;
+              pindahPutaran(putaranAktif + (selisih < 0 ? 1 : -1));
+            }}
           >
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-lg">📈</span>
               <h3 className="font-serif font-bold text-lg text-emerald-950">Paling Dibaca</h3>
               <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 berdasarkan pembaca riil
@@ -183,7 +199,7 @@ export default function LatestArticles() {
                     key={i}
                     type="button"
                     aria-label={`Putaran populer ke-${i + 1}`}
-                    onClick={() => setIndeksPutaran(i)}
+                    onClick={() => pindahPutaran(i)}
                     className={`h-2 w-2 rounded-full transition-colors ${
                       i === putaranAktif ? "bg-emerald-800" : "bg-slate-300"
                     }`}

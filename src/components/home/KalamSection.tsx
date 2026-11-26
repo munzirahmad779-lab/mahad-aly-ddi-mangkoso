@@ -18,7 +18,11 @@ import Reveal from "@/components/common/Reveal";
 // (perintah user 19 Nov 2026 pukul 01:26, menggantikan tiap beberapa
 // detik lalu tiap 3 jam): pergantiannya hanya menukar teks di
 // peramban pengunjung, tanpa memanggil server sama sekali, jadi
-// ringan dan tidak membebani laman.
+// ringan dan tidak membebani laman. Sejak 26 Nov 2026 pukul 07:58
+// (perintah user) putarannya WAJIB berubah terus dan bisa digeser:
+// pilihan manual lewat titik atau geseran tidak lagi menghentikan
+// putaran tetap seperti versi awal, ia hanya memindahkan kalam dan
+// penghitung 1 menit mulai lagi dari awal.
 const KALAM_ANREGURUTTA: string[] = [
   "Orang yang tidak melaksanakan sholat adalah orang yang mengkhianati Tuhan, jika Tuhan saja yang ia khianati apalagi sesamanya manusia",
   "Puncak bahagia adalah ketika kita membahagiakan orang yang kita cintai",
@@ -31,19 +35,34 @@ const JEDA_PUTAR_MS = 60_000;
 
 export default function KalamSection() {
   const [aktif, setAktif] = useState(0);
-  const dipilihManual = useRef(false);
+  const geserAwalX = useRef<number | null>(null);
 
-  // Berganti sendiri tiap 1 menit. Pilihan manual lewat titik
-  // penunjuk dihormati: sesudah pengunjung memilih, putaran berhenti
-  // selama kunjungan itu.
+  const pindahKalam = (i: number) => {
+    const n = KALAM_ANREGURUTTA.length;
+    setAktif(((i % n) + n) % n);
+  };
+
+  // Berganti sendiri tiap 1 menit, terus berputar tanpa henti.
+  // Penghitung waktu bergantung pada kalam aktif, jadi setiap
+  // perpindahan (otomatis, titik, atau geseran) memulai lagi
+  // hitungan 1 menit penuh untuk kalam yang baru tampil.
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (!dipilihManual.current) {
-        setAktif((i) => (i + 1) % KALAM_ANREGURUTTA.length);
-      }
+    const timer = setTimeout(() => {
+      setAktif((i) => (i + 1) % KALAM_ANREGURUTTA.length);
     }, JEDA_PUTAR_MS);
-    return () => clearInterval(timer);
-  }, []);
+    return () => clearTimeout(timer);
+  }, [aktif]);
+
+  const mulaiGeser = (x: number) => {
+    geserAwalX.current = x;
+  };
+  const akhiriGeser = (x: number) => {
+    if (geserAwalX.current === null) return;
+    const selisih = x - geserAwalX.current;
+    geserAwalX.current = null;
+    if (Math.abs(selisih) < 40) return;
+    pindahKalam(aktif + (selisih < 0 ? 1 : -1));
+  };
 
   return (
     <section className="relative py-16 sm:py-20 bg-mahad-green-dark text-white overflow-hidden">
@@ -78,7 +97,13 @@ export default function KalamSection() {
                 Kalam Anregurutta
               </span>
 
-              <div className="mt-6 min-h-32 sm:min-h-36 flex items-center justify-center md:justify-start">
+              <div
+                className="mt-6 min-h-32 sm:min-h-36 flex items-center justify-center md:justify-start cursor-grab active:cursor-grabbing select-none"
+                onTouchStart={(e) => mulaiGeser(e.touches[0]?.clientX ?? 0)}
+                onTouchEnd={(e) => akhiriGeser(e.changedTouches[0]?.clientX ?? 0)}
+                onMouseDown={(e) => mulaiGeser(e.clientX)}
+                onMouseUp={(e) => akhiriGeser(e.clientX)}
+              >
                 <blockquote
                   key={aktif}
                   className="animate-kalam-masuk font-serif italic font-bold text-xl sm:text-2xl lg:text-[2rem] leading-snug text-white"
@@ -101,10 +126,7 @@ export default function KalamSection() {
                     key={i}
                     type="button"
                     aria-label={`Kalam ke-${i + 1}`}
-                    onClick={() => {
-                      dipilihManual.current = true;
-                      setAktif(i);
-                    }}
+                    onClick={() => pindahKalam(i)}
                     className={`h-2.5 rounded-full transition-all ${
                       i === aktif
                         ? "w-8 bg-mahad-gold"
