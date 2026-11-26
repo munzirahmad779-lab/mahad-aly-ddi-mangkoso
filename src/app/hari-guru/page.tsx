@@ -190,7 +190,7 @@ export default function HariGuruPage() {
                 bertumpuk di HP */}
             <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] mt-8">
               {terpilih && (
-                <article className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-10 lg:p-12">
+                <article className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-10 lg:p-12 w-full max-w-[46rem] mx-auto">
                   <h2 className="font-serif font-bold text-2xl sm:text-3xl text-mahad-green-dark text-center leading-snug">
                     {terpilih.item.title}
                   </h2>

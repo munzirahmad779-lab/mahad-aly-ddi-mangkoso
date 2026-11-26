@@ -156,9 +156,12 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c") }}
       />
       
-      {/* Header Artikel */}
+      {/* Header Artikel. Lebar kolom baca 46rem (ketetapan 26 Nov 2026
+          mengikuti riset panjang baris Dyson & Haselgrove: 45-75 huruf
+          per baris; 52rem sebelumnya menghasilkan 85-95 huruf di
+          desktop, terlalu panjang dan melelahkan). */}
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
-        <div className="max-w-[52rem] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[46rem] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-4">
             <Link
               href={article.type === "opini" ? "/opini" : diSeriKajian ? "/kategori/kajian-fathul-qorib" : "/artikel"}
@@ -200,7 +203,7 @@ export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
       </section>
 
       {/* Badan Tulisan & Sidebar */}
-      <div ref={bodyRef} className="relative max-w-[52rem] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+      <div ref={bodyRef} className="relative max-w-[46rem] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
         <ReadingBeam targetRef={bodyRef} />
 
         {/* Foto utama artikel dari thumbnail_url basis data, bila ada */}

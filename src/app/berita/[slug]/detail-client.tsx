@@ -71,7 +71,7 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
   return (
     <main className="pt-32 md:pt-40 lg:pt-60 pb-20 bg-slate-50 min-h-screen">
       <section className="bg-mahad-green-dark text-white py-14 bg-islamic-pattern">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[46rem] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-4">
             <Link
               href="/berita"
@@ -100,7 +100,7 @@ export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
         </div>
       </section>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <div className="max-w-[46rem] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         {/* Gambar Utama Berita (Opsional) */}
         {item.imageUrl && (
           <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-slate-100">
