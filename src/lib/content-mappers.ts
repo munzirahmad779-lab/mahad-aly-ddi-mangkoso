@@ -166,7 +166,10 @@ export function mapDbNews(rows: any[]): any[] {
     category: n.tipe || "Berita",
     author: "Humas Ma'had Aly",
     date: n.tanggal || tanggalIndoId(n.created_at),
-    imageUrl: n.gambar_url
+    imageUrl: n.gambar_url,
+    attachmentUrl: n.lampiran_url || undefined,
+    attachmentName: n.lampiran_nama || undefined,
+    attachmentSize: n.lampiran_ukuran || undefined
   }));
 }
 
