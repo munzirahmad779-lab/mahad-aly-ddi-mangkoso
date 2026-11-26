@@ -59,6 +59,12 @@ export default function KalamSection() {
   // ambang selama gerakan, bukan menunggu lepas: cara pertama yang
   // menunggu lepas tetikus terbukti gagal pada uji hidup 26 Nov
   // 2026 pukul 08:22, seretannya tidak mengubah kalam sama sekali.
+  // Penangkapan penunjuk (pointer capture) menjaga gerakan tetap
+  // terbaca walau penunjuk menyimpang keluar wilayah teks di tengah
+  // seretan, dan pelepasan tetikus mengecek ulang jarak terakhir:
+  // pada uji ulang 08:28 arah maju lolos tetapi arah mundur gagal,
+  // diduga karena penunjuk sempat keluar wilayah dan membatalkan
+  // awal geseran.
   const mulaiGeser = (x: number) => {
     geserAwalX.current = x;
     geserSudahPindah.current = false;
@@ -70,7 +76,17 @@ export default function KalamSection() {
     geserSudahPindah.current = true;
     pindahKalam(aktif + (selisih < 0 ? 1 : -1));
   };
-  const akhiriGeser = () => {
+  const akhiriGeser = (x?: number) => {
+    if (
+      typeof x === "number" &&
+      geserAwalX.current !== null &&
+      !geserSudahPindah.current
+    ) {
+      const selisih = x - geserAwalX.current;
+      if (Math.abs(selisih) >= 30) {
+        pindahKalam(aktif + (selisih < 0 ? 1 : -1));
+      }
+    }
     geserAwalX.current = null;
   };
 
@@ -109,11 +125,17 @@ export default function KalamSection() {
 
               <div
                 className="mt-6 min-h-32 sm:min-h-36 flex items-center justify-center md:justify-start cursor-grab active:cursor-grabbing select-none touch-pan-y"
-                onPointerDown={(e) => mulaiGeser(e.clientX)}
+                onPointerDown={(e) => {
+                  try {
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                  } catch {
+                    // Penangkapan gagal tidak menghalangi geseran biasa.
+                  }
+                  mulaiGeser(e.clientX);
+                }}
                 onPointerMove={(e) => selamaGeser(e.clientX)}
-                onPointerUp={akhiriGeser}
-                onPointerCancel={akhiriGeser}
-                onPointerLeave={akhiriGeser}
+                onPointerUp={(e) => akhiriGeser(e.clientX)}
+                onPointerCancel={() => akhiriGeser()}
               >
                 <blockquote
                   key={aktif}
