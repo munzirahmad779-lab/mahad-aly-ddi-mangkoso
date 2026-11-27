@@ -508,7 +508,7 @@ export const INITIAL_PAGE_TEXTS: PageTextsSettings = {
   akademikTakhassusDesc: "Program ini membina kemampuan mahasantri dalam membaca naskah klasik tanpa harakat, memahami konteks sosio-historis teks fiqih, dan menguasai kaidah tarjih lintas madzhab.",
   akademikFokusBadge: "Fokus Spesialisasi Utama",
   akademikFokusTitle: "Fiqh Mu'asarah (Fiqih Kontemporer)",
-  akademikFokusDesc: "Mahasantri dibekali keterampilan istinbath hukum atas isu-isu mutakhir: transaksi kripto, fintech syariah, bioetika medis, kecerdasan buatan (AI), green economy, dan hukum kewarganegaraan modern.",
+  akademikFokusDesc: "",
   akademikKurikulumTitle: "Struktur Kurikulum 8 Semester",
   akademikKurikulumDesc: "Kurikulum komprehensif mengintegrasikan kajian kitab turats mu'tabarah dengan metodologi riset ilmiah modern.",
   akademikKalenderTitle: "Kalender Akademik",

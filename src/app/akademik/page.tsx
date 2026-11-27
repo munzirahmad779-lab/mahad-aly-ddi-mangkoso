@@ -54,9 +54,12 @@ export default function AkademikPage() {
             <h2 className="font-serif font-bold text-2xl text-mahad-gold">
               {pageTexts?.akademikFokusTitle || settings.focusField}
             </h2>
+            {/* Deskripsi fokus dikosongkan permanen atas perintah user
+                28 Nov 2026: kalimat bawaan sebelumnya fiktif (mengarang
+                daftar isu kripto, fintech, dsb.) dan sudah dihapus dari
+                basis data; jangan kembalikan kalimat cadangan di sini. */}
             <p className="text-emerald-100 text-sm leading-relaxed">
-              {pageTexts?.akademikFokusDesc ||
-                "Mahasantri dibekali keterampilan istinbath hukum atas isu-isu mutakhir: transaksi kripto, fintech syariah, bioetika medis, kecerdasan buatan (AI), green economy, dan hukum kewarganegaraan modern."}
+              {pageTexts?.akademikFokusDesc || ""}
             </p>
           </div>
         </div>
