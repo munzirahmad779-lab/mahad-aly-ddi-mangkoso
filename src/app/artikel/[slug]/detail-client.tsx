@@ -4,6 +4,7 @@ import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useArticles } from "@/context/ArticleContext";
+import type { Article } from "@/lib/types";
 import { supabase } from "@/lib/supabase/client";
 import { dalamSeriKajianFathulQorib } from "@/lib/content-mappers";
 import ArticleCard from "@/components/articles/ArticleCard";
@@ -14,17 +15,28 @@ import IsiTulisan from "@/components/common/IsiTulisan";
 
 interface ArticleDetailPageProps {
   params: Promise<{ slug: string }>;
+  artikelAwal?: any;
 }
 
-export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
+export default function ArticleDetailPage({ params, artikelAwal }: ArticleDetailPageProps) {
   const { slug } = use(params);
   const { articles, incrementArticleViews, isCatalogReady } = useArticles();
   const bodyRef = useRef<HTMLDivElement>(null);
 
   const cleanSlug = decodeURIComponent(slug || "").toLowerCase().trim();
-  const foundArticle = (articles || []).find(
+  const artikelKonteks = (articles || []).find(
     (a) => a.slug?.toLowerCase() === cleanSlug || a.id === slug
   );
+  // Data konteks yang lebih segar didahulukan; badan tulisan diambil
+  // dari mana pun yang sudah memuatnya (data awal server membawanya
+  // sejak render pertama, katalog klien menyusul lewat sinkronisasi).
+  const foundArticle: Article | undefined = artikelKonteks
+    ? {
+        ...(artikelAwal || {}),
+        ...artikelKonteks,
+        content: artikelKonteks.content || artikelAwal?.content || ""
+      }
+    : (artikelAwal ?? undefined);
 
   // Sinyal pratinjau admin yang sama dengan MaintenanceGate: admin yang
   // sedang mempratinjau situs (localStorage "mahad_admin_preview" atau

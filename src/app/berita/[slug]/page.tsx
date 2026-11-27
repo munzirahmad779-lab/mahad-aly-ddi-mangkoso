@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { slugExistsInTable, OG_LOGO_IMAGE } from "@/lib/seo";
+import { slugExistsInTable, OG_LOGO_IMAGE, fetchNewsDetail } from "@/lib/seo";
 import { supabaseAnon } from "@/lib/supabase/server";
 import { SLUG_TULISAN_HARI_GURU, TAUTAN_HARI_GURU } from "@/lib/hari-guru";
 import DetailClient from "./detail-client";
@@ -79,5 +79,9 @@ export default async function BeritaDetailPage({ params }: Props) {
   if (exists === false) {
     notFound();
   }
-  return <DetailClient params={params} />;
+  // Data awal lengkap dari server (termasuk isi berita) agar isi ikut
+  // ter-render pada HTML pertama untuk perayap; komponen klien tetap
+  // memuat ulang datanya sendiri sesudah tampil.
+  const beritaAwal = await fetchNewsDetail(cleanSlug);
+  return <DetailClient params={params} beritaAwal={beritaAwal} />;
 }

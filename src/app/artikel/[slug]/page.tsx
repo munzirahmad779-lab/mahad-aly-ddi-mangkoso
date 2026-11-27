@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { slugExistsInTable, fetchArticleMeta, articleMetadata } from "@/lib/seo";
+import { slugExistsInTable, fetchArticleMeta, articleMetadata, fetchArticleDetail } from "@/lib/seo";
 import DetailClient from "./detail-client";
 
 interface Props {
@@ -25,5 +25,9 @@ export default async function ArticleDetailPage({ params }: Props) {
   if (exists === false) {
     notFound();
   }
-  return <DetailClient params={params} />;
+  // Data awal lengkap dari server (termasuk badan tulisan) agar badan
+  // tulisan ikut ter-render pada HTML pertama untuk perayap; komponen
+  // klien tetap memuat ulang datanya sendiri sesudah tampil.
+  const artikelAwal = await fetchArticleDetail(cleanSlug);
+  return <DetailClient params={params} artikelAwal={artikelAwal} />;
 }

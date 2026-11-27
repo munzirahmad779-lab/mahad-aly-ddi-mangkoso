@@ -15,16 +15,27 @@ import {
 
 interface BeritaDetailPageProps {
   params: Promise<{ slug: string }>;
+  beritaAwal?: any;
 }
 
-export default function BeritaDetailPage({ params }: BeritaDetailPageProps) {
+export default function BeritaDetailPage({ params, beritaAwal }: BeritaDetailPageProps) {
   const { slug } = use(params);
   const { news, isCatalogReady } = useArticles();
 
   const cleanSlug = decodeURIComponent(slug || "").toLowerCase().trim();
-  const item = (news || []).find(
+  const itemKonteks = (news || []).find(
     (n) => n.slug?.toLowerCase() === cleanSlug || n.id === slug
   );
+  // Sama seperti halaman artikel: data konteks didahulukan, isi berita
+  // diambil dari mana pun yang sudah memuatnya (data awal server
+  // membawanya sejak render pertama).
+  const item = itemKonteks
+    ? {
+        ...(beritaAwal || {}),
+        ...itemKonteks,
+        content: itemKonteks.content || beritaAwal?.content || ""
+      }
+    : (beritaAwal ?? undefined);
 
   // Katalog sudah terkonfirmasi dari server tapi berita tetap tidak ada
   // → 404 sungguhan, bukan soft-404 berstatus 200.

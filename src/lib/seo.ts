@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { supabaseAnon } from "@/lib/supabase/server";
+import { mapDbArticles, mapDbNews } from "@/lib/content-mappers";
 
 const BASE = "https://mahadaly-ddimangkoso.ac.id";
 const SITE = "Ma'had Aly DDI Mangkoso";
@@ -81,6 +82,78 @@ export async function fetchArticleMeta(slug: string) {
       .eq("status", "published")
       .maybeSingle();
     return (data as ArticleRow) || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Ambil SATU artikel terbit lengkap (termasuk badan tulisan) di server
+ * untuk halaman detail, supaya badan tulisan ikut ter-render pada HTML
+ * awal yang diterima perayap (peninjau AdSense, Googlebot). Seed global
+ * RootLayout sengaja tidak membawa badan artikel (pernah membuat HTML
+ * semua halaman membengkak dan Worker kehabisan sumber daya); di sini
+ * hanya badan artikel yang sedang dibuka yang diambil. Hanya artikel
+ * terbit: draf mengembalikan null dan halaman detail jatuh ke perilaku
+ * lama (pratinjau admin lewat klien). Null juga bila basis data gagal.
+ */
+export async function fetchArticleDetail(slug: string) {
+  try {
+    const kolom =
+      "id, slug, title, excerpt, content, author_name, author_role, category_id, status, thumbnail_url, created_at, views, tags";
+    let { data } = await supabaseAnon
+      .from("articles")
+      .select(kolom)
+      .ilike("slug", slug)
+      .eq("status", "published")
+      .maybeSingle();
+    if (!data) {
+      const looksUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+      if (!looksUuid) return null;
+      const byId = await supabaseAnon
+        .from("articles")
+        .select(kolom)
+        .eq("id", slug)
+        .eq("status", "published")
+        .maybeSingle();
+      data = byId.data;
+    }
+    if (!data) return null;
+    const { data: cats } = await supabaseAnon
+      .from("categories")
+      .select("id, slug, nama");
+    const mapped = mapDbArticles([data], (cats as any[]) || []);
+    return mapped[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+/** Pasangan fetchArticleDetail untuk berita: satu baris berita lengkap. */
+export async function fetchNewsDetail(slug: string) {
+  try {
+    const kolom =
+      "id, slug, judul, konten, tipe, tanggal, gambar_url, created_at, lampiran_url, lampiran_nama, lampiran_ukuran";
+    let { data } = await supabaseAnon
+      .from("news")
+      .select(kolom)
+      .ilike("slug", slug)
+      .maybeSingle();
+    if (!data) {
+      const looksUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+      if (!looksUuid) return null;
+      const byId = await supabaseAnon
+        .from("news")
+        .select(kolom)
+        .eq("id", slug)
+        .maybeSingle();
+      data = byId.data;
+    }
+    if (!data) return null;
+    const mapped = mapDbNews([data]);
+    return mapped[0] || null;
   } catch {
     return null;
   }
