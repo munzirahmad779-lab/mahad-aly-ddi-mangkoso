@@ -235,11 +235,11 @@ export const metadata: Metadata = {
     description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso (Mahad Aly Mangkoso). Membina kader ulama berakar pada sanad kitab klasik dan berwawasan wasathiyyah.",
     images: [
       {
-        url: "/og-logo.jpg",
-        secureUrl: "https://mahadaly-ddimangkoso.ac.id/og-logo.jpg",
+        url: "/og-gedung.jpg",
+        secureUrl: "https://mahadaly-ddimangkoso.ac.id/og-gedung.jpg",
         width: 1200,
         height: 630,
-        alt: "Logo Ma'had Aly DDI Mangkoso",
+        alt: "Gedung Ma'had Aly DDI Mangkoso",
       },
     ],
   },
@@ -247,7 +247,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Ma'had Aly DDI Mangkoso — Pendidikan Tinggi Kader Ulama",
     description: "Portal Resmi & Mimbar Kajian Keislaman Ma'had Aly DDI Mangkoso.",
-    images: ["/og-logo.jpg"],
+    images: ["/og-gedung.jpg"],
   },
   icons: {
     icon: [
@@ -301,6 +301,7 @@ export default async function RootLayout({
         ],
         "url": "https://mahadaly-ddimangkoso.ac.id",
         "logo": "https://mahadaly-ddimangkoso.ac.id/image_067524.png",
+        "image": "https://mahadaly-ddimangkoso.ac.id/og-gedung.jpg",
         "sameAs": [
           "https://www.instagram.com/mahadalyddimangkoso"
         ],
@@ -345,8 +346,8 @@ export default async function RootLayout({
       <body className="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-mahad-gold selection:text-mahad-green-dark flex flex-col min-h-screen">
         {/* Penguat pratinjau tautan untuk perayap lama (termasuk
             WhatsApp): penunjuk gambar pratinjau versi klasik, pasangan
-            og:image berkas og-logo.jpg pada metadata. */}
-        <link rel="image_src" href="https://mahadaly-ddimangkoso.ac.id/og-logo.jpg" />
+            og:image berkas og-gedung.jpg pada metadata. */}
+        <link rel="image_src" href="https://mahadaly-ddimangkoso.ac.id/og-gedung.jpg" />
         <ArticleProvider initialContent={initialContent}>
           <SmoothScroll />
           <AdSenseScript />
